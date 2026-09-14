@@ -26,10 +26,12 @@ plain min/max round-to-nearest observer. That leaves quality on the table.
 
 ## Status
 
-🚧 **Early scaffold.** The package skeleton, core quantization math, format
-detection, rotation primitives, and verification helpers exist and are
-unit-tested. The streaming engine (shard streaming, on-device quantization,
-output assembly) is under construction.
+🚧 **Working core + streaming engine.** The package skeleton, core quantization
+math, format detection, rotation primitives, and verification helpers exist and
+are unit-tested. The streaming engine (shard discovery, on-device quantization,
+output assembly) is implemented and tested end-to-end on synthetic models. Next:
+calibration-aware defaults, rotation folding into the emitted config, and
+DGX-Spark benchmark runs.
 
 ## Install
 
@@ -68,10 +70,13 @@ Same model, same `mxfp4-pack-quantized` format, measured on Blackwell (SM100).
 mxstream/
 ├── mxstream/
 │   ├── core.py      MXFP4 constants, MSE-optimal quantize_mxfp4()
+│   ├── shard.py     safetensors shard discovery + streaming reads
+│   ├── engine.py    GPU-streaming quantization orchestration
 │   ├── format.py    input format detection from config.json (not suffix sniffing)
 │   ├── rotate.py    Hadamard / random-orthogonal rotation + folding
 │   ├── verify.py    SQNR, config-coverage verification (verification-first)
-│   └── cli.py       CLI entry point
+│   ├── output.py    compressed-tensors quantization_config assembly + coverage
+│   └── cli.py       CLI entry point (wired to the engine)
 ├── tests/
 ├── pyproject.toml
 └── README.md
@@ -79,7 +84,7 @@ mxstream/
 
 ## Roadmap
 
-- [ ] **Streaming engine** — shard streaming through GPU VRAM, on-device quantize
+- [x] **Streaming engine** — shard streaming, on-device quantize, output assembly
 - [ ] **Calibration-aware default** — streaming forward pass produces activation
       stats by default (no opt-in)
 - [ ] **Rotation folding** — emit standard `compressed-tensors` `transform_config`
