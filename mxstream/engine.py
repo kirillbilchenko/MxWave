@@ -9,7 +9,6 @@ are handled because only one shard (or a few tensors) is resident at a time.
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,6 +19,7 @@ from safetensors.torch import save_file
 
 from .core import quantize_mxfp4
 from .format import InputFormat, detect_input_format
+from .output import assemble_output_dir
 from .rotate import hadamard_matrix
 from .shard import ShardFile, discover_shards, read_tensor, shard_tensor_keys
 
@@ -112,17 +112,6 @@ def quantize_shard(
     return result
 
 
-def _emit_index(weight_map: dict[str, str], output_dir: Path) -> None:
-    """Write a model.safetensors.index.json if shards were split out."""
-    # For simplicity, when we emit per-shard output we reuse the input map.
-    total = 0
-    index = {
-        "metadata": {"total_size": total},
-        "weight_map": weight_map,
-    }
-    (output_dir / "model.safetensors.index.json").write_text(json.dumps(index, indent=2))
-
-
 def quantize_model(cfg: QuantizeConfig) -> int:
     """Run the full streaming quantization of a model directory.
 
@@ -165,5 +154,15 @@ def quantize_model(cfg: QuantizeConfig) -> int:
         out_path = output_dir / out_name
         save_file(tensors, str(out_path))
         processed += 1
+
+    # Assemble the output directory into a drop-in checkpoint (config.json,
+    # quantization_config, rebuilt index, compression ratio).
+    transform_config = {"type": "hadamard"} if cfg.rotation == "hadamard" else None
+    assemble_output_dir(
+        model_dir,
+        output_dir,
+        shards,
+        transform_config=transform_config,
+    )
 
     return processed

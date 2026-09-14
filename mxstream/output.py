@@ -8,14 +8,17 @@ real module (no Linear silently left unquantized).
 from __future__ import annotations
 
 import json
+import re
+import struct
 from pathlib import Path
 from typing import Any
 
+from .shard import ShardFile, shard_tensor_keys
 from .verify import verify_config_coverage
 
 __all__ = [
+    "assemble_output_dir",
     "build_quantization_config",
-    "update_config",
     "verify_emitted_config",
 ]
 
@@ -54,13 +57,55 @@ _MXFP4_GROUP: dict[str, Any] = {
 }
 
 
+def _module_list_from_keys(keys: list[str]) -> list[str]:
+    """Derive concrete module names (e.g. ``layers.0.mlp.gate_proj``) from tensor keys.
+
+    Strips the ``.weight*`` suffix and the leading ``model.`` prefix so the
+    result matches the module paths vLLM resolves against.
+    """
+    modules: list[str] = []
+    for key in keys:
+        base = re.sub(r"\.weight(_packed|_scale)?$", "", key)
+        module = re.sub(r"^model\.", "", base)
+        # Skip embeddings / lm_head / norms (not Linear modules).
+        if re.search(r"(embed_tokens|lm_head|layernorm|_norm|router)", module):
+            continue
+        if module not in modules:
+            modules.append(module)
+    return modules
+
+
+def _module_to_regex(module: str) -> str:
+    """Turn a concrete module path into a layer-index-agnostic ``re:`` target."""
+    parts = (r"\d+" if p.isdigit() else re.escape(p) for p in module.split("."))
+    return "re:.*" + r"\.".join(parts) + "$"
+
+
 def build_quantization_config(
-    targets: list[str],
-    ignore: list[str],
+    real_modules: list[str],
     *,
     transform_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a compressed-tensors quantization_config for MXFP4."""
+    """Build a compressed-tensors quantization_config that covers every Linear.
+
+    Args:
+        real_modules: Concrete module names derived from the checkpoint (e.g.
+            ``layers.0.mlp.gate_proj``). Each is turned into an ``re:`` target,
+            so one config covers every layer.
+        transform_config: Optional rotation transform (e.g. ``{"type": "hadamard"}``).
+
+    Returns:
+        The ``quantization_config`` payload to merge into ``config.json``.
+    """
+    targets: list[str] = []
+    for module in real_modules:
+        target = _module_to_regex(module)
+        if target not in targets:
+            targets.append(target)
+
+    # Anything not a Linear (embeddings, lm_head, norms, router) is ignored.
+    ignore: list[str] = ["lm_head", "embed_tokens"]
+
     return {
         "config_groups": {
             "group_0": {
@@ -69,7 +114,7 @@ def build_quantization_config(
             }
         },
         "format": "mxfp4-pack-quantized",
-        "global_compression_ratio": None,
+        "global_compression_ratio": None,  # filled in assemble_output_dir
         "ignore": ignore,
         "kv_cache_scheme": None,
         "quant_method": "compressed-tensors",
@@ -80,19 +125,83 @@ def build_quantization_config(
     }
 
 
-def update_config(
+def _shard_data_size(path: Path) -> int:
+    """Return the total tensor-data byte size of a safetensors shard."""
+    with open(path, "rb") as f:
+        header_len = struct.unpack("<Q", f.read(8))[0]
+        f.seek(8 + header_len)  # skip header JSON
+        return len(f.read())
+
+
+def _build_index(
+    shards: list[ShardFile],
+    output_dir: Path,
+) -> dict[str, Any]:
+    """Rebuild ``model.safetensors.index.json`` for the emitted output shards.
+
+    Maps each tensor name to its output shard filename and sums the real data
+    sizes for ``metadata.total_size``.
+    """
+    weight_map: dict[str, str] = {}
+    total_size = 0
+    for shard in shards:
+        out_name = shard.path.name
+        for key in shard_tensor_keys(shard):
+            weight_map[key] = out_name
+        total_size += _shard_data_size(output_dir / out_name)
+    return {
+        "metadata": {"total_size": total_size},
+        "weight_map": weight_map,
+    }
+
+
+def assemble_output_dir(
+    model_dir: str | Path,
     output_dir: str | Path,
-    quantization_config: dict[str, Any],
-) -> None:
-    """Merge quantization_config into the output config.json."""
+    shards: list[ShardFile],
+    *,
+    transform_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Assemble the output directory into a drop-in checkpoint.
+
+    Copies ``config.json``, merges the quantization_config, and writes a rebuilt
+    safetensors index. Returns the quantization_config that was written.
+    """
+    src = Path(model_dir)
     out = Path(output_dir)
-    cfg_path = out / "config.json"
-    if cfg_path.exists():
-        cfg = json.loads(cfg_path.read_text())
-    else:
-        cfg = {}
-    cfg["quantization_config"] = quantization_config
-    cfg_path.write_text(json.dumps(cfg, indent=2))
+    out.mkdir(parents=True, exist_ok=True)
+
+    # 1. Copy config.json from source if present.
+    src_cfg = src / "config.json"
+    cfg: dict[str, Any] = {}
+    if src_cfg.exists():
+        cfg = json.loads(src_cfg.read_text())
+    (out / "config.json").write_text(json.dumps(cfg, indent=2))
+
+    # 2. Derive real modules from the emitted shards (union of all keys).
+    all_keys: list[str] = []
+    for shard in shards:
+        for key in shard_tensor_keys(shard):
+            if key not in all_keys:
+                all_keys.append(key)
+    real_modules = _module_list_from_keys(all_keys)
+
+    qcfg = build_quantization_config(real_modules, transform_config=transform_config)
+
+    # 3. Global compression ratio = source bytes / output bytes.
+    src_bytes = sum(p.stat().st_size for p in src.glob("*.safetensors"))
+    out_bytes = sum(p.stat().st_size for p in out.glob("*.safetensors"))
+    if out_bytes > 0 and src_bytes > 0:
+        qcfg["global_compression_ratio"] = round(src_bytes / out_bytes, 4)
+
+    cfg["quantization_config"] = qcfg
+    (out / "config.json").write_text(json.dumps(cfg, indent=2))
+
+    # 4. Rebuild the index.
+    index = _build_index(shards, out)
+    (out / "model.safetensors.index.json").write_text(json.dumps(index, indent=2))
+
+    return qcfg
 
 
 def verify_emitted_config(

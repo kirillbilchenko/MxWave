@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 import torch
 
 from .engine import QuantizeConfig, quantize_model
-from .output import build_quantization_config
+from .output import verify_emitted_config
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -85,15 +86,20 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[mxstream] quantized {processed} shard(s) -> {args.output_dir}")
 
     if args.verify:
-        from .output import update_config, verify_emitted_config
+        # The config was already assembled by quantize_model; verify coverage
+        # against the modules discovered in the output shards.
+        from .output import _module_list_from_keys
+        from .shard import discover_shards, shard_tensor_keys
 
-        qcfg = build_quantization_config(
-            targets=["Linear"],
-            ignore=["lm_head", "embed_tokens"],
-            transform_config={"type": "hadamard"} if args.rotation == "hadamard" else None,
-        )
-        update_config(args.output_dir, qcfg)
-        gaps = verify_emitted_config(args.output_dir, real_modules=["Linear"])
+        out_dir = Path(args.output_dir)
+        shards, _ = discover_shards(out_dir)
+        all_keys: list[str] = []
+        for shard in shards:
+            for key in shard_tensor_keys(shard):
+                if key not in all_keys:
+                    all_keys.append(key)
+        real_modules = _module_list_from_keys(all_keys)
+        gaps = verify_emitted_config(args.output_dir, real_modules=real_modules)
         if gaps:
             print(f"[mxstream] WARNING: uncovered modules: {gaps}")
         else:

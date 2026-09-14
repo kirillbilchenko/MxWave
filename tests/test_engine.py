@@ -100,3 +100,66 @@ def test_should_quantize_excludes_norms_and_embeds():
     assert not _should_quantize("model.layers.0.input_layernorm.weight", r".*norm.*")
     assert not _should_quantize("model.embed_tokens.weight", r".*embed_tokens.*")
     assert not _should_quantize("model.lm_head.weight", r".*lm_head.*")
+
+
+def test_quantize_model_emits_dropin_checkpoint(tmp_path: Path):
+    model_dir = _make_fake_model(tmp_path)
+    out_dir = tmp_path / "out"
+    cfg = QuantizeConfig(model_dir=model_dir, output_dir=out_dir, device="cpu")
+    quantize_model(cfg)
+
+    # config.json copied from source and enriched with quantization_config.
+    cfg_path = out_dir / "config.json"
+    assert cfg_path.exists()
+    cfg_json = json.loads(cfg_path.read_text())
+    assert cfg_json.get("model_type") == "test"  # preserved from source
+    qcfg = cfg_json.get("quantization_config")
+    assert qcfg is not None
+    assert qcfg["format"] == "mxfp4-pack-quantized"
+    assert qcfg["quant_method"] == "compressed-tensors"
+    assert "lm_head" in qcfg["ignore"]
+
+    # Targets derived from real Linear modules, layer-agnostic regex.
+    targets = qcfg["config_groups"]["group_0"]["targets"]
+    assert "re:.*layers\\.\\d+\\.mlp\\.gate_proj$" in targets
+    # embed_tokens (not a Linear) must NOT be a target.
+    assert not any("embed_tokens" in t for t in targets)
+
+    # global_compression_ratio computed from src_bytes / out_bytes.
+    assert qcfg["global_compression_ratio"] > 1.0
+
+
+def test_quantize_model_rebuilds_index_with_real_sizes(tmp_path: Path):
+    model_dir = _make_fake_model(tmp_path)
+    out_dir = tmp_path / "out"
+    cfg = QuantizeConfig(model_dir=model_dir, output_dir=out_dir, device="cpu")
+    quantize_model(cfg)
+
+    index_path = out_dir / "model.safetensors.index.json"
+    assert index_path.exists()
+    index = json.loads(index_path.read_text())
+
+    # total_size reflects the real emitted data bytes (sum of all shard data).
+    total = index["metadata"]["total_size"]
+    assert total > 0
+
+    # Every tensor name maps to an output shard that exists.
+    wm = index["weight_map"]
+    assert "model.layers.0.mlp.gate_proj.weight" in wm
+    for shard_name in wm.values():
+        assert (out_dir / shard_name).exists()
+
+
+def test_hadamard_config_marks_transform(tmp_path: Path):
+    model_dir = _make_fake_model(tmp_path)
+    out_dir = tmp_path / "out_rot"
+    cfg = QuantizeConfig(
+        model_dir=model_dir,
+        output_dir=out_dir,
+        device="cpu",
+        rotation="hadamard",
+    )
+    quantize_model(cfg)
+    cfg_json = json.loads((out_dir / "config.json").read_text())
+    qcfg = cfg_json["quantization_config"]
+    assert qcfg["transform_config"] == {"type": "hadamard"}
