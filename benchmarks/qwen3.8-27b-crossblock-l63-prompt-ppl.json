@@ -1,0 +1,36 @@
+{
+  "format": "mxstream-paired-ppl-experiment-summary-v1",
+  "model": "Qwen/Qwen3.8-27B",
+  "candidate": {
+    "description": "H64 baseline with only zero-based layer 63 mlp.down_proj replaced by 128-channel cross-block reconstruction",
+    "perplexity": 8.167738440868593,
+    "total_negative_log_likelihood": 128968.59389330664,
+    "raw_report_sha256": "7e5f42779ef51d774677886af0f7240c707b4f19249eb5351d7fceef69242ac0"
+  },
+  "baseline": {
+    "description": "mxstream 64x512 block-Hessian scale-only H64",
+    "perplexity": 8.165108133489403,
+    "total_negative_log_likelihood": 128948.8151099571
+  },
+  "evaluation": {
+    "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+    "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+    "chunk_characters": 4096,
+    "num_chunks": 64,
+    "scored_tokens": 61408,
+    "pairing_validated": true,
+    "relative_ppl_percent": 0.03221399320365581,
+    "paired_95_percent_ci": [
+      -0.004188212791359779,
+      0.06751158646002393
+    ],
+    "candidate_wins": 24,
+    "candidate_losses": 40,
+    "ties": 0,
+    "two_sided_sign_test_p": 0.05994118956699923,
+    "bootstrap_samples": 100000,
+    "bootstrap_seed": 20260915
+  },
+  "decision": "reject_production_promotion"
+}

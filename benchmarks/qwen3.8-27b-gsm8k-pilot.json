@@ -1,0 +1,69 @@
+{
+  "format": "mxstream-gsm8k-pilot-summary-v1",
+  "date": "2026-09-15",
+  "hardware": "NVIDIA DGX Spark, GB10, SM121",
+  "runtime": {
+    "image": "vllm/vllm-openai:qwen38-flash-next@sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8",
+    "mxfp4_linear_backend": "marlin",
+    "quantized_runtime_precision": "W4A16",
+    "num_concurrent": 16,
+    "max_length": 16384
+  },
+  "task": {
+    "harness": "lm-evaluation-harness 0.4.13",
+    "name": "gsm8k_nothink",
+    "version": 3.0,
+    "task_hash": "567b35835d22441f13885c7e064da1b996f9d395724203056cebe01dcaa6e81c",
+    "fewshot": 5,
+    "original_samples": 1319,
+    "effective_samples": 100,
+    "selection": "first 100 examples",
+    "strict_match": "requires the task's #### final-answer format",
+    "flexible_extract": "extracts the final numeric answer when strict formatting is absent"
+  },
+  "sampling": {
+    "do_sample": true,
+    "seed": 1234,
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "repetition_penalty": 1.0,
+    "max_generation_tokens": 1024
+  },
+  "results": {
+    "bf16": {
+      "strict_match": 0.85,
+      "strict_match_stderr": 0.035887028128263734,
+      "flexible_extract": 0.88,
+      "flexible_extract_stderr": 0.032659863237109066,
+      "evaluation_seconds": 934.3230481250212,
+      "raw_report_sha256": "3bda14da0132abc55b64c3f00ce4ef7641e1f432afe315593e5632abe177784d"
+    },
+    "mxstream_hessian64_scale_only": {
+      "strict_match": 0.91,
+      "strict_match_stderr": 0.02876234912646612,
+      "flexible_extract": 0.92,
+      "flexible_extract_stderr": 0.027265992434429093,
+      "evaluation_seconds": 422.9362339579966,
+      "raw_report_sha256": "1c5b238ff5cdb1629360a1956794babdc88fd6ddbea28a117d91ba099c4e73de"
+    },
+    "amd_quark_awq_mxfp4": {
+      "strict_match": 0.93,
+      "strict_match_stderr": 0.0256432399976243,
+      "flexible_extract": 0.93,
+      "flexible_extract_stderr": 0.0256432399976243,
+      "evaluation_seconds": 372.8700951668434,
+      "raw_report_sha256": "331f88ddead14e5270bc22b4a5990a605905c52d4013321a996a61b31e368a63"
+    }
+  },
+  "paired_trace_audit": {
+    "flexible_common_misses_h64_and_amd": [2, 12, 37, 45, 75],
+    "h64_only_wins_over_amd": [13, 20],
+    "amd_only_wins_over_h64": [30, 72, 87],
+    "bf16_and_amd_correct_h64_wrong_reasoning": [30],
+    "h64_strict_only_format_failure": [95]
+  },
+  "interpretation": "This is a stochastic 100-example pilot, not a precise ranking. The one-point flexible-score difference between H64 and AMD is smaller than the reported standard errors. BF16 scoring below both quantized runs further demonstrates sampling variance. Use the deterministic paired perplexity and exact next-token divergence results as the primary fidelity evidence."
+}

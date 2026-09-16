@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mxstream.verify import channel_weighted_sqnr, sqnr, verify_config_coverage
+from mxwave.verify import channel_weighted_sqnr, sqnr, verify_config_coverage
 
 
 def test_sqnr_returns_positive_db_for_close_tensors():

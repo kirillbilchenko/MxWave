@@ -9,14 +9,14 @@ import pytest
 import torch
 from safetensors.torch import save_file
 
-from mxstream.calibration import (
+from mxwave.calibration import (
     ActivationCollector,
     attach_activation_hooks,
     load_calibration_data,
     save_calibration_data,
 )
-from mxstream.calibration_cli import _load_corpus, _parse_objectives, _tokenize_sequences
-from mxstream.calibration_stream import calibrate_decoder_sequentially
+from mxwave.calibration_cli import _load_corpus, _parse_objectives, _tokenize_sequences
+from mxwave.calibration_stream import calibrate_decoder_sequentially
 
 
 class _TinyModel(torch.nn.Module):
@@ -187,8 +187,34 @@ def test_calibration_safetensors_round_trip_and_identity(tmp_path: Path) -> None
         expected_source_revision="abc123",
     )
     assert torch.equal(loaded.tensors["proj.weight"], rms)
+    assert loaded.metadata["format"] == "mxwave-activation-stats"
     assert loaded.metadata["num_tokens"] == "6"
     assert len(loaded.file_sha256) == 64
+
+
+def test_calibration_loader_accepts_pre_rename_artifact(tmp_path: Path) -> None:
+    path = tmp_path / "legacy-stats.safetensors"
+    metadata = _metadata()
+    metadata.update(
+        {
+            "format": "mxstream-activation-stats",
+            "format_version": "1",
+            "objectives": '["mean-abs"]',
+            "target_count": "1",
+        }
+    )
+    expected = torch.linspace(0.1, 1.0, 32)
+    save_file({"mean-abs::proj.weight": expected}, path, metadata=metadata)
+
+    loaded = load_calibration_data(
+        path,
+        "mean-abs",
+        {"proj.weight": 32},
+        expected_policy="all-linear",
+    )
+
+    assert torch.equal(loaded.tensors["proj.weight"], expected)
+    assert loaded.metadata["format"] == "mxstream-activation-stats"
 
 
 def test_calibration_loader_rejects_partial_coverage(tmp_path: Path) -> None:

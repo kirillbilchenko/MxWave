@@ -10,13 +10,13 @@ import torch
 from safetensors import safe_open
 from safetensors.torch import save_file
 
-import mxstream.engine as engine_module
-from mxstream.calibration import save_calibration_data
-from mxstream.core import QuantizationMethod
-from mxstream.core import quantize_mxfp4 as core_quantize_mxfp4
-from mxstream.engine import QuantizeConfig, plan_model, quantize_model, quantize_shard
-from mxstream.output import record_runtime_validation
-from mxstream.shard import discover_shards
+import mxwave.engine as engine_module
+from mxwave.calibration import save_calibration_data
+from mxwave.core import QuantizationMethod
+from mxwave.core import quantize_mxfp4 as core_quantize_mxfp4
+from mxwave.engine import QuantizeConfig, plan_model, quantize_model, quantize_shard
+from mxwave.output import record_runtime_validation
+from mxwave.shard import discover_shards
 
 
 def _make_fake_model(tmp_path: Path, *, quantized_config: bool = False) -> Path:
@@ -207,12 +207,6 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
         hessian: torch.Tensor | None = None,
         method: QuantizationMethod = "mse",
         mse_clip_depth: int = 1,
-        hessian_rounding_sweeps: int = 0,
-        hessian_error_feedback: bool = False,
-        hessian_feedback_damp_percent: float = 1.0,
-        hessian_feedback_activation_order: bool = True,
-        hessian_feedback_max_mse_ratio: float | None = None,
-        feedback_selection_hessian: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         nonlocal gamma_calls, unweighted_calls
         if gamma is None:
@@ -227,12 +221,6 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
             hessian=hessian,
             method=method,
             mse_clip_depth=mse_clip_depth,
-            hessian_rounding_sweeps=hessian_rounding_sweeps,
-            hessian_error_feedback=hessian_error_feedback,
-            hessian_feedback_damp_percent=hessian_feedback_damp_percent,
-            hessian_feedback_activation_order=hessian_feedback_activation_order,
-            hessian_feedback_max_mse_ratio=hessian_feedback_max_mse_ratio,
-            feedback_selection_hessian=feedback_selection_hessian,
         )
 
     monkeypatch.setattr(engine_module, "quantize_mxfp4", recording_quantize)
@@ -248,7 +236,7 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
 
     assert gamma_calls == 128
     assert unweighted_calls == 64
-    manifest = json.loads((output_dir / "mxstream-manifest.json").read_text())
+    manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert manifest["weight_scale_selection"] == "mse-layernorm-gamma-proxy"
     assert manifest["gamma_proxy"] == {
         "sources": ["post_attention_layernorm.weight"],
@@ -292,12 +280,6 @@ def test_activation_statistics_replace_proxy_and_cover_every_target(
         hessian: torch.Tensor | None = None,
         method: QuantizationMethod = "mse",
         mse_clip_depth: int = 1,
-        hessian_rounding_sweeps: int = 0,
-        hessian_error_feedback: bool = False,
-        hessian_feedback_damp_percent: float = 1.0,
-        hessian_feedback_activation_order: bool = True,
-        hessian_feedback_max_mse_ratio: float | None = None,
-        feedback_selection_hessian: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         assert gamma is not None
         observed[str(tensor.shape[-1])] = gamma
@@ -308,12 +290,6 @@ def test_activation_statistics_replace_proxy_and_cover_every_target(
             hessian=hessian,
             method=method,
             mse_clip_depth=mse_clip_depth,
-            hessian_rounding_sweeps=hessian_rounding_sweeps,
-            hessian_error_feedback=hessian_error_feedback,
-            hessian_feedback_damp_percent=hessian_feedback_damp_percent,
-            hessian_feedback_activation_order=hessian_feedback_activation_order,
-            hessian_feedback_max_mse_ratio=hessian_feedback_max_mse_ratio,
-            feedback_selection_hessian=feedback_selection_hessian,
         )
 
     monkeypatch.setattr(engine_module, "quantize_mxfp4", recording_quantize)
@@ -329,7 +305,7 @@ def test_activation_statistics_replace_proxy_and_cover_every_target(
 
     assert torch.equal(observed["128"], statistics["model.layers.0.mlp.gate_proj.weight"])
     assert torch.equal(observed["64"], statistics["model.layers.1.mlp.gate_proj.weight"])
-    manifest = json.loads((output_dir / "mxstream-manifest.json").read_text())
+    manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert manifest["weight_scale_selection"] == "mse-activation-mean-abs"
     assert manifest["gamma_proxy"] is None
     assert manifest["activation_calibration"]["weighted_tensors"] == 2
@@ -340,7 +316,7 @@ def test_activation_statistics_replace_proxy_and_cover_every_target(
     assert "Calibration-weighted SQNR" in card
 
 
-def test_block_hessian_rounding_is_wired_and_recorded(
+def test_block_hessian_scale_selection_is_wired_and_recorded(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     model_dir = _make_fake_model(tmp_path)
@@ -363,7 +339,7 @@ def test_block_hessian_rounding_is_wired_and_recorded(
             "hessian_damp": "1e-6",
         },
     )
-    observed_sweeps: list[int] = []
+    observed_hessians: list[torch.Tensor] = []
 
     def recording_quantize(
         tensor: torch.Tensor,
@@ -372,15 +348,9 @@ def test_block_hessian_rounding_is_wired_and_recorded(
         hessian: torch.Tensor | None = None,
         method: QuantizationMethod = "mse",
         mse_clip_depth: int = 1,
-        hessian_rounding_sweeps: int = 0,
-        hessian_error_feedback: bool = False,
-        hessian_feedback_damp_percent: float = 1.0,
-        hessian_feedback_activation_order: bool = True,
-        hessian_feedback_max_mse_ratio: float | None = None,
-        feedback_selection_hessian: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         assert hessian is not None
-        observed_sweeps.append(hessian_rounding_sweeps)
+        observed_hessians.append(hessian)
         return core_quantize_mxfp4(
             tensor,
             scale_percentile=scale_percentile,
@@ -388,12 +358,6 @@ def test_block_hessian_rounding_is_wired_and_recorded(
             hessian=hessian,
             method=method,
             mse_clip_depth=mse_clip_depth,
-            hessian_rounding_sweeps=hessian_rounding_sweeps,
-            hessian_error_feedback=hessian_error_feedback,
-            hessian_feedback_damp_percent=hessian_feedback_damp_percent,
-            hessian_feedback_activation_order=hessian_feedback_activation_order,
-            hessian_feedback_max_mse_ratio=hessian_feedback_max_mse_ratio,
-            feedback_selection_hessian=feedback_selection_hessian,
         )
 
     monkeypatch.setattr(engine_module, "quantize_mxfp4", recording_quantize)
@@ -403,208 +367,19 @@ def test_block_hessian_rounding_is_wired_and_recorded(
             output_dir,
             activation_stats=stats_path,
             calibration_objective="block-hessian",
-            hessian_rounding_sweeps=1,
-        )
-    )
-
-    assert observed_sweeps == [1, 1]
-    manifest = json.loads((output_dir / "mxstream-manifest.json").read_text())
-    assert manifest["hessian_rounding_sweeps"] == 1
-    assert "| Hessian rounding sweeps | 1 |" in (output_dir / "README.md").read_text()
-
-
-def test_hessian_rounding_requires_block_hessian_calibration(tmp_path: Path) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    with pytest.raises(ValueError, match="Hessian rounding requires"):
-        plan_model(_config(model_dir, hessian_rounding_sweeps=1))
-
-
-def test_hessian_error_feedback_is_wired_and_recorded(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    output_dir = tmp_path / "out"
-    stats_path = tmp_path / "activation-stats.safetensors"
-    selection_path = tmp_path / "feedback-selection-stats.safetensors"
-    statistics = {
-        "model.layers.0.mlp.gate_proj.weight": torch.eye(32).repeat(4, 1, 1),
-        "model.layers.1.mlp.gate_proj.weight": torch.eye(32).repeat(2, 1, 1),
-    }
-    save_calibration_data(
-        stats_path,
-        {"block-hessian": statistics},
-        {
-            "policy": "all-linear",
-            "num_sequences": "8",
-            "sequence_length": "32",
-            "num_tokens": "256",
-            "corpus_sha256": "corpus",
-            "token_ids_sha256": "tokens",
-            "hessian_damp": "1e-6",
-        },
-    )
-    save_calibration_data(
-        selection_path,
-        {"block-hessian": {name: value * 2.0 for name, value in statistics.items()}},
-        {
-            "policy": "all-linear",
-            "num_sequences": "4",
-            "sequence_offset": "8",
-            "sequence_length": "32",
-            "num_tokens": "128",
-            "corpus_sha256": "corpus",
-            "token_ids_sha256": "selection-tokens",
-            "hessian_damp": "1e-6",
-        },
-    )
-    observed: list[tuple[bool, float, bool, float | None, bool]] = []
-
-    def recording_quantize(
-        tensor: torch.Tensor,
-        scale_percentile: float = 99.5,
-        gamma: torch.Tensor | None = None,
-        hessian: torch.Tensor | None = None,
-        method: QuantizationMethod = "mse",
-        mse_clip_depth: int = 1,
-        hessian_rounding_sweeps: int = 0,
-        hessian_error_feedback: bool = False,
-        hessian_feedback_damp_percent: float = 1.0,
-        hessian_feedback_activation_order: bool = True,
-        hessian_feedback_max_mse_ratio: float | None = None,
-        feedback_selection_hessian: torch.Tensor | None = None,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        assert hessian is not None
-        observed.append(
-            (
-                hessian_error_feedback,
-                hessian_feedback_damp_percent,
-                hessian_feedback_activation_order,
-                hessian_feedback_max_mse_ratio,
-                feedback_selection_hessian is not None,
-            )
-        )
-        return core_quantize_mxfp4(
-            tensor,
-            scale_percentile=scale_percentile,
-            gamma=gamma,
-            hessian=hessian,
-            method=method,
-            mse_clip_depth=mse_clip_depth,
-            hessian_rounding_sweeps=hessian_rounding_sweeps,
-            hessian_error_feedback=hessian_error_feedback,
-            hessian_feedback_damp_percent=hessian_feedback_damp_percent,
-            hessian_feedback_activation_order=hessian_feedback_activation_order,
-            hessian_feedback_max_mse_ratio=hessian_feedback_max_mse_ratio,
-            feedback_selection_hessian=feedback_selection_hessian,
-        )
-
-    monkeypatch.setattr(engine_module, "quantize_mxfp4", recording_quantize)
-    quantize_model(
-        _config(
-            model_dir,
-            output_dir,
-            activation_stats=stats_path,
-            calibration_objective="block-hessian",
-            hessian_error_feedback=True,
-            hessian_feedback_damp_percent=2.0,
-            hessian_feedback_activation_order=False,
-            hessian_feedback_max_mse_ratio=1.125,
-            feedback_selection_stats=selection_path,
             verify_sqnr=True,
         )
     )
 
-    assert observed == [
-        (True, 2.0, False, 1.125, True),
-        (True, 2.0, False, 1.125, True),
-    ]
-    manifest = json.loads((output_dir / "mxstream-manifest.json").read_text())
-    assert manifest["hessian_error_feedback"] is True
-    assert manifest["hessian_feedback_damp_percent"] == 2.0
-    assert manifest["hessian_feedback_activation_order"] is False
-    assert manifest["hessian_feedback_max_mse_ratio"] == 1.125
-    assert manifest["feedback_selection_calibration"]["role"] == "candidate-selection-only"
-    assert manifest["feedback_selection_calibration"]["sequence_offset"] == 8
-    assert manifest["feedback_selection_weighted_sqnr_db"]["count"] == 2
-    card = (output_dir / "README.md").read_text()
-    assert "| Hessian error feedback | True |" in card
-    assert "independent block-Hessian selection on 4 sequences at offset 8" in card
-
-
-def test_hessian_error_feedback_requires_block_hessian_calibration(tmp_path: Path) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    with pytest.raises(ValueError, match="Hessian error feedback requires"):
-        plan_model(_config(model_dir, hessian_error_feedback=True))
-
-
-def test_feedback_selection_requires_hessian_error_feedback(tmp_path: Path) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    with pytest.raises(ValueError, match="feedback_selection_stats"):
-        plan_model(
-            _config(
-                model_dir,
-                feedback_selection_stats=tmp_path / "selection.safetensors",
-            )
-        )
-
-
-def test_feedback_selection_rejects_overlapping_corpus_ranges(tmp_path: Path) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    training_path = tmp_path / "training.safetensors"
-    selection_path = tmp_path / "selection.safetensors"
-    statistics = {
-        "model.layers.0.mlp.gate_proj.weight": torch.eye(32).repeat(4, 1, 1),
-        "model.layers.1.mlp.gate_proj.weight": torch.eye(32).repeat(2, 1, 1),
+    assert len(observed_hessians) == 2
+    assert {tuple(value.shape) for value in observed_hessians} == {
+        (4, 32, 32),
+        (2, 32, 32),
     }
-    common_metadata = {
-        "policy": "all-linear",
-        "num_sequences": "8",
-        "sequence_length": "32",
-        "num_tokens": "256",
-        "corpus_sha256": "same-corpus",
-        "hessian_damp": "1e-6",
-    }
-    save_calibration_data(
-        training_path,
-        {"block-hessian": statistics},
-        {**common_metadata, "sequence_offset": "0", "token_ids_sha256": "training"},
-    )
-    save_calibration_data(
-        selection_path,
-        {"block-hessian": {name: value * 2.0 for name, value in statistics.items()}},
-        {**common_metadata, "sequence_offset": "4", "token_ids_sha256": "selection"},
-    )
-
-    with pytest.raises(ValueError, match="token ranges overlap"):
-        quantize_model(
-            _config(
-                model_dir,
-                activation_stats=training_path,
-                calibration_objective="block-hessian",
-                hessian_error_feedback=True,
-                feedback_selection_stats=selection_path,
-            )
-        )
-
-
-def test_hessian_refinement_modes_are_mutually_exclusive(tmp_path: Path) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    with pytest.raises(ValueError, match="mutually exclusive"):
-        plan_model(
-            _config(
-                model_dir,
-                activation_stats=tmp_path / "stats.safetensors",
-                calibration_objective="block-hessian",
-                hessian_rounding_sweeps=1,
-                hessian_error_feedback=True,
-            )
-        )
-
-
-def test_hessian_feedback_mse_ratio_is_bounded(tmp_path: Path) -> None:
-    model_dir = _make_fake_model(tmp_path)
-    with pytest.raises(ValueError, match="hessian_feedback_max_mse_ratio"):
-        plan_model(_config(model_dir, hessian_feedback_max_mse_ratio=0.99))
+    manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
+    assert manifest["weight_scale_selection"] == "mse-activation-block-hessian"
+    assert manifest["activation_calibration"]["objective"] == "block-hessian"
+    assert manifest["calibration_weighted_sqnr_db"]["count"] == 2
 
 
 def test_prequantized_source_is_rejected(tmp_path: Path):
@@ -642,18 +417,33 @@ def test_tensor_row_chunk_size_must_be_positive(tmp_path: Path) -> None:
 
 def test_quantize_model_writes_output_shards_and_assets(tmp_path: Path):
     model_dir = _make_fake_model(tmp_path)
+    for generated_name in (
+        "mxwave-manifest.json",
+        "mxwave-run.json",
+        "mxstream-manifest.json",
+        "mxstream-run.json",
+    ):
+        (model_dir / generated_name).write_text("{}")
     output_dir = tmp_path / "out"
     assert quantize_model(_config(model_dir, output_dir)) == 2
     assert (output_dir / "model-00001-of-00002.safetensors").exists()
     assert (output_dir / "model-00002-of-00002.safetensors").exists()
     assert (output_dir / "tokenizer.json").read_text() == '{"version":"1.0"}'
     assert (output_dir / "chat_template.jinja").exists()
-    assert (output_dir / "mxstream-manifest.json").exists()
+    assert (output_dir / "mxwave-manifest.json").exists()
     card = (output_dir / "README.md").read_text()
     assert "compressed-tensors" in card
     assert "--linear-backend marlin" in card
     assert "W4A16" in card
     assert "Not measured yet" in card
+    assert not (output_dir / "mxstream-manifest.json").exists()
+    assert not (output_dir / "mxstream-run.json").exists()
+    assert "mxwave-manifest.json" not in json.loads(
+        (output_dir / "mxwave-manifest.json").read_text()
+    )["copied_assets"]
+    assert "mxwave-run.json" not in json.loads(
+        (output_dir / "mxwave-manifest.json").read_text()
+    )["copied_assets"]
 
 
 def test_runtime_validation_regenerates_evidence_in_model_card(tmp_path: Path):
@@ -775,7 +565,7 @@ def test_sqnr_samples_are_recorded(tmp_path: Path):
     model_dir = _make_fake_model(tmp_path)
     output_dir = tmp_path / "out"
     quantize_model(_config(model_dir, output_dir, verify_sqnr=True, sqnr_rows=4))
-    manifest = json.loads((output_dir / "mxstream-manifest.json").read_text())
+    manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert manifest["sqnr_db"]["minimum"] > 5.0
     assert manifest["sqnr_db"]["count"] == 2
     assert manifest["sqnr_db"]["coverage"] == 1.0
@@ -790,6 +580,6 @@ def test_sqnr_samples_are_recorded(tmp_path: Path):
             resume=True,
         )
     )
-    resumed = json.loads((output_dir / "mxstream-manifest.json").read_text())
+    resumed = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert resumed["sqnr_db"]["count"] == 2
     assert resumed["sqnr_db"]["coverage"] == 1.0

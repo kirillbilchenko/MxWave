@@ -1,5 +1,5 @@
 <!--
-  mxstream MXFP4 model-card template.
+  MxWave MXFP4 model-card template.
   Replace every {{PLACEHOLDER}}. Delete <!-- OPTIONAL --> blocks that don't apply.
   Philosophy: lead with deterministic faithfulness metrics (PPL, SQNR), not noisy
   downstream task scores. State plainly what changed (weights) vs. what is
@@ -24,9 +24,9 @@ tags:
 # {{MODEL_NAME}} — MXFP4 (mixed precision)
 
 A 4-bit **MXFP4** quantization of [{{MODEL_NAME}}]({{BASE_MODEL_URL}}), produced with
-[**mxstream**](https://github.com/{{YOUR_USER}}/mxstream) — a GPU-streaming,
-**calibration-aware** MXFP4 engine. Every Linear layer is quantized to MXFP4;
-quality-sensitive layers (embeddings, lm_head, norms) stay {{REST_PRECISION}}.
+[**MxWave**](https://github.com/kirillbilchenko/MxWave) — a bounded-memory,
+**calibration-aware** MXFP4 engine. Projections selected by the recorded policy
+are quantized to MXFP4; explicitly ignored tensors stay {{REST_PRECISION}}.
 <!-- REST_PRECISION: "BF16" (most models) or the source dtype. -->
 <!-- OPTIONAL (only when prepending to the upstream card):
 **The original model card follows in full [below](#original-model-card).** -->
@@ -43,20 +43,18 @@ quality-sensitive layers (embeddings, lm_head, norms) stay {{REST_PRECISION}}.
 
 | Component | Precision | Why |
 |---|---|---|
-| All Linear layers (`*.weight`) | **MXFP4** (4-bit) | the only place worth the size win |
+| Selected projection weights | **MXFP4** (4-bit) | primary source of the size reduction |
 | Embeddings, lm_head{{VISION_BIT}}, norms | **{{REST_PRECISION}}** | sensitive / runs on every token — kept lossless from the source |
 <!-- VISION_BIT: ", vision encoder, projector" if a VLM, else "". -->
 
 ## Quantization method (beyond round-to-nearest)
 
-mxstream does **not** use a plain min/max RTN observer. Per block of 32, it
+MxWave does **not** use a plain min/max RTN observer. Per block of 32, it
 selects the scale that minimizes reconstruction error, choosing among candidate
 exponents (MSE-optimal), optionally weighted by real activation statistics
-(AWQ-style gamma) or a block Hessian (GPTQ-style). Optionally, a fused Hadamard
-rotation (QuaRot family) makes activation outliers uniform *before*
-quantization, then is folded into LayerNorm + next-layer weights so inference
-stays free. The result is a standard `mxfp4-pack-quantized` checkpoint with no
-model fork.
+(activation magnitudes) or a block Hessian. Values are then assigned to their
+nearest E2M1 codes. The result is a standard `mxfp4-pack-quantized` checkpoint
+with no runtime model fork.
 
 ## Quality & faithfulness
 
@@ -70,18 +68,17 @@ so small-sample accuracies are noisy and we don't quote them.)
 | **Perplexity** (clean English) | **{{PPL}}** | language modeling intact — a broken quant lands in the hundreds |
 | **Layer SQNR** | **≈ {{SQNR}} dB** | reconstruction error is just the unavoidable 4-bit rounding (MXFP4 vs the {{SOURCE_FORMAT}} source) |
 
-Why this is enough to trust the checkpoint:
+What these checks establish:
 
 - **The math path is verified.** Per-tensor SQNR is recomputed against the
-  source; the only residual is the ~{{SQNR}} dB 4-bit rounding on the Linear
-  GEMMs. Everything else is bit-identical {{REST_PRECISION}}.
+  source for bounded row samples. Explicit passthrough tensors are copied from
+  the source checkpoint.
 - **Config coverage is verified.** Every real Linear in the checkpoint is
   targeted (or explicitly ignored) — none silently loads unquantized.
-- **Same format, better quality.** MXFP4 scales are MSE-optimal + optionally
-  rotation-folded, so PPL is measurably closer to the base than plain RTN MXFP4
-  at the same size.
+- **End-to-end quality is measured separately.** Reconstruction metrics do not
+  replace paired perplexity or downstream evaluation.
 
-PPL script: `scripts/evaluate_api_perplexity.py` in the mxstream repo. Record
+PPL script: `scripts/evaluate_api_perplexity.py` in the MxWave repo. Record
 the corpus revision/hash, windowing protocol, token count, serving backend, and
 paired baseline reports; an absolute PPL is not comparable when those differ.
 
@@ -89,10 +86,11 @@ paired baseline reports; an absolute PPL is not comparable when those differ.
 
 <!-- OPTIONAL (VLM): -->
 - **Vision is untouched:** the vision encoder + projector stay **{{REST_PRECISION}}**
-  (bit-identical), so image capability equals the base model. Verified working end-to-end.
+  (bit-identical). This does not establish end-to-end image quality unless a
+  multimodal evaluation is reported below.
 - **Footprint:** ~{{WEIGHTS_GIB}} GiB of weights; fits a single ≥{{MIN_GPU}} GB GPU
   (e.g. DGX Spark, 128 GB).
-- **Provenance:** built with [mxstream](https://github.com/{{YOUR_USER}}/mxstream)
+- **Provenance:** built with [MxWave](https://github.com/kirillbilchenko/MxWave)
   `@{{COMMIT}}` from the `{{SOURCE_RELEASE}}` release.
 
 ## Serving with vLLM
@@ -125,7 +123,7 @@ docker run -d --name {{CONTAINER}} --gpus all --ipc=host -p 8000:8000 \
 ## How it was made
 
 ```bash
-mxstream-calibrate \
+mxwave-calibrate \
   --model-dir <{{SOURCE_RELEASE}}> \
   --corpus {{CALIBRATION_CORPUS}} \
   --output ./activation-stats.safetensors \
@@ -136,14 +134,13 @@ mxstream-calibrate \
   --weight-loading streaming \
   --device cuda
 
-mxstream-quantize \
+mxwave-quantize \
   --model-dir <{{SOURCE_RELEASE}}> \
   --output-dir ./{{OUTPUT_DIR}} \
   --policy {{POLICY}} \
   --method mse \
   --scale-percentile 99.5 \
   --mse-clip-depth 4 \
-  --hessian-rounding-sweeps 0 \
   --tensor-row-chunk-size 1024 \
   --activation-stats ./activation-stats.safetensors \
   --calibration-objective {{CALIBRATION_OBJECTIVE}} \
@@ -154,9 +151,9 @@ mxstream-quantize \
   --sqnr-rows 16
 ```
 
-`detect_input_format` auto-detects the source's {{SOURCE_FORMAT}}, streams each shard to
-the GPU, quantizes the Linear weights to MXFP4 (MSE-optimal, optionally rotation-folded),
-passes the {{REST_PRECISION}} remainder through, and assembles a verified, drop-in
+`detect_input_format` reads the source format from `config.json`. MxWave processes
+selected weight rows in bounded chunks, quantizes them to MXFP4, passes the
+{{REST_PRECISION}} remainder through, and assembles a verified, drop-in
 `config.json` + safetensors index.
 
 ## License

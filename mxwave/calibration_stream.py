@@ -194,9 +194,11 @@ def _new_rotary(
 ) -> torch.nn.Module:
     rotary_type = type(template)
     try:
-        rotary = rotary_type(config, device=device)
-    except TypeError:
         rotary = rotary_type(config)
+    except TypeError:
+        # Older model implementations may still require construction on the
+        # target device. Newer Transformers versions deprecate this argument.
+        rotary = rotary_type(config, device=device)
     if not isinstance(rotary, torch.nn.Module):
         raise TypeError("rotary_emb constructor did not return a torch module")
     if rotary.state_dict():

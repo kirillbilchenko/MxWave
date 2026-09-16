@@ -1,33 +1,42 @@
 # Qwen3.8-27B H64 MXFP4 reproducibility record
 
-This record freezes the procedure used for the recommended mxstream
+This record freezes the procedure used for the recommended MxWave
 `Qwen/Qwen3.8-27B` artifact: 64 real calibration sequences of 512 tokens,
 block-Hessian scale selection, and no experimental rounding or error feedback.
 It covers source acquisition, calibration, quantization, checkpoint verification,
-serving, and the paired WikiText-2 likelihood evaluation.
+serving, paired WikiText-2 likelihood, exact next-token divergence, and the
+directional GSM8K pilot.
 
 Recorded on 2026-09-15. Publishing is deliberately out of scope.
 
+The numerical replay described below was completed immediately before the
+project and Python package were renamed to MxWave. The rename changed imports,
+console commands, and generated provenance filenames; it did not change the
+quantization math. Historical benchmark JSON intentionally retains its original
+schema labels so its recorded hashes remain valid. A release made from the
+public MxWave repository should record its exact commit and repeat the payload
+checks in Sections 4–7 before publication.
+
 ## Reproduced status
 
-The procedure has been replayed on the same DGX Spark with inference and OpenWebUI
-traffic stopped:
+The numerical procedure was replayed on the same DGX Spark with inference and
+OpenWebUI traffic stopped:
 
 - All 400 replayed block-Hessian tensors were bitwise equal to the original
   calibration tensors; the maximum absolute difference was `0.0`.
 - All 18 quantized checkpoint shards, `config.json`, and
   `model.safetensors.index.json` reproduced exactly. Their hash-of-hashes was
   `e8675da3448ae399b84cff0d99cd3c246d678ba5883e91ad4e7a370a993385d7`.
-- The complete inference payload, including copied tokenizer/configuration assets
-  but excluding generated provenance files and the generated README, reproduced
-  exactly. Its hash-of-hashes was
+- The complete numerical inference payload, including copied tokenizer and
+  configuration assets but excluding generated provenance, evaluation, license,
+  and model-card files, reproduced exactly. Its hash-of-hashes was
   `bbccb79edcaadbacc2f43609c3c35b51ca07b32865a19ac6e1a4fbaa82e35a11`.
 - Calibration replay took 98.67 seconds and peaked at 8.07 GiB process RSS and
   3.28 GiB allocated CUDA memory. Quantization replay took about 235 seconds.
 
 The `.safetensors` calibration *file* is not expected to have a stable file hash:
 its metadata intentionally records elapsed time and peak memory. Likewise,
-`mxstream-manifest.json`, `mxstream-run.json`, and the generated model README can
+`mxwave-manifest.json`, `mxwave-run.json`, and the generated model README can
 change when provenance fields are added. Reproducibility is therefore checked at
 three explicit levels:
 
@@ -59,11 +68,10 @@ Transformers 5.15.1, Accelerate 1.14.0, safetensors 0.8.0, NumPy 2.2.6,
 vLLM `0.1.dev20073+g8e685d198`, compressed-tensors 0.17.0, and
 FlashInfer 0.6.17.
 
-The quantization source digest for the repository state containing this record is
-computed as follows:
+The MxWave release-candidate source digest is computed as follows:
 
 ```bash
-(find mxstream -type f -name '*.py' -print; printf '%s\n' pyproject.toml) \
+(find mxwave -type f -name '*.py' -print; printf '%s\n' pyproject.toml) \
   | LC_ALL=C sort \
   | xargs sha256sum \
   | sha256sum
@@ -72,14 +80,15 @@ computed as follows:
 Expected:
 
 ```text
-3537beb1fd3eaae60317b3ddc2921f4ba500c002d6674004e501e2fd2441bc16  -
+3aa41f8018ab6ee6365097b461eb518b2be44ccf332349a984a8f548e25dd6d3  -
 ```
 
-The final replay used the already synchronized Spark source digest
+The historical bitwise replay used the already synchronized Spark source digest
 `b707b2c6fefcf87faad43b635191c464b031a4d977203ad62ef9354405c8fc5b`.
-The only difference from the digest above was a non-numerical `OSError` guard
-around the optional Linux file-cache hint in `calibration_stream.py`; all
-quantization files and successful-path calibration math were identical.
+That digest predates the package/CLI rename and subsequent release cleanup, so it
+is expected to differ from the release-candidate digest above. The stable
+calibration-tensor and inference-payload hashes document the completed replay;
+they do not substitute for pinning the eventual public release commit.
 
 ## Resource and isolation requirements
 
@@ -93,39 +102,40 @@ quantization files and successful-path calibration math were identical.
   Do not add `--enforce-eager`.
 
 The commands below assume the existing `../local-spark` layout and SSH alias
-`spark`. Commands marked **local** run from this mxstream repository. Commands
+`spark`. Commands marked **local** run from this MxWave repository. Commands
 marked **Spark** run after `ssh spark`.
 
-## 1. Synchronize the exact mxstream source
+## 1. Synchronize the exact MxWave source
 
-From the local mxstream checkout, ensure the tree is at the intended committed
+From the local MxWave checkout, ensure the tree is at the intended committed
 baseline and verify the source digest above. Create a new destination, then copy
 only the committed runtime files to it:
 
 ```bash
 # local
-ssh spark mkdir -p /home/kirya/local-spark/deployment/mxstream-h64-repro
+ssh spark 'mkdir -p "$HOME/local-spark/deployment/mxwave-h64-repro"'
 ```
 
 ```bash
 # local
 git status --short
 git archive --format=tar HEAD \
-  pyproject.toml mxstream scripts/evaluate_api_perplexity.py \
-  | ssh spark 'tar -xf - -C /home/kirya/local-spark/deployment/mxstream-h64-repro'
+  pyproject.toml mxwave \
+  scripts/evaluate_api_perplexity.py scripts/evaluate_next_token_kl.py \
+  | ssh spark 'tar -xf - -C "$HOME/local-spark/deployment/mxwave-h64-repro"'
 ```
 
 On Spark, define the paths used by all later commands:
 
 ```bash
 # Spark
-export SPARK_ROOT=/home/kirya/local-spark
+export SPARK_ROOT="${SPARK_ROOT:-$HOME/local-spark}"
 export IMAGE='vllm/vllm-openai:qwen38-flash-next@sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8'
 export SOURCE="$SPARK_ROOT/models/qwen3.8-27b-bf16/huggingface"
-export CODE_ROOT="$SPARK_ROOT/deployment/mxstream-h64-repro"
+export CODE_ROOT="$SPARK_ROOT/deployment/mxwave-h64-repro"
 export CAL_ROOT="$SPARK_ROOT/calibration"
 export REPRO_ROOT="$SPARK_ROOT/repro/qwen3.8-27b-h64"
-export CAL_CORPUS="$REPRO_ROOT/mxstream-pileval-rows-0-99.json"
+export CAL_CORPUS="$REPRO_ROOT/mxwave-pileval-rows-0-99.json"
 export STATS="$REPRO_ROOT/qwen3.8-27b-64x512.safetensors"
 export OUTPUT="$REPRO_ROOT/model"
 export EVAL_ROOT="$REPRO_ROOT/eval"
@@ -217,15 +227,15 @@ the corpus before weights are traversed:
 docker run --rm --gpus all --ipc host --network none \
   --user 1000:1000 --workdir /tmp --entrypoint python3 \
   -e HF_HUB_OFFLINE=1 \
-  -e PYTHONPATH=/opt/mxstream \
+  -e PYTHONPATH=/opt/mxwave \
   -e XDG_CACHE_HOME=/tmp/.cache \
   -v "$SOURCE:/input:ro" \
   -v "$REPRO_ROOT:/repro" \
-  -v "$CODE_ROOT:/opt/mxstream:ro" \
+  -v "$CODE_ROOT:/opt/mxwave:ro" \
   "$IMAGE" \
-  -m mxstream.calibration_cli \
+  -m mxwave.calibration_cli \
   --model-dir /input \
-  --corpus /repro/mxstream-pileval-rows-0-99.json \
+  --corpus /repro/mxwave-pileval-rows-0-99.json \
   --output /repro/qwen3.8-27b-64x512.safetensors \
   --policy qwen3.8-27b-compatible \
   --statistics block-hessian \
@@ -268,15 +278,15 @@ Run the same command without `--dry-run`:
 docker run --rm --gpus all --ipc host --network none \
   --user 1000:1000 --workdir /tmp --entrypoint python3 \
   -e HF_HUB_OFFLINE=1 \
-  -e PYTHONPATH=/opt/mxstream \
+  -e PYTHONPATH=/opt/mxwave \
   -e XDG_CACHE_HOME=/tmp/.cache \
   -v "$SOURCE:/input:ro" \
   -v "$REPRO_ROOT:/repro" \
-  -v "$CODE_ROOT:/opt/mxstream:ro" \
+  -v "$CODE_ROOT:/opt/mxwave:ro" \
   "$IMAGE" \
-  -m mxstream.calibration_cli \
+  -m mxwave.calibration_cli \
   --model-dir /input \
-  --corpus /repro/mxstream-pileval-rows-0-99.json \
+  --corpus /repro/mxwave-pileval-rows-0-99.json \
   --output /repro/qwen3.8-27b-64x512.safetensors \
   --policy qwen3.8-27b-compatible \
   --statistics block-hessian \
@@ -352,8 +362,9 @@ maximum absolute difference: 0.0
 
 ## 6. Dry-run and execute quantization
 
-The quality configuration is intentionally scale-only. In particular,
-`--hessian-rounding-sweeps 0` is explicit and no error-feedback flag is present.
+The quality configuration is intentionally scale-only: the block Hessian
+selects the shared exponent for each 32-value block, followed by ordinary
+nearest-E2M1 code assignment.
 
 First run the plan:
 
@@ -362,21 +373,20 @@ First run the plan:
 docker run --rm --gpus all --ipc host --network none \
   --user 1000:1000 --workdir /tmp --entrypoint python3 \
   -e HF_HUB_OFFLINE=1 \
-  -e PYTHONPATH=/opt/mxstream \
+  -e PYTHONPATH=/opt/mxwave \
   -e XDG_CACHE_HOME=/tmp/.cache \
   -v "$SOURCE:/input:ro" \
   -v "$OUTPUT:/output" \
   -v "$REPRO_ROOT:/repro:ro" \
-  -v "$CODE_ROOT:/opt/mxstream:ro" \
+  -v "$CODE_ROOT:/opt/mxwave:ro" \
   "$IMAGE" \
-  -m mxstream.cli \
+  -m mxwave.cli \
   --model-dir /input \
   --output-dir /output \
   --policy qwen3.8-27b-compatible \
   --method mse \
   --scale-percentile 99.5 \
   --mse-clip-depth 4 \
-  --hessian-rounding-sweeps 0 \
   --tensor-row-chunk-size 1024 \
   --activation-stats /repro/qwen3.8-27b-64x512.safetensors \
   --calibration-objective block-hessian \
@@ -399,21 +409,20 @@ Then execute the identical command without `--dry-run`:
 docker run --rm --gpus all --ipc host --network none \
   --user 1000:1000 --workdir /tmp --entrypoint python3 \
   -e HF_HUB_OFFLINE=1 \
-  -e PYTHONPATH=/opt/mxstream \
+  -e PYTHONPATH=/opt/mxwave \
   -e XDG_CACHE_HOME=/tmp/.cache \
   -v "$SOURCE:/input:ro" \
   -v "$OUTPUT:/output" \
   -v "$REPRO_ROOT:/repro:ro" \
-  -v "$CODE_ROOT:/opt/mxstream:ro" \
+  -v "$CODE_ROOT:/opt/mxwave:ro" \
   "$IMAGE" \
-  -m mxstream.cli \
+  -m mxwave.cli \
   --model-dir /input \
   --output-dir /output \
   --policy qwen3.8-27b-compatible \
   --method mse \
   --scale-percentile 99.5 \
   --mse-clip-depth 4 \
-  --hessian-rounding-sweeps 0 \
   --tensor-row-chunk-size 1024 \
   --activation-stats /repro/qwen3.8-27b-64x512.safetensors \
   --calibration-objective block-hessian \
@@ -438,8 +447,6 @@ jq '{
   method,
   scale_percentile,
   mse_clip_depth,
-  hessian_rounding_sweeps,
-  hessian_error_feedback,
   tensor_row_chunk_size,
   weight_scale_selection,
   source_tensors,
@@ -450,7 +457,7 @@ jq '{
   activation_calibration,
   sqnr_db: (.sqnr_db | del(.per_tensor)),
   calibration_weighted_sqnr_db: (.calibration_weighted_sqnr_db | del(.per_tensor))
-}' "$OUTPUT/mxstream-manifest.json"
+}' "$OUTPUT/mxwave-manifest.json"
 ```
 
 Expected key values:
@@ -486,9 +493,11 @@ Verify all inference files while excluding generated provenance and prose:
 # Spark
 cd "$OUTPUT"
 find . -maxdepth 1 -type f \
-  ! -name 'mxstream-manifest.json' \
-  ! -name 'mxstream-run.json' \
+  ! -name 'mxwave-manifest.json' \
+  ! -name 'mxwave-run.json' \
   ! -name 'README.md' \
+  ! -name 'REPRODUCIBILITY.md' \
+  ! -name 'LICENSE' \
   -print0 \
   | LC_ALL=C sort -z \
   | xargs -0 sha256sum \
@@ -569,12 +578,12 @@ ordered two-newline join.
 ## 9. Serve one model at a time with the evaluation configuration
 
 Use a dedicated container and cache. The API key file is mounted, never printed.
-For mxstream and AMD MXFP4, run:
+For MxWave and AMD MXFP4, run:
 
 ```bash
 # Spark; set MODEL_PATH and MODEL_ALIAS before each run
 export MODEL_PATH="$OUTPUT"
-export MODEL_ALIAS=qwen3.8-27b-mxstream-hessian-d4
+export MODEL_ALIAS=qwen3.8-27b-mxwave-hessian64-d4
 export MODEL_CACHE="$EVAL_ROOT/cache-$MODEL_ALIAS"
 mkdir -p "$MODEL_CACHE"
 
@@ -713,13 +722,13 @@ after it stops:
 docker stop qwen27-ppl
 ```
 
-Repeat Sections 9 and 10 for mxstream, AMD, and BF16. The stable expected
+Repeat Sections 9 and 10 for MxWave, AMD, and BF16. The stable expected
 aggregate results are:
 
 | Artifact | Prompt PPL | Mean NLL | Scored tokens |
 |---|---:|---:|---:|
 | BF16 | 7.980864117 | 2.077046691 | 297,199 |
-| mxstream H64 scale-only | 8.119444612 | 2.094261754 | 297,199 |
+| MxWave H64 scale-only | 8.119444612 | 2.094261754 | 297,199 |
 | AMD Quark-AWQ MXFP4 | 8.187543970 | 2.102613971 | 297,199 |
 
 Each report must also contain 316 chunks, 1,294,336 scored characters, 297,515
@@ -732,7 +741,7 @@ are not rerun pass criteria.
 ## 11. Recompute the paired comparison
 
 The following command validates pairing and repeats the fixed-seed, 100,000
-sample cluster bootstrap used in the benchmark. Pass mxstream first and AMD
+sample cluster bootstrap used in the benchmark. Pass MxWave first and AMD
 second:
 
 ```bash
@@ -740,7 +749,7 @@ second:
 docker run --rm -i --network none --entrypoint python3 \
   -v "$EVAL_ROOT:/eval:ro" \
   "$IMAGE" - \
-  /eval/qwen3.8-27b-mxstream-hessian-d4-4k316.json \
+  /eval/qwen3.8-27b-mxwave-hessian64-d4-4k316.json \
   /eval/qwen3.8-27b-amd-awq-mxfp4-4k316.json <<'PY'
 import json
 import math
@@ -817,7 +826,7 @@ print(
 PY
 ```
 
-Expected mxstream-versus-AMD result:
+Expected MxWave-versus-AMD result:
 
 ```text
 relative_percent: -0.831743%
@@ -828,9 +837,193 @@ largest_favorable_window_one_based: 170
 relative_without_largest_percent: -0.684463%
 ```
 
-Negative relative PPL favors mxstream. The result supports this particular
+Negative relative PPL favors MxWave. The result supports this particular
 deterministic likelihood protocol; it is not a claim of universal downstream
 task superiority.
+
+## 12. Run the exact next-token divergence evaluation
+
+This evaluation compares complete next-token distributions rather than only the
+probability assigned to the observed corpus token. It uses 128 evenly spaced
+WikiText windows, the first 512 tokens of each selected window, and all 248,320
+output token IDs. Raw matrices are about 122 MiB per model.
+
+Prepare the immutable context manifest with the BF16 tokenizer:
+
+```bash
+# Spark
+export KL_ROOT="$REPRO_ROOT/next-token-kl"
+mkdir -p "$KL_ROOT"
+cp "$CODE_ROOT/scripts/evaluate_next_token_kl.py" "$KL_ROOT/"
+
+docker run --rm --network none --entrypoint python3 \
+  -e HF_HUB_OFFLINE=1 \
+  -v "$SOURCE:/model:ro" \
+  -v "$EVAL_ROOT/wikitext-2-raw-v1-test.txt:/data/wikitext.txt:ro" \
+  -v "$KL_ROOT:/run" \
+  "$IMAGE" \
+  /run/evaluate_next_token_kl.py prepare \
+  --model /model \
+  --corpus /data/wikitext.txt \
+  --output /run/contexts.json \
+  --num-contexts 128 \
+  --context-tokens 512 \
+  --chunk-characters 4096
+```
+
+Expected context contract:
+
+```text
+available non-empty chunks: 316
+context manifest SHA-256: 9bac968222690a17af2c53983c900482fd0db4061df5a2b1403db9a4c786e7bf
+selected contexts: 128
+selected-context token digest: 9f5d0489d449bd0126bfc7f0327ecae7dfd7142b8167cc526b2f8c6722d59a76
+```
+
+Use this bounded helper to load one model at a time. The collector validates
+complete token-ID coverage, the single repeated sampled-token entry returned by
+this vLLM build, finite values, and log-probability normalization. Each model has
+a 30-minute hard stop and a 110 GiB container memory limit.
+
+```bash
+# Spark
+collect_kl() {
+  model_path=$1
+  model_label=$2
+  linear_backend=$3
+  cache_root="$KL_ROOT/cache-$model_label"
+  mkdir -p "$cache_root/runtime" "$cache_root/engine"
+  backend_args=()
+  if [ -n "$linear_backend" ]; then
+    backend_args=(--linear-backend "$linear_backend")
+  fi
+
+  timeout --signal=TERM --kill-after=60s 1800s \
+    docker run --rm --gpus all --ipc host --shm-size 16g \
+    --memory 110g --memory-swap 110g \
+    --entrypoint python3 \
+    -e HF_HUB_OFFLINE=1 \
+    -e VLLM_TEST_FORCE_FP8_MARLIN=1 \
+    -e TORCHINDUCTOR_CACHE_DIR=/cache/torchinductor \
+    -e TRITON_CACHE_DIR=/cache/triton \
+    -e FLASHINFER_WORKSPACE_BASE=/cache/flashinfer \
+    -v "$model_path:/model:ro" \
+    -v "$cache_root/runtime:/cache" \
+    -v "$cache_root/engine:/root/.cache/vllm" \
+    -v "$KL_ROOT:/run" \
+    "$IMAGE" \
+    /run/evaluate_next_token_kl.py collect \
+    --model /model \
+    --model-label "$model_label" \
+    --contexts /run/contexts.json \
+    --output "/run/$model_label-logprobs.safetensors" \
+    --runtime-image "$IMAGE" \
+    --max-model-len 1024 \
+    --gpu-memory-utilization 0.65 \
+    "${backend_args[@]}"
+}
+
+collect_kl "$OUTPUT" mxwave-h64 marlin
+collect_kl "$SOURCE" bf16 ''
+collect_kl \
+  "$SPARK_ROOT/models/qwen3.8-27b-amd-awq-mxfp4/huggingface" \
+  amd-quark marlin
+```
+
+Compare the stored distributions on CPU:
+
+```bash
+# Spark
+docker run --rm --network none --entrypoint python3 \
+  -v "$KL_ROOT:/run" \
+  "$IMAGE" \
+  /run/evaluate_next_token_kl.py compare \
+  --reference /run/bf16-logprobs.safetensors \
+  --contexts /run/contexts.json \
+  --candidate mxwave-h64=/run/mxwave-h64-logprobs.safetensors \
+  --candidate amd-quark=/run/amd-quark-logprobs.safetensors \
+  --output /run/next-token-divergence.json \
+  --bootstrap-iterations 10000 \
+  --bootstrap-seed 20260916
+```
+
+Historical artifact identifiers:
+
+| File | SHA-256 |
+|---|---|
+| BF16 log probabilities | `f1f923777331ba518b78bdaefd5f840032e6eec08f7791683ab3e04564137462` |
+| MxWave H64 log probabilities | `6be635e3dc99499f3ab4118c0dd6f964a4b585fa2cf384aa7d457ffc4dd35529` |
+| AMD Quark log probabilities | `6ec912f6dc6edd38cc4cd3a6192d06f26ba8124b8af7fbf3f72425ee3c53cf4a` |
+| Compact comparison report | `94692c3b1b9b975f6acf4cae06d9d3322570898f22e092dfa5dd37e075d15175` |
+
+Expected aggregate result:
+
+| Metric | MxWave H64 | AMD Quark |
+|---|---:|---:|
+| Mean forward KL from BF16 | 0.049937061 | 0.056735282 |
+| Forward-KL p95 | 0.175240615 | 0.232539706 |
+| Mean reverse KL | 0.044734070 | 0.048564505 |
+| Mean Jensen-Shannon divergence | 0.010945828 | 0.012083333 |
+| Mean total variation | 0.078565230 | 0.082361702 |
+| BF16 top-1 agreement | 93.7500% | 91.4063% |
+
+H64 has lower forward KL on 70 of 128 contexts and a 0.006798-nat lower
+mean. The paired bootstrap interval for `H64 - AMD` is
+`[-0.024242, +0.009835]` nats, so this evaluation favors H64 on aggregate but
+does not establish a statistically conclusive advantage at 128 contexts.
+
+## 13. Reproduce the GSM8K directional pilot
+
+This run is intentionally labeled a pilot: it uses the first 100 GSM8K test
+examples, sampled decoding, and 16 concurrent requests. It is useful for finding
+large functional regressions but is not precise enough to rank a one-point gap.
+
+After serving one model at a time with thinking disabled, run from the sibling
+`local-spark` checkout:
+
+```bash
+# local, from ../local-spark; set MODEL_ALIAS for each served model
+export MODEL_ALIAS=qwen3.8-27b-mxwave-hessian64-d4
+export GSM_OUTPUT="$PWD/runtime/benchmarks/gsm8k-manual/$MODEL_ALIAS"
+mkdir -p "$GSM_OUTPUT"
+
+OPENAI_API_KEY="$(sed -n 's/^LLM_API_KEY=//p' .env)" \
+uvx --from 'lm-eval[api]==0.4.13' lm-eval run \
+  --model local-completions \
+  --model_args \
+  "model=$MODEL_ALIAS,base_url=http://127.0.0.1:18000/v1/completions,tokenizer_backend=none,num_concurrent=16,max_retries=5,timeout=900,tokenized_requests=False,max_length=16384,seed=1234" \
+  --include_path evals/lm_eval \
+  --tasks gsm8k_nothink \
+  --gen_kwargs \
+  max_gen_toks=1024 \
+  temperature=0.7 \
+  top_p=0.8 \
+  top_k=20 \
+  min_p=0.0 \
+  presence_penalty=1.5 \
+  repetition_penalty=1.0 \
+  do_sample=True \
+  --seed '0,1234,1234,1234' \
+  --cache_requests true \
+  --limit 100 \
+  --output_path "$GSM_OUTPUT" \
+  --log_samples
+```
+
+Repeat after changing `MODEL_ALIAS` to the BF16 and AMD served names. The task
+hash must be
+`567b35835d22441f13885c7e064da1b996f9d395724203056cebe01dcaa6e81c`.
+
+| Model | Flexible numeric match | Strict `####` match | Raw report SHA-256 |
+|---|---:|---:|---|
+| BF16 | 88% | 85% | `3bda14da0132abc55b64c3f00ce4ef7641e1f432afe315593e5632abe177784d` |
+| MxWave H64 | 92% | 91% | `1c5b238ff5cdb1629360a1956794babdc88fd6ddbea28a117d91ba099c4e73de` |
+| AMD Quark | 93% | 93% | `331f88ddead14e5270bc22b4a5990a605905c52d4013321a996a61b31e368a63` |
+
+The H64-versus-AMD difference is smaller than the reported standard errors.
+Paired trace inspection found one BF16-and-AMD-correct/H64-wrong reasoning case
+and one H64 strict-format-only failure. Treat the result as directional and use
+Sections 10–12 as the primary fidelity evidence.
 
 ## Recorded quantization configuration
 
@@ -856,9 +1049,6 @@ quantization:
   method: mse
   scale_percentile: 99.5
   mse_clip_depth: 4
-  hessian_rounding_sweeps: 0
-  hessian_error_feedback: false
-  feedback_selection_stats: null
   tensor_row_chunk_size: 1024
   calibration_objective: block-hessian
   device: cuda

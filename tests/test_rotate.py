@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mxstream.rotate import apply_weight_rotation, hadamard_matrix, random_orthogonal
+from mxwave.rotate import apply_weight_rotation, hadamard_matrix, random_orthogonal
 
 
 def test_hadamard_is_orthogonal():
@@ -40,6 +40,6 @@ def test_apply_weight_rotation_preserves_product():
 def test_fold_rotation_equals_apply():
     W = torch.randn(8, 16)
     R = hadamard_matrix(16)
-    from mxstream.rotate import fold_rotation
+    from mxwave.rotate import fold_rotation
 
     assert torch.allclose(fold_rotation(W, R), apply_weight_rotation(W, R))

@@ -1,0 +1,55 @@
+{
+  "experiment": "activation-weighted-static-low-rank-recovery",
+  "model": "Qwen/Qwen3.8-27B",
+  "scope": {
+    "linear_attn_out_proj": 48,
+    "self_attn_o_proj": 16,
+    "total_modules": 64
+  },
+  "calibration": {
+    "training_sequences": 64,
+    "training_sequence_length": 512,
+    "training_sequence_offset": 0,
+    "selection_sequences": 32,
+    "selection_sequence_length": 512,
+    "selection_sequence_offset": 64,
+    "objective": "block-hessian"
+  },
+  "reference": {
+    "mxfp4_selection_loss": 412.76303822384216,
+    "channelwise_fp8_selection_loss": 23.121873035794124,
+    "channelwise_fp8_recovery": 0.943982694925181
+  },
+  "candidates": {
+    "rank_4_bf16": {
+      "adapter_tensor_bytes": 5767168,
+      "training_loss": 373.57925481838174,
+      "training_recovery": 0.09347868924952751,
+      "selection_loss": 359.2581430731807,
+      "selection_recovery": 0.12962617820844136,
+      "selection_recovery_vs_fp8": 0.1373183840183801
+    },
+    "rank_8_bf16": {
+      "adapter_tensor_bytes": 11534336,
+      "training_loss": 364.33228707290255,
+      "training_recovery": 0.1159172299687502,
+      "selection_loss": 348.3504848713055,
+      "selection_recovery": 0.15605213497242842,
+      "selection_recovery_vs_fp8": 0.16531249546348614
+    }
+  },
+  "gate": {
+    "maximum_adapter_bytes": 262144000,
+    "minimum_heldout_recovery": 0.5,
+    "minimum_fp8_recovery_ratio": 0.75,
+    "adapter_bytes_passed": true,
+    "heldout_recovery_passed": false,
+    "fp8_recovery_ratio_passed": false,
+    "passed": false
+  },
+  "decision": "stop-before-serving",
+  "ppl64_run": false,
+  "adapter_emitted": false,
+  "elapsed_seconds": 10.142769872996723,
+  "raw_report_sha256": "c76defeaefbb894f5585d6ce8d7a40c4731ffffecfe30031d95fcaf5d838de09"
+}

@@ -1,0 +1,96 @@
+{
+  "format": "mxstream-paired-ppl-experiment-summary-v1",
+  "model": "Qwen/Qwen3.8-27B",
+  "candidate": {
+    "description": "H64 MXFP4 with linear-attention out_proj and full-attention o_proj replaced by channel-wise FP8 E4M3 weights",
+    "mxfp4_modules": 336,
+    "fp8_attention_modules": 64,
+    "checkpoint_directory_bytes": 20801137092,
+    "tensor_data_bytes": 20777657824,
+    "vllm_loaded_model_gib": 18.95,
+    "perplexity": 8.14851830029964,
+    "total_negative_log_likelihood": 128823.91966358521,
+    "evaluation_elapsed_seconds": 89.57181468899944,
+    "raw_report_sha256": "4988a88bbe1891e378071432fd9d10932ed95637d9d3a558b1209a494fc84187",
+    "manifest_sha256": "8a22ddd544d5082f75247fab03b356426cc538185ef15eaada756ddf31c49232"
+  },
+  "baseline": {
+    "description": "mxstream 64x512 block-Hessian scale-only H64",
+    "checkpoint_directory_bytes": 19856092425,
+    "perplexity": 8.165108133489403,
+    "total_negative_log_likelihood": 128948.8151099571,
+    "evaluation_elapsed_seconds": 84.93853556500017
+  },
+  "selective_bf16_reference": {
+    "description": "H64 with the same 64 output projections in BF16",
+    "checkpoint_directory_bytes": 22813055677,
+    "perplexity": 8.139823693357755,
+    "total_negative_log_likelihood": 128758.36130607947,
+    "evaluation_elapsed_seconds": 85.80223291300354
+  },
+  "bf16_attention_upper_bound": {
+    "description": "H64 MLP-only quantization with every attention projection in BF16",
+    "checkpoint_directory_bytes": 30451865541,
+    "perplexity": 8.094389898829588,
+    "total_negative_log_likelihood": 128414.64207105577,
+    "evaluation_elapsed_seconds": 80.87448079200112
+  },
+  "evaluation": {
+    "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+    "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+    "dataset_sha256": "5f1bea067869d04849c0f975a2b29c4ff47d867f484f5010ea5e861eab246d91",
+    "chunk_characters": 4096,
+    "num_chunks": 64,
+    "scored_tokens": 61408,
+    "pairing_validated": true,
+    "relative_ppl_percent_vs_h64": -0.20317958952336124,
+    "paired_95_percent_ci_vs_h64": [
+      -0.3959954997559956,
+      -0.014098530025442056
+    ],
+    "candidate_wins_vs_h64": 41,
+    "candidate_losses_vs_h64": 23,
+    "relative_ppl_percent_vs_selective_bf16": 0.10681566664620945,
+    "paired_95_percent_ci_vs_selective_bf16": [
+      0.04666337371146523,
+      0.1646459406154871
+    ],
+    "candidate_wins_vs_selective_bf16": 20,
+    "candidate_losses_vs_selective_bf16": 44,
+    "relative_ppl_percent_vs_bf16_attention": 0.6687150254261809,
+    "paired_95_percent_ci_vs_bf16_attention": [
+      0.40365514657982215,
+      0.9369617674542796
+    ],
+    "recovered_bf16_attention_ppl_gain_percent": 23.45906012723108,
+    "bootstrap_samples": 100000,
+    "bootstrap_seed": 20260915
+  },
+  "size_tradeoff": {
+    "directory_premium_bytes_vs_h64": 945044667,
+    "directory_saving_bytes_vs_selective_bf16": 2011918585,
+    "ppl_gain_per_added_decimal_gb_vs_h64_percent": 0.2154324092407099,
+    "quality_per_added_gb_ratio_vs_selective_bf16": 2.050777870062207
+  },
+  "runtime": {
+    "vllm_version": "0.1.dev20073+g8e685d198",
+    "required_environment": {
+      "VLLM_TEST_FORCE_FP8_MARLIN": "1"
+    },
+    "kernel": "weight-only FP8 Marlin fallback",
+    "native_fp8_kernel": false,
+    "performance_warning": "vLLM warns that the forced FP8 Marlin fallback may degrade compute-heavy performance"
+  },
+  "promotion_gate": {
+    "maximum_perplexity": 8.1006,
+    "requires_paired_ci_upper_below_zero": true,
+    "perplexity_condition_passed": false,
+    "paired_ci_condition_passed": true
+  },
+  "follow_up": {
+    "full_316_window_ppl_run": "not_run_gate_failed",
+    "gsm8k_5shot": "not_run_gate_failed"
+  },
+  "decision": "reject_release_promotion_but_retain_as_pareto_signal"
+}

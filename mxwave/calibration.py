@@ -23,8 +23,11 @@ from .core import BLOCK_SIZE
 
 CalibrationObjective = Literal["mean-abs", "rms", "block-hessian"]
 
-_FORMAT = "mxstream-activation-stats"
+_FORMAT = "mxwave-activation-stats"
 _FORMAT_VERSION = "1"
+_SUPPORTED_FORMATS: frozenset[str] = frozenset(
+    {_FORMAT, "mxstream-activation-stats"}
+)
 _OBJECTIVES: frozenset[str] = frozenset({"mean-abs", "rms", "block-hessian"})
 _KEY_SEPARATOR = "::"
 
@@ -351,8 +354,12 @@ def load_calibration_data(
     with safe_open(str(source), framework="pt", device="cpu") as artifact:
         raw_metadata = artifact.metadata()
         metadata = dict(raw_metadata) if raw_metadata is not None else {}
-        if metadata.get("format") != _FORMAT or metadata.get("format_version") != _FORMAT_VERSION:
-            raise ValueError("File is not an mxstream activation-stats v1 artifact")
+        artifact_format = metadata.get("format")
+        if (
+            artifact_format not in _SUPPORTED_FORMATS
+            or metadata.get("format_version") != _FORMAT_VERSION
+        ):
+            raise ValueError("File is not a supported MxWave activation-stats v1 artifact")
         if objective not in _parse_objectives(metadata):
             raise ValueError(f"Calibration artifact does not contain objective {objective!r}")
         if metadata.get("policy") != expected_policy:

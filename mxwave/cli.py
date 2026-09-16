@@ -10,10 +10,10 @@ from .engine import QuantizeConfig, plan_model, quantize_model
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the ``mxstream-quantize`` argument parser."""
+    """Build the ``mxwave-quantize`` argument parser."""
     parser = argparse.ArgumentParser(
-        prog="mxstream-quantize",
-        description="Stream a BF16/FP16 checkpoint into vLLM MXFP4 shards.",
+        prog="mxwave-quantize",
+        description="Convert a floating-point checkpoint into vLLM MXFP4 shards.",
     )
     parser.add_argument("--model-dir", "--model_dir", required=True, help="Input model")
     parser.add_argument("--output-dir", "--output_dir", required=True, help="Output model")
@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--method",
         choices=("rtn", "mse"),
         default="mse",
-        help="Reference compressed-tensors RTN or mxstream MSE scale search",
+        help="Reference compressed-tensors RTN or MxWave MSE scale search",
     )
     parser.add_argument(
         "--scale-percentile",
@@ -48,40 +48,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exponent steps below the MSE anchor to evaluate (0-8)",
     )
     parser.add_argument(
-        "--hessian-rounding-sweeps",
-        type=int,
-        default=0,
-        help="Block-Hessian coordinate-refinement passes after scale selection (0-4)",
-    )
-    parser.add_argument(
-        "--hessian-error-feedback",
-        action="store_true",
-        help="Experimental block-local GPTQ-style feedback on a fixed MXFP4 grid",
-    )
-    parser.add_argument(
-        "--hessian-feedback-damp-percent",
-        type=float,
-        default=1.0,
-        help="Average-Hessian-diagonal damping percentage for error feedback",
-    )
-    parser.add_argument(
-        "--no-hessian-feedback-activation-order",
-        action="store_false",
-        dest="hessian_feedback_activation_order",
-        help="Use original block-column order instead of static activation ordering",
-    )
-    parser.add_argument(
-        "--hessian-feedback-max-mse-ratio",
-        type=float,
-        default=None,
-        help="Optional 1-4x ordinary-MSE trust region for accepting feedback blocks",
-    )
-    parser.add_argument(
-        "--feedback-selection-stats",
-        default=None,
-        help="Independent block-Hessian stats used only to accept feedback blocks",
-    )
-    parser.add_argument(
         "--tensor-row-chunk-size",
         type=int,
         default=1024,
@@ -90,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--activation-stats",
         default=None,
-        help="Module-keyed calibration safetensors from mxstream-calibrate",
+        help="Module-keyed calibration safetensors from mxwave-calibrate",
     )
     parser.add_argument(
         "--calibration-objective",
@@ -150,12 +116,6 @@ def main(argv: list[str] | None = None) -> int:
         method=args.method,
         scale_percentile=args.scale_percentile,
         mse_clip_depth=args.mse_clip_depth,
-        hessian_rounding_sweeps=args.hessian_rounding_sweeps,
-        hessian_error_feedback=args.hessian_error_feedback,
-        hessian_feedback_damp_percent=args.hessian_feedback_damp_percent,
-        hessian_feedback_activation_order=args.hessian_feedback_activation_order,
-        hessian_feedback_max_mse_ratio=args.hessian_feedback_max_mse_ratio,
-        feedback_selection_stats=args.feedback_selection_stats,
         tensor_row_chunk_size=args.tensor_row_chunk_size,
         activation_stats=args.activation_stats,
         calibration_objective=args.calibration_objective,
@@ -172,9 +132,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         processed = quantize_model(config)
     except (FileNotFoundError, FileExistsError, OSError, RuntimeError, ValueError) as exc:
-        print(f"mxstream: error: {exc}", file=sys.stderr)
+        print(f"mxwave: error: {exc}", file=sys.stderr)
         return 1
-    print(f"[mxstream] complete: {processed} shard(s) -> {args.output_dir}")
+    print(f"[mxwave] complete: {processed} shard(s) -> {args.output_dir}")
     return 0
 
 

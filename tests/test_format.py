@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from mxstream.format import detect_input_format, scale_suffix_for
+from mxwave.format import detect_input_format, scale_suffix_for
 
 
 def _write_config(tmp_path: Path, quantization_config: dict) -> Path:

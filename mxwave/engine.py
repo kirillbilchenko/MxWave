@@ -58,12 +58,6 @@ class QuantizeConfig:
     method: QuantizationMethod = "mse"
     scale_percentile: float = 99.5
     mse_clip_depth: int = 1
-    hessian_rounding_sweeps: int = 0
-    hessian_error_feedback: bool = False
-    hessian_feedback_damp_percent: float = 1.0
-    hessian_feedback_activation_order: bool = True
-    hessian_feedback_max_mse_ratio: float | None = None
-    feedback_selection_stats: str | Path | None = None
     tensor_row_chunk_size: int = 1024
     activation_stats: str | Path | None = None
     calibration_objective: CalibrationObjective = "mean-abs"
@@ -216,51 +210,10 @@ def _validate_run_options(cfg: QuantizeConfig) -> None:
         raise ValueError("sqnr_rows must be positive")
     if not isinstance(cfg.mse_clip_depth, int) or not 0 <= cfg.mse_clip_depth <= 8:
         raise ValueError("mse_clip_depth must be an integer in [0, 8]")
-    if not isinstance(cfg.hessian_rounding_sweeps, int) or not (
-        0 <= cfg.hessian_rounding_sweeps <= 4
-    ):
-        raise ValueError("hessian_rounding_sweeps must be an integer in [0, 4]")
-    if not isinstance(cfg.hessian_error_feedback, bool):
-        raise TypeError("hessian_error_feedback must be a boolean")
-    if not isinstance(cfg.hessian_feedback_activation_order, bool):
-        raise TypeError("hessian_feedback_activation_order must be a boolean")
-    if not math.isfinite(cfg.hessian_feedback_damp_percent) or not (
-        0.0 < cfg.hessian_feedback_damp_percent <= 100.0
-    ):
-        raise ValueError("hessian_feedback_damp_percent must be in (0, 100]")
-    if cfg.hessian_feedback_max_mse_ratio is not None and (
-        not math.isfinite(cfg.hessian_feedback_max_mse_ratio)
-        or not 1.0 <= cfg.hessian_feedback_max_mse_ratio <= 4.0
-    ):
-        raise ValueError("hessian_feedback_max_mse_ratio must be in [1, 4] or None")
     if not isinstance(cfg.tensor_row_chunk_size, int) or cfg.tensor_row_chunk_size <= 0:
         raise ValueError("tensor_row_chunk_size must be a positive integer")
     if cfg.activation_stats is not None and cfg.method != "mse":
         raise ValueError("Activation calibration can only be used with method='mse'")
-    if cfg.hessian_rounding_sweeps and (
-        cfg.method != "mse"
-        or cfg.activation_stats is None
-        or cfg.calibration_objective != "block-hessian"
-    ):
-        raise ValueError(
-            "Hessian rounding requires method='mse', --activation-stats, and "
-            "calibration_objective='block-hessian'"
-        )
-    if cfg.hessian_error_feedback and (
-        cfg.method != "mse"
-        or cfg.activation_stats is None
-        or cfg.calibration_objective != "block-hessian"
-    ):
-        raise ValueError(
-            "Hessian error feedback requires method='mse', --activation-stats, and "
-            "calibration_objective='block-hessian'"
-        )
-    if cfg.hessian_error_feedback and cfg.hessian_rounding_sweeps:
-        raise ValueError(
-            "Hessian coordinate rounding and error feedback are mutually exclusive"
-        )
-    if cfg.feedback_selection_stats is not None and not cfg.hessian_error_feedback:
-        raise ValueError("feedback_selection_stats requires Hessian error feedback")
 
 
 def plan_model(cfg: QuantizeConfig) -> ModelPlan:
@@ -363,10 +316,8 @@ def quantize_shard(
     target_names: frozenset[str] | None = None,
     gamma_by_target: Mapping[str, torch.Tensor] | None = None,
     hessian_by_target: Mapping[str, torch.Tensor] | None = None,
-    feedback_selection_hessian_by_target: Mapping[str, torch.Tensor] | None = None,
     sqnr_results: dict[str, float] | None = None,
     calibration_weighted_sqnr_results: dict[str, float] | None = None,
-    feedback_selection_weighted_sqnr_results: dict[str, float] | None = None,
 ) -> dict[str, torch.Tensor]:
     """Quantize selected weights in bounded row chunks and preserve all other tensors."""
     infos = shard_tensor_info(shard)
@@ -380,18 +331,8 @@ def quantize_shard(
         if _should_quantize(name, target_names):
             gamma = gamma_by_target.get(name) if gamma_by_target is not None else None
             hessian = hessian_by_target.get(name) if hessian_by_target is not None else None
-            feedback_selection_hessian = (
-                feedback_selection_hessian_by_target.get(name)
-                if feedback_selection_hessian_by_target is not None
-                else None
-            )
             gamma_device = gamma.to(device=device) if gamma is not None else None
             hessian_device = hessian.to(device=device) if hessian is not None else None
-            feedback_selection_hessian_device = (
-                feedback_selection_hessian.to(device=device)
-                if feedback_selection_hessian is not None
-                else None
-            )
             total_rows, columns = info.shape
             packed_parts: list[torch.Tensor] = []
             scale_parts: list[torch.Tensor] = []
@@ -415,14 +356,6 @@ def quantize_shard(
                     hessian=hessian_device,
                     method=cfg.method,
                     mse_clip_depth=cfg.mse_clip_depth,
-                    hessian_rounding_sweeps=cfg.hessian_rounding_sweeps,
-                    hessian_error_feedback=cfg.hessian_error_feedback,
-                    hessian_feedback_damp_percent=cfg.hessian_feedback_damp_percent,
-                    hessian_feedback_activation_order=(
-                        cfg.hessian_feedback_activation_order
-                    ),
-                    hessian_feedback_max_mse_ratio=cfg.hessian_feedback_max_mse_ratio,
-                    feedback_selection_hessian=feedback_selection_hessian_device,
                 )
                 packed_parts.append(packed_chunk.cpu().contiguous())
                 scale_parts.append(scale_chunk.cpu().contiguous())
@@ -453,26 +386,8 @@ def quantize_shard(
                     calibration_weighted_sqnr_results[name] = block_hessian_weighted_sqnr(
                         original, reconstructed, hessian_device
                     )
-                if (
-                    feedback_selection_hessian is not None
-                    and feedback_selection_weighted_sqnr_results is not None
-                ):
-                    assert feedback_selection_hessian_device is not None
-                    feedback_selection_weighted_sqnr_results[name] = (
-                        block_hessian_weighted_sqnr(
-                            original,
-                            reconstructed,
-                            feedback_selection_hessian_device,
-                        )
-                    )
                 del original, reconstructed
-            del (
-                packed_parts,
-                scale_parts,
-                gamma_device,
-                hessian_device,
-                feedback_selection_hessian_device,
-            )
+            del packed_parts, scale_parts, gamma_device, hessian_device
         else:
             result[name] = read_tensor(shard, name, device="cpu").contiguous()
     return result
@@ -525,62 +440,6 @@ def _load_activation_calibration(
     )
 
 
-def _load_feedback_selection_calibration(
-    cfg: QuantizeConfig,
-    plan: ModelPlan,
-    training: CalibrationData | None,
-) -> CalibrationData | None:
-    """Load an independent block Hessian used only for feedback selection."""
-    if cfg.feedback_selection_stats is None:
-        return None
-    if training is None or training.objective != "block-hessian":
-        raise ValueError("Feedback selection requires block-Hessian training calibration")
-    expected_widths = {
-        item.info.name: item.info.shape[-1]
-        for item in plan.tensors
-        if item.quantized
-    }
-    selection = load_calibration_data(
-        cfg.feedback_selection_stats,
-        "block-hessian",
-        expected_widths,
-        expected_policy=plan.policy.name,
-        expected_source_repository=cfg.source_repository,
-        expected_source_revision=cfg.source_revision,
-    )
-    if selection.file_sha256 == training.file_sha256:
-        raise ValueError("Feedback selection statistics must differ from training statistics")
-    training_tokens = training.metadata.get("token_ids_sha256")
-    selection_tokens = selection.metadata.get("token_ids_sha256")
-    if training_tokens and training_tokens == selection_tokens:
-        raise ValueError("Feedback selection and training statistics use identical token IDs")
-
-    training_corpus = training.metadata.get("corpus_sha256")
-    selection_corpus = selection.metadata.get("corpus_sha256")
-    if training_corpus and training_corpus == selection_corpus:
-        training_length = int(training.metadata["sequence_length"])
-        selection_length = int(selection.metadata["sequence_length"])
-        training_offset = int(training.metadata.get("sequence_offset", "0"))
-        selection_offset = int(selection.metadata.get("sequence_offset", "0"))
-        training_interval = (
-            training_offset * training_length,
-            (training_offset + int(training.metadata["num_sequences"])) * training_length,
-        )
-        selection_interval = (
-            selection_offset * selection_length,
-            (selection_offset + int(selection.metadata["num_sequences"])) * selection_length,
-        )
-        intervals_overlap = max(training_interval[0], selection_interval[0]) < min(
-            training_interval[1], selection_interval[1]
-        )
-        if intervals_overlap:
-            raise ValueError(
-                "Feedback selection and training calibration token ranges overlap: "
-                f"training={training_interval}, selection={selection_interval}"
-            )
-    return selection
-
-
 def _expected_shard_specs(
     plan: ModelPlan,
     shard_name: str,
@@ -619,8 +478,6 @@ def _sample_existing_shard_sqnr(
     gamma_by_target: Mapping[str, torch.Tensor],
     hessian_by_target: Mapping[str, torch.Tensor],
     calibration_weighted_results: dict[str, float],
-    feedback_selection_hessian_by_target: Mapping[str, torch.Tensor],
-    feedback_selection_weighted_results: dict[str, float],
 ) -> None:
     """Recompute bounded SQNR samples for a structurally valid resumed shard."""
     output_shard = ShardFile(path=output_path, weight_map={})
@@ -650,13 +507,6 @@ def _sample_existing_shard_sqnr(
             calibration_weighted_results[name] = block_hessian_weighted_sqnr(
                 original, reconstructed, hessian
             )
-        feedback_selection_hessian = feedback_selection_hessian_by_target.get(name)
-        if feedback_selection_hessian is not None:
-            feedback_selection_weighted_results[name] = block_hessian_weighted_sqnr(
-                original,
-                reconstructed,
-                feedback_selection_hessian,
-            )
         del original, packed, scales, reconstructed
 
 
@@ -685,7 +535,6 @@ def _run_identity(
     cfg: QuantizeConfig,
     plan: ModelPlan,
     activation_calibration: CalibrationData | None,
-    feedback_selection_calibration: CalibrationData | None,
 ) -> dict[str, Any]:
     """Build the shard-producing identity that a resumed run must exactly match."""
     target_description = [
@@ -715,33 +564,11 @@ def _run_identity(
         calibration_identity = {"kind": "none"}
     return {
         "schema_version": 1,
-        "producer": {"name": "mxstream", "version": __version__},
+        "producer": {"name": "mxwave", "version": __version__},
         "policy": plan.policy.name,
         "method": cfg.method,
         "scale_percentile": cfg.scale_percentile if cfg.method == "mse" else None,
         "mse_clip_depth": cfg.mse_clip_depth if cfg.method == "mse" else None,
-        "hessian_rounding_sweeps": (
-            cfg.hessian_rounding_sweeps if cfg.method == "mse" else None
-        ),
-        "hessian_error_feedback": cfg.hessian_error_feedback if cfg.method == "mse" else None,
-        "hessian_feedback_damp_percent": (
-            cfg.hessian_feedback_damp_percent if cfg.hessian_error_feedback else None
-        ),
-        "hessian_feedback_activation_order": (
-            cfg.hessian_feedback_activation_order if cfg.hessian_error_feedback else None
-        ),
-        "hessian_feedback_max_mse_ratio": (
-            cfg.hessian_feedback_max_mse_ratio if cfg.hessian_error_feedback else None
-        ),
-        "feedback_selection_calibration": (
-            {
-                "kind": "activation-stats",
-                "objective": feedback_selection_calibration.objective,
-                "file_sha256": feedback_selection_calibration.file_sha256,
-            }
-            if feedback_selection_calibration is not None
-            else None
-        ),
         "calibration": calibration_identity,
         "target_plan_sha256": target_digest,
         "source": {
@@ -761,16 +588,16 @@ def _run_identity(
 
 def _prepare_run_marker(output_dir: Path, identity: dict[str, Any], resume: bool) -> None:
     """Create or validate the run marker before any output shard is reused."""
-    marker_path = output_dir / "mxstream-run.json"
+    marker_path = output_dir / "mxwave-run.json"
     if resume and any(output_dir.iterdir()):
         if not marker_path.is_file():
             raise ValueError(
-                "Cannot safely resume: mxstream-run.json is missing from the non-empty output"
+                "Cannot safely resume: mxwave-run.json is missing from the non-empty output"
             )
         try:
             recorded = json.loads(marker_path.read_text())
         except json.JSONDecodeError as exc:
-            raise ValueError("Cannot safely resume: mxstream-run.json is invalid") from exc
+            raise ValueError("Cannot safely resume: mxwave-run.json is invalid") from exc
         if recorded != identity:
             raise ValueError(
                 "Cannot safely resume: quantization settings, calibration, targets, or source changed"
@@ -791,16 +618,11 @@ def _manifest(
     plan: ModelPlan,
     sqnr_results: dict[str, float],
     calibration_weighted_sqnr_results: dict[str, float],
-    feedback_selection_weighted_sqnr_results: dict[str, float],
     activation_calibration: CalibrationData | None,
-    feedback_selection_calibration: CalibrationData | None,
 ) -> dict[str, Any]:
     summary = plan.summary()
     values = list(sqnr_results.values())
     calibration_weighted_values = list(calibration_weighted_sqnr_results.values())
-    feedback_selection_weighted_values = list(
-        feedback_selection_weighted_sqnr_results.values()
-    )
     gamma_proxy_source_kinds = sorted(
         {".".join(source_name.rsplit(".", 2)[-2:]) for _, source_name in plan.gamma_proxy_sources}
     )
@@ -831,25 +653,6 @@ def _manifest(
                 else None
             ),
         }
-    feedback_selection_summary: dict[str, Any] | None = None
-    if feedback_selection_calibration is not None:
-        metadata = feedback_selection_calibration.metadata
-        feedback_selection_summary = {
-            "objective": feedback_selection_calibration.objective,
-            "statistic": "block32-input-second-moment",
-            "role": "candidate-selection-only",
-            "file_sha256": feedback_selection_calibration.file_sha256,
-            "weighted_tensors": len(feedback_selection_calibration.tensors),
-            "source_repository": metadata.get("source_repository") or None,
-            "source_revision": metadata.get("source_revision") or None,
-            "num_sequences": int(metadata["num_sequences"]),
-            "sequence_offset": int(metadata.get("sequence_offset", "0")),
-            "sequence_length": int(metadata["sequence_length"]),
-            "num_tokens": int(metadata["num_tokens"]),
-            "corpus_sha256": metadata.get("corpus_sha256"),
-            "token_ids_sha256": metadata.get("token_ids_sha256"),
-            "hessian_damp": float(metadata["hessian_damp"]),
-        }
     weighted_sqnr_summary = (
         {
             "objective": (
@@ -871,25 +674,10 @@ def _manifest(
         if calibration_weighted_values
         else None
     )
-    feedback_selection_sqnr_summary = (
-        {
-            "objective": "heldout-block-hessian",
-            "count": len(feedback_selection_weighted_values),
-            "coverage": len(feedback_selection_weighted_values)
-            / len(feedback_selection_calibration.tensors),
-            "minimum": min(feedback_selection_weighted_values),
-            "mean": sum(feedback_selection_weighted_values)
-            / len(feedback_selection_weighted_values),
-            "per_tensor": feedback_selection_weighted_sqnr_results,
-        }
-        if feedback_selection_weighted_values
-        and feedback_selection_calibration is not None
-        else None
-    )
     summary.update(
         {
             "manifest_version": 1,
-            "producer": {"name": "mxstream", "version": __version__},
+            "producer": {"name": "mxwave", "version": __version__},
             "source": {
                 "repository": cfg.source_repository,
                 "revision": cfg.source_revision,
@@ -897,22 +685,6 @@ def _manifest(
             "method": cfg.method,
             "scale_percentile": cfg.scale_percentile if cfg.method == "mse" else None,
             "mse_clip_depth": cfg.mse_clip_depth if cfg.method == "mse" else None,
-            "hessian_rounding_sweeps": (
-                cfg.hessian_rounding_sweeps if cfg.method == "mse" else None
-            ),
-            "hessian_error_feedback": (
-                cfg.hessian_error_feedback if cfg.method == "mse" else None
-            ),
-            "hessian_feedback_damp_percent": (
-                cfg.hessian_feedback_damp_percent if cfg.hessian_error_feedback else None
-            ),
-            "hessian_feedback_activation_order": (
-                cfg.hessian_feedback_activation_order if cfg.hessian_error_feedback else None
-            ),
-            "hessian_feedback_max_mse_ratio": (
-                cfg.hessian_feedback_max_mse_ratio if cfg.hessian_error_feedback else None
-            ),
-            "feedback_selection_calibration": feedback_selection_summary,
             "tensor_row_chunk_size": cfg.tensor_row_chunk_size,
             "weight_scale_selection": (
                 "rtn-memoryless-minmax"
@@ -948,7 +720,6 @@ def _manifest(
             "calibration_weighted_sqnr_db": (
                 weighted_sqnr_summary if activation_calibration is not None else None
             ),
-            "feedback_selection_weighted_sqnr_db": feedback_selection_sqnr_summary,
             "gamma_weighted_sqnr_db": (
                 weighted_sqnr_summary
                 if activation_calibration is None and plan.gamma_proxy_sources
@@ -969,11 +740,6 @@ def quantize_model(cfg: QuantizeConfig) -> int:
     if cfg.verbose:
         print(json.dumps(plan.summary(), indent=2))
     activation_calibration = _load_activation_calibration(cfg, plan)
-    feedback_selection_calibration = _load_feedback_selection_calibration(
-        cfg,
-        plan,
-        activation_calibration,
-    )
     output_dir.mkdir(parents=True, exist_ok=True)
     _prepare_run_marker(
         output_dir,
@@ -981,14 +747,12 @@ def quantize_model(cfg: QuantizeConfig) -> int:
             cfg,
             plan,
             activation_calibration,
-            feedback_selection_calibration,
         ),
         cfg.resume,
     )
 
     sqnr_results: dict[str, float] = {}
     calibration_weighted_sqnr_results: dict[str, float] = {}
-    feedback_selection_weighted_sqnr_results: dict[str, float] = {}
     if activation_calibration is None:
         gamma_by_target = _load_gamma_proxies(plan)
         hessian_by_target: Mapping[str, torch.Tensor] = {}
@@ -998,11 +762,6 @@ def quantize_model(cfg: QuantizeConfig) -> int:
     else:
         gamma_by_target = activation_calibration.tensors
         hessian_by_target = {}
-    feedback_selection_hessian_by_target: Mapping[str, torch.Tensor] = (
-        feedback_selection_calibration.tensors
-        if feedback_selection_calibration is not None
-        else {}
-    )
     output_shards: list[Path] = []
     for index, shard in enumerate(plan.shards, start=1):
         output_path = output_dir / shard.path.name
@@ -1019,33 +778,23 @@ def quantize_model(cfg: QuantizeConfig) -> int:
                     gamma_by_target,
                     hessian_by_target,
                     calibration_weighted_sqnr_results,
-                    feedback_selection_hessian_by_target,
-                    feedback_selection_weighted_sqnr_results,
                 )
             if cfg.verbose:
-                print(f"[mxstream] [{index}/{len(plan.shards)}] resume {shard.path.name}")
+                print(f"[mxwave] [{index}/{len(plan.shards)}] resume {shard.path.name}")
         else:
             if output_path.exists():
                 raise FileExistsError(f"Refusing to replace existing shard: {output_path}")
             if cfg.verbose:
-                print(f"[mxstream] [{index}/{len(plan.shards)}] quantize {shard.path.name}")
+                print(f"[mxwave] [{index}/{len(plan.shards)}] quantize {shard.path.name}")
             tensors = quantize_shard(
                 shard,
                 cfg,
                 target_names=plan.target_names,
                 gamma_by_target=gamma_by_target,
                 hessian_by_target=hessian_by_target,
-                feedback_selection_hessian_by_target=(
-                    feedback_selection_hessian_by_target
-                ),
                 sqnr_results=sqnr_results if cfg.verify_sqnr else None,
                 calibration_weighted_sqnr_results=(
                     calibration_weighted_sqnr_results if cfg.verify_sqnr else None
-                ),
-                feedback_selection_weighted_sqnr_results=(
-                    feedback_selection_weighted_sqnr_results
-                    if cfg.verify_sqnr
-                    else None
                 ),
             )
             _atomic_save_shard(tensors, output_path)
@@ -1060,9 +809,7 @@ def quantize_model(cfg: QuantizeConfig) -> int:
         plan,
         sqnr_results,
         calibration_weighted_sqnr_results,
-        feedback_selection_weighted_sqnr_results,
         activation_calibration,
-        feedback_selection_calibration,
     )
     assemble_output_dir(
         model_dir,

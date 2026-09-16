@@ -1,4 +1,4 @@
-"""Command-line activation calibration for mxstream quantization."""
+"""Command-line activation calibration for MxWave quantization."""
 
 from __future__ import annotations
 
@@ -31,9 +31,9 @@ _OBJECTIVE_CHOICES = ("mean-abs", "rms", "block-hessian")
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the ``mxstream-calibrate`` argument parser."""
+    """Build the ``mxwave-calibrate`` argument parser."""
     parser = argparse.ArgumentParser(
-        prog="mxstream-calibrate",
+        prog="mxwave-calibrate",
         description="Capture real per-module input statistics from a float checkpoint.",
     )
     parser.add_argument("--model-dir", required=True, help="BF16/FP16 source model")
@@ -364,7 +364,7 @@ def run(args: argparse.Namespace) -> Path:
                 attn_implementation=args.attention_implementation,
             )
         print(
-            f"[mxstream] streaming {len(sequences)} sequences through one decoder layer "
+            f"[mxwave] streaming {len(sequences)} sequences through one decoder layer "
             f"at a time on {device}"
         )
         streamed = calibrate_decoder_sequentially(
@@ -378,7 +378,7 @@ def run(args: argparse.Namespace) -> Path:
             batch_size=args.batch_size,
             hessian_damp=args.hessian_damp,
             progress=lambda completed, total: print(
-                f"[mxstream] calibration layer {completed}/{total}"
+                f"[mxwave] calibration layer {completed}/{total}"
             ),
         )
         statistics = streamed.statistics
@@ -394,7 +394,7 @@ def run(args: argparse.Namespace) -> Path:
         }
         if device.type != "cpu":
             model_kwargs["device_map"] = {"": str(device)}
-        print(f"[mxstream] loading the full float model on {device} (resident mode)")
+        print(f"[mxwave] loading the full float model on {device} (resident mode)")
         model = _model_class(transformers, model_config).from_pretrained(
             model_dir, **model_kwargs
         )
@@ -422,7 +422,7 @@ def run(args: argparse.Namespace) -> Path:
                     )
                     del output, input_ids, attention_mask
                     completed = min(start + len(rows), len(sequences))
-                    print(f"[mxstream] calibration {completed}/{len(sequences)} sequences")
+                    print(f"[mxwave] calibration {completed}/{len(sequences)} sequences")
         finally:
             for handle in handles:
                 handle.remove()
@@ -458,11 +458,11 @@ def run(args: argparse.Namespace) -> Path:
     }
     save_calibration_data(output_path, statistics, metadata)
     print(
-        f"[mxstream] saved {','.join(sorted(statistics))} for {len(widths)} targets "
+        f"[mxwave] saved {','.join(sorted(statistics))} for {len(widths)} targets "
         f"to {output_path}"
     )
     print(
-        f"[mxstream] peak RSS {_peak_rss_bytes() / (1024**3):.2f} GiB; "
+        f"[mxwave] peak RSS {_peak_rss_bytes() / (1024**3):.2f} GiB; "
         f"peak accelerator allocation {peak_accelerator / (1024**3):.2f} GiB"
     )
     return output_path
@@ -475,7 +475,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         run(args)
     except (FileNotFoundError, ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
-        print(f"mxstream: calibration error: {exc}", file=sys.stderr)
+        print(f"mxwave: calibration error: {exc}", file=sys.stderr)
         return 1
     return 0
 

@@ -207,7 +207,7 @@ def run(args: argparse.Namespace) -> Path:
     total_scored = sum(item.scored_tokens for item in results)
     mean_nll = total_nll / total_scored
     report = {
-        "format": "mxstream-api-perplexity-v1",
+        "format": "mxwave-api-perplexity-v1",
         "model": args.model,
         "dataset": args.dataset,
         "dataset_revision": args.dataset_revision,

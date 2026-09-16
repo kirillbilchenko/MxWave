@@ -2,7 +2,7 @@
 
 ## What this project is
 
-`mxstream` is a GPU-streaming, calibration-aware, quality-oriented MXFP4
+MxWave is a bounded-memory, calibration-aware, quality-oriented MXFP4
 quantization engine for LLMs, targeting vLLM's `compressed-tensors`
 `mxfp4-pack-quantized` format on Blackwell-class GPUs (e.g. NVIDIA DGX Spark).
 
@@ -16,23 +16,23 @@ adapted code in `CONTRIBUTING.md`.
 ```bash
 pip install -e ".[dev]"   # install with dev deps (pytest, ruff, mypy)
 ruff check .              # lint — must pass
-mypy mxstream             # type check — must pass (strict)
+mypy mxwave             # type check — must pass (strict)
 pytest                    # unit tests — must pass
 ```
 
 ## Architecture
 
-- `mxstream/core.py` — MXFP4 E2M1 constants, `quantize_mxfp4()` with MSE-optimal
-  scale selection (3 candidate exponents), optional gamma/Hessian weighting,
+- `mxwave/core.py` — MXFP4 E2M1 constants, `quantize_mxfp4()` with MSE-optimal
+  candidate scale selection, optional gamma/Hessian weighting,
   `dequant_mxfp4()` round-trip.
-- `mxstream/format.py` — input format detection from `config.json`
+- `mxwave/format.py` — input format detection from `config.json`
   (`quantization_config`), NOT tensor-name suffix sniffing. This is a core
   differentiator: the FP8 ecosystem has ≥3 incompatible packings.
-- `mxstream/rotate.py` — Hadamard / random-orthogonal rotation primitives and
-  folding (QuaRot "rotation is free").
-- `mxstream/verify.py` — verification-first contract: `sqnr()`,
+- `mxwave/rotate.py` — experimental Hadamard / random-orthogonal rotation
+  primitives; rotation is not wired into checkpoint emission.
+- `mxwave/verify.py` — verification-first contract: `sqnr()`,
   `verify_config_coverage()`.
-- `mxstream/cli.py` — thin CLI scaffold (`mxstream-quantize`).
+- `mxwave/cli.py` — thin CLI scaffold (`mxwave-quantize`).
 
 ## Conventions
 

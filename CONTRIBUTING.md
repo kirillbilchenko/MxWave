@@ -1,20 +1,28 @@
-# Contributing to mxstream
+# Contributing to MxWave
 
 ## Provenance note
 
-`mxstream` is a quality-oriented, GPU-streaming build in the MXFP4 space. The
-core math follows the public MX spec (OCP) and published methods (AWQ, GPTQ,
-QuaRot). If you are adapting code from a source repo, get a written license
-grant first and record it here.
+MxWave is an independent clean-room implementation. Its numerical behavior is
+derived from the public OCP MX Formats specification and published quantization
+research, including AWQ, GPTQ, and QuaRot. Its serialized output follows the
+public `compressed-tensors` contract used by vLLM.
 
-The block-Hessian coordinate rounding pass is a clean-room derivation of exact
-single-coordinate minimization of the recorded quadratic reconstruction loss;
-it was not adapted from qstream or another implementation.
+The qstream project was consulted only as an ecosystem reference and comparison
+target. No source code or prose was copied or adapted from qstream. Historical
+experiments that were rejected and removed from the production package remain
+documented under `docs/` so their results are not misrepresented as features.
 
-The block-local Hessian error-feedback path is a clean-room implementation from
-the GPTQ paper's published Algorithm 1 and the MR-GPTQ paper's published static
-activation-order description. No implementation code was copied from either
-project or from qstream.
+Do not copy implementation code from qstream or any other repository without a
+written license grant. Any permitted adaptation must be identified here with
+its source, license, files, and nature of the changes. Independent
+reimplementations should cite the public specification or paper they follow.
+
+Primary references:
+
+- [OCP Microscaling Formats specification](https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf)
+- [AWQ](https://arxiv.org/abs/2306.00978)
+- [GPTQ](https://arxiv.org/abs/2210.17323)
+- [QuaRot](https://arxiv.org/abs/2404.00456)
 
 ## Setup
 
@@ -26,8 +34,8 @@ pip install -e ".[dev]"
 
 ```bash
 ruff check .            # lint
-mypy mxstream           # type check
-pytest                 # unit tests
+mypy mxwave             # type check
+pytest                  # unit tests
 ```
 
 All must pass before a PR.

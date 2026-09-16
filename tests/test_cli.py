@@ -1,0 +1,20 @@
+"""Public command-name regression tests."""
+
+import tomllib
+from pathlib import Path
+
+from mxwave.calibration_cli import build_parser as build_calibration_parser
+from mxwave.cli import build_parser as build_quantize_parser
+
+
+def test_public_command_names_are_mxwave() -> None:
+    assert build_calibration_parser().prog == "mxwave-calibrate"
+    assert build_quantize_parser().prog == "mxwave-quantize"
+
+
+def test_packaged_entry_points_are_mxwave_only() -> None:
+    project = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
+    assert project["project"]["scripts"] == {
+        "mxwave-calibrate": "mxwave.calibration_cli:main",
+        "mxwave-quantize": "mxwave.cli:main",
+    }

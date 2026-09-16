@@ -1,0 +1,64 @@
+{
+  "format": "mxstream-paired-ppl-experiment-summary-v1",
+  "model": "Qwen/Qwen3.8-27B",
+  "candidate": {
+    "description": "H64 MXFP4 with linear-attention out_proj and full-attention o_proj retained in BF16",
+    "quantized_modules": 336,
+    "bf16_attention_modules": 64,
+    "checkpoint_directory_bytes": 22813055677,
+    "tensor_data_bytes": 22789613024,
+    "vllm_loaded_model_gib": 20.77,
+    "perplexity": 8.139823693357755,
+    "total_negative_log_likelihood": 128758.36130607947,
+    "raw_report_sha256": "53ed237ebb54cdd9b30bd2862999567c02a910f56834fe7510c8346e62fd36a2",
+    "manifest_sha256": "5d74229655bd7c9cb642b9ecbabf1fc2c53deb1a6215eb7587515d185c8399c6"
+  },
+  "baseline": {
+    "description": "mxstream 64x512 block-Hessian scale-only H64",
+    "checkpoint_directory_bytes": 19856092425,
+    "perplexity": 8.165108133489403,
+    "total_negative_log_likelihood": 128948.8151099571
+  },
+  "bf16_attention_upper_bound": {
+    "description": "H64 MLP-only quantization with every attention projection in BF16",
+    "checkpoint_directory_bytes": 30451865541,
+    "perplexity": 8.094389898829588,
+    "total_negative_log_likelihood": 128414.64207105577
+  },
+  "evaluation": {
+    "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+    "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+    "dataset_sha256": "5f1bea067869d04849c0f975a2b29c4ff47d867f484f5010ea5e861eab246d91",
+    "chunk_characters": 4096,
+    "num_chunks": 64,
+    "scored_tokens": 61408,
+    "pairing_validated": true,
+    "relative_ppl_percent_vs_h64": -0.30966448598448437,
+    "paired_95_percent_ci_vs_h64": [
+      -0.5033821444370423,
+      -0.1184234096037049
+    ],
+    "candidate_wins_vs_h64": 47,
+    "candidate_losses_vs_h64": 17,
+    "relative_ppl_percent_vs_bf16_attention": 0.5612998026538918,
+    "paired_95_percent_ci_vs_bf16_attention": [
+      0.29524869909687,
+      0.8253203463999971
+    ],
+    "recovered_bf16_attention_ppl_gain_percent": 35.75377730125308,
+    "bootstrap_samples": 100000,
+    "bootstrap_seed": 20260915
+  },
+  "promotion_gate": {
+    "maximum_perplexity": 8.1006,
+    "requires_paired_ci_upper_below_zero": true,
+    "perplexity_condition_passed": false,
+    "paired_ci_condition_passed": true
+  },
+  "follow_up": {
+    "full_316_window_ppl_run": "not_run_gate_failed",
+    "gsm8k_5shot": "not_run_gate_failed"
+  },
+  "decision": "reject_efficiency_promotion"
+}
