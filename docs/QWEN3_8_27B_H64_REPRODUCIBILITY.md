@@ -14,8 +14,8 @@ project and Python package were renamed to MxWave. The rename changed imports,
 console commands, and generated provenance filenames; it did not change the
 quantization math. Historical benchmark JSON intentionally retains its original
 schema labels so its recorded hashes remain valid. The public release baseline is
-[MxWave commit `52fa4f18`](https://github.com/kirillbilchenko/MxWave/tree/52fa4f18e6925e77e25934add7025919bad58e40),
-and the payload checks in Sections 4–7 must pass before publication.
+[MxWave commit `0179e131`](https://github.com/kirillbilchenko/MxWave/tree/0179e131544f807ecdb6d04e7e914f181dd21c9f),
+and the payload checks in Sections 4–7 were repeated before publication.
 
 ## Reproduced status
 
@@ -33,6 +33,16 @@ OpenWebUI traffic stopped:
   `bbccb79edcaadbacc2f43609c3c35b51ca07b32865a19ac6e1a4fbaa82e35a11`.
 - Calibration replay took 98.67 seconds and peaked at 8.07 GiB process RSS and
   3.28 GiB allocated CUDA memory. Quantization replay took about 235 seconds.
+
+For Hub publication, a redundant group-level `"format": null` was omitted from
+`config.json`. The global `"format": "mxfp4-pack-quantized"` is unchanged;
+compressed-tensors 0.17 and the pinned vLLM parser both resolve the omitted field
+to `None`. No tensor, index, tokenizer, or evaluation file changed. The published
+release therefore has these metadata-normalized hashes:
+
+- `config.json`: `d19a06baa5074b9f1f7b38296d846852fa2c071d2cebdd833e409206fc3feff0`;
+- 18 shards plus config and index: `6f81fb0182aca2a712b1d688d96871c81ef75e04bcc8622c79275aca60828d88`;
+- complete inference payload: `0600d65150f8e44713897f6515af0c7ddf704d148e83c148217173bf1ff4917b`.
 
 The `.safetensors` calibration *file* is not expected to have a stable file hash:
 its metadata intentionally records elapsed time and peak memory. Likewise,
@@ -59,7 +69,7 @@ Do not use a whole-directory hash as the numerical reproducibility criterion.
 | Calibration token IDs SHA-256 | `e68f97cb4044312513df4c9c82bd758abe348a706fd7e1f11fe9ee15c83efa05` |
 | Runtime image | `vllm/vllm-openai:qwen38-flash-next@sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8` |
 | Quantizer repository | `https://github.com/kirillbilchenko/MxWave` |
-| Quantizer release baseline | `52fa4f18e6925e77e25934add7025919bad58e40` |
+| Quantizer release baseline | `0179e131544f807ecdb6d04e7e914f181dd21c9f` |
 | GPU | NVIDIA GB10, compute capability 12.1 / SM121 |
 | Driver | 580.142 |
 | Host | Ubuntu 24.04.4 LTS, Linux `6.17.0-1014-nvidia`, aarch64 |
@@ -82,7 +92,7 @@ The MxWave release-candidate source digest is computed as follows:
 Expected:
 
 ```text
-3aa41f8018ab6ee6365097b461eb518b2be44ccf332349a984a8f548e25dd6d3  -
+f20799aecad6518995bfade0fb03c735d18edc6128745e5f57fabfbb88620bf7  -
 ```
 
 The historical bitwise replay used the already synchronized Spark source digest
@@ -90,7 +100,7 @@ The historical bitwise replay used the already synchronized Spark source digest
 That digest predates the package/CLI rename and subsequent release cleanup, so it
 is expected to differ from the release-candidate digest above. The stable
 calibration-tensor and inference-payload hashes document the completed replay;
-they do not substitute for pinning the eventual public release commit.
+they do not substitute for the pinned public release commit.
 
 ## Resource and isolation requirements
 
@@ -116,7 +126,7 @@ source digest above:
 # local
 git clone https://github.com/kirillbilchenko/MxWave.git
 cd MxWave
-git checkout 52fa4f18e6925e77e25934add7025919bad58e40
+git checkout 0179e131544f807ecdb6d04e7e914f181dd21c9f
 ```
 
 Create a new destination, then copy only the committed runtime files to it:
@@ -494,7 +504,7 @@ sha256sum model-*.safetensors model.safetensors.index.json config.json \
 Expected:
 
 ```text
-e8675da3448ae399b84cff0d99cd3c246d678ba5883e91ad4e7a370a993385d7  -
+6f81fb0182aca2a712b1d688d96871c81ef75e04bcc8622c79275aca60828d88  -
 ```
 
 Verify all inference files while excluding generated provenance and prose:
@@ -517,7 +527,7 @@ find . -maxdepth 1 -type f \
 Expected:
 
 ```text
-bbccb79edcaadbacc2f43609c3c35b51ca07b32865a19ac6e1a4fbaa82e35a11  -
+0600d65150f8e44713897f6515af0c7ddf704d148e83c148217173bf1ff4917b  -
 ```
 
 Individual output shard hashes are in

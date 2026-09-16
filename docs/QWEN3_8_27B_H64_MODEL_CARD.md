@@ -22,7 +22,7 @@ This is a quality-oriented, post-training MXFP4 conversion of
 `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0` with
 [MxWave](https://github.com/kirillbilchenko/MxWave) `0.1.0`. The public quantizer
 baseline is pinned to
-[`52fa4f18`](https://github.com/kirillbilchenko/MxWave/tree/52fa4f18e6925e77e25934add7025919bad58e40).
+[`0179e131`](https://github.com/kirillbilchenko/MxWave/tree/0179e131544f807ecdb6d04e7e914f181dd21c9f).
 
 Hugging Face repository: `kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave`.
 
@@ -121,7 +121,7 @@ all **248,320** next-token log probabilities and compared each candidate with BF
 
 | Metric | **MxWave** | AMD Quark-AWQ MXFP4 |
 |---|---:|---:|
-| Mean `D_KL(P_BF16 || P_candidate)`, nats | **0.049937** | 0.056735 |
+| Mean forward KL, nats | **0.049937** | 0.056735 |
 | Forward-KL p95, nats | **0.175241** | 0.232540 |
 | Mean reverse KL, nats | **0.044734** | 0.048565 |
 | Mean Jensen-Shannon divergence, nats | **0.010946** | 0.012083 |
@@ -139,11 +139,13 @@ statistically conclusive overall win. Full protocol and per-context metrics:
 
 This was a sampled 100-example, 5-shot screening run, not the primary ranking metric.
 
-| Model | Flexible numeric match | Strict `####` match |
+| Model | Flexible numeric match | Strict answer match |
 |---|---:|---:|
 | BF16 source | 88% | 85% |
 | **MxWave** | **92%** | **91%** |
 | AMD Quark-AWQ MXFP4 | 93% | 93% |
+
+Strict matching required the standard GSM8K `####` final-answer marker.
 
 Generation used temperature `0.7`, top-p `0.8`, top-k `20`, seed `1234`, and 16 concurrent
 requests. H64's one-point flexible gap to AMD is smaller than the reported standard errors.
@@ -199,7 +201,7 @@ every vLLM release or accelerator.
 
 - Quantization tool and source:
   [MxWave on GitHub](https://github.com/kirillbilchenko/MxWave), commit
-  [`52fa4f18e6925e77e25934add7025919bad58e40`](https://github.com/kirillbilchenko/MxWave/tree/52fa4f18e6925e77e25934add7025919bad58e40)
+  [`0179e131544f807ecdb6d04e7e914f181dd21c9f`](https://github.com/kirillbilchenko/MxWave/tree/0179e131544f807ecdb6d04e7e914f181dd21c9f)
 - Full commands and immutable hashes:
   [`REPRODUCIBILITY.md`](./REPRODUCIBILITY.md)
 - Quantization manifest and per-tensor SQNR:
@@ -210,12 +212,16 @@ every vLLM release or accelerator.
   `07ffd944ea4fc09f12e5d019633a77309199fdced749e3ddf13989e53586f36a`
 - Calibration token IDs SHA-256:
   `e68f97cb4044312513df4c9c82bd758abe348a706fd7e1f11fe9ee15c83efa05`
-- Reproduced 18-shard/config/index hash-of-hashes:
-  `e8675da3448ae399b84cff0d99cd3c246d678ba5883e91ad4e7a370a993385d7`
+- Published 18-shard/config/index hash-of-hashes:
+  `6f81fb0182aca2a712b1d688d96871c81ef75e04bcc8622c79275aca60828d88`
+- Published inference-payload hash-of-hashes:
+  `0600d65150f8e44713897f6515af0c7ddf704d148e83c148217173bf1ff4917b`
 
 The replay produced bitwise-identical calibration tensors and all 18 quantized weight shards.
-Generated prose and telemetry-bearing provenance files are intentionally excluded from the
-numerical payload hash.
+For Hub schema compatibility, the published `config.json` omits a redundant group-level
+`"format": null`; the global `mxfp4-pack-quantized` format is unchanged, and both
+compressed-tensors 0.17 and the pinned vLLM parser resolve the omitted value to `None`.
+Generated prose and telemetry-bearing provenance files are excluded from the payload hash.
 
 ## Limitations
 
