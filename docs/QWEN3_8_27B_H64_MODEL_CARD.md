@@ -2,6 +2,7 @@
 license: apache-2.0
 library_name: transformers
 pipeline_tag: image-text-to-text
+model_name: Qwen3.8-27B-MXFP4-MxWave
 base_model: Qwen/Qwen3.8-27B
 base_model_relation: quantized
 tags:
@@ -14,12 +15,16 @@ tags:
   - multimodal
 ---
 
-# Qwen3.8-27B — MxWave MXFP4
+# Qwen3.8-27B — MXFP4 by MxWave
 
 This is a quality-oriented, post-training MXFP4 conversion of
 [`Qwen/Qwen3.8-27B`](https://huggingface.co/Qwen/Qwen3.8-27B), built from revision
 `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0` with
-[MxWave](https://github.com/kirillbilchenko/MxWave) `0.1.0`.
+[MxWave](https://github.com/kirillbilchenko/MxWave) `0.1.0`. The public quantizer
+baseline is pinned to
+[`52fa4f18`](https://github.com/kirillbilchenko/MxWave/tree/52fa4f18e6925e77e25934add7025919bad58e40).
+
+Hugging Face repository: `kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave`.
 
 `H64` is the calibration recipe, not a precision: **H** means block-Hessian scale
 selection and **64** means 64 calibration sequences. The stored weights remain standard OCP
@@ -192,6 +197,9 @@ every vLLM release or accelerator.
 
 ## Reproducibility and provenance
 
+- Quantization tool and source:
+  [MxWave on GitHub](https://github.com/kirillbilchenko/MxWave), commit
+  [`52fa4f18e6925e77e25934add7025919bad58e40`](https://github.com/kirillbilchenko/MxWave/tree/52fa4f18e6925e77e25934add7025919bad58e40)
 - Full commands and immutable hashes:
   [`REPRODUCIBILITY.md`](./REPRODUCIBILITY.md)
 - Quantization manifest and per-tensor SQNR:

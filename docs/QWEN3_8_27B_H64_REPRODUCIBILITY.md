@@ -13,9 +13,9 @@ The numerical replay described below was completed immediately before the
 project and Python package were renamed to MxWave. The rename changed imports,
 console commands, and generated provenance filenames; it did not change the
 quantization math. Historical benchmark JSON intentionally retains its original
-schema labels so its recorded hashes remain valid. A release made from the
-public MxWave repository should record its exact commit and repeat the payload
-checks in Sections 4–7 before publication.
+schema labels so its recorded hashes remain valid. The public release baseline is
+[MxWave commit `52fa4f18`](https://github.com/kirillbilchenko/MxWave/tree/52fa4f18e6925e77e25934add7025919bad58e40),
+and the payload checks in Sections 4–7 must pass before publication.
 
 ## Reproduced status
 
@@ -58,6 +58,8 @@ Do not use a whole-directory hash as the numerical reproducibility criterion.
 | Calibration corpus SHA-256 | `07ffd944ea4fc09f12e5d019633a77309199fdced749e3ddf13989e53586f36a` |
 | Calibration token IDs SHA-256 | `e68f97cb4044312513df4c9c82bd758abe348a706fd7e1f11fe9ee15c83efa05` |
 | Runtime image | `vllm/vllm-openai:qwen38-flash-next@sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8` |
+| Quantizer repository | `https://github.com/kirillbilchenko/MxWave` |
+| Quantizer release baseline | `52fa4f18e6925e77e25934add7025919bad58e40` |
 | GPU | NVIDIA GB10, compute capability 12.1 / SM121 |
 | Driver | 580.142 |
 | Host | Ubuntu 24.04.4 LTS, Linux `6.17.0-1014-nvidia`, aarch64 |
@@ -107,9 +109,17 @@ marked **Spark** run after `ssh spark`.
 
 ## 1. Synchronize the exact MxWave source
 
-From the local MxWave checkout, ensure the tree is at the intended committed
-baseline and verify the source digest above. Create a new destination, then copy
-only the committed runtime files to it:
+Clone the public tool, check out the pinned quantizer baseline, and verify the
+source digest above:
+
+```bash
+# local
+git clone https://github.com/kirillbilchenko/MxWave.git
+cd MxWave
+git checkout 52fa4f18e6925e77e25934add7025919bad58e40
+```
+
+Create a new destination, then copy only the committed runtime files to it:
 
 ```bash
 # local
