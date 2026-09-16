@@ -1,8 +1,15 @@
 # MxWave
 
+[![Hugging Face model](https://img.shields.io/badge/🤗%20Hugging%20Face-Qwen3.8--27B--MXFP4--MxWave-FFD21E)](https://huggingface.co/kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave)
+[![CI](https://github.com/kirillbilchenko/MxWave/actions/workflows/ci.yml/badge.svg)](https://github.com/kirillbilchenko/MxWave/actions/workflows/ci.yml)
+
 **Quality-oriented MXFP4 post-training quantization for LLMs, with real
 activation calibration, bounded-memory checkpoint processing, and verified
 vLLM output.**
+
+**Published model:**
+[`kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave`](https://huggingface.co/kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave)
+— an 18.47 GiB Qwen3.8-27B checkpoint with complete evaluation and reproducibility records.
 
 MxWave converts floating-point safetensors checkpoints to vLLM's
 `compressed-tensors` `mxfp4-pack-quantized` format. It reads source tensors in

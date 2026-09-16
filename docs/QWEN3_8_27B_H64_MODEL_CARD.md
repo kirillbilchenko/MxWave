@@ -7,10 +7,15 @@ base_model: Qwen/Qwen3.8-27B
 base_model_relation: quantized
 tags:
   - qwen3.8
+  - qwen
   - mxfp4
+  - 4-bit
   - compressed-tensors
   - quantized
   - vllm
+  - w4a16
+  - blackwell
+  - dgx-spark
   - mxwave
   - multimodal
 ---
@@ -25,6 +30,10 @@ baseline is pinned to
 [`0179e131`](https://github.com/kirillbilchenko/MxWave/tree/0179e131544f807ecdb6d04e7e914f181dd21c9f).
 
 Hugging Face repository: `kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave`.
+
+On the same 297,199-token paired WikiText-2 protocol, this 18.47 GiB checkpoint had
+**0.832% lower perplexity than AMD's Quark-AWQ MXFP4 release**. See the evaluation and
+uncertainty details below before comparing that number with results from other protocols.
 
 `H64` is the calibration recipe, not a precision: **H** means block-Hessian scale
 selection and **64** means 64 calibration sequences. The stored weights remain standard OCP
@@ -43,6 +52,32 @@ This checkpoint is experimental and is not an official Qwen or AMD release.
 | Passthrough tensors | 799 |
 | Calibration | 64 × 512 tokens = 32,768 tokens |
 | Primary text result | WikiText-2 prompt PPL **8.119445** |
+
+## Quick start
+
+Use the current Hugging Face CLI with high-performance Xet transfer enabled:
+
+```bash
+HF_XET_HIGH_PERFORMANCE=1 hf download \
+  kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave \
+  --local-dir ./Qwen3.8-27B-MXFP4-MxWave
+```
+
+On the tested DGX Spark / compatible Blackwell vLLM stack, start with Marlin and a
+conservative unified-memory budget:
+
+```bash
+vllm serve ./Qwen3.8-27B-MXFP4-MxWave \
+  --load-format safetensors \
+  --dtype bfloat16 \
+  --linear-backend marlin \
+  --max-model-len 16384 \
+  --max-num-seqs 4 \
+  --gpu-memory-utilization 0.45
+```
+
+The complete tested launch command and runtime caveats are in
+[Serving with vLLM on DGX Spark](#serving-with-vllm-on-dgx-spark).
 
 ## What was quantized
 
