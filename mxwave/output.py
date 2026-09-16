@@ -54,7 +54,6 @@ _MXFP4_GROUP: dict[str, Any] = {
         "observer_kwargs": {},
     },
     "output_activations": None,
-    "format": None,
 }
 
 _ASSET_SUFFIXES = frozenset(

@@ -510,7 +510,9 @@ def test_quantize_model_emits_loader_safe_config(tmp_path: Path):
     assert quantization["quant_method"] == "compressed-tensors"
     assert "version" not in quantization
     assert "transform_config" not in quantization
-    targets = quantization["config_groups"]["group_0"]["targets"]
+    group = quantization["config_groups"]["group_0"]
+    assert "format" not in group
+    targets = group["targets"]
     assert targets == [
         "model.layers.0.mlp.gate_proj",
         "model.layers.1.mlp.gate_proj",
