@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 
-from mxstream.verify import sqnr, verify_config_coverage
+from mxstream.verify import channel_weighted_sqnr, sqnr, verify_config_coverage
 
 
 def test_sqnr_returns_positive_db_for_close_tensors():
@@ -18,6 +19,17 @@ def test_sqnr_is_very_high_for_perfect_reconstruction():
     x = torch.randn(64)
     # noise floor clamped → very large but finite value
     assert sqnr(x, x) > 100.0
+
+
+def test_channel_weighted_sqnr_emphasizes_selected_input_channels():
+    original = torch.ones(2, 2)
+    reconstructed = torch.tensor([[0.0, 1.0], [0.0, 1.0]])
+    assert channel_weighted_sqnr(original, reconstructed, torch.tensor([0.1, 1.0])) > 15.0
+
+
+def test_channel_weighted_sqnr_validates_shape():
+    with pytest.raises(ValueError, match="last tensor dimension"):
+        channel_weighted_sqnr(torch.ones(2, 3), torch.ones(2, 3), torch.ones(2))
 
 
 def test_config_coverage_finds_uncovered_modules():

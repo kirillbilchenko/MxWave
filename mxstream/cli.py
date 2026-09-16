@@ -1,110 +1,180 @@
-"""Command-line entry point for mxstream.
-
-The CLI is intentionally thin: it delegates to the streaming engine (WIP) and
-exposes the quality-oriented flags that differentiate this project
-(activation-aware, rotation, verification).
-"""
+"""Command-line entry point for safe, resumable MXFP4 conversion."""
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
-from pathlib import Path
 
-import torch
-
-from .engine import QuantizeConfig, quantize_model
-from .output import verify_emitted_config
+from .engine import QuantizeConfig, plan_model, quantize_model
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
+    """Build the ``mxstream-quantize`` argument parser."""
+    parser = argparse.ArgumentParser(
         prog="mxstream-quantize",
-        description="GPU-streaming, calibration-aware MXFP4 quantization.",
+        description="Stream a BF16/FP16 checkpoint into vLLM MXFP4 shards.",
     )
-    p.add_argument("--model_dir", required=True, help="Path to input model")
-    p.add_argument("--output_dir", required=True, help="Path to output model")
-    p.add_argument("--workers", type=int, default=4, help="Parallel shard workers")
-    p.add_argument(
+    parser.add_argument("--model-dir", "--model_dir", required=True, help="Input model")
+    parser.add_argument("--output-dir", "--output_dir", required=True, help="Output model")
+    parser.add_argument(
+        "--policy",
+        choices=(
+            "auto",
+            "qwen3.8-27b-mlp",
+            "qwen3.8-27b-compatible",
+            "all-linear",
+        ),
+        default="auto",
+        help="Architecture-aware tensor selection (auto is conservative)",
+    )
+    parser.add_argument(
+        "--method",
+        choices=("rtn", "mse"),
+        default="mse",
+        help="Reference compressed-tensors RTN or mxstream MSE scale search",
+    )
+    parser.add_argument(
+        "--scale-percentile",
         "--scale_percentile",
         type=float,
         default=99.5,
-        help="Percentile anchoring block_max (100 = true amax)",
+        help="MSE anchor percentile; ignored by RTN",
     )
-    p.add_argument(
-        "--calibration_stats",
-        default=None,
-        help="Path to activation stats JSON (activates gamma-weighted MSE)",
+    parser.add_argument(
+        "--mse-clip-depth",
+        type=int,
+        default=1,
+        help="Exponent steps below the MSE anchor to evaluate (0-8)",
     )
-    p.add_argument(
-        "--rotation",
-        choices=["hadamard", "none"],
-        default="none",
-        help="Rotation-based outlier suppression (QuaRot-style)",
+    parser.add_argument(
+        "--hessian-rounding-sweeps",
+        type=int,
+        default=0,
+        help="Block-Hessian coordinate-refinement passes after scale selection (0-4)",
     )
-    p.add_argument(
-        "--verify",
+    parser.add_argument(
+        "--hessian-error-feedback",
         action="store_true",
-        help="Run SQNR + config-coverage verification before finishing",
+        help="Experimental block-local GPTQ-style feedback on a fixed MXFP4 grid",
     )
-    p.add_argument("--device", default="cuda", help="Device for quantization kernel")
-    return p
+    parser.add_argument(
+        "--hessian-feedback-damp-percent",
+        type=float,
+        default=1.0,
+        help="Average-Hessian-diagonal damping percentage for error feedback",
+    )
+    parser.add_argument(
+        "--no-hessian-feedback-activation-order",
+        action="store_false",
+        dest="hessian_feedback_activation_order",
+        help="Use original block-column order instead of static activation ordering",
+    )
+    parser.add_argument(
+        "--hessian-feedback-max-mse-ratio",
+        type=float,
+        default=None,
+        help="Optional 1-4x ordinary-MSE trust region for accepting feedback blocks",
+    )
+    parser.add_argument(
+        "--feedback-selection-stats",
+        default=None,
+        help="Independent block-Hessian stats used only to accept feedback blocks",
+    )
+    parser.add_argument(
+        "--tensor-row-chunk-size",
+        type=int,
+        default=1024,
+        help="Maximum output rows of one weight tensor processed on device at once",
+    )
+    parser.add_argument(
+        "--activation-stats",
+        default=None,
+        help="Module-keyed calibration safetensors from mxstream-calibrate",
+    )
+    parser.add_argument(
+        "--calibration-objective",
+        choices=("mean-abs", "rms", "block-hessian"),
+        default="mean-abs",
+        help="Objective to load from --activation-stats",
+    )
+    parser.add_argument(
+        "--no-gamma-proxy",
+        action="store_false",
+        dest="gamma_proxy",
+        help="Disable architecture-aware Qwen RMSNorm weighting for MSE",
+    )
+    parser.add_argument("--device", default="cuda", help="Quantization device")
+    parser.add_argument(
+        "--source-repository",
+        default=None,
+        help="Optional source repository recorded in the manifest",
+    )
+    parser.add_argument(
+        "--source-revision",
+        default=None,
+        help="Optional immutable source revision recorded in the manifest",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Validate and reuse complete output shards from an interrupted run",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Inspect headers and print the plan without creating output",
+    )
+    parser.add_argument(
+        "--verify-sqnr",
+        action="store_true",
+        help="Record bounded per-tensor SQNR samples in the manifest",
+    )
+    parser.add_argument(
+        "--sqnr-rows",
+        type=int,
+        default=16,
+        help="Leading output rows sampled per target for SQNR",
+    )
+    return parser
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the converter and return a process exit status."""
     args = build_parser().parse_args(argv)
-
-    # Load calibration stats (activation-aware gamma) if provided.
-    gamma: torch.Tensor | None = None
-    if args.calibration_stats:
-        import json
-
-        with open(args.calibration_stats) as f:
-            stats = json.load(f)
-        # stats is {layer_idx: {"pre_attn": [...], ...}}; use the first layer's
-        # pre_attn as a representative gamma vector (per-channel magnitudes).
-        first = next(iter(stats.values())) if stats else {}
-        first_key = next(iter(first.values())) if first else None
-        if first_key is not None:
-            gamma = torch.tensor(list(first_key), dtype=torch.float32)
-
-    cfg = QuantizeConfig(
+    config = QuantizeConfig(
         model_dir=args.model_dir,
         output_dir=args.output_dir,
         device=args.device,
+        policy=args.policy,
+        method=args.method,
         scale_percentile=args.scale_percentile,
-        gamma=gamma,
-        rotation=args.rotation,
-        workers=args.workers,
+        mse_clip_depth=args.mse_clip_depth,
+        hessian_rounding_sweeps=args.hessian_rounding_sweeps,
+        hessian_error_feedback=args.hessian_error_feedback,
+        hessian_feedback_damp_percent=args.hessian_feedback_damp_percent,
+        hessian_feedback_activation_order=args.hessian_feedback_activation_order,
+        hessian_feedback_max_mse_ratio=args.hessian_feedback_max_mse_ratio,
+        feedback_selection_stats=args.feedback_selection_stats,
+        tensor_row_chunk_size=args.tensor_row_chunk_size,
+        activation_stats=args.activation_stats,
+        calibration_objective=args.calibration_objective,
+        gamma_proxy=args.gamma_proxy,
+        resume=args.resume,
+        verify_sqnr=args.verify_sqnr,
+        sqnr_rows=args.sqnr_rows,
+        source_repository=args.source_repository,
+        source_revision=args.source_revision,
     )
-
-    print(f"[mxstream] model_dir={args.model_dir}")
-    print(f"[mxstream] output_dir={args.output_dir}")
-    print(f"[mxstream] rotation={args.rotation}, device={args.device}, workers={args.workers}")
-
-    processed = quantize_model(cfg)
-    print(f"[mxstream] quantized {processed} shard(s) -> {args.output_dir}")
-
-    if args.verify:
-        # The config was already assembled by quantize_model; verify coverage
-        # against the modules discovered in the output shards.
-        from .output import _module_list_from_keys
-        from .shard import discover_shards, shard_tensor_keys
-
-        out_dir = Path(args.output_dir)
-        shards, _ = discover_shards(out_dir)
-        all_keys: list[str] = []
-        for shard in shards:
-            for key in shard_tensor_keys(shard):
-                if key not in all_keys:
-                    all_keys.append(key)
-        real_modules = _module_list_from_keys(all_keys)
-        gaps = verify_emitted_config(args.output_dir, real_modules=real_modules)
-        if gaps:
-            print(f"[mxstream] WARNING: uncovered modules: {gaps}")
-        else:
-            print("[mxstream] config coverage OK")
-
+    try:
+        if args.dry_run:
+            print(json.dumps(plan_model(config).summary(), indent=2))
+            return 0
+        processed = quantize_model(config)
+    except (FileNotFoundError, FileExistsError, OSError, RuntimeError, ValueError) as exc:
+        print(f"mxstream: error: {exc}", file=sys.stderr)
+        return 1
+    print(f"[mxstream] complete: {processed} shard(s) -> {args.output_dir}")
     return 0
 
 

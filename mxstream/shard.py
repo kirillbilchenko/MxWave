@@ -1,25 +1,30 @@
 """Safetensors shard discovery and streaming reads.
 
-The streaming model loads one shard at a time, quantizes its targeted tensors
-on-device, writes the result, and frees memory before moving to the next shard
-— so models larger than any single machine can be quantized without loading
-the full checkpoint into RAM/VRAM.
+The streaming model inspects one shard at a time and reads large target matrices
+by bounded row ranges. It writes the completed output shard before advancing,
+so neither the full checkpoint nor a full target matrix must enter device memory.
 """
 
 from __future__ import annotations
 
 import json
+import struct
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import torch
 from safetensors import safe_open
 
 __all__ = [
     "ShardFile",
+    "TensorInfo",
     "discover_shards",
     "iter_tensors",
+    "read_tensor",
+    "read_tensor_row_range",
+    "read_tensor_rows",
+    "shard_tensor_info",
 ]
 
 
@@ -29,6 +34,16 @@ class ShardFile:
 
     path: Path
     weight_map: dict[str, str]  # tensor name -> shard filename (for the index)
+
+
+@dataclass(frozen=True)
+class TensorInfo:
+    """Header-only metadata for one safetensors tensor."""
+
+    name: str
+    shape: tuple[int, ...]
+    dtype: str
+    data_offsets: tuple[int, int]
 
 
 def discover_shards(model_dir: str | Path) -> tuple[list[ShardFile], dict[str, str] | None]:
@@ -85,6 +100,58 @@ def shard_tensor_keys(shard: ShardFile) -> list[str]:
         return list(sf.keys())
 
 
+def shard_tensor_info(shard: ShardFile) -> dict[str, TensorInfo]:
+    """Read shapes, dtypes, and offsets from a shard without loading tensor data."""
+    with shard.path.open("rb") as stream:
+        raw_length = stream.read(8)
+        if len(raw_length) != 8:
+            raise ValueError(f"Invalid safetensors header in {shard.path}")
+        header_length = struct.unpack("<Q", raw_length)[0]
+        if header_length > 100_000_000:
+            raise ValueError(f"Unreasonably large safetensors header in {shard.path}")
+        raw_header = stream.read(header_length)
+    try:
+        header: Any = json.loads(raw_header)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Invalid safetensors header JSON in {shard.path}") from exc
+    if not isinstance(header, dict):
+        raise TypeError(f"Invalid safetensors header object in {shard.path}")
+
+    result: dict[str, TensorInfo] = {}
+    for name, raw_info in header.items():
+        if name == "__metadata__":
+            continue
+        if not isinstance(name, str) or not isinstance(raw_info, dict):
+            raise TypeError(f"Invalid tensor entry in {shard.path}")
+        raw_shape = raw_info.get("shape")
+        raw_dtype = raw_info.get("dtype")
+        raw_offsets = raw_info.get("data_offsets")
+        if (
+            not isinstance(raw_shape, list)
+            or not all(isinstance(dim, int) and dim >= 0 for dim in raw_shape)
+            or not isinstance(raw_dtype, str)
+            or not isinstance(raw_offsets, list)
+            or len(raw_offsets) != 2
+            or not all(isinstance(offset, int) and offset >= 0 for offset in raw_offsets)
+            or raw_offsets[0] > raw_offsets[1]
+        ):
+            raise ValueError(f"Invalid metadata for tensor {name!r} in {shard.path}")
+        result[name] = TensorInfo(
+            name=name,
+            shape=tuple(raw_shape),
+            dtype=raw_dtype,
+            data_offsets=(raw_offsets[0], raw_offsets[1]),
+        )
+    maximum_end = max((info.data_offsets[1] for info in result.values()), default=0)
+    expected_size = 8 + header_length + maximum_end
+    if shard.path.stat().st_size != expected_size:
+        raise ValueError(
+            f"Safetensors size mismatch in {shard.path}: expected {expected_size}, "
+            f"found {shard.path.stat().st_size}"
+        )
+    return result
+
+
 def read_tensor(
     shard: ShardFile,
     key: str,
@@ -94,3 +161,36 @@ def read_tensor(
     """Read a single tensor from a shard (lazy — data pulled on access)."""
     with safe_open(str(shard.path), framework="pt", device=str(device)) as sf:
         return cast(torch.Tensor, sf.get_tensor(key))
+
+
+def read_tensor_rows(
+    shard: ShardFile,
+    key: str,
+    rows: int,
+    *,
+    device: torch.device | str = "cpu",
+) -> torch.Tensor:
+    """Read only the leading rows of a matrix from a safetensors shard."""
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    return read_tensor_row_range(shard, key, 0, rows, device=device)
+
+
+def read_tensor_row_range(
+    shard: ShardFile,
+    key: str,
+    start: int,
+    stop: int,
+    *,
+    device: torch.device | str = "cpu",
+) -> torch.Tensor:
+    """Read the half-open row range ``[start, stop)`` of a matrix."""
+    if start < 0 or stop <= start:
+        raise ValueError("row range must satisfy 0 <= start < stop")
+    with safe_open(str(shard.path), framework="pt", device="cpu") as sf:
+        sliced = cast(torch.Tensor, sf.get_slice(key)[start:stop])
+    if sliced.ndim != 2 or sliced.shape[0] != stop - start:
+        raise ValueError(
+            f"Tensor {key!r} cannot provide requested matrix rows [{start}, {stop})"
+        )
+    return sliced.to(device)

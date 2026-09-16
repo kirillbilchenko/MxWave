@@ -1,0 +1,87 @@
+{
+  "format": "mxstream-paired-likelihood-summary-v1",
+  "date": "2026-09-15",
+  "hardware": "NVIDIA DGX Spark, GB10, SM121",
+  "runtime": {
+    "image": "vllm/vllm-openai:qwen38-flash-next",
+    "mxfp4_linear_backend": "marlin",
+    "max_model_len": 4096,
+    "max_num_seqs": 2,
+    "max_num_batched_tokens": 4096,
+    "gpu_memory_utilization": 0.45,
+    "client_workers": 1
+  },
+  "model": {
+    "repository": "Qwen/Qwen3.8-27B",
+    "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0"
+  },
+  "dataset": {
+    "repository": "Salesforce/wikitext",
+    "configuration": "wikitext-2-raw-v1",
+    "split": "test",
+    "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "parquet_sha256": "5f1bea067869d04849c0f975a2b29c4ff47d867f484f5010ea5e861eab246d91",
+    "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+    "row_joiner": "\\n\\n"
+  },
+  "protocol": {
+    "kind": "openai-api-prompt-logprobs",
+    "window_characters": 4096,
+    "non_empty_windows": 316,
+    "characters": 1294336,
+    "prompt_tokens": 297515,
+    "scored_tokens": 297199,
+    "unscored_tokens": "first token of each independent window",
+    "pairing": "text SHA-256, token SHA-256, prompt token count, and scored token count",
+    "uncertainty": "100000-sample paired cluster bootstrap over windows, seed 20260915",
+    "warning": "Absolute PPL is not literature-compatible with a different token-window or stride protocol."
+  },
+  "results": {
+    "bf16": {
+      "prompt_perplexity": 7.980864117,
+      "mean_negative_log_likelihood": 2.077046691,
+      "report_sha256": "7cf88d60e6a8164bd1b52046fe318e3d38da8bb33c9f247c1a921ec80d82d0c3"
+    },
+    "mxstream_hessian64_scale_only": {
+      "prompt_perplexity": 8.119444612,
+      "mean_negative_log_likelihood": 2.094261754,
+      "report_sha256": "ffc1c7f9e452539a420cc882f35744086cc60c2ce01f668fc0d3252d74edfd4e"
+    },
+    "amd_quark_awq_mxfp4": {
+      "prompt_perplexity": 8.187543970,
+      "mean_negative_log_likelihood": 2.102613971,
+      "report_sha256": "bb874e152f1d1da84e1bf558a63207c35e53e5c003c4333737a4f472afe36468"
+    }
+  },
+  "paired_comparisons": {
+    "mxstream_vs_amd": {
+      "relative_perplexity_percent": -0.831743,
+      "confidence_interval_95_percent": [
+        -1.227040,
+        -0.531459
+      ],
+      "window_wins": 204,
+      "window_losses": 112,
+      "two_sided_sign_test_p": 2.5465891e-7,
+      "relative_perplexity_without_largest_outlier_percent": -0.684463
+    },
+    "mxstream_vs_bf16": {
+      "relative_perplexity_percent": 1.736410,
+      "confidence_interval_95_percent": [
+        1.333148,
+        2.110433
+      ],
+      "window_wins": 65,
+      "window_losses": 251
+    },
+    "amd_vs_bf16": {
+      "relative_perplexity_percent": 2.589693,
+      "confidence_interval_95_percent": [
+        2.282035,
+        2.906489
+      ],
+      "window_wins": 44,
+      "window_losses": 272
+    }
+  }
+}

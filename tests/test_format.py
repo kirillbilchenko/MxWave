@@ -48,6 +48,23 @@ def test_detects_per_channel_fp8(tmp_path: Path):
 
 
 def test_detects_mxfp4(tmp_path: Path):
-    d = _write_config(tmp_path, {"quant_method": "compressed-tensors", "format": "mxfp4-pack-quantized"})
+    d = _write_config(
+        tmp_path, {"quant_method": "compressed-tensors", "format": "mxfp4-pack-quantized"}
+    )
     fmt = detect_input_format(d)
     assert fmt.kind == "mxfp4"
+
+
+def test_detects_modelopt_nvfp4(tmp_path: Path):
+    d = _write_config(
+        tmp_path,
+        {"quant_method": "modelopt", "quant_algo": "NVFP4"},
+    )
+    fmt = detect_input_format(d)
+    assert fmt.kind == "nvfp4"
+    assert fmt.block_size == 16
+
+
+def test_unknown_quantized_config_never_defaults_to_fp16(tmp_path: Path):
+    d = _write_config(tmp_path, {"quant_method": "gptq", "bits": 4})
+    assert detect_input_format(d).kind == "unknown_quantized"

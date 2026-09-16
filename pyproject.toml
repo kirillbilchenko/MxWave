@@ -19,7 +19,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-calibrate = ["transformers>=4.40"]
+calibrate = [
+    "accelerate>=0.28",
+    "transformers>=4.40",
+]
 dev = [
     "pytest>=7.0",
     "ruff>=0.4",
@@ -27,6 +30,7 @@ dev = [
 ]
 
 [project.scripts]
+mxstream-calibrate = "mxstream.calibration_cli:main"
 mxstream-quantize = "mxstream.cli:main"
 
 [tool.setuptools.packages.find]

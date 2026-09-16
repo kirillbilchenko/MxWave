@@ -81,7 +81,9 @@ Why this is enough to trust the checkpoint:
   rotation-folded, so PPL is measurably closer to the base than plain RTN MXFP4
   at the same size.
 
-PPL script: `evals/eval_ppl.py` in the mxstream repo.
+PPL script: `scripts/evaluate_api_perplexity.py` in the mxstream repo. Record
+the corpus revision/hash, windowing protocol, token count, serving backend, and
+paired baseline reports; an absolute PPL is not comparable when those differ.
 
 ## Fidelity, footprint & provenance
 
@@ -99,16 +101,20 @@ Targets {{VLLM_IMAGE}}. The `config.json` here targets vLLM's *merged* runtime m
 (`qkv_proj`, `gate_up_proj`) so the fused linears load quantized.
 
 ```bash
-docker run -d --name {{CONTAINER}} --gpus all --privileged --ipc=host -p 8000:8000 \
+docker run -d --name {{CONTAINER}} --gpus all --ipc=host -p 8000:8000 \
   -e VLLM_MXFP4_USE_MARLIN=1 \
   -v $(pwd):/model \
 {{PATCH_MOUNTS}} \
   {{VLLM_IMAGE}} /model \
   --served-model-name {{SERVED_NAME}} \
 {{SERVE_FLAGS}} \
-  --gpu-memory-utilization 0.97 --enforce-eager \
+  --gpu-memory-utilization {{GPU_MEMORY_UTILIZATION}} \
   --linear-backend marlin --trust-remote-code
 ```
+
+<!-- On unified-memory systems such as DGX Spark, CPU and GPU allocations share
+     the same 128 GB pool. Start around 0.45 and raise only while monitoring
+     MemAvailable; 0.80 can starve the host even when the model itself fits. -->
 
 <!-- OPTIONAL (only if the checkpoint needs a runtime patch — see vllm_patch/):
 ### Runtime patch ([`vllm_patch/`](./vllm_patch))
@@ -119,13 +125,33 @@ docker run -d --name {{CONTAINER}} --gpus all --privileged --ipc=host -p 8000:80
 ## How it was made
 
 ```bash
+mxstream-calibrate \
+  --model-dir <{{SOURCE_RELEASE}}> \
+  --corpus {{CALIBRATION_CORPUS}} \
+  --output ./activation-stats.safetensors \
+  --policy {{POLICY}} \
+  --statistics {{CALIBRATION_OBJECTIVE}} \
+  --num-sequences {{CALIBRATION_SEQUENCES}} \
+  --sequence-length {{CALIBRATION_SEQUENCE_LENGTH}} \
+  --weight-loading streaming \
+  --device cuda
+
 mxstream-quantize \
-  --model_dir <{{SOURCE_RELEASE}}> \
-  --output_dir ./{{OUTPUT_DIR}} \
-  --workers 8 \
+  --model-dir <{{SOURCE_RELEASE}}> \
+  --output-dir ./{{OUTPUT_DIR}} \
+  --policy {{POLICY}} \
+  --method mse \
+  --scale-percentile 99.5 \
+  --mse-clip-depth 4 \
+  --hessian-rounding-sweeps 0 \
+  --tensor-row-chunk-size 1024 \
+  --activation-stats ./activation-stats.safetensors \
+  --calibration-objective {{CALIBRATION_OBJECTIVE}} \
   --device cuda \
-  --rotation {{ROTATION}} \
-  --verify
+  --source-repository {{BASE_MODEL_HF}} \
+  --source-revision {{SOURCE_REVISION}} \
+  --verify-sqnr \
+  --sqnr-rows 16
 ```
 
 `detect_input_format` auto-detects the source's {{SOURCE_FORMAT}}, streams each shard to

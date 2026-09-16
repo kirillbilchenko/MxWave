@@ -22,7 +22,8 @@ from pathlib import Path
 class InputFormat:
     """Normalized description of the source checkpoint's quantization format."""
 
-    # One of: "fp16", "fp8_block", "fp8_per_channel", "mxfp8", "mxfp4"
+    # Known values include: fp16, fp8_block, fp8_per_channel, mxfp8, mxfp4,
+    # nvfp4, and unknown_quantized.
     kind: str
     quant_method: str | None = None
     scale_suffix: str | None = None
@@ -50,11 +51,15 @@ def detect_input_format(model_dir: str | Path) -> InputFormat:
     quant_method = str(qcfg.get("quant_method", "")).lower()
     fmt = str(qcfg.get("format", "")).lower()
     strategy = str(qcfg.get("strategy", "")).lower()
+    quant_algo = str(qcfg.get("quant_algo", "")).lower()
     # Native MXFP8 / MXFP4 (e8m0 uint8 scales)
     if "mxfp" in fmt or "mxfp" in quant_method:
         if "fp8" in fmt or "fp8" in quant_method:
             return InputFormat(kind="mxfp8", quant_method=quant_method, block_size=32)
         return InputFormat(kind="mxfp4", quant_method=quant_method, block_size=32)
+
+    if "nvfp4" in fmt or "nvfp4" in quant_method or "nvfp4" in quant_algo:
+        return InputFormat(kind="nvfp4", quant_method=quant_method, block_size=16)
 
     # compressed-tensors float-quantized (per-channel or per-tensor FP8)
     if "float" in fmt:
@@ -74,6 +79,12 @@ def detect_input_format(model_dir: str | Path) -> InputFormat:
             scale_suffix=".weight_scale_inv",
             block_size=128,
         )
+
+    # A non-empty but unfamiliar quantization_config is never safe to treat as
+    # dense floats. This catches AWQ/GPTQ/ModelOpt variants without relying on
+    # tensor suffixes.
+    if qcfg:
+        return InputFormat(kind="unknown_quantized", quant_method=quant_method)
 
     return InputFormat(kind="fp16")
 
