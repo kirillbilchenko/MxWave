@@ -33,7 +33,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     compose = subparsers.add_parser("compose", help="compose one named FP8 bucket")
     compose.add_argument("--plan", required=True)
-    compose.add_argument("--bucket", required=True)
+    compose.add_argument(
+        "--bucket",
+        action="append",
+        required=True,
+        help="Named bucket from the plan; repeat to compose a combined candidate",
+    )
     compose.add_argument("--output", required=True)
     compose.add_argument("--quant-device", default="cpu")
     compose.add_argument("--dry-run", action="store_true")
@@ -85,7 +90,16 @@ def _run_compose(args: argparse.Namespace) -> None:
     dense_donor = raw_plan.get("dense_donor")
     if not isinstance(primary_model, str) or not isinstance(dense_donor, str):
         raise TypeError("Precision-budget plan is missing checkpoint paths")
-    modules = load_bucket_modules(plan_path, args.bucket)
+    bucket_names = list(dict.fromkeys(args.bucket))
+    if len(bucket_names) != len(args.bucket):
+        raise ValueError("Repeated --bucket names must be unique")
+    modules = sorted(
+        {
+            module
+            for bucket_name in bucket_names
+            for module in load_bucket_modules(plan_path, bucket_name)
+        }
+    )
     composition = build_fp8_composition_plan(primary_model, dense_donor, modules)
     print(json.dumps(composition.summary(), indent=2, sort_keys=True))
     if args.dry_run:
