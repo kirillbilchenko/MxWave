@@ -12,6 +12,7 @@ from ..runtime_ir import (
     RuntimeGraph,
     RuntimeLinearGroup,
     RuntimeOperation,
+    RuntimeOutputPath,
     RuntimeWeight,
 )
 
@@ -203,10 +204,15 @@ def build(
             else _gated_delta_operation(stack, layer)
         )
 
+    output_path = RuntimeOutputPath(
+        normalization_module=stack.removesuffix(".layers") + ".norm",
+        projection_module="lm_head",
+    )
     graph = RuntimeGraph(
         architecture="qwen3_5_text",
         adapter_version="1",
         operations=tuple(operations),
+        output_path=output_path,
     )
     missing = sorted(
         checkpoint_name
@@ -217,5 +223,18 @@ def build(
     if missing:
         raise ValueError(
             f"Qwen3.5 checkpoint is missing {len(missing)} runtime weight(s): {missing[:5]}"
+        )
+    missing_output = [
+        name
+        for name in (
+            f"{output_path.normalization_module}.weight",
+            f"{output_path.projection_module}.weight",
+        )
+        if name not in names
+    ]
+    if missing_output:
+        raise ValueError(
+            "Qwen3.5 checkpoint is missing runtime output weight(s): "
+            f"{missing_output}"
         )
     return graph

@@ -15,6 +15,7 @@ __all__ = [
     "RuntimeGraph",
     "RuntimeLinearGroup",
     "RuntimeOperation",
+    "RuntimeOutputPath",
     "RuntimeWeight",
 ]
 
@@ -161,12 +162,35 @@ class RuntimeOperation:
 
 
 @dataclass(frozen=True)
+class RuntimeOutputPath:
+    """Modules that map final decoder hidden states to vocabulary logits."""
+
+    normalization_module: str
+    projection_module: str
+
+    def __post_init__(self) -> None:
+        """Validate final normalization and projection module names."""
+        if not self.normalization_module or self.normalization_module.endswith(".weight"):
+            raise ValueError("Runtime output normalization must name a module")
+        if not self.projection_module or self.projection_module.endswith(".weight"):
+            raise ValueError("Runtime output projection must name a module")
+
+    def as_dict(self) -> dict[str, str]:
+        """Return a JSON-serializable output-path record."""
+        return {
+            "normalization_module": self.normalization_module,
+            "projection_module": self.projection_module,
+        }
+
+
+@dataclass(frozen=True)
 class RuntimeGraph:
     """Validated runtime-operation graph emitted by an architecture adapter."""
 
     architecture: str
     adapter_version: str
     operations: tuple[RuntimeOperation, ...]
+    output_path: RuntimeOutputPath | None = None
 
     def __post_init__(self) -> None:
         """Validate graph-wide operation and checkpoint ownership."""
@@ -210,5 +234,6 @@ class RuntimeGraph:
         return {
             "architecture": self.architecture,
             "adapter_version": self.adapter_version,
+            "output_path": self.output_path.as_dict() if self.output_path is not None else None,
             "operations": [operation.as_dict() for operation in self.operations],
         }

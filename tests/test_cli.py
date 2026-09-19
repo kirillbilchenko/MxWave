@@ -18,6 +18,8 @@ def test_packaged_entry_points_are_mxwave_only() -> None:
     project = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
     assert project["project"]["scripts"] == {
         "mxwave-calibrate": "mxwave.calibration_cli:main",
+        "mxwave-counteraction-evaluate": "mxwave.counteraction_eval:main",
+        "mxwave-counteraction-probe": "mxwave.counteraction_probe_cli:main",
         "mxwave-precision-budget": "mxwave.precision_budget_cli:main",
         "mxwave-quantize": "mxwave.cli:main",
     }

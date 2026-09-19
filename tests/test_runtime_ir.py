@@ -34,6 +34,8 @@ def _qwen_tensor_names() -> set[str]:
     stack = "model.language_model.layers"
     names = {
         "model.language_model.embed_tokens.weight",
+        "model.language_model.norm.weight",
+        "lm_head.weight",
         # Qwen checkpoints can carry a separate one-layer MTP stack. It must
         # not be mistaken for the complete text decoder stack.
         "mtp.layers.0.mlp.gate_proj.weight",
@@ -90,6 +92,11 @@ def test_qwen_adapter_builds_fused_runtime_groups_and_response_boundaries() -> N
     assert graph.architecture == "qwen3_5_text"
     assert graph.adapter_version == "1"
     assert len(graph.operations) == 8
+    assert graph.output_path is not None
+    assert graph.output_path.as_dict() == {
+        "normalization_module": "model.language_model.norm",
+        "projection_module": "lm_head",
+    }
 
     gate = graph.linear_group_for_weight(
         "model.language_model.layers.0.mlp.gate_proj.weight"
@@ -142,6 +149,9 @@ def test_llama_adapter_builds_dense_fused_runtime_groups() -> None:
     assert graph.architecture == "llama"
     assert graph.adapter_version == "1"
     assert len(graph.operations) == 4
+    assert graph.output_path is not None
+    assert graph.output_path.normalization_module == "model.norm"
+    assert graph.output_path.projection_module == "lm_head"
     gate_up = graph.linear_group_for_weight("model.layers.1.mlp.up_proj.weight")
     assert gate_up.runtime_name == "model.layers.1.mlp.gate_up_proj"
     assert [member.role for member in gate_up.members] == ["gate", "up"]

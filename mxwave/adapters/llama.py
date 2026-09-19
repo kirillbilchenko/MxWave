@@ -11,6 +11,7 @@ from ..runtime_ir import (
     RuntimeGraph,
     RuntimeLinearGroup,
     RuntimeOperation,
+    RuntimeOutputPath,
     RuntimeWeight,
 )
 
@@ -128,10 +129,15 @@ def build(
         for layer in range(layer_count)
         for operation in (_mlp_operation(stack, layer), _attention_operation(stack, layer))
     )
+    output_path = RuntimeOutputPath(
+        normalization_module=stack.removesuffix(".layers") + ".norm",
+        projection_module="lm_head",
+    )
     graph = RuntimeGraph(
         architecture="llama",
         adapter_version="1",
         operations=operations,
+        output_path=output_path,
     )
     missing = sorted(
         checkpoint_name
@@ -142,5 +148,17 @@ def build(
     if missing:
         raise ValueError(
             f"Llama checkpoint is missing {len(missing)} runtime weight(s): {missing[:5]}"
+        )
+    missing_output = [
+        name
+        for name in (
+            f"{output_path.normalization_module}.weight",
+            f"{output_path.projection_module}.weight",
+        )
+        if name not in names
+    ]
+    if missing_output:
+        raise ValueError(
+            f"Llama checkpoint is missing runtime output weight(s): {missing_output}"
         )
     return graph
