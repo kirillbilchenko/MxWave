@@ -42,6 +42,8 @@ def _report(token_hash: str) -> dict[str, Any]:
         "execution": {
             "baseline_config_sha256": "baseline-config",
             "baseline_index_sha256": "baseline-index",
+            "attention_implementation": "eager",
+            "dtype": "bfloat16",
         },
         "calibration": {"file_sha256": "stats"},
         "heldout": {"token_ids_sha256": token_hash},
@@ -65,4 +67,4 @@ def test_evaluation_rejects_reused_tokens() -> None:
     result = evaluate_suffix_jvp_reports(_report("same"), _report("same"))
 
     assert result["passed"] is False
-    assert result["gates"]["identity_matches_and_tokens_are_disjoint"] is False
+    assert result["gates"]["identity_runtime_match_and_tokens_are_disjoint"] is False

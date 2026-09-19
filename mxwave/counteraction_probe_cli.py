@@ -204,6 +204,8 @@ def _report(
                 baseline_model_dir / "model.safetensors.index.json"
             ),
             "expected_baseline_candidate": args.expected_baseline_candidate,
+            "attention_implementation": args.attention_implementation,
+            "dtype": args.dtype,
         },
         "runtime_graph": graph.as_dict(),
         "calibration": {

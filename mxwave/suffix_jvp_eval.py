@@ -65,6 +65,14 @@ def evaluate_suffix_jvp_reports(
         report.get("suffix_sensitivity") == "forward-ad" for report in reports
     )
     identity_matches = _identity(first) == _identity(second)
+    first_execution = _mapping(first.get("execution"), "execution")
+    second_execution = _mapping(second.get("execution"), "execution")
+    runtime_matches = (
+        first_execution.get("attention_implementation")
+        == second_execution.get("attention_implementation")
+        == "eager"
+        and first_execution.get("dtype") == second_execution.get("dtype") == "bfloat16"
+    )
     first_heldout = _mapping(first.get("heldout"), "heldout")
     second_heldout = _mapping(second.get("heldout"), "heldout")
     disjoint_tokens = first_heldout.get("token_ids_sha256") != second_heldout.get(
@@ -187,7 +195,9 @@ def evaluate_suffix_jvp_reports(
 
     gates = {
         "complete_format_and_sensitivity_valid": complete and format_valid and sensitivity_valid,
-        "identity_matches_and_tokens_are_disjoint": identity_matches and disjoint_tokens,
+        "identity_runtime_match_and_tokens_are_disjoint": (
+            identity_matches and runtime_matches and disjoint_tokens
+        ),
         "three_matching_layers": same_layers,
         "baseline_reconstruction_at_most_1e-12": maximum_reconstruction <= 1e-12,
         "recurrence_residual_at_most_1e-10": maximum_recurrence <= 1e-10,

@@ -52,6 +52,13 @@ all tangents are finite, and the zero-perturbation candidate reproduces baseline
 
 Compatibility output is not a quality measurement and must not be used to change the frozen gates.
 
+Compatibility outcome, recorded before either quality split: the SDPA configuration reached a
+full-attention layer whose Flash-SDPA kernel has no PyTorch forward-AD rule and aborted. The
+explicit eager-attention implementation then traversed all 64 layers and the head with native
+forward AD. Its baseline reconstruction, recurrence residual, exact-candidate KL error, and
+zero-tangent JVP KL error were all `0.0`. Both quality splits are therefore frozen to eager
+attention; mixing implementations invalidates the experiment.
+
 ## Frozen quality gates
 
 The stage-one result passes only if all gates pass across the two reports:
