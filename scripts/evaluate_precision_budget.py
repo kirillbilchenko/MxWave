@@ -1,4 +1,4 @@
-"""Select and validate measured-precision candidates against frozen BF16/H64 data."""
+"""Select and validate precision candidates against a frozen reference and baseline."""
 
 from __future__ import annotations
 
@@ -248,7 +248,7 @@ def select_candidates(args: argparse.Namespace) -> Path:
                     "split_b_mean": _mean(candidate_kl[args.split_size :]),
                     "pooled_mean": _mean(candidate_kl),
                 },
-                "candidate_minus_h64_forward_kl_nats": {
+                "candidate_minus_baseline_forward_kl_nats": {
                     "split_a_mean": first_mean,
                     "split_b_mean": second_mean,
                     "pooled_mean": pooled_mean,
@@ -259,7 +259,7 @@ def select_candidates(args: argparse.Namespace) -> Path:
                     ),
                     "candidate_lower_contexts": int((delta < 0).sum().item()),
                     "ties": int((delta == 0).sum().item()),
-                    "h64_lower_contexts": int((delta > 0).sum().item()),
+                    "baseline_lower_contexts": int((delta > 0).sum().item()),
                 },
                 "eligible": eligible,
                 "conservative_gain_nats": conservative_gain,
@@ -302,7 +302,7 @@ def select_candidates(args: argparse.Namespace) -> Path:
         "screen_contexts": screen_rows,
         "split_size": args.split_size,
         "selection_rule": (
-            "negative candidate-minus-H64 mean forward KL on both fixed splits; "
+            "negative candidate-minus-baseline mean forward KL on both fixed splits; "
             "choose up to the bucket cap by maximum summed smaller-split gain under "
             "the byte budget"
         ),
@@ -373,7 +373,7 @@ def validate_final_candidate(args: argparse.Namespace) -> Path:
         "selection_contexts_excluded": args.selection_contexts,
         "holdout_contexts": holdout_rows,
         "holdout_halves": [half, half],
-        "candidate_minus_h64_forward_kl_nats": {
+        "candidate_minus_baseline_forward_kl_nats": {
             "first_half_mean": first_mean,
             "second_half_mean": second_mean,
             "pooled_mean": pooled_mean,
@@ -384,19 +384,19 @@ def validate_final_candidate(args: argparse.Namespace) -> Path:
             ),
             "candidate_lower_contexts": int((delta < 0).sum().item()),
             "ties": int((delta == 0).sum().item()),
-            "h64_lower_contexts": int((delta > 0).sum().item()),
+            "baseline_lower_contexts": int((delta > 0).sum().item()),
         },
         "forward_kl_nats": {
-            "h64_holdout_mean": _mean(baseline_kl),
+            "baseline_holdout_mean": _mean(baseline_kl),
             "candidate_holdout_mean": _mean(candidate_kl),
         },
         "bf16_top1_agreement": {
-            "h64": baseline_agreement,
+            "baseline": baseline_agreement,
             "candidate": candidate_agreement,
             "total": holdout_rows,
         },
         "promotion_rule": (
-            "lower mean forward KL than H64 on both untouched halves and no more "
+            "lower mean forward KL than baseline on both untouched halves and no more "
             "than one lost BF16 top-1 agreement"
         ),
         "promotion_passed": passed,

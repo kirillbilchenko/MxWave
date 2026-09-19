@@ -13,8 +13,8 @@ import torch
 from safetensors.torch import save_file
 
 
-def _load_script() -> ModuleType:
-    path = Path("scripts/evaluate_precision_budget.py")
+def _load_script(name: str = "evaluate_precision_budget.py") -> ModuleType:
+    path = Path("scripts") / name
     spec = importlib.util.spec_from_file_location("evaluate_precision_budget", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -163,4 +163,37 @@ def test_selection_requires_both_splits_and_final_uses_only_holdout(tmp_path: Pa
     final = json.loads(final_path.read_text())
     assert final["promotion_passed"] is True
     assert final["holdout_contexts"] == 4
-    assert final["candidate_minus_h64_forward_kl_nats"]["pooled_mean"] < 0
+    assert final["candidate_minus_baseline_forward_kl_nats"]["pooled_mean"] < 0
+
+
+def test_screen_runner_uses_explicit_artifacts_and_official_vllm() -> None:
+    module = _load_script("run_precision_budget_screen.py")
+    args = module.build_parser().parse_args(
+        [
+            "--plan",
+            "plan.json",
+            "--run-root",
+            "run",
+            "--contexts",
+            "frozen-contexts.json",
+            "--reference-logprobs",
+            "reference.safetensors",
+            "--baseline-logprobs",
+            "baseline.safetensors",
+            "--evaluation-script",
+            "collect.py",
+            "--selection-script",
+            "select.py",
+        ]
+    )
+
+    assert args.runtime_image == "vllm/vllm-openai:v0.29.0"
+    command = module._collect_command(
+        args,
+        model=Path("candidate"),
+        label="candidate",
+        output=Path("candidate.safetensors"),
+        limit=32,
+    )
+    assert command[command.index("--contexts") + 1] == "frozen-contexts.json"
+    assert command[command.index("--runtime-image") + 1] == "vllm/vllm-openai:v0.29.0"

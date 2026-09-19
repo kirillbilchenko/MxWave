@@ -522,7 +522,7 @@ def _build_manifest(
         {
             "policy": "measured-precision-budget-candidate",
             "policy_description": (
-                "H64 MXFP4 with explicitly selected channel-wise FP8 runtime groups"
+                "Primary MXFP4 checkpoint with selected channel-wise FP8 runtime groups"
             ),
             "target_tensors": len(plan.mxfp4_modules) + len(plan.selected_modules),
             "mxfp4_target_tensors": len(plan.mxfp4_modules),

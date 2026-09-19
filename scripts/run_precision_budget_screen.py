@@ -13,16 +13,20 @@ import time
 from pathlib import Path
 from typing import Any, cast
 
+_DEFAULT_RUNTIME_IMAGE = "vllm/vllm-openai:v0.29.0"
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the bounded screen runner parser."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", required=True)
     parser.add_argument("--run-root", required=True)
-    parser.add_argument("--reference-root", required=True)
+    parser.add_argument("--contexts", required=True)
+    parser.add_argument("--reference-logprobs", required=True)
+    parser.add_argument("--baseline-logprobs", required=True)
     parser.add_argument("--evaluation-script", required=True)
     parser.add_argument("--selection-script", required=True)
-    parser.add_argument("--runtime-image", required=True)
+    parser.add_argument("--runtime-image", default=_DEFAULT_RUNTIME_IMAGE)
     parser.add_argument("--linear-backend", default="marlin")
     parser.add_argument("--screen-contexts", type=int, default=32)
     parser.add_argument("--split-size", type=int, default=16)
@@ -108,7 +112,6 @@ def _collect_command(
     output: Path,
     limit: int | None,
 ) -> list[str]:
-    reference_root = Path(args.reference_root)
     command = [
         sys.executable,
         args.evaluation_script,
@@ -118,7 +121,7 @@ def _collect_command(
         "--model-label",
         label,
         "--contexts",
-        str(reference_root / "contexts.json"),
+        str(Path(args.contexts)),
         "--output",
         str(output),
         "--runtime-image",
@@ -141,7 +144,9 @@ def run(args: argparse.Namespace) -> None:
         raise ValueError("screen contexts must equal two complete selection splits")
     plan_path = Path(args.plan)
     run_root = Path(args.run_root)
-    reference_root = Path(args.reference_root)
+    contexts_path = Path(args.contexts)
+    reference_logprobs = Path(args.reference_logprobs)
+    baseline_logprobs = Path(args.baseline_logprobs)
     if not run_root.is_dir():
         raise FileNotFoundError(f"Run root is missing: {run_root}")
     plan = _read_json_object(plan_path)
@@ -199,11 +204,11 @@ def run(args: argparse.Namespace) -> None:
                 args.selection_script,
                 "select",
                 "--reference",
-                str(reference_root / "bf16-logprobs.safetensors"),
+                str(reference_logprobs),
                 "--baseline",
-                str(reference_root / "mxstream-h64-logprobs.safetensors"),
+                str(baseline_logprobs),
                 "--contexts",
-                str(reference_root / "contexts.json"),
+                str(contexts_path),
                 "--plan",
                 str(plan_path),
                 "--candidate-dir",
@@ -255,13 +260,13 @@ def run(args: argparse.Namespace) -> None:
                 args.selection_script,
                 "final",
                 "--reference",
-                str(reference_root / "bf16-logprobs.safetensors"),
+                str(reference_logprobs),
                 "--baseline",
-                str(reference_root / "mxstream-h64-logprobs.safetensors"),
+                str(baseline_logprobs),
                 "--candidate",
                 str(combined_logprobs),
                 "--contexts",
-                str(reference_root / "contexts.json"),
+                str(contexts_path),
                 "--selection",
                 str(selection_path),
                 "--output",
