@@ -1,0 +1,137 @@
+{
+  "format": "mxwave-precision-budget-evaluation-v1",
+  "date": "2026-09-19",
+  "code_commit": "158668ccba0678beff2e91da484f8604e1ce702c",
+  "source_model": {
+    "repository": "Qwen/Qwen3.8-27B",
+    "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0"
+  },
+  "artifacts": {
+    "plan_sha256": "d408658ed8bfd9384975a11288da84594ce5efbcd10abaf543a1c6310a83af7a",
+    "selection_sha256": "8a073f5768fa96eff7c3554ef82b87745a84b09e0d0e02e35f312d401d2b5b88",
+    "final_sha256": "f89f5e98afbaaec5004108e773cf0c62be61322c2f71753104dce3466333c86f",
+    "manifest_sha256": "ed3ed368221813a1c5bc9ab7dcc150506e2d254172446f1f493bba6923983263",
+    "candidate_ppl316_sha256": "d636d05374fc411e8558268a73d5818b1496280a21f3f027d0e1ee6431d3b050",
+    "candidate_v029_ppl64_sha256": "76675a6cd67294a7bac7368e479a6a0382d16b745a2242123212dae014b99779"
+  },
+  "checkpoint": {
+    "h64_directory_bytes": 19856330600,
+    "candidate_directory_bytes": 20250144780,
+    "candidate_manifest_accounted_bytes": 20226686160,
+    "candidate_global_compression_ratio": 2.747,
+    "premium_tensor_bytes": 393854976,
+    "mxfp4_target_tensors": 388,
+    "fp8_target_tensors": 12,
+    "selected_buckets": [
+      "sequence-output-early-l08-11",
+      "mlp-input-late-l51-54"
+    ]
+  },
+  "selection": {
+    "candidate_count": 12,
+    "eligible_count": 2,
+    "contexts": 32,
+    "split_contexts": [
+      16,
+      16
+    ],
+    "max_selected_buckets": 4,
+    "max_premium_bytes": 1073741824
+  },
+  "untouched_holdout": {
+    "contexts": 96,
+    "halves": [
+      48,
+      48
+    ],
+    "promotion_passed": true,
+    "h64_mean_forward_kl_nats": 0.04711747590299171,
+    "candidate_mean_forward_kl_nats": 0.04494189830048611,
+    "candidate_minus_h64_mean_forward_kl_nats": -0.0021755776025056003,
+    "candidate_minus_h64_half_means": [
+      -0.0007897431390282696,
+      -0.0035614120659829295
+    ],
+    "candidate_minus_h64_bootstrap_95_ci": [
+      -0.0059394691849982565,
+      0.0005230105743017162
+    ],
+    "bf16_top1_agreement": {
+      "h64": 89,
+      "candidate": 89,
+      "total": 96
+    }
+  },
+  "wikitext2_prompt_perplexity": {
+    "protocol": {
+      "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+      "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+      "chunk_characters": 4096,
+      "chunks": 316,
+      "scored_tokens": 297199
+    },
+    "perplexity": {
+      "bf16": 7.9808641169825965,
+      "h64": 8.119444612074412,
+      "candidate": 8.111578397822433,
+      "amd_quark_awq_mxfp4": 8.187543970062812
+    },
+    "paired_candidate_relative_delta_percent": {
+      "vs_h64": -0.096881186,
+      "vs_amd_quark_awq_mxfp4": -0.9278188,
+      "vs_bf16": 1.6378462
+    },
+    "paired_candidate_vs_h64_bootstrap_95_ci_percent": [
+      -0.129653377,
+      -0.06373363
+    ]
+  },
+  "serving": {
+    "protocol": {
+      "input_tokens": 512,
+      "output_tokens": 128,
+      "ignore_eos": true,
+      "temperature": 0.0,
+      "seed": 20260919,
+      "prefix_caching": false
+    },
+    "day_zero_runtime": {
+      "image_digest": "sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8",
+      "vllm": "0.1.dev20073+g8e685d198",
+      "candidate": {
+        "c1_output_tokens_per_second": 12.206125231917461,
+        "c1_median_ttft_ms": 543.6942560045281,
+        "c1_median_tpot_ms": 78.27083347634527,
+        "c4_output_tokens_per_second": 23.376993081317366,
+        "c4_median_ttft_ms": 11853.981801497866,
+        "c4_median_tpot_ms": 79.19686300394501
+      },
+      "h64": {
+        "c1_output_tokens_per_second": 12.523648115646516,
+        "c4_output_tokens_per_second": 23.98534661031689
+      }
+    },
+    "vllm_0_29_0": {
+      "image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+      "torch": "2.13.0+cu130",
+      "flashinfer": "0.6.18",
+      "transformers": "5.16.1",
+      "compressed_tensors": "0.17.0",
+      "candidate": {
+        "c1_output_tokens_per_second": 12.212793063848853,
+        "c1_median_ttft_ms": 545.8756910011289,
+        "c1_median_tpot_ms": 78.23014570474368,
+        "c4_run_1_output_tokens_per_second": 41.22963567865764,
+        "c4_run_1_median_ttft_ms": 2176.357486998313,
+        "c4_run_1_median_tpot_ms": 80.67250775593135,
+        "c4_run_2_output_tokens_per_second": 41.25001534520936,
+        "c4_run_2_median_ttft_ms": 2175.2007014947594,
+        "c4_run_2_median_tpot_ms": 80.60251515749182
+      },
+      "ppl64": 8.160493800821682,
+      "day_zero_ppl64": 8.161232896965313,
+      "token_hash_mismatches": 0
+    }
+  }
+}
