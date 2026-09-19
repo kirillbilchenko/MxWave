@@ -113,6 +113,12 @@ decoder layout used by Qwen3.8-27B. Unsupported layouts fail closed. Use
 `--weight-loading resident` explicitly only when a model has no streaming
 adapter and enough memory is available.
 
+Runtime-aware optimization uses a separate, model-independent operation graph.
+Built-in adapters currently describe the verified Qwen3.5-text layout and the
+standard dense Llama layout, including runtime-fused QKV and gate/up groups.
+Adapters inspect only configuration and safetensors headers, validate every
+required weight, and fail closed when an architecture is unknown or incomplete.
+
 Target matrices are read from safetensors and quantized in bounded row ranges;
 `--tensor-row-chunk-size` controls the device working set. Completed packed
 tensors accumulate only inside the current output shard before its atomic save.
@@ -247,6 +253,9 @@ MxWave/
 │   ├── engine.py    GPU-streaming quantization orchestration
 │   ├── format.py    input format detection from config.json (not suffix sniffing)
 │   ├── rotate.py    Hadamard / random-orthogonal rotation + folding
+│   ├── runtime_ir.py Model-independent runtime operations and fused groups
+│   ├── runtime_adapters.py Validated architecture-adapter registry
+│   ├── adapters/    Architecture-specific runtime graph builders
 │   ├── verify.py    SQNR, config-coverage verification (verification-first)
 │   ├── output.py    compressed-tensors quantization_config assembly + coverage
 │   └── cli.py       CLI entry point (wired to the engine)
