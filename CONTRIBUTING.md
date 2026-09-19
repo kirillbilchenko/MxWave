@@ -47,6 +47,18 @@ All must pass before a PR.
 2. Add a focused unit test in `tests/`.
 3. Update the README roadmap and the benchmark table if it changes quality.
 
+## Adding a runtime adapter
+
+1. Implement `matches(config)` and `build(config, tensor_names)` under
+   `mxwave/adapters/`; discovery must use configuration plus checkpoint headers,
+   never tensor payloads.
+2. Register the adapter in `mxwave/runtime_adapters.py`.
+3. Describe runtime-fused linear groups in their packing order and reject missing
+   members so precision-aware features cannot silently split a fused operation.
+4. Add synthetic conformance tests for matching, graph construction, fused-group
+   membership, incomplete checkpoints, and auxiliary decoder stacks when relevant.
+5. Record an end-to-end model smoke test before describing the adapter as verified.
+
 ## Benchmarking on the DGX Spark
 
 Benchmarks belong in the README table (same model, same `mxfp4-pack-quantized`
