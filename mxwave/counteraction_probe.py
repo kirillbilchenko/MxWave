@@ -6,9 +6,9 @@ import copy
 import inspect
 import math
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Protocol, cast
 
 import torch
 
@@ -31,9 +31,37 @@ from .suffix_jvp import module_tensor_jvp
 __all__ = [
     "BaselineCounteractionResult",
     "CandidateCounteractionResult",
+    "CandidateMaterialization",
+    "CandidateMaterializer",
     "CounteractionProbeResult",
+    "probe_mlp_candidates",
     "probe_mlp_counteraction",
 ]
+
+
+@dataclass(frozen=True)
+class CandidateMaterialization:
+    """Dense candidate overrides and source/baseline error measurements."""
+
+    overrides: Mapping[str, Mapping[str, torch.Tensor]]
+    weight_nmse: Mapping[str, float]
+    baseline_weight_nmse: Mapping[str, float]
+    metadata: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
+
+
+class CandidateMaterializer(Protocol):
+    """Build bounded candidate overrides for one resident source/execution layer."""
+
+    def __call__(
+        self,
+        reference_layer: torch.nn.Module,
+        execution_layer: torch.nn.Module,
+        layer_prefix: str,
+        operation: RuntimeOperation,
+        calibration: CalibrationData,
+        *,
+        row_chunk_size: int,
+    ) -> CandidateMaterialization: ...
 
 
 @dataclass(frozen=True)
@@ -116,6 +144,7 @@ class CounteractionProbeResult:
     candidates: tuple[CandidateCounteractionResult, ...]
     baseline: BaselineCounteractionResult
     suffix_sensitivity: str | None = None
+    candidate_metadata: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable result with predeclared rankings."""
@@ -138,6 +167,11 @@ class CounteractionProbeResult:
             "suffix_sensitivity": self.suffix_sensitivity,
             "candidates": [candidate.as_dict() for candidate in self.candidates],
         }
+        if self.candidate_metadata:
+            result["candidate_metadata"] = {
+                name: dict(metadata)
+                for name, metadata in sorted(self.candidate_metadata.items())
+            }
         for name, key in ranking_keys:
             candidates_by_name = sorted(self.candidates, key=lambda item: item.candidate)
             result[name] = [
@@ -567,12 +601,13 @@ def _position_embeddings(
     return cast(tuple[torch.Tensor, torch.Tensor], raw)
 
 
-def probe_mlp_counteraction(
+def probe_mlp_candidates(
     model: torch.nn.Module,
     graph: RuntimeGraph,
     calibration: CalibrationData,
     layer_index: int,
-    candidate_specs: Sequence[Mxfp4CandidateSpec],
+    candidate_names: Sequence[str],
+    materializer: CandidateMaterializer,
     sequences: Sequence[Sequence[int]],
     checkpoint_files: Mapping[str, Path],
     baseline_checkpoint_files: Mapping[str, Path],
@@ -584,7 +619,7 @@ def probe_mlp_counteraction(
     suffix_jvp: bool = False,
     progress: Callable[[int, int], None] | None = None,
 ) -> CounteractionProbeResult:
-    """Measure candidate counteraction on the real packed prefix and suffix.
+    """Measure materialized candidates on the real packed prefix and suffix.
 
     BF16 supplies the teacher trajectory and candidate source weights. The
     packed checkpoint supplies the execution trajectory. Only one source layer,
@@ -604,7 +639,11 @@ def probe_mlp_counteraction(
         raise ValueError("Runtime graph has no final output path for teacher-KL scoring")
 
     operation = _mlp_operation(graph, layer_index)
-    specs = _validate_candidates(operation, calibration, candidate_specs)
+    names = tuple(candidate_names)
+    if not names or any(not name for name in names):
+        raise ValueError("Counteraction candidate names must be non-empty")
+    if len(set(names)) != len(names):
+        raise ValueError("Counteraction candidate names must be unique")
     gate_name = next(
         member.checkpoint_name
         for group in operation.linear_groups
@@ -653,12 +692,13 @@ def probe_mlp_counteraction(
     )
     candidate_hidden: dict[str, torch.Tensor] = {}
     tangent_hidden: dict[str, torch.Tensor] = {}
-    operator_values: dict[str, list[float]] = {spec.name: [] for spec in specs}
+    operator_values: dict[str, list[float]] = {name: [] for name in names}
     counteraction_values: dict[str, list[CounteractionMetrics]] = {
-        spec.name: [] for spec in specs
+        name: [] for name in names
     }
     weight_nmse: dict[str, float] = {}
     baseline_weight_nmse: dict[str, float] = {}
+    candidate_metadata: Mapping[str, Mapping[str, Any]] = {}
 
     rotary = _new_rotary(
         _module_at(base, "rotary_emb"),
@@ -693,32 +733,40 @@ def probe_mlp_counteraction(
             overrides: dict[str, dict[str, torch.Tensor]] = {}
             replay: Any = None
             if current_layer == layer_index:
-                overrides, weight_nmse = _materialize_operation_candidates(
+                materialized = materializer(
                     reference_layer,
-                    layer_prefix,
-                    operation,
-                    calibration,
-                    specs,
-                    row_chunk_size=row_chunk_size,
-                )
-                baseline_weight_nmse = _baseline_weight_nmse(
                     execution_layer,
                     layer_prefix,
                     operation,
-                    overrides,
+                    calibration,
                     row_chunk_size=row_chunk_size,
                 )
+                if set(materialized.overrides) != set(names):
+                    raise ValueError("Candidate materializer returned an unexpected override set")
+                if set(materialized.weight_nmse) != set(names):
+                    raise ValueError("Candidate materializer returned an unexpected weight metric set")
+                if set(materialized.baseline_weight_nmse) != set(names):
+                    raise ValueError(
+                        "Candidate materializer returned an unexpected baseline metric set"
+                    )
+                overrides = {
+                    name: dict(candidate_overrides)
+                    for name, candidate_overrides in materialized.overrides.items()
+                }
+                weight_nmse = dict(materialized.weight_nmse)
+                baseline_weight_nmse = dict(materialized.baseline_weight_nmse)
+                candidate_metadata = materialized.metadata
                 replay = make_module_replay(execution_layer, _layer_output)
 
             next_reference = torch.empty_like(reference_hidden)
             next_execution = torch.empty_like(execution_hidden)
             next_candidates = (
-                {spec.name: torch.empty_like(execution_hidden) for spec in specs}
+                {name: torch.empty_like(execution_hidden) for name in names}
                 if current_layer >= layer_index
                 else {}
             )
             next_tangents = (
-                {spec.name: torch.empty_like(execution_hidden) for spec in specs}
+                {name: torch.empty_like(execution_hidden) for name in names}
                 if suffix_jvp and current_layer >= layer_index
                 else {}
             )
@@ -780,13 +828,13 @@ def probe_mlp_counteraction(
                         args=(execution_input,),
                         kwargs=execution_kwargs,
                     )
-                    for spec in specs:
-                        candidate_output = replay(overrides[spec.name], replay_sample)["output"]
+                    for name in names:
+                        candidate_output = replay(overrides[name], replay_sample)["output"]
                         candidate_output_cpu = candidate_output.to("cpu")
-                        operator_values[spec.name].append(
+                        operator_values[name].append(
                             _normalized_mse(execution_output, candidate_output)
                         )
-                        counteraction_values[spec.name].append(
+                        counteraction_values[name].append(
                             measure_counteraction(
                                 reference_hidden[sample_slice],
                                 execution_hidden[sample_slice],
@@ -794,14 +842,14 @@ def probe_mlp_counteraction(
                                 candidate_output_cpu,
                             )
                         )
-                        next_candidates[spec.name][sample_slice].copy_(candidate_output_cpu)
+                        next_candidates[name][sample_slice].copy_(candidate_output_cpu)
                         if suffix_jvp:
-                            next_tangents[spec.name][sample_slice].copy_(
+                            next_tangents[name][sample_slice].copy_(
                                 candidate_output_cpu - execution_output_cpu
                             )
                 elif current_layer > layer_index:
-                    for spec in specs:
-                        candidate_input = candidate_hidden[spec.name][sample_slice].to(device)
+                    for name in names:
+                        candidate_input = candidate_hidden[name][sample_slice].to(device)
                         candidate_mask = _attention_mask_for_layer(
                             base,
                             candidate_input,
@@ -820,11 +868,11 @@ def probe_mlp_counteraction(
                             attention_mask=candidate_mask,
                             position_ids=position_ids,
                         )
-                        next_candidates[spec.name][sample_slice].copy_(
+                        next_candidates[name][sample_slice].copy_(
                             candidate_output.to("cpu")
                         )
                         if suffix_jvp:
-                            tangent_input = tangent_hidden[spec.name][sample_slice].to(device)
+                            tangent_input = tangent_hidden[name][sample_slice].to(device)
                             _primal, tangent_output = module_tensor_jvp(
                                 execution_layer,
                                 execution_input,
@@ -832,7 +880,7 @@ def probe_mlp_counteraction(
                                 execution_kwargs,
                                 _layer_tensor,
                             )
-                            next_tangents[spec.name][sample_slice].copy_(
+                            next_tangents[name][sample_slice].copy_(
                                 tangent_output.to("cpu")
                             )
 
@@ -956,22 +1004,22 @@ def probe_mlp_counteraction(
         torch.cuda.empty_cache()
 
     results: list[CandidateCounteractionResult] = []
-    for spec in specs:
-        operator_samples = tuple(operator_values[spec.name])
-        metrics = tuple(counteraction_values[spec.name])
-        kl_values = kl_by_candidate[spec.name]
-        suffix_jvp_kl_values = suffix_jvp_kl_by_candidate.get(spec.name)
+    for name in names:
+        operator_samples = tuple(operator_values[name])
+        metrics = tuple(counteraction_values[name])
+        kl_values = kl_by_candidate[name]
+        suffix_jvp_kl_values = suffix_jvp_kl_by_candidate.get(name)
         if not (
             len(operator_samples) == len(metrics) == len(kl_values) == len(sequences)
         ):
             raise ValueError(
-                f"Counteraction candidate {spec.name!r} produced incomplete sample coverage"
+                f"Counteraction candidate {name!r} produced incomplete sample coverage"
             )
         results.append(
             CandidateCounteractionResult(
-                candidate=spec.name,
-                weight_nmse=weight_nmse[spec.name],
-                baseline_weight_nmse=baseline_weight_nmse[spec.name],
+                candidate=name,
+                weight_nmse=weight_nmse[name],
+                baseline_weight_nmse=baseline_weight_nmse[name],
                 mean_operator_nmse=_mean(operator_samples),
                 sample_operator_nmse=operator_samples,
                 mean_inherited_hidden_nmse=_mean(
@@ -1021,4 +1069,75 @@ def probe_mlp_counteraction(
             sample_teacher_kl=baseline_values,
         ),
         suffix_sensitivity="forward-ad" if suffix_jvp else None,
+        candidate_metadata=candidate_metadata,
+    )
+
+
+def probe_mlp_counteraction(
+    model: torch.nn.Module,
+    graph: RuntimeGraph,
+    calibration: CalibrationData,
+    layer_index: int,
+    candidate_specs: Sequence[Mxfp4CandidateSpec],
+    sequences: Sequence[Sequence[int]],
+    checkpoint_files: Mapping[str, Path],
+    baseline_checkpoint_files: Mapping[str, Path],
+    *,
+    device: torch.device,
+    dtype: torch.dtype,
+    row_chunk_size: int = 256,
+    logit_positions_per_sequence: int = 8,
+    suffix_jvp: bool = False,
+    progress: Callable[[int, int], None] | None = None,
+) -> CounteractionProbeResult:
+    """Measure standard MXFP4 candidates on the packed prefix and suffix."""
+    operation = _mlp_operation(graph, layer_index)
+    specs = _validate_candidates(operation, calibration, candidate_specs)
+
+    def materialize(
+        reference_layer: torch.nn.Module,
+        execution_layer: torch.nn.Module,
+        layer_prefix: str,
+        operation: RuntimeOperation,
+        calibration: CalibrationData,
+        *,
+        row_chunk_size: int,
+    ) -> CandidateMaterialization:
+        overrides, weight_nmse = _materialize_operation_candidates(
+            reference_layer,
+            layer_prefix,
+            operation,
+            calibration,
+            specs,
+            row_chunk_size=row_chunk_size,
+        )
+        baseline_weight_nmse = _baseline_weight_nmse(
+            execution_layer,
+            layer_prefix,
+            operation,
+            overrides,
+            row_chunk_size=row_chunk_size,
+        )
+        return CandidateMaterialization(
+            overrides=overrides,
+            weight_nmse=weight_nmse,
+            baseline_weight_nmse=baseline_weight_nmse,
+        )
+
+    return probe_mlp_candidates(
+        model,
+        graph,
+        calibration,
+        layer_index,
+        tuple(spec.name for spec in specs),
+        materialize,
+        sequences,
+        checkpoint_files,
+        baseline_checkpoint_files,
+        device=device,
+        dtype=dtype,
+        row_chunk_size=row_chunk_size,
+        logit_positions_per_sequence=logit_positions_per_sequence,
+        suffix_jvp=suffix_jvp,
+        progress=progress,
     )
