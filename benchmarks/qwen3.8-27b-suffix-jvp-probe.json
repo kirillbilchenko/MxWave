@@ -1,0 +1,154 @@
+{
+  "format": "mxwave-suffix-jvp-experiment-summary-v1",
+  "date": "2026-09-19",
+  "decision": "reject-general-selector-no-checkpoint-build",
+  "passed": false,
+  "implementation": {
+    "branch": "research/suffix-jvp-probe",
+    "quality_commit": "3d98207",
+    "compatibility_commit": "b689ab6",
+    "runtime_image": "vllm/vllm-openai:v0.29.0",
+    "runtime_image_id": "sha256:785fd756b4ae1cacda7612cb859dbf227330e8ced9a6fdea42e9379128bebce0",
+    "runtime_image_digest": "vllm/vllm-openai@sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1"
+  },
+  "source": {
+    "repository": "Qwen/Qwen3.8-27B",
+    "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "config_sha256": "191e0af232104ed8b65258cf3fb2b842e288008baca7633c11b82a1ac7203aab",
+    "index_sha256": "77042094076611b69791a610065f28b7013b8c621795fa86ddccc8bac7d1b9df"
+  },
+  "baseline": {
+    "name": "Qwen3.8-27B-MXFP4-MxWave-H64",
+    "config_sha256": "d19a06baa5074b9f1f7b38296d846852fa2c071d2cebdd833e409206fc3feff0",
+    "index_sha256": "be4a2cd4e130058b23080c6f71172d1e0e37d703e27040deb60fe7f431a7331b"
+  },
+  "calibration": {
+    "objective": "block-hessian",
+    "sequences": 64,
+    "sequence_length": 512,
+    "sha256": "4f9e726a77d2f9f9e304ef18fafc8ef103e12caccf00d3c9950369809824483f"
+  },
+  "compatibility": {
+    "sdpa": {
+      "passed": false,
+      "failure": "PyTorch forward AD is not implemented for _scaled_dot_product_flash_attention"
+    },
+    "eager": {
+      "passed": true,
+      "elapsed_seconds": 65.3948218380101,
+      "peak_process_rss_bytes": 10034888704,
+      "peak_accelerator_memory_allocated_bytes": 7677388288,
+      "baseline_weight_nmse": 0.0,
+      "maximum_recurrence_relative_residual": 0.0,
+      "maximum_zero_tangent_teacher_kl_error": 0.0,
+      "report_sha256": "bbe0c3a44daf027c4679efbdb923361213c1e2cce492bcf37f22093261ba87d3"
+    }
+  },
+  "probe": {
+    "layers": [16, 42, 62],
+    "candidates": [
+      "rtn",
+      "unweighted-mse",
+      "diagonal-hessian",
+      "block-hessian"
+    ],
+    "num_sequences_per_split": 8,
+    "sequence_length": 512,
+    "logit_positions_per_sequence": 8,
+    "attention_implementation": "eager",
+    "dtype": "bfloat16",
+    "primary_metric": "mean_suffix_jvp_teacher_kl",
+    "controls": [
+      "weight_nmse",
+      "mean_operator_nmse",
+      "mean_update_error_nmse",
+      "mean_resulting_hidden_nmse"
+    ]
+  },
+  "splits": [
+    {
+      "sequence_offset": 104,
+      "token_ids_sha256": "d00e42d3cd459d5fdfeab724122e1eb6d2862423d9b2412420fec4b165e34f44",
+      "elapsed_seconds": 388.6573342030024,
+      "peak_process_rss_bytes": 10925109248,
+      "peak_accelerator_memory_allocated_bytes": 8041931264,
+      "report_sha256": "d0e269d51c5d89ec5069f01eb11f8f2f00eec07d17620615063ea9acc10d063c",
+      "selections": {
+        "16": "rtn",
+        "42": "unweighted-mse",
+        "62": "unweighted-mse"
+      },
+      "teacher_kl_winners": {
+        "16": "block-hessian",
+        "42": "rtn",
+        "62": "unweighted-mse"
+      },
+      "primary_spearman_by_layer": {
+        "16": 0.0,
+        "42": 0.0,
+        "62": 0.8
+      }
+    },
+    {
+      "sequence_offset": 112,
+      "token_ids_sha256": "2aa77ff0648fc899965a1ab0064fd09c8138574aef000427d11ed79bb7fd90ff",
+      "elapsed_seconds": 388.7232911530009,
+      "peak_process_rss_bytes": 10926141440,
+      "peak_accelerator_memory_allocated_bytes": 8041931264,
+      "report_sha256": "72ba83c8b999bc2665b7c81f4b2e129ec4d1cd4c80937c02dacd496f390646dd",
+      "selections": {
+        "16": "block-hessian",
+        "42": "unweighted-mse",
+        "62": "rtn"
+      },
+      "teacher_kl_winners": {
+        "16": "rtn",
+        "42": "unweighted-mse",
+        "62": "unweighted-mse"
+      },
+      "primary_spearman_by_layer": {
+        "16": -0.2,
+        "42": 0.8,
+        "62": 0.6
+      }
+    }
+  ],
+  "evaluation": {
+    "sha256": "e6986741ad5d976fe0bec24d452e9e9edc5122f3137a9cef6a6af51d29ddc913",
+    "maximum_baseline_reconstruction_nmse": 0.0,
+    "maximum_recurrence_relative_residual": 3.243671946732187e-16,
+    "maximum_zero_tangent_teacher_kl_error": 0.0,
+    "mean_spearman": {
+      "mean_suffix_jvp_teacher_kl": 0.3333333333333333,
+      "weight_nmse": 0.39999999999999997,
+      "mean_operator_nmse": -0.5,
+      "mean_update_error_nmse": -0.46666666666666673,
+      "mean_resulting_hidden_nmse": -0.16666666666666666
+    },
+    "strongest_control_spearman": 0.39999999999999997,
+    "primary_correlation_advantage": -0.06666666666666665,
+    "cross_split_improvement_rate": 0.6666666666666666,
+    "stable_layers": 1,
+    "selector_stability_rate": 0.3333333333333333,
+    "gates": {
+      "complete_format_and_sensitivity_valid": true,
+      "identity_runtime_match_and_tokens_are_disjoint": true,
+      "three_matching_layers": true,
+      "baseline_reconstruction_at_most_1e-12": true,
+      "recurrence_residual_at_most_1e-10": true,
+      "zero_tangent_teacher_kl_error_at_most_1e-8": true,
+      "primary_spearman_at_least_0.50": false,
+      "primary_advantage_at_least_0.20": false,
+      "cross_split_improvement_at_least_0.70": false,
+      "selector_stable_on_two_of_three_layers": false
+    }
+  },
+  "raw_artifacts": {
+    "spark_quality_directory": "/home/kirya/local-spark/experiments/suffix-jvp-3d98207",
+    "spark_compatibility_directory": "/home/kirya/local-spark/experiments/suffix-jvp-b689ab6",
+    "split_a": "split-a-offset104.json",
+    "split_b": "split-b-offset112.json",
+    "evaluation": "evaluation.json",
+    "compatibility": "smoke-eager.json"
+  }
+}
