@@ -184,7 +184,11 @@ treated as a direct ranking. A same-harness comparison is required.
 
 ## Reproducibility
 
-Code commit: `158668ccba0678beff2e91da484f8604e1ce702c`
+Original experiment snapshot:
+`158668ccba0678beff2e91da484f8604e1ce702c`. The cleaned, baseline-agnostic
+reproduction implementation is commit
+`4d5b585981422cf72b60d7464b49151b28280a32`; it excludes the unsuccessful
+operator-response and teacher-KL probes from the research branch.
 
 Spark run root:
 
