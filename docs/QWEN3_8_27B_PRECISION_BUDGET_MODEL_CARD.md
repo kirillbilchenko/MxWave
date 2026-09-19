@@ -28,6 +28,12 @@ published MxWave H64 MXFP4 checkpoint and uses MxWave's measured precision-budge
 workflow to retain MXFP4 for 388 language projections while promoting 12 measured,
 fusion-safe projections to channel-wise FP8.
 
+Built with [MxWave](https://github.com/kirillbilchenko/MxWave), the open-source
+streaming and calibration-aware quantization toolkit. The repository contains the
+CLI, exact method, tests, and the
+[precision-budget runbook](https://github.com/kirillbilchenko/MxWave/blob/main/docs/PRECISION_BUDGET_RUNBOOK.md)
+used for this checkpoint.
+
 Hugging Face repository:
 `kirillbilchenko/Qwen3.8-27B-MxWave-MXFP4-FP8`.
 
@@ -44,6 +50,7 @@ This is not an official Qwen, NVIDIA, or AMD release.
 | Manifest-accounted tensor data | 20,226,686,160 bytes |
 | Source tensor data | 55,562,855,904 bytes |
 | Global compression ratio | 2.747x |
+| Quantization toolkit | [MxWave](https://github.com/kirillbilchenko/MxWave) |
 | Language projections | 388 MXFP4 + 12 FP8 |
 | Source-precision passthrough tensors | 799 |
 | Runtime format | `compressed-tensors` mixed MXFP4/FP8 |
