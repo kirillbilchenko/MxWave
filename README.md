@@ -145,9 +145,14 @@ This remains opt-in: a plan defines candidates but does not establish that any
 candidate improves the model. Promotion requires frozen reference and baseline
 outputs, disjoint selection splits, an untouched holdout, and whole-model task
 checks. The first Qwen3.8-27B experiment improved prompt PPL from `8.119445` to
-`8.111578` while adding 375.6 MiB; its complete protocol, uncertainty, runtime
-cost, and vLLM 0.29.0 validation are in the
-[precision-budget record](docs/QWEN3_8_27B_PRECISION_BUDGET.md).
+`8.111578` while adding 375.6 MiB. On the paired full GSM8K run it scored
+`92.0394%` strict versus H64's `91.5845%`; the positive 0.455-point difference
+was not statistically conclusive. The candidate is therefore a qualified
+optional quality variant, not the new default. See the reusable
+[precision-budget runbook](docs/PRECISION_BUDGET_RUNBOOK.md) and the complete
+[Qwen experiment record](docs/QWEN3_8_27B_PRECISION_BUDGET.md). The release
+claims and serving instructions are frozen in the
+[mixed-precision model card](docs/QWEN3_8_27B_PRECISION_BUDGET_MODEL_CARD.md).
 
 Target matrices are read from safetensors and quantized in bounded row ranges;
 `--tensor-row-chunk-size` controls the device working set. Completed packed

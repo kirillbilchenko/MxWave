@@ -9,10 +9,13 @@ checkpoint, it promotes only 12 of 400 quantized tensors to channel-wise FP8:
 - four early sequence-output projections in layers 8-11;
 - eight late MLP input projections in layers 51-54.
 
-The result is a valid quality/size Pareto point, not yet a replacement for the
-published H64 checkpoint. It improves full-corpus perplexity by a small but
-statistically credible amount while adding 375.6 MiB and reducing throughput by
-about 2.54% on the original runtime.
+The result is a valid quality/size Pareto point and has completed its full
+qualification. It improves full-corpus perplexity by a small but statistically
+credible amount, scored 0.455 strict accuracy points above H64 on the paired full
+GSM8K run, adds 375.6 MiB, and reduced throughput by 2.17-2.28% on the final
+vLLM 0.29.0 runtime. The GSM8K interval crosses zero, so the checkpoint is
+qualified as an optional quality-oriented variant rather than a replacement for
+the published H64 default.
 
 | Checkpoint | Directory bytes | Precision mix | WikiText-2 PPL |
 |---|---:|---|---:|
@@ -139,9 +142,38 @@ median TTFT was 81.64% lower. Per-token decode latency was 1.86% higher, so the
 large aggregate gain comes from substantially better concurrent scheduling and
 batch execution, not faster single-stream decoding.
 
-This supports moving toward vLLM 0.29.0, but only through a side-by-side H64
-production smoke and long-context soak. It does not justify replacing the
-working deployment in place without those checks.
+The final side-by-side qualification used the same official vLLM 0.29.0 image.
+H64 produced 12.484 output tokens/s at concurrency 1 and 42.193 at concurrency
+4. The candidate produced 12.213 at concurrency 1 and 41.230-41.250 at
+concurrency 4: regressions of 2.17% and 2.24-2.28%, inside the predeclared 3%
+budget.
+
+## Full deterministic qualification
+
+The final task gate used all 1,319 GSM8K test examples with the same custom
+`gsm8k_nothink` definition, five-shot prompts, greedy decoding, temperature zero,
+1,024 maximum generation tokens, and four concurrent requests. Both checkpoints
+ran with MTP disabled, prefix caching disabled, and the same vLLM 0.29.0 image.
+
+| Metric | H64 | Candidate | Candidate - H64 |
+|---|---:|---:|---:|
+| Strict match | 1,208/1,319 (91.5845%) | **1,214/1,319 (92.0394%)** | **+0.4549 points** |
+| Flexible extract | 1,208/1,319 (91.5845%) | **1,215/1,319 (92.1152%)** | **+0.5307 points** |
+
+On strict scoring, the candidate alone was correct on 25 examples and H64 alone
+on 19. Exact McNemar was `p=0.4514`; the paired 100,000-resample interval was
+`[-0.5307, +1.4405]` accuracy points. On flexible scoring, the corresponding
+counts were 23 and 16, `p=0.3368`, with interval
+`[-0.3791, +1.4405]`. Both directions favor the candidate, but neither task
+difference is statistically conclusive.
+
+The deterministic serving smoke covered short completion, strict JSON, tool use,
+and Python code. All 12 repeated checks passed with no transport failures. The
+candidate therefore passed the task non-inferiority, runtime, and critical-smoke
+gates. Combined with the paired perplexity result, this supports publication as
+an optional quality-oriented checkpoint. It does not support claiming a
+statistically proven GSM8K improvement or replacing H64 as the smaller, faster
+default.
 
 ## External context as of 2026-09-19
 
@@ -169,18 +201,18 @@ Unsloth and 8.139 for NVIDIA, versus 7.993 BF16. Our 8.1116 result is promising,
 but those values use a different 323-window serving protocol and must not be
 treated as a direct ranking. A same-harness comparison is required.
 
-## Next gates
+## Remaining work
 
-1. Run one H64 concurrency-4 smoke on vLLM 0.29.0 before changing the daily
-   deployment; this separates runtime gains from the candidate's precision mix.
-2. Soak vLLM 0.29.0 at the intended context window, including repeated long
-   prefills, cancellation, and OpenWebUI multi-turn traffic.
-3. Evaluate the candidate on task behavior: full GSM8K, MBPP/HumanEval, a small
-   instruction/tool-use stability suite, and at least one long-context test.
-4. If publication is still considered, compare under one harness with one
-   strong public PTQ mixed checkpoint and the QUASAR QAT checkpoint.
-5. Promote the method only if task scores confirm the small PPL gain without a
-   stability regression. Otherwise retain it as optional research tooling.
+1. Publish the candidate with an explicit optional/experimental label, the exact
+   tradeoffs above, and a link to the frozen MxWave implementation.
+2. Run a code benchmark or long-context qualification only if the model card will
+   make claims about those capabilities; neither is required for the measured
+   perplexity and GSM8K claims recorded here.
+3. Validate the same frozen method on one supported non-Qwen architecture in a
+   separate bounded experiment. That is the next test of generality; more Qwen
+   bucket tuning would reuse the holdout and is not justified.
+4. Use a same-harness public mixed-precision comparison before making a ranking
+   claim against NVFP4 or QAT releases.
 
 ## Reproducibility
 
@@ -209,4 +241,19 @@ d636d05374fc411e8558268a73d5818b1496280a21f3f027d0e1ee6431d3b050  precision-budg
 
 The compact machine-readable result is
 `benchmarks/qwen3.8-27b-precision-budget.json`. Large checkpoint and logprob
-artifacts remain on Spark and are not committed.
+artifacts remain on Spark and are not committed. The end-to-end serving and task
+qualification is recorded in
+`benchmarks/qwen3.8-27b-precision-budget-qualification.json`.
+
+Final qualification hashes:
+
+```text
+aa4fab87c4fe98b36238f5e32e4115b43d1dbdc52343c652500725bbf2ed9c26  paired-full-1319.json
+d4bcabbabfe3367b96b22fb076509c9b2f2bd5aa58de15d2a47353be5f726830  h64-full-results.json
+0262f92cd7453bee42c047c95f095f39db3ebf6e636108a1ce56a854d49e2c91  candidate-full-results.json
+22eb587ca1347657958719f3b0a17a4b162180c79ee35c6e080407fd7eb6a942  h64-full-samples.jsonl
+d8acd840f91d82b54e2b2e0efc06fb1e6785edba4d644bb7735643a3fa373d63  candidate-full-samples.jsonl
+```
+
+The model-independent operational procedure is in the
+[precision-budget runbook](PRECISION_BUDGET_RUNBOOK.md).
