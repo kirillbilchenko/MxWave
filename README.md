@@ -119,6 +119,36 @@ standard dense Llama layout, including runtime-fused QKV and gate/up groups.
 Adapters inspect only configuration and safetensors headers, validate every
 required weight, and fail closed when an architecture is unknown or incomplete.
 
+### Experimental precision budgets
+
+`mxwave-precision-budget` builds bounded semantic interventions on top of an
+existing MXFP4 checkpoint. It promotes explicitly selected, fusion-safe runtime
+groups to channel-wise FP8 from a compatible floating-point donor while retaining
+MXFP4 everywhere else. The planner reads checkpoint headers only; composition
+streams primary shards and materializes one selected donor matrix at a time.
+
+```bash
+mxwave-precision-budget plan \
+    --primary-model /path/to/mxfp4-model \
+    --dense-donor /path/to/float-model \
+    --output /path/to/precision-plan.json
+
+mxwave-precision-budget compose \
+    --plan /path/to/precision-plan.json \
+    --bucket sequence-output-early-l08-11 \
+    --bucket mlp-input-late-l51-54 \
+    --output /path/to/mixed-model \
+    --quant-device cuda
+```
+
+This remains opt-in: a plan defines candidates but does not establish that any
+candidate improves the model. Promotion requires frozen reference and baseline
+outputs, disjoint selection splits, an untouched holdout, and whole-model task
+checks. The first Qwen3.8-27B experiment improved prompt PPL from `8.119445` to
+`8.111578` while adding 375.6 MiB; its complete protocol, uncertainty, runtime
+cost, and vLLM 0.29.0 validation are in the
+[precision-budget record](docs/QWEN3_8_27B_PRECISION_BUDGET.md).
+
 Target matrices are read from safetensors and quantized in bounded row ranges;
 `--tensor-row-chunk-size` controls the device working set. Completed packed
 tensors accumulate only inside the current output shard before its atomic save.
@@ -256,6 +286,8 @@ MxWave/
 │   ├── runtime_ir.py Model-independent runtime operations and fused groups
 │   ├── runtime_adapters.py Validated architecture-adapter registry
 │   ├── adapters/    Architecture-specific runtime graph builders
+│   ├── mixed_precision.py Streaming MXFP4/FP8 checkpoint composition
+│   ├── precision_budget.py Semantic byte-budget candidate planning
 │   ├── verify.py    SQNR, config-coverage verification (verification-first)
 │   ├── output.py    compressed-tensors quantization_config assembly + coverage
 │   └── cli.py       CLI entry point (wired to the engine)
@@ -277,6 +309,9 @@ MxWave/
 - [ ] **Calibration-aware default** — choose and run a validated corpus by default
 - [ ] **Rotation folding** — emit standard `compressed-tensors` `transform_config`
 - [ ] **Auto per-layer precision** — Hessian-trace-driven MXFP4/FP8/BF16 assignment
+- [x] **Measured precision-budget experiment** — adapter-driven, fusion-safe FP8
+      allocation passed frozen selection, untouched KL, and full-corpus PPL gates;
+      retained as an opt-in feature pending broader task validation
 - [ ] **Sequential layer reconstruction** — calibrate each block on inputs from the
       already-quantized prefix and compensate errors across full input dimensions
 - [x] **Held-out adaptive selection experiment** — evaluated with a disjoint

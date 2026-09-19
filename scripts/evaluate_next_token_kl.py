@@ -130,7 +130,13 @@ def prepare_contexts(args: argparse.Namespace) -> Path:
 def _load_context_manifest(path: Path, limit: int | None) -> tuple[dict[str, Any], str]:
     raw = path.read_bytes()
     value = json.loads(raw)
-    if not isinstance(value, dict) or value.get("format") != "mxwave-next-token-contexts-v1":
+    accepted_formats = {
+        "mxwave-next-token-contexts-v1",
+        # Frozen evaluation artifacts created before the project rename remain
+        # byte-identical inputs and must not be silently rewritten.
+        "mxstream-next-token-contexts-v1",
+    }
+    if not isinstance(value, dict) or value.get("format") not in accepted_formats:
         raise ValueError("Unsupported context manifest")
     contexts = value.get("contexts")
     if not isinstance(contexts, list) or not contexts:
@@ -273,8 +279,7 @@ def collect_distributions(args: argparse.Namespace) -> Path:
         context_digests.append(expected_digest)
         if index == 0 or (index + 1) % 8 == 0 or index + 1 == len(contexts):
             print(
-                f"{args.model_label}: context {index + 1}/{len(contexts)} "
-                f"elapsed={elapsed:.3f}s",
+                f"{args.model_label}: context {index + 1}/{len(contexts)} elapsed={elapsed:.3f}s",
                 flush=True,
             )
 
@@ -389,9 +394,7 @@ def compare_distributions(args: argparse.Namespace) -> Path:
         if not all(isinstance(item, dict) for item in raw_contexts):
             raise ValueError("Context manifest contains a non-object context")
         context_protocol = {
-            key: value
-            for key, value in contexts_value.items()
-            if key != "contexts"
+            key: value for key, value in contexts_value.items() if key != "contexts"
         }
         context_protocol["manifest_sha256"] = contexts_sha256
         context_protocol["contexts"] = [
@@ -434,8 +437,7 @@ def compare_distributions(args: argparse.Namespace) -> Path:
             "reverse_kl_nats": _summary(reverse),
             "jensen_shannon_nats": _summary(js),
             "total_variation": _summary(tv),
-            "top1_agreement_rate": sum(bool(row["top1_agreement"]) for row in rows)
-            / len(rows),
+            "top1_agreement_rate": sum(bool(row["top1_agreement"]) for row in rows) / len(rows),
             "mean_top5_overlap": sum(int(row["top5_overlap"]) for row in rows) / len(rows),
             "contexts": rows,
         }
