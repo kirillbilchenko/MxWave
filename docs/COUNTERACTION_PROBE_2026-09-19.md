@@ -1,7 +1,49 @@
 # Counteraction-preserving MXFP4 probe — 2026-09-19
 
-Status: pre-registered; no Qwen3.8-27B result has been inspected with this
-implementation.
+Status: complete — the selector failed the frozen gates and no checkpoint was
+built. The scope and gates below were committed before either registered result
+was inspected.
+
+## Decision
+
+Reject `mean_resulting_hidden_nmse` as an MXFP4 scale-candidate selector for the
+current Qwen3.8-27B H64 recipe.
+
+The implementation was numerically correct: the block-Hessian control
+reconstructed every selected H64 MLP exactly (`0.0` weight NMSE), and the
+largest residual-recurrence error was `3.98e-16`. The selection signal did not
+generalize to final next-token distributions:
+
+| Frozen gate | Required | Observed | Result |
+|---|---:|---:|---|
+| Mean Spearman ρ, primary vs teacher KL | ≥ 0.50 | -0.0167 | fail |
+| Primary advantage over strongest control | ≥ 0.20 | -0.0333 | fail |
+| Cross-split KL improvements | ≥ 70% | 4/12 = 33.3% | fail |
+| Same selection on both splits | ≥ 4/6 layers | 3/6 | fail |
+| H64 reconstruction NMSE | ≤ 1e-12 | 0.0 | pass |
+| Recurrence relative residual | ≤ 1e-10 | 3.98e-16 | pass |
+
+The signed interaction is present and measurable, including negative
+counteraction in early and middle blocks. But minimizing the error immediately
+after one block does not predict the effect of the entire remaining quantized
+suffix. Later blocks can counteract or amplify the candidate difference again.
+This rejects the proposed one-block selector, not the residual-counteraction
+mechanism itself.
+
+| Layer | Offset 104: selected / KL winner / ρ | Offset 112: selected / KL winner / ρ |
+|---:|---|---|
+| 8 | RTN / H64 / -0.4 | RTN / RTN / 0.4 |
+| 16 | RTN / diagonal / 0.2 | RTN / unweighted / -0.2 |
+| 31 | H64 / H64 / 1.0 | diagonal / diagonal / 0.8 |
+| 42 | H64 / unweighted / -0.6 | unweighted / RTN / -1.0 |
+| 54 | H64 / diagonal / 0.4 | diagonal / diagonal / 0.8 |
+| 62 | H64 / RTN / -0.8 | H64 / RTN / -0.8 |
+
+The two registered splits completed in `562.30 s` and `560.19 s`. Peak
+accelerator allocation was `5,543,043,072` bytes and peak process RSS was about
+`10.55 GB`; the bounded streaming implementation therefore met its resource
+goal. The compact machine-readable record is
+[`benchmarks/qwen3.8-27b-counteraction-probe.json`](../benchmarks/qwen3.8-27b-counteraction-probe.json).
 
 ## Question
 
