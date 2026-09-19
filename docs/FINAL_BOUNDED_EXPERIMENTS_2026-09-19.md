@@ -1,6 +1,6 @@
-# Final bounded MXFP4 experiments — pre-registration (2026-09-19)
+# Final bounded MXFP4 experiments — pre-registration and results (2026-09-19)
 
-Status: inputs and gates frozen before quality execution.
+Status: complete. Both hypotheses were rejected by their frozen gates; no checkpoint was built.
 
 These are the final two experiments in the current Qwen3.8-27B/H64 research cycle. They have hard
 stopping rules and do not authorize additional candidate, layer, threshold, or data sweeps.
@@ -130,3 +130,62 @@ Failure ends the exact-layout track for this model; no new sort key or layer swe
 - No full checkpoint is built before its bounded gate passes.
 - Daily vLLM is restored after success, failure, or timeout.
 - Publication/upload remains an owner decision and is outside this run.
+
+## Results
+
+### Experiment A — rejected
+
+The fresh offset-120 confirmation completed in 94.51 seconds. All implementation and numerical
+validity checks passed, but unweighted MSE did not reproduce its discovery-split improvement.
+
+| Metric | H64 block Hessian | Layer-62 unweighted MSE |
+|---|---:|---:|
+| Mean exact teacher KL | 0.0326247318 | 0.0329225997 |
+| Relative change versus H64 | — | **0.913% worse** |
+| Paired context wins | — | 9/16 (required 12/16) |
+
+The paired 95% bootstrap interval for `H64 - unweighted` was
+`[-0.0011714758, 0.0003834154]`, crossing zero. H64 reconstruction NMSE was exactly zero, its
+recorded and replayed sample KL values agreed exactly, and the maximum recurrence residual was
+`2.40e-16`. This is a quality/generalization rejection, not an execution failure. Per the frozen
+rule, no layer-62 checkpoint or 128-context follow-up was produced.
+
+### Experiment B — rejected
+
+Each split completed all three layers in about 265 seconds. Permutations were deterministic across
+splits, bijective, exactly invertible, and numerically function-preserving before quantization
+(real-model smoke relative error at most `1.82e-7`). H64 reconstruction NMSE was zero and the
+maximum recurrence residual was `2.51e-16`.
+
+Neither family passed any layer on both splits:
+
+| Family | Layer | Split A candidate / H64 / identity KL | A wins | Split B candidate / H64 / identity KL | B wins | Pooled 95% CI, H64 − candidate | Pass |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Weight-norm sort | 16 | 0.0443447 / 0.0442378 / 0.0443944 | 3/8 | 0.0187809 / 0.0183108 / 0.0185369 | 4/8 | [-0.0007576, 0.0001520] | No |
+| Weight-norm sort | 42 | 0.0437374 / 0.0442378 / 0.0431219 | 4/8 | 0.0183948 / 0.0183108 / 0.0183576 | 3/8 | [-0.0003664, 0.0009009] | No |
+| Weight-norm sort | 62 | 0.0435621 / 0.0442378 / 0.0439944 | 6/8 | 0.0186884 / 0.0183108 / 0.0185285 | 2/8 | [-0.0004873, 0.0009622] | No |
+| Activation-weighted sort | 16 | 0.0441746 / 0.0442378 / 0.0443944 | 4/8 | 0.0185793 / 0.0183108 / 0.0185369 | 2/8 | [-0.0008174, 0.0008190] | No |
+| Activation-weighted sort | 42 | 0.0436918 / 0.0442378 / 0.0431219 | 5/8 | 0.0183908 / 0.0183108 / 0.0183576 | 5/8 | [-0.0005482, 0.0010450] | No |
+| Activation-weighted sort | 62 | 0.0436065 / 0.0442378 / 0.0439944 | 6/8 | 0.0185798 / 0.0183108 / 0.0185285 | 1/8 | [-0.0003672, 0.0007841] | No |
+
+The useful signal was not stable: both sorts improved layer 62 on split A, then clearly regressed on
+split B. Every pooled confidence interval crossed zero, and no family reached the required two of
+three layers. No exact-layout checkpoint or whole-model follow-up was produced.
+
+## Reproducibility and retained artifacts
+
+- Frozen gate commit: `77dc5be`.
+- Exact-layout implementation commit: `f55c442`.
+- Spark artifact directory: `/home/kirya/local-spark/experiments/final-77dc5be`.
+- Experiment A raw report SHA-256: `e8c4b1736a4572ece3981739f42aa7ee761275f9a702afac9ce361dea87f113a`.
+- Experiment A evaluation SHA-256: `6bf8e322d506d7e47a3a0a78a9402018968d8f7eefa163b0f14aa4b1a64f3c6e`.
+- Layout smoke SHA-256: `7d2ba5af1c9d0bf55b97b7d3080436b6773b75625a6b2ef3eec777f58de1f3a3`.
+- Split A raw report SHA-256: `e1c11ef7353a2dc228fdd462df4a1a981a9694ab8ed78da6f809038f5f0b2a9f`.
+- Split B raw report SHA-256: `8b3049e88e984633818a900a0e2dc90e0affeca18d65bdce0f0f97e6ecbb24ee`.
+- Joint layout evaluation SHA-256: `10c6bf3f90f14975d9d50651fb962e417c9280e54b4bb5e5ec52fec605b104a6`.
+- Compact machine-readable summary: `benchmarks/qwen3.8-27b-final-bounded-experiments.json`.
+
+The research implementation remains isolated on `research/final-bounded-experiments`. These
+negative results do not justify merging the exact-layout policy or evaluators into `main`; the
+generic candidate-materialization refactor can be considered separately if another experiment
+needs it.
