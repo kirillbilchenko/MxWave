@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import ClassVar
 
+import pytest
 import torch
 from safetensors.torch import save_file
 
@@ -24,7 +26,11 @@ from mxwave.runtime_ir import (
 
 class _TinyConfig:
     model_type = "qwen3_5_text"
-    layer_types: ClassVar[list[str]] = ["full_attention", "full_attention"]
+    layer_types: ClassVar[list[str]] = [
+        "full_attention",
+        "full_attention",
+        "full_attention",
+    ]
 
 
 class _TinyRotary(torch.nn.Module):
@@ -66,7 +72,7 @@ class _TinyBase(torch.nn.Module):
         super().__init__()
         self.config = _TinyConfig()
         self.embed_tokens = torch.nn.Embedding(64, 32)
-        self.layers = torch.nn.ModuleList([_TinyLayer(), _TinyLayer()])
+        self.layers = torch.nn.ModuleList([_TinyLayer(), _TinyLayer(), _TinyLayer()])
         self.rotary_emb = _TinyRotary(self.config)
         self.norm = torch.nn.LayerNorm(32)
 
@@ -165,6 +171,7 @@ def test_probe_uses_real_inherited_error_and_reproduces_baseline(tmp_path: Path)
         calibration,
         1,
         (
+            Mxfp4CandidateSpec("rtn", method="rtn"),
             Mxfp4CandidateSpec(
                 "block-hessian",
                 weighting="block-hessian",
@@ -178,13 +185,23 @@ def test_probe_uses_real_inherited_error_and_reproduces_baseline(tmp_path: Path)
         dtype=torch.float32,
         row_chunk_size=5,
         logit_positions_per_sequence=2,
+        suffix_jvp=True,
     )
 
-    candidate = result.candidates[0]
+    candidates = {candidate.candidate: candidate for candidate in result.candidates}
+    candidate = candidates["block-hessian"]
     assert candidate.baseline_weight_nmse == 0.0
     assert candidate.mean_operator_nmse == 0.0
     assert candidate.sample_teacher_kl == result.baseline.sample_teacher_kl
+    assert candidate.mean_suffix_jvp_teacher_kl == pytest.approx(
+        result.baseline.mean_teacher_kl,
+        abs=1e-8,
+    )
     assert candidate.mean_inherited_hidden_nmse > 0.0
     assert candidate.max_recurrence_relative_residual < 1e-12
     assert len(candidate.sample_counteraction) == 2
-    assert result.as_dict()["counteraction_ranking"] == ["block-hessian"]
+    assert result.suffix_sensitivity == "forward-ad"
+    rtn_suffix_kl = candidates["rtn"].mean_suffix_jvp_teacher_kl
+    assert rtn_suffix_kl is not None
+    assert math.isfinite(rtn_suffix_kl)
+    assert set(result.as_dict()["suffix_jvp_ranking"]) == {"rtn", "block-hessian"}

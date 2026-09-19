@@ -55,6 +55,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sequence-offset", type=int, default=104)
     parser.add_argument("--sequence-length", type=int, default=512)
     parser.add_argument("--logit-positions", type=int, default=8)
+    parser.add_argument(
+        "--suffix-sensitivity",
+        choices=("none", "forward-ad"),
+        default="none",
+        help=(
+            "Optionally propagate each exact candidate perturbation through the remaining "
+            "packed suffix with a forward-mode directional derivative"
+        ),
+    )
     parser.add_argument("--text-field", default="text")
     parser.add_argument("--scale-percentile", type=float, default=99.5)
     parser.add_argument("--mse-clip-depth", type=int, default=4)
@@ -153,15 +162,34 @@ def _report(
     status: str,
     peak_accelerator: int,
 ) -> dict[str, Any]:
+    suffix_jvp = args.suffix_sensitivity == "forward-ad"
     return {
-        "format": "mxwave-counteraction-probe-v1",
+        "format": (
+            "mxwave-suffix-jvp-probe-v1" if suffix_jvp else "mxwave-counteraction-probe-v1"
+        ),
         "status": status,
         "hypothesis": (
-            "Resulting hidden error on the actual packed prefix predicts final teacher KL "
-            "better than isolated weight, operator, or update-error controls."
+            "A forward-mode directional derivative through the complete packed suffix "
+            "predicts final teacher KL better than local weight, operator, update-error, "
+            "or resulting-hidden controls."
+            if suffix_jvp
+            else "Resulting hidden error on the actual packed prefix predicts final teacher "
+            "KL better than isolated weight, operator, or update-error controls."
         ),
-        "primary_metric": "mean_resulting_hidden_nmse",
-        "controls": ["weight_nmse", "mean_operator_nmse", "mean_update_error_nmse"],
+        "primary_metric": (
+            "mean_suffix_jvp_teacher_kl" if suffix_jvp else "mean_resulting_hidden_nmse"
+        ),
+        "controls": (
+            [
+                "weight_nmse",
+                "mean_operator_nmse",
+                "mean_update_error_nmse",
+                "mean_resulting_hidden_nmse",
+            ]
+            if suffix_jvp
+            else ["weight_nmse", "mean_operator_nmse", "mean_update_error_nmse"]
+        ),
+        "suffix_sensitivity": args.suffix_sensitivity,
         "source": {
             "model_dir": str(model_dir),
             "repository": args.source_repository,
@@ -334,6 +362,7 @@ def run(args: argparse.Namespace) -> Path:
             dtype=dtype,
             row_chunk_size=args.tensor_row_chunk_size,
             logit_positions_per_sequence=args.logit_positions,
+            suffix_jvp=args.suffix_sensitivity == "forward-ad",
             progress=report_progress,
         )
         expected = next(

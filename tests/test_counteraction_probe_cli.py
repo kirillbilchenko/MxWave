@@ -30,6 +30,7 @@ def test_parser_freezes_bounded_probe_defaults() -> None:
     assert args.sequence_offset == 104
     assert args.sequence_length == 512
     assert args.logit_positions == 8
+    assert args.suffix_sensitivity == "none"
     assert args.max_elapsed_minutes == 90.0
     assert [spec.name for spec in _candidate_specs(args)] == [
         "rtn",
@@ -37,6 +38,14 @@ def test_parser_freezes_bounded_probe_defaults() -> None:
         "diagonal-hessian",
         "block-hessian",
     ]
+
+
+def test_parser_accepts_forward_ad_suffix_sensitivity() -> None:
+    args = build_parser().parse_args(
+        [*_required_args(), "--suffix-sensitivity", "forward-ad"]
+    )
+
+    assert args.suffix_sensitivity == "forward-ad"
 
 
 def test_layer_zero_is_rejected_as_non_counteraction_control() -> None:

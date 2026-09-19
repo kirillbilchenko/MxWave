@@ -26,6 +26,7 @@ from .module_replay import ModuleReplaySample, make_module_replay
 from .mxfp4_candidates import Mxfp4CandidateSpec, materialize_mxfp4_candidate
 from .mxfp4_checkpoint import load_mxfp4_module
 from .runtime_ir import RuntimeGraph, RuntimeOperation
+from .suffix_jvp import module_tensor_jvp
 
 __all__ = [
     "BaselineCounteractionResult",
@@ -55,6 +56,9 @@ class CandidateCounteractionResult:
     mean_teacher_kl: float
     max_teacher_kl: float
     sample_teacher_kl: tuple[float, ...]
+    mean_suffix_jvp_teacher_kl: float | None = None
+    max_suffix_jvp_teacher_kl: float | None = None
+    sample_suffix_jvp_teacher_kl: tuple[float, ...] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable candidate record."""
@@ -75,6 +79,13 @@ class CandidateCounteractionResult:
             "mean_teacher_kl": self.mean_teacher_kl,
             "max_teacher_kl": self.max_teacher_kl,
             "sample_teacher_kl": list(self.sample_teacher_kl),
+            "mean_suffix_jvp_teacher_kl": self.mean_suffix_jvp_teacher_kl,
+            "max_suffix_jvp_teacher_kl": self.max_suffix_jvp_teacher_kl,
+            "sample_suffix_jvp_teacher_kl": (
+                list(self.sample_suffix_jvp_teacher_kl)
+                if self.sample_suffix_jvp_teacher_kl is not None
+                else None
+            ),
         }
 
 
@@ -104,6 +115,7 @@ class CounteractionProbeResult:
     logit_positions_per_sequence: int
     candidates: tuple[CandidateCounteractionResult, ...]
     baseline: BaselineCounteractionResult
+    suffix_sensitivity: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable result with predeclared rankings."""
@@ -123,6 +135,7 @@ class CounteractionProbeResult:
             "logit_positions_per_sequence": self.logit_positions_per_sequence,
             "execution_mode": "quantized-baseline-prefix-and-suffix",
             "baseline": self.baseline.as_dict(),
+            "suffix_sensitivity": self.suffix_sensitivity,
             "candidates": [candidate.as_dict() for candidate in self.candidates],
         }
         for name, key in ranking_keys:
@@ -130,6 +143,20 @@ class CounteractionProbeResult:
             result[name] = [
                 candidate.candidate
                 for candidate in sorted(candidates_by_name, key=key)
+            ]
+        if all(
+            candidate.mean_suffix_jvp_teacher_kl is not None
+            for candidate in self.candidates
+        ):
+            result["suffix_jvp_ranking"] = [
+                candidate.candidate
+                for candidate in sorted(
+                    self.candidates,
+                    key=lambda item: (
+                        cast(float, item.mean_suffix_jvp_teacher_kl),
+                        item.candidate,
+                    ),
+                )
             ]
         return result
 
@@ -152,6 +179,18 @@ def _layer_output(raw: Any) -> Mapping[str, torch.Tensor]:
     if not isinstance(first, torch.Tensor):
         raise TypeError("Replayed decoder layer returned no hidden-state tensor")
     return {"output": first}
+
+
+def _layer_tensor(raw: Any) -> torch.Tensor:
+    """Adapt a decoder-layer return value to its hidden-state tensor."""
+    return _layer_output(raw)["output"]
+
+
+def _tensor_output(raw: Any) -> torch.Tensor:
+    """Validate a tensor-returning normalization or projection module."""
+    if not isinstance(raw, torch.Tensor):
+        raise TypeError("Suffix JVP module did not return a tensor")
+    return raw
 
 
 def _run_layer_with_kwargs(
@@ -409,6 +448,37 @@ def _normalize_positions(
     return output
 
 
+def _normalize_tangent_positions(
+    module: torch.nn.Module,
+    hidden_cpu: torch.Tensor,
+    tangent_hidden: Mapping[str, torch.Tensor],
+    *,
+    positions: int,
+    device: torch.device,
+    batch_size: int,
+) -> dict[str, torch.Tensor]:
+    """Propagate candidate tangents through the final normalization."""
+    selected = hidden_cpu[:, -positions:, :]
+    selected_tangents = {
+        name: tangent[:, -positions:, :] for name, tangent in tangent_hidden.items()
+    }
+    outputs = {name: torch.empty_like(tangent) for name, tangent in selected_tangents.items()}
+    with torch.no_grad():
+        for start in range(0, selected.shape[0], batch_size):
+            stop = min(start + batch_size, selected.shape[0])
+            inputs = selected[start:stop].to(device)
+            for name, tangent in selected_tangents.items():
+                _primal, directional = module_tensor_jvp(
+                    module,
+                    inputs,
+                    tangent[start:stop].to(device),
+                    {},
+                    _tensor_output,
+                )
+                outputs[name][start:stop].copy_(directional.to("cpu"))
+    return outputs
+
+
 def _teacher_kl(
     reference_projection: torch.nn.Module,
     reference_hidden: torch.Tensor,
@@ -436,6 +506,49 @@ def _teacher_kl(
             sample_kl = token_kl.mean(dim=-1)
             results[name] = tuple(float(value) for value in sample_kl.cpu().tolist())
             del candidate_logits, candidate_log_probs, token_kl, sample_kl
+    return results
+
+
+def _suffix_jvp_teacher_kl(
+    reference_projection: torch.nn.Module,
+    reference_hidden: torch.Tensor,
+    execution_projection: torch.nn.Module,
+    execution_hidden: torch.Tensor,
+    tangent_hidden: Mapping[str, torch.Tensor],
+    *,
+    device: torch.device,
+) -> dict[str, tuple[float, ...]]:
+    """Score linearized final logits against the exact BF16 teacher."""
+    with torch.no_grad():
+        reference_logits = reference_projection(reference_hidden.to(device))
+        baseline_input = execution_hidden.to(device)
+        baseline_logits = execution_projection(baseline_input)
+        if not isinstance(reference_logits, torch.Tensor) or not isinstance(
+            baseline_logits, torch.Tensor
+        ):
+            raise TypeError("Runtime output projection did not return a tensor")
+        reference_log_probs = torch.log_softmax(reference_logits.to(torch.float32), dim=-1)
+        reference_probs = reference_log_probs.exp()
+        results: dict[str, tuple[float, ...]] = {}
+        for name, tangent in tangent_hidden.items():
+            _primal, tangent_logits = module_tensor_jvp(
+                execution_projection,
+                baseline_input,
+                tangent.to(device),
+                {},
+                _tensor_output,
+            )
+            predicted_logits = baseline_logits.to(torch.float32) + tangent_logits.to(
+                torch.float32
+            )
+            predicted_log_probs = torch.log_softmax(predicted_logits, dim=-1)
+            token_kl = torch.sum(
+                reference_probs * (reference_log_probs - predicted_log_probs),
+                dim=-1,
+            ).clamp_min(0.0)
+            sample_kl = token_kl.mean(dim=-1)
+            results[name] = tuple(float(value) for value in sample_kl.cpu().tolist())
+            del tangent_logits, predicted_logits, predicted_log_probs, token_kl, sample_kl
     return results
 
 
@@ -468,6 +581,7 @@ def probe_mlp_counteraction(
     dtype: torch.dtype,
     row_chunk_size: int = 256,
     logit_positions_per_sequence: int = 8,
+    suffix_jvp: bool = False,
     progress: Callable[[int, int], None] | None = None,
 ) -> CounteractionProbeResult:
     """Measure candidate counteraction on the real packed prefix and suffix.
@@ -538,6 +652,7 @@ def probe_mlp_counteraction(
         batch_size=1,
     )
     candidate_hidden: dict[str, torch.Tensor] = {}
+    tangent_hidden: dict[str, torch.Tensor] = {}
     operator_values: dict[str, list[float]] = {spec.name: [] for spec in specs}
     counteraction_values: dict[str, list[CounteractionMetrics]] = {
         spec.name: [] for spec in specs
@@ -555,7 +670,7 @@ def probe_mlp_counteraction(
     )
     position_ids = torch.arange(sequence_length, dtype=torch.long, device=device).unsqueeze(0)
 
-    with torch.inference_mode():
+    with torch.no_grad():
         for current_layer in range(layout.layer_count):
             layer_prefix = f"{layout.stack_prefix}.{current_layer}"
             reference_layer = _load_module_from_checkpoint(
@@ -600,6 +715,11 @@ def probe_mlp_counteraction(
             next_candidates = (
                 {spec.name: torch.empty_like(execution_hidden) for spec in specs}
                 if current_layer >= layer_index
+                else {}
+            )
+            next_tangents = (
+                {spec.name: torch.empty_like(execution_hidden) for spec in specs}
+                if suffix_jvp and current_layer >= layer_index
                 else {}
             )
             for sample_index in range(len(sequences)):
@@ -675,6 +795,10 @@ def probe_mlp_counteraction(
                             )
                         )
                         next_candidates[spec.name][sample_slice].copy_(candidate_output_cpu)
+                        if suffix_jvp:
+                            next_tangents[spec.name][sample_slice].copy_(
+                                candidate_output_cpu - execution_output_cpu
+                            )
                 elif current_layer > layer_index:
                     for spec in specs:
                         candidate_input = candidate_hidden[spec.name][sample_slice].to(device)
@@ -699,11 +823,25 @@ def probe_mlp_counteraction(
                         next_candidates[spec.name][sample_slice].copy_(
                             candidate_output.to("cpu")
                         )
+                        if suffix_jvp:
+                            tangent_input = tangent_hidden[spec.name][sample_slice].to(device)
+                            _primal, tangent_output = module_tensor_jvp(
+                                execution_layer,
+                                execution_input,
+                                tangent_input,
+                                execution_kwargs,
+                                _layer_tensor,
+                            )
+                            next_tangents[spec.name][sample_slice].copy_(
+                                tangent_output.to("cpu")
+                            )
 
             reference_hidden = next_reference
             execution_hidden = next_execution
             if current_layer >= layer_index:
                 candidate_hidden = next_candidates
+                if suffix_jvp:
+                    tangent_hidden = next_tangents
             del reference_layer, execution_layer, overrides, replay
             _advise_prefix_unused(checkpoint_files, layer_prefix)
             _advise_prefix_unused(baseline_checkpoint_files, layer_prefix)
@@ -753,8 +891,20 @@ def probe_mlp_counteraction(
         )
         for name, hidden in candidate_hidden.items()
     }
+    normalized_tangents = (
+        _normalize_tangent_positions(
+            execution_normalization,
+            execution_hidden,
+            tangent_hidden,
+            positions=logit_positions_per_sequence,
+            device=device,
+            batch_size=1,
+        )
+        if suffix_jvp
+        else {}
+    )
     del reference_normalization, execution_normalization
-    del reference_hidden, execution_hidden, candidate_hidden, rotary
+    del reference_hidden, execution_hidden, candidate_hidden, tangent_hidden, rotary
     _advise_prefix_unused(checkpoint_files, output_path.normalization_module)
     _advise_prefix_unused(baseline_checkpoint_files, output_path.normalization_module)
     if device.type == "cuda":
@@ -785,8 +935,21 @@ def probe_mlp_counteraction(
         candidate_projection=execution_projection,
         device=device,
     )
+    suffix_jvp_kl_by_candidate = (
+        _suffix_jvp_teacher_kl(
+            reference_projection,
+            normalized_reference,
+            execution_projection,
+            normalized_execution,
+            normalized_tangents,
+            device=device,
+        )
+        if suffix_jvp
+        else {}
+    )
     del reference_projection, execution_projection
-    del normalized_reference, normalized_execution, normalized_candidates, scoring_hidden
+    del normalized_reference, normalized_execution, normalized_candidates, normalized_tangents
+    del scoring_hidden
     _advise_prefix_unused(checkpoint_files, output_path.projection_module)
     _advise_prefix_unused(baseline_checkpoint_files, output_path.projection_module)
     if device.type == "cuda":
@@ -797,6 +960,7 @@ def probe_mlp_counteraction(
         operator_samples = tuple(operator_values[spec.name])
         metrics = tuple(counteraction_values[spec.name])
         kl_values = kl_by_candidate[spec.name]
+        suffix_jvp_kl_values = suffix_jvp_kl_by_candidate.get(spec.name)
         if not (
             len(operator_samples) == len(metrics) == len(kl_values) == len(sequences)
         ):
@@ -829,6 +993,17 @@ def probe_mlp_counteraction(
                 mean_teacher_kl=_mean(kl_values),
                 max_teacher_kl=max(kl_values),
                 sample_teacher_kl=kl_values,
+                mean_suffix_jvp_teacher_kl=(
+                    _mean(suffix_jvp_kl_values)
+                    if suffix_jvp_kl_values is not None
+                    else None
+                ),
+                max_suffix_jvp_teacher_kl=(
+                    max(suffix_jvp_kl_values)
+                    if suffix_jvp_kl_values is not None
+                    else None
+                ),
+                sample_suffix_jvp_teacher_kl=suffix_jvp_kl_values,
             )
         )
 
@@ -845,4 +1020,5 @@ def probe_mlp_counteraction(
             max_teacher_kl=max(baseline_values),
             sample_teacher_kl=baseline_values,
         ),
+        suffix_sensitivity="forward-ad" if suffix_jvp else None,
     )
