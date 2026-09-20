@@ -41,7 +41,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", required=True, help="Output calibration .safetensors")
     parser.add_argument(
         "--policy",
-        choices=("auto", "qwen3.8-27b-mlp", "qwen3.8-27b-compatible", "all-linear"),
+        choices=(
+            "auto",
+            "qwen3.8-27b-mlp",
+            "qwen3.8-27b-compatible",
+            "xing4-29b-a4b",
+            "all-linear",
+        ),
         default="auto",
         help="Must exactly match the later quantization policy",
     )
@@ -313,6 +319,7 @@ def run(args: argparse.Namespace) -> Path:
             empty_model = _model_class(transformers, model_config).from_config(
                 model_config,
                 attn_implementation=args.attention_implementation,
+                trust_remote_code=args.trust_remote_code,
             )
         collector = ActivationCollector(
             widths,
@@ -362,6 +369,7 @@ def run(args: argparse.Namespace) -> Path:
             empty_model = _model_class(transformers, model_config).from_config(
                 model_config,
                 attn_implementation=args.attention_implementation,
+                trust_remote_code=args.trust_remote_code,
             )
         print(
             f"[mxwave] streaming {len(sequences)} sequences through one decoder layer "

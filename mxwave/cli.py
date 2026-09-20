@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
             "auto",
             "qwen3.8-27b-mlp",
             "qwen3.8-27b-compatible",
+            "xing4-29b-a4b",
             "all-linear",
         ),
         default="auto",
@@ -68,7 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-gamma-proxy",
         action="store_false",
         dest="gamma_proxy",
-        help="Disable architecture-aware Qwen RMSNorm weighting for MSE",
+        help="Disable architecture-aware RMSNorm weighting for MSE",
     )
     parser.add_argument("--device", default="cuda", help="Quantization device")
     parser.add_argument(

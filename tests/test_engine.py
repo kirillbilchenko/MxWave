@@ -118,6 +118,90 @@ def _make_qwen_model(tmp_path: Path) -> Path:
     return model_dir
 
 
+def _make_xing_model(tmp_path: Path) -> Path:
+    """Write a shape-minimized checkpoint with Xing4's complete module topology."""
+    model_dir = tmp_path / "xing"
+    model_dir.mkdir()
+    tensors: dict[str, torch.Tensor] = {}
+    shard_name = "model.safetensors"
+
+    def add_matrix(name: str) -> None:
+        tensors[name] = torch.zeros(1, 32, dtype=torch.bfloat16)
+
+    for layer in range(41):
+        prefix = f"model.layers.{layer}"
+        for norm in (
+            "input_layernorm.weight",
+            "post_attention_layernorm.weight",
+            "self_attn.q_a_layernorm.weight",
+            "self_attn.kv_a_layernorm.weight",
+        ):
+            tensors[f"{prefix}.{norm}"] = torch.ones(32, dtype=torch.bfloat16)
+        for projection in (
+            "q_a_proj",
+            "q_b_proj",
+            "kv_a_proj_with_mqa",
+            "kv_b_proj",
+            "o_proj",
+        ):
+            add_matrix(f"{prefix}.self_attn.{projection}.weight")
+
+        if layer < 2:
+            for projection in ("gate_proj", "up_proj", "down_proj"):
+                add_matrix(f"{prefix}.mlp.{projection}.weight")
+        else:
+            for expert in range(64):
+                for projection in ("gate_proj", "up_proj", "down_proj"):
+                    add_matrix(f"{prefix}.mlp.experts.{expert}.{projection}.weight")
+            for projection in ("gate_proj", "up_proj", "down_proj"):
+                add_matrix(f"{prefix}.mlp.shared_experts.{projection}.weight")
+            add_matrix(f"{prefix}.mlp.gate.weight")
+            tensors[f"{prefix}.mlp.gate.e_score_correction_bias"] = torch.zeros(
+                64, dtype=torch.bfloat16
+            )
+
+        for hc_kind in ("attn_hc", "ffn_hc"):
+            for hc_tensor in ("hc_base", "hc_fn", "hc_scale"):
+                tensors[f"{prefix}.{hc_kind}.{hc_tensor}"] = torch.zeros(
+                    1, dtype=torch.bfloat16
+                )
+
+    add_matrix("model.layers.40.eh_proj.weight")
+    add_matrix("model.layers.40.shared_head.head.weight")
+    tensors["model.layers.40.shared_head.norm.weight"] = torch.ones(
+        32, dtype=torch.bfloat16
+    )
+    add_matrix("model.embed_tokens.weight")
+    add_matrix("lm_head.weight")
+
+    save_file(tensors, str(model_dir / shard_name))
+    weight_map = {name: shard_name for name in tensors}
+    (model_dir / "model.safetensors.index.json").write_text(
+        json.dumps({"metadata": {}, "weight_map": weight_map})
+    )
+    (model_dir / "config.json").write_text(
+        json.dumps(
+            {
+                "architectures": ["Xing4_0ForCausalLM"],
+                "model_type": "xing4_0",
+                "num_hidden_layers": 40,
+                "hidden_size": 3584,
+                "intermediate_size": 9216,
+                "moe_intermediate_size": 1024,
+                "n_routed_experts": 64,
+                "n_shared_experts": 1,
+                "num_experts_per_tok": 4,
+                "first_k_dense_replace": 2,
+                "num_nextn_predict_layers": 1,
+                "q_lora_rank": 768,
+                "kv_lora_rank": 512,
+                "hc_mult": 4,
+            }
+        )
+    )
+    return model_dir
+
+
 def test_discover_shards_uses_index(tmp_path: Path):
     model_dir = _make_fake_model(tmp_path)
     shards, weight_map = discover_shards(model_dir)
@@ -190,6 +274,45 @@ def test_compatible_policy_weights_direct_attention_inputs_with_input_norm(tmp_p
     ) in plan.gamma_proxy_sources
     assert not any("o_proj" in target for target, _ in plan.gamma_proxy_sources)
     assert not any("out_proj" in target for target, _ in plan.gamma_proxy_sources)
+
+
+def test_auto_policy_selects_exact_xing_base_model_and_excludes_mtp(tmp_path: Path):
+    model_dir = _make_xing_model(tmp_path)
+    plan = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu"))
+    assert plan.policy.name == "xing4-29b-a4b"
+    assert len(plan.target_names) == 7616
+    assert len(plan.gamma_proxy_sources) == 5104
+    assert plan.summary()["gamma_proxy_targets"] == 5104
+
+    assert "model.layers.0.mlp.gate_proj.weight" in plan.target_names
+    assert "model.layers.39.mlp.experts.63.up_proj.weight" in plan.target_names
+    assert "model.layers.39.mlp.shared_experts.down_proj.weight" in plan.target_names
+    assert "model.layers.39.self_attn.kv_b_proj.weight" in plan.target_names
+    assert not any(name.startswith("model.layers.40.") for name in plan.target_names)
+    assert "model.layers.2.mlp.gate.weight" not in plan.target_names
+    assert "model.layers.2.attn_hc.hc_base" not in plan.target_names
+    assert "model.embed_tokens.weight" not in plan.target_names
+    assert "lm_head.weight" not in plan.target_names
+
+    gamma_sources = dict(plan.gamma_proxy_sources)
+    assert (
+        gamma_sources["model.layers.2.mlp.experts.0.gate_proj.weight"]
+        == "model.layers.2.post_attention_layernorm.weight"
+    )
+    assert (
+        gamma_sources["model.layers.0.self_attn.q_a_proj.weight"]
+        == "model.layers.0.input_layernorm.weight"
+    )
+    assert (
+        gamma_sources["model.layers.0.self_attn.q_b_proj.weight"]
+        == "model.layers.0.self_attn.q_a_layernorm.weight"
+    )
+    assert (
+        gamma_sources["model.layers.0.self_attn.kv_b_proj.weight"]
+        == "model.layers.0.self_attn.kv_a_layernorm.weight"
+    )
+    assert "model.layers.2.mlp.experts.0.down_proj.weight" not in gamma_sources
+    assert "model.layers.0.self_attn.o_proj.weight" not in gamma_sources
 
 
 def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(

@@ -68,6 +68,21 @@ class _ToyCausalLM(torch.nn.Module):
         self.model = _ToyDecoder()
 
 
+class _ToyXingDecoder(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.config = SimpleNamespace(model_type="xing4_0", hc_mult=4)
+        self.embed_tokens = torch.nn.Embedding(16, 32)
+        self.layers = torch.nn.ModuleList([_ToyDecoderLayer(), _ToyDecoderLayer()])
+        self.rotary_emb = _ToyRotary(self.config)
+
+
+class _ToyXingCausalLM(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.model = _ToyXingDecoder()
+
+
 def _metadata() -> dict[str, str]:
     return {
         "policy": "all-linear",
@@ -163,6 +178,52 @@ def test_sequential_calibration_loads_and_propagates_one_layer_at_a_time(
         "model.layers.1.proj.weight": 4,
     }
     assert progress == [(1, 2), (2, 2)]
+
+
+def test_sequential_calibration_expands_xing_hyperconnection_streams(
+    tmp_path: Path,
+) -> None:
+    torch.manual_seed(11)
+    source = _ToyXingCausalLM()
+    checkpoint = tmp_path / "xing.safetensors"
+    tensors = {name: value.detach().clone() for name, value in source.state_dict().items()}
+    save_file(tensors, checkpoint)
+    checkpoint_files = {name: checkpoint for name in tensors}
+    sequences = [[1, 2], [3, 4]]
+
+    result = calibrate_decoder_sequentially(
+        _ToyXingCausalLM(),
+        {
+            "model.layers.0.proj.weight": 32,
+            "model.layers.1.proj.weight": 32,
+        },
+        ("mean-abs",),
+        sequences,
+        checkpoint_files,
+        device=torch.device("cpu"),
+        dtype=torch.float32,
+        batch_size=1,
+        hessian_damp=0.0,
+    )
+
+    token_ids = torch.tensor(sequences)
+    embedded = torch.nn.functional.embedding(token_ids, tensors["model.embed_tokens.weight"])
+    expanded = embedded.unsqueeze(2).expand(-1, -1, 4, -1).contiguous()
+    after_first = expanded + torch.nn.functional.linear(
+        expanded, tensors["model.layers.0.proj.weight"]
+    )
+    assert torch.allclose(
+        result.statistics["mean-abs"]["model.layers.0.proj.weight"],
+        expanded.abs().reshape(-1, 32).mean(dim=0),
+    )
+    assert torch.allclose(
+        result.statistics["mean-abs"]["model.layers.1.proj.weight"],
+        after_first.abs().reshape(-1, 32).mean(dim=0),
+    )
+    assert result.observation_counts == {
+        "model.layers.0.proj.weight": 16,
+        "model.layers.1.proj.weight": 16,
+    }
 
 
 def test_calibration_safetensors_round_trip_and_identity(tmp_path: Path) -> None:

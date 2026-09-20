@@ -28,7 +28,7 @@ from .calibration import (
 )
 
 _LAYER_TARGET = re.compile(r"^(?P<stack>.+\.layers)\.(?P<index>\d+)\..+\.weight$")
-_SUPPORTED_MODEL_TYPES = frozenset({"qwen3_5_text"})
+_SUPPORTED_MODEL_TYPES = frozenset({"qwen3_5_text", "xing4_0"})
 
 
 @dataclass(frozen=True)
@@ -39,6 +39,7 @@ class SequentialDecoderLayout:
     stack_prefix: str
     embedding_prefix: str
     layer_count: int
+    hidden_stream_count: int
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,12 @@ def infer_sequential_decoder_layout(
         )
     if not hasattr(base, "rotary_emb"):
         raise ValueError(f"Decoder base module {base_prefix!r} has no rotary_emb")
+    hidden_stream_count = 1
+    if model_type == "xing4_0":
+        raw_hidden_stream_count = getattr(base.config, "hc_mult", None)
+        if not isinstance(raw_hidden_stream_count, int) or raw_hidden_stream_count <= 0:
+            raise ValueError("Xing4 config has an invalid hc_mult")
+        hidden_stream_count = raw_hidden_stream_count
     layer_types = getattr(base.config, "layer_types", None)
     if layer_types is not None and (
         not isinstance(layer_types, list) or len(layer_types) != len(stack)
@@ -122,6 +129,7 @@ def infer_sequential_decoder_layout(
         stack_prefix=stack_prefix,
         embedding_prefix=embedding_prefix,
         layer_count=len(stack),
+        hidden_stream_count=hidden_stream_count,
     )
 
 
@@ -237,9 +245,15 @@ def _attention_mask_for_layer(
                 f"{type(base).__name__} does not expose {function_name} for streaming calibration"
             )
         return None
+    mask_inputs = (
+        hidden_states[:, :, 0, :]
+        if getattr(base.config, "model_type", None) == "xing4_0"
+        and hidden_states.ndim == 4
+        else hidden_states
+    )
     result = mask_function(
         config=base.config,
-        inputs_embeds=hidden_states,
+        inputs_embeds=mask_inputs,
         attention_mask=attention_mask,
         past_key_values=None,
         position_ids=position_ids,
@@ -327,8 +341,18 @@ def calibrate_decoder_sequentially(
     if first_parameter is None or first_parameter.ndim != 2:
         raise ValueError("Sequential calibration embedding has no matrix parameter")
     hidden_width = first_parameter.shape[-1]
+    hidden_shape = (
+        (len(sequences), sequence_length, hidden_width)
+        if layout.hidden_stream_count == 1
+        else (
+            len(sequences),
+            sequence_length,
+            layout.hidden_stream_count,
+            hidden_width,
+        )
+    )
     hidden_cpu = torch.empty(
-        (len(sequences), sequence_length, hidden_width),
+        hidden_shape,
         dtype=dtype,
         device="cpu",
     )
@@ -336,7 +360,14 @@ def calibrate_decoder_sequentially(
         for start in range(0, len(sequences), batch_size):
             rows = sequences[start : start + batch_size]
             input_ids = torch.tensor(rows, dtype=torch.long, device=device)
-            hidden_cpu[start : start + len(rows)].copy_(embedding(input_ids).to("cpu"))
+            embedded = embedding(input_ids)
+            if layout.hidden_stream_count > 1:
+                embedded = (
+                    embedded.unsqueeze(2)
+                    .expand(-1, -1, layout.hidden_stream_count, -1)
+                    .contiguous()
+                )
+            hidden_cpu[start : start + len(rows)].copy_(embedded.to("cpu"))
     del embedding
     _advise_prefix_unused(checkpoint_files, layout.embedding_prefix)
     if device.type == "cuda":
