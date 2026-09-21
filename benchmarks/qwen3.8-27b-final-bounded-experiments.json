@@ -1,0 +1,88 @@
+{
+  "artifacts": {
+    "experiment_a_evaluation_sha256": "6bf8e322d506d7e47a3a0a78a9402018968d8f7eefa163b0f14aa4b1a64f3c6e",
+    "experiment_a_report_sha256": "e8c4b1736a4572ece3981739f42aa7ee761275f9a702afac9ce361dea87f113a",
+    "experiment_b_evaluation_sha256": "10c6bf3f90f14975d9d50651fb962e417c9280e54b4bb5e5ec52fec605b104a6",
+    "experiment_b_split_a_sha256": "e1c11ef7353a2dc228fdd462df4a1a981a9694ab8ed78da6f809038f5f0b2a9f",
+    "experiment_b_split_b_sha256": "8b3049e88e984633818a900a0e2dc90e0affeca18d65bdce0f0f97e6ecbb24ee",
+    "layout_smoke_sha256": "7d2ba5af1c9d0bf55b97b7d3080436b6773b75625a6b2ef3eec777f58de1f3a3",
+    "spark_directory": "/home/kirya/local-spark/experiments/final-77dc5be"
+  },
+  "date": "2026-09-19",
+  "experiment_a": {
+    "baseline_reconstruction_nmse": 0.0,
+    "candidate": "unweighted-mse",
+    "layer": 62,
+    "mean_candidate_teacher_kl": 0.03292259968657163,
+    "mean_h64_teacher_kl": 0.0326247317934758,
+    "paired_bootstrap_95_interval_h64_minus_candidate": [
+      -0.001171475767478114,
+      0.0003834154340438545
+    ],
+    "paired_wins": 9,
+    "paired_count": 16,
+    "passed": false,
+    "relative_improvement": -0.009130125420843873
+  },
+  "experiment_b": {
+    "activation_weighted_sort": {
+      "layers": {
+        "16": {
+          "h64_minus_candidate_bootstrap_95_interval": [-0.000817410706076771, 0.0008189816144295037],
+          "split_a_candidate_h64_identity": [0.044174570008181036, 0.04423779947683215, 0.04439444385934621],
+          "split_a_wins": 4,
+          "split_b_candidate_h64_identity": [0.018579271505586803, 0.018310811719857156, 0.018536855466663837],
+          "split_b_wins": 2
+        },
+        "42": {
+          "h64_minus_candidate_bootstrap_95_interval": [-0.0005481682019308209, 0.0010450281552039087],
+          "split_a_candidate_h64_identity": [0.04369183932431042, 0.04423779947683215, 0.04312190704513341],
+          "split_a_wins": 5,
+          "split_b_candidate_h64_identity": [0.01839082851074636, 0.018310811719857156, 0.018357635126449168],
+          "split_b_wins": 5
+        },
+        "62": {
+          "h64_minus_candidate_bootstrap_95_interval": [-0.00036717363400384784, 0.0007840537000447512],
+          "split_a_candidate_h64_identity": [0.043606464634649456, 0.04423779947683215, 0.043994444073177874],
+          "split_a_wins": 6,
+          "split_b_candidate_h64_identity": [0.01857975486200303, 0.018310811719857156, 0.018528548534959555],
+          "split_b_wins": 1
+        }
+      },
+      "passing_layers": []
+    },
+    "baseline_reconstruction_nmse": 0.0,
+    "maximum_recurrence_relative_residual": 2.512424005346286e-16,
+    "passed": false,
+    "weight_norm_sort": {
+      "layers": {
+        "16": {
+          "h64_minus_candidate_bootstrap_95_interval": [-0.0007575765484943986, 0.00015199213521555066],
+          "split_a_candidate_h64_identity": [0.04434466315433383, 0.04423779947683215, 0.04439444385934621],
+          "split_a_wins": 3,
+          "split_b_candidate_h64_identity": [0.01878086745273322, 0.018310811719857156, 0.018536855466663837],
+          "split_b_wins": 4
+        },
+        "42": {
+          "h64_minus_candidate_bootstrap_95_interval": [-0.0003664279938675463, 0.0009008976048789918],
+          "split_a_candidate_h64_identity": [0.043737354688346386, 0.04423779947683215, 0.04312190704513341],
+          "split_a_wins": 4,
+          "split_b_candidate_h64_identity": [0.018394772079773247, 0.018310811719857156, 0.018357635126449168],
+          "split_b_wins": 3
+        },
+        "62": {
+          "h64_minus_candidate_bootstrap_95_interval": [-0.0004873205325566232, 0.000962200399953872],
+          "split_a_candidate_h64_identity": [0.04356208618264645, 0.04423779947683215, 0.043994444073177874],
+          "split_a_wins": 6,
+          "split_b_candidate_h64_identity": [0.018688374664634466, 0.018310811719857156, 0.018528548534959555],
+          "split_b_wins": 2
+        }
+      },
+      "passing_layers": []
+    }
+  },
+  "format": "mxwave-final-bounded-experiments-v1",
+  "implementation_commit": "f55c442",
+  "pre_registration_commit": "77dc5be",
+  "result": "both-hypotheses-rejected"
+}

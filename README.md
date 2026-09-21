@@ -11,6 +11,11 @@ vLLM output.**
 [`kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave`](https://huggingface.co/kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave)
 — an 18.47 GiB Qwen3.8-27B checkpoint with complete evaluation and reproducibility records.
 
+New to the project? Start with the
+[human-readable methodology guide](docs/METHODOLOGY_GUIDE.md): it explains the
+quantization math, evaluation ladder, successful path, failed experiments, and
+the lessons behind the current design.
+
 MxWave converts floating-point safetensors checkpoints to vLLM's
 `compressed-tensors` `mxfp4-pack-quantized` format. It reads source tensors in
 bounded chunks, can collect activation statistics one decoder layer at a time,
@@ -160,15 +165,25 @@ tensors accumulate only inside the current output shard before its atomic save.
 
 ### Archived DGX Spark experiments
 
-The refinement implementations used for the rejected rounding, feedback,
-cross-block, selective-precision, and static low-rank experiments are not part
+The refinement implementations used for rejected rounding, feedback,
+cross-block, local-proxy, layout, and small-recovery experiments are not part
 of the production package. Their measurements and exact deployed source
-snapshots remain recorded so negative results are not lost.
+snapshots remain recorded so negative results are not lost. The later scaled
+recovery is a successful mechanism but remains local because its KL evidence
+was mixed and full GSM8K tied H64.
 
 - [Cross-block reconstruction](docs/QWEN3_8_27B_CROSSBLOCK_PROBE.md)
 - [Selective BF16](docs/QWEN3_8_27B_SELECTIVE_BF16.md)
 - [Selective FP8](docs/QWEN3_8_27B_SELECTIVE_FP8.md)
 - [Static low-rank recovery](docs/QWEN3_8_27B_LOW_RANK_RECOVERY.md)
+- [Operator-response selection](docs/OPERATOR_RESPONSE_PROBE_2026-09-18.md)
+- [Small recovery-training probe](docs/QAT_RECOVERY_PROBE_2026-09-18.md)
+- [Residual counteraction](docs/COUNTERACTION_PROBE_2026-09-19.md)
+- [Suffix-JVP selection](docs/SUFFIX_JVP_PROBE_2026-09-19.md)
+- [Final bounded layout/confirmation cycle](docs/FINAL_BOUNDED_EXPERIMENTS_2026-09-19.md)
+- [Scaled recovery final qualification](docs/QWEN3_8_27B_RECOVERY_FINAL_QUALIFICATION_2026-09-21.md)
+- [Native NVFP4 bounded qualification](docs/NVFP4_BOUNDED_QUALIFICATION_2026-09-21.md)
+- [Canonical research tracker](docs/MXWAVE_RESEARCH_ROADMAP.md)
 
 These are paired 100-item GSM8K samples with identical prompts and decoding,
 not reportable benchmark scores. They are retained because they caught a
@@ -293,6 +308,8 @@ MxWave/
 │   ├── adapters/    Architecture-specific runtime graph builders
 │   ├── mixed_precision.py Streaming MXFP4/FP8 checkpoint composition
 │   ├── precision_budget.py Semantic byte-budget candidate planning
+│   ├── qualification.py Whole-checkpoint verification + frozen evidence gates
+│   ├── qualification_cli.py Installed `mxwave-qualify` command
 │   ├── verify.py    SQNR, config-coverage verification (verification-first)
 │   ├── output.py    compressed-tensors quantization_config assembly + coverage
 │   └── cli.py       CLI entry point (wired to the engine)
@@ -321,15 +338,20 @@ MxWave/
       already-quantized prefix and compensate errors across full input dimensions
 - [x] **Held-out adaptive selection experiment** — evaluated with a disjoint
       selection split, rejected after deterministic PPL regressed, and archived
-- [ ] **Automated runtime load-smoke** — structural checks, config coverage, and
-      optional SQNR are wired into conversion; vLLM startup remains a recorded
-      post-conversion check
+- [x] **Unified qualification contract** — `mxwave-qualify` verifies the whole
+      checkpoint, runs bounded evidence hooks, imports versioned PPL/KL/serving/runtime
+      reports, and fails incomplete when required runtime evidence is absent
 - [x] **Deterministic likelihood screen** — paired BF16/MxWave/AMD comparison
       with exact input hashes and clustered uncertainty
-- [ ] **Layer-output-aware selection** — select transformations by held-out
-      decoder-layer output error rather than weight-local reconstruction alone
-- [ ] **Sensitivity-guided mixed precision** — retain only the modules that
-      account for most end-to-end loss in MXFP8/BF16
+- [x] **Layer-output-aware selection experiment** — operator response,
+      counteraction, suffix-JVP, and exact-layout selectors were evaluated and
+      rejected under their frozen Qwen scopes
+- [x] **Sensitivity-guided mixed precision on Qwen** — a 12-tensor FP8 allocation
+      passed the frozen Qwen gate; automatic cross-model allocation remains unproven
+
+See the [qualification runbook](docs/QUALIFICATION_RUNBOOK.md) for the installed
+command, runtime-evidence contract, and separation between MxWave decisions and
+platform-specific vLLM lifecycle/telemetry.
 
 ## License
 
