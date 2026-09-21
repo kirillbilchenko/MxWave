@@ -1,0 +1,108 @@
+{
+  "artifacts": {
+    "bf16_distribution_sha256": "a33ecda57d4ea0eb9003933a2a7c6631692dcdcf885bca44f2e2382c9d1fa4fc",
+    "calibration_context_manifest_sha256": "07bb87f64d5dde0456bfee8eb5cff38709d12d6ca5bfd360e60b437d81cde45d",
+    "dwc_evaluation_sha256": "85507542db466a29b98195ef990e5d5b180381b0b47c32838f68059af63fb257",
+    "dwc_statistics_sha256": "9c4d4718c5d50e2a0760596bc4155dedfb67c92628aa8a0d53c29d6dd46c2585",
+    "dwc_weights_sha256": "5a4fb37f8e29b201ecc905c98dd5992c935909dc4672dd43d5c0ae22fdba9d94",
+    "h64_distribution_sha256": "90c1fa1edaf9b7b8da888ee33f5c9e1404f88edbb06fe9d5e1be597433176b1f",
+    "split_a_report_sha256": "8dc690ac95d33ba418a4b9ba7bba1d58aa9325d46fb8cc5b15dcd7d92b6d82c7",
+    "split_b_report_sha256": "f7224a52dc0efc992f917989756277058db0768213f212a4973dd6eebf1466ce",
+    "spark_directory": "/home/kirya/local-spark/experiments/dwc-c8f9e55"
+  },
+  "calibration": {
+    "achieved_effective_sample_size": 31.99999934764038,
+    "maximum_weight": 6.858776092529297,
+    "mean_forward_kl_nats": 0.0246770977973938,
+    "minimum_weight": 0.6117184162139893,
+    "num_sequences": 64,
+    "sequence_length": 512,
+    "target_effective_sample_fraction": 0.5,
+    "temperature": 0.07763834081482991,
+    "token_ids_sha256": "e68f97cb4044312513df4c9c82bd758abe348a706fd7e1f11fe9ee15c83efa05"
+  },
+  "cleanup": {
+    "candidate_checkpoint_built": false,
+    "spark_artifacts_retained": false,
+    "spark_cleanup_date": "2026-09-20"
+  },
+  "date": "2026-09-20",
+  "format": "mxwave-dwc-probe-v1",
+  "gate": {
+    "maximum_recurrence_relative_residual": 3.1021429071722453e-16,
+    "passed": false,
+    "passing_layers": 1,
+    "pooled_mean_h64_minus_dwc_kl": 0.00004231819184496999,
+    "pooled_mean_h64_minus_dwc_kl_bootstrap_95_ci": [
+      -0.0003467856025963556,
+      0.0004153248875809367
+    ],
+    "records": [
+      {
+        "dwc_wins": 2,
+        "layer": 8,
+        "mean_h64_minus_dwc_kl": -0.0006765271537005901,
+        "passed": false,
+        "split_offset": 152
+      },
+      {
+        "dwc_wins": 7,
+        "layer": 8,
+        "mean_h64_minus_dwc_kl": 0.0008469582535326481,
+        "passed": true,
+        "split_offset": 160
+      },
+      {
+        "dwc_wins": 3,
+        "layer": 16,
+        "mean_h64_minus_dwc_kl": -0.0010192530462518334,
+        "passed": false,
+        "split_offset": 152
+      },
+      {
+        "dwc_wins": 5,
+        "layer": 16,
+        "mean_h64_minus_dwc_kl": 0.000058474019169807434,
+        "passed": true,
+        "split_offset": 160
+      },
+      {
+        "dwc_wins": 6,
+        "layer": 42,
+        "mean_h64_minus_dwc_kl": 0.00009328487794846296,
+        "passed": true,
+        "split_offset": 152
+      },
+      {
+        "dwc_wins": 5,
+        "layer": 42,
+        "mean_h64_minus_dwc_kl": 0.0005032632034271955,
+        "passed": true,
+        "split_offset": 160
+      },
+      {
+        "dwc_wins": 3,
+        "layer": 62,
+        "mean_h64_minus_dwc_kl": 0.00009106658399105072,
+        "passed": false,
+        "split_offset": 152
+      },
+      {
+        "dwc_wins": 7,
+        "layer": 62,
+        "mean_h64_minus_dwc_kl": 0.0004412787966430187,
+        "passed": true,
+        "split_offset": 160
+      }
+    ]
+  },
+  "implementation_commit": "73fbd5a",
+  "pre_registration_commit": "c8f9e55",
+  "result": "rejected-before-control-or-checkpoint",
+  "source": {
+    "h64_config_sha256": "d19a06baa5074b9f1f7b38296d846852fa2c071d2cebdd833e409206fc3feff0",
+    "h64_index_sha256": "be4a2cd4e130058b23080c6f71172d1e0e37d703e27040deb60fe7f431a7331b",
+    "repository": "Qwen/Qwen3.8-27B",
+    "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0"
+  }
+}

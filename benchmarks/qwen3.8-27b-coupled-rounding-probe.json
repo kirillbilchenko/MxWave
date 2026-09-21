@@ -1,0 +1,124 @@
+{
+  "format": "mxwave-coupled-rounding-experiment-summary-v1",
+  "date": "2026-09-20",
+  "decision": "reject-no-checkpoint-build",
+  "passed": false,
+  "implementation": {
+    "branch": "research/coupled-gate-rounding",
+    "frozen_commit": "4db0c98",
+    "runtime_image": "vllm/vllm-openai:v0.29.0"
+  },
+  "artifacts": {
+    "spark_directory": "/home/kirya/local-spark/experiments/coupled-4db0c98",
+    "activation_samples": {
+      "bytes": 20973072,
+      "sha256": "7d35abb6da2ba0d01b5b69105c09f2459a0e6c5d382e735cb571b3e4176e0832"
+    },
+    "raw_probe": {
+      "bytes": 313557,
+      "sha256": "6e39038a50eb9d5baa67bb1c6c867a3bde1534d2dcd9bebad492a2190333c0f7"
+    },
+    "evaluation": {
+      "bytes": 2266,
+      "sha256": "609005ef98de251b713fba5668517c7f427ac40deb0ae013a67f1f70568af2f2"
+    }
+  },
+  "resources": {
+    "elapsed_seconds": 452.2368446920009,
+    "peak_process_rss_bytes": 10829975552,
+    "peak_accelerator_memory_allocated_bytes": 6852452352
+  },
+  "gates": {
+    "frozen_identity": true,
+    "frozen_protocol": true,
+    "four_registered_layers": true,
+    "h64_candidate_reproduces_execution": true,
+    "legal_fixed_scale_candidate_improves_calibration_product": true,
+    "candidate_recurrence_at_most_1e-10": true,
+    "three_of_four_layers_pass_both_splits": false,
+    "pooled_paired_interval_strictly_positive": false
+  },
+  "passing_layers": 0,
+  "maximum_recurrence_relative_residual": 3.170651852524306e-16,
+  "pooled_mean_h64_minus_coupled_kl": 0.00019057554891332985,
+  "pooled_mean_h64_minus_coupled_kl_bootstrap_95_ci": [
+    -0.00022315594178508034,
+    0.0006266981068620222
+  ],
+  "bootstrap": {
+    "iterations": 100000,
+    "seed": 20260920,
+    "unit": "paired context, stratified by split and layer"
+  },
+  "layers": [
+    {
+      "layer": 8,
+      "relative_product_nmse_reduction": 0.06760348337769467,
+      "changed_codes": 65844,
+      "total_codes": 178257920,
+      "split_a": {
+        "mean_h64_minus_candidate_kl": -0.000522504560649395,
+        "candidate_wins": 2,
+        "contexts": 8
+      },
+      "split_b": {
+        "mean_h64_minus_candidate_kl": 0.0009234168101102114,
+        "candidate_wins": 5,
+        "contexts": 8
+      },
+      "passed": false
+    },
+    {
+      "layer": 16,
+      "relative_product_nmse_reduction": 0.041852349838933656,
+      "changed_codes": 31598,
+      "total_codes": 178257920,
+      "split_a": {
+        "mean_h64_minus_candidate_kl": -0.00024670595303177834,
+        "candidate_wins": 4,
+        "contexts": 8
+      },
+      "split_b": {
+        "mean_h64_minus_candidate_kl": 0.0012738672085106373,
+        "candidate_wins": 5,
+        "contexts": 8
+      },
+      "passed": false
+    },
+    {
+      "layer": 42,
+      "relative_product_nmse_reduction": 0.04088526359254853,
+      "changed_codes": 61951,
+      "total_codes": 178257920,
+      "split_a": {
+        "mean_h64_minus_candidate_kl": -0.0005427453434094787,
+        "candidate_wins": 4,
+        "contexts": 8
+      },
+      "split_b": {
+        "mean_h64_minus_candidate_kl": 0.000800237525254488,
+        "candidate_wins": 5,
+        "contexts": 8
+      },
+      "passed": false
+    },
+    {
+      "layer": 62,
+      "relative_product_nmse_reduction": 0.09337648984784773,
+      "changed_codes": 188511,
+      "total_codes": 178257920,
+      "split_a": {
+        "mean_h64_minus_candidate_kl": -0.00033717078622430563,
+        "candidate_wins": 4,
+        "contexts": 8
+      },
+      "split_b": {
+        "mean_h64_minus_candidate_kl": 0.0001762094907462597,
+        "candidate_wins": 5,
+        "contexts": 8
+      },
+      "passed": false
+    }
+  ],
+  "conclusion": "Coupled rounding lowered its calibration gated-product objective at every registered layer but failed to improve final teacher KL consistently across the two held-out splits."
+}

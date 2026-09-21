@@ -1,0 +1,42 @@
+{
+  "elapsed_seconds": 26.40001722099987,
+  "format": "mxwave-selective-fp8-compression-v1",
+  "protocol": {
+    "activation_dtype": "unquantized",
+    "device": "cuda",
+    "format": "float-quantized",
+    "row_chunk_size": 256,
+    "scale_dtype": "float32",
+    "strategy": "channel",
+    "weight_dtype": "float8_e4m3fn"
+  },
+  "source_config_sha256": "d19a06baa5074b9f1f7b38296d846852fa2c071d2cebdd833e409206fc3feff0",
+  "source_model_dir": "/model",
+  "status": "packed",
+  "summary": {
+    "output_tensor_bytes": 18562223584,
+    "output_weight_file_bytes": 18562426176,
+    "saved_tensor_bytes": 1270405120,
+    "source_tensor_bytes": 19832628704,
+    "source_weight_file_bytes": 19832831240,
+    "target_count": 1
+  },
+  "targets": [
+    {
+      "module": "lm_head",
+      "output_bytes": 1272391680,
+      "output_dtype": "F8_E4M3",
+      "quantized_sha256": "7a2b68a0fae54ea595520d7a01e0f507572ffc3b1fd25d5c3d75485c78ed41f4",
+      "saved_bytes": 1270405120,
+      "scale_dtype": "F32",
+      "scale_name": "lm_head.weight_scale",
+      "shape": [
+        248320,
+        5120
+      ],
+      "source_bytes": 2542796800,
+      "source_dtype": "BF16",
+      "weight_name": "lm_head.weight"
+    }
+  ]
+}

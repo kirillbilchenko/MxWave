@@ -1,7 +1,7 @@
 # Qwen3.8-27B MXFP4 recovery: final qualification
 
-Date: 2026-09-21  
-Status: local research record; do not publish as an H64 replacement  
+Date: 2026-09-21
+Status: local research record; do not publish as an H64 replacement
 Checkpoint: `/home/kirya/local-spark/models/qwen3.8-27b-mxwave-h64-recovery-v2/model`
 
 ## Decision
