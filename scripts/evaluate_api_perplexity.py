@@ -46,11 +46,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dataset", default="")
     parser.add_argument("--dataset-revision", default="")
     parser.add_argument("--dataset-sha256", default="")
+    parser.add_argument(
+        "--checkpoint-sha256",
+        default="",
+        help="Full checkpoint identity supplied by mxwave-qualify",
+    )
     return parser
 
 
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def _canonical_json(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
 def _chunks(text: str, chunk_characters: int, num_chunks: int) -> list[str]:
@@ -206,8 +215,27 @@ def run(args: argparse.Namespace) -> Path:
     total_nll = sum(item.negative_log_likelihood for item in results)
     total_scored = sum(item.scored_tokens for item in results)
     mean_nll = total_nll / total_scored
+    protocol = {
+        "dataset": args.dataset,
+        "dataset_revision": args.dataset_revision,
+        "dataset_sha256": args.dataset_sha256,
+        "corpus_sha256": _sha256_bytes(corpus_bytes),
+        "chunk_characters": args.chunk_characters,
+        "num_chunks": len(results),
+        "chunks": [
+            {
+                "index": item.index,
+                "text_sha256": item.text_sha256,
+                "token_sha256": item.token_sha256,
+                "scored_tokens": item.scored_tokens,
+            }
+            for item in results
+        ],
+    }
     report = {
         "format": "mxwave-api-perplexity-v1",
+        "checkpoint_sha256": args.checkpoint_sha256,
+        "protocol_sha256": _sha256_bytes(_canonical_json(protocol)),
         "model": args.model,
         "dataset": args.dataset,
         "dataset_revision": args.dataset_revision,

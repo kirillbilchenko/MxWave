@@ -288,6 +288,7 @@ def collect_distributions(args: argparse.Namespace) -> Path:
         "format": "mxwave-next-token-logprobs-v1",
         "model_label": args.model_label,
         "model_config_sha256": config_sha256,
+        "checkpoint_sha256": args.checkpoint_sha256,
         "contexts_manifest_sha256": manifest_sha256,
         "selected_context_sha256": selected_context_sha256,
         "num_contexts": str(len(contexts)),
@@ -462,20 +463,41 @@ def compare_distributions(args: argparse.Namespace) -> Path:
                 "right_lower_contexts": sum(value > 0 for value in differences),
             }
 
+    metric_definition = {
+        "forward_kl_nats": "D_KL(P_BF16 || P_candidate)",
+        "reverse_kl_nats": "D_KL(P_candidate || P_BF16)",
+        "jensen_shannon_nats": "symmetric bounded divergence using the 50/50 mixture",
+        "total_variation": "0.5 * sum(abs(P_BF16 - P_candidate))",
+    }
+    protocol_identity = {
+        "reference_artifact_sha256": _sha256_file(reference_path),
+        "reference_selected_context_sha256": reference_metadata.get(
+            "selected_context_sha256"
+        ),
+        "context_manifest_sha256": reference_metadata.get("contexts_manifest_sha256"),
+        "context_protocol_manifest_sha256": (
+            context_protocol.get("manifest_sha256")
+            if isinstance(context_protocol, dict)
+            else None
+        ),
+        "num_contexts": reference_metadata.get("num_contexts"),
+        "vocab_size": reference_metadata.get("vocab_size"),
+        "metric_definition": metric_definition,
+        "bootstrap_iterations": args.bootstrap_iterations,
+        "bootstrap_seed": args.bootstrap_seed,
+    }
     report = {
         "format": "mxwave-next-token-divergence-v1",
+        "protocol_sha256": _sha256_bytes(
+            json.dumps(protocol_identity, sort_keys=True, separators=(",", ":")).encode()
+        ),
         "reference": {
             "artifact": str(reference_path),
             "artifact_sha256": _sha256_file(reference_path),
             "metadata": reference_metadata,
         },
         "context_protocol": context_protocol,
-        "metric_definition": {
-            "forward_kl_nats": "D_KL(P_BF16 || P_candidate)",
-            "reverse_kl_nats": "D_KL(P_candidate || P_BF16)",
-            "jensen_shannon_nats": "symmetric bounded divergence using the 50/50 mixture",
-            "total_variation": "0.5 * sum(abs(P_BF16 - P_candidate))",
-        },
+        "metric_definition": metric_definition,
         "candidates": report_candidates,
         "paired_candidate_comparisons": paired,
         "bootstrap": {
@@ -514,6 +536,7 @@ def build_parser() -> argparse.ArgumentParser:
     collect.add_argument("--contexts", required=True)
     collect.add_argument("--output", required=True)
     collect.add_argument("--runtime-image", required=True)
+    collect.add_argument("--checkpoint-sha256", default="")
     collect.add_argument("--linear-backend", default="")
     collect.add_argument("--limit", type=int)
     collect.add_argument("--seed", type=int, default=20260916)

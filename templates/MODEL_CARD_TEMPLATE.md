@@ -95,8 +95,9 @@ paired baseline reports; an absolute PPL is not comparable when those differ.
 
 ## Serving with vLLM
 
-Targets {{VLLM_IMAGE}}. The `config.json` here targets vLLM's *merged* runtime modules
-(`qkv_proj`, `gate_up_proj`) so the fused linears load quantized.
+Targets {{VLLM_IMAGE}}. The `config.json` names concrete checkpoint modules;
+MxWave's architecture adapter keeps members of fused runtime groups compatible
+when composing precision, and vLLM performs the runtime fusion.
 
 ```bash
 docker run -d --name {{CONTAINER}} --gpus all --ipc=host -p 8000:8000 \

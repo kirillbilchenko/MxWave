@@ -1,0 +1,47 @@
+{
+  "format": "mxwave-runtime-evidence-v1",
+  "checkpoint_sha256": "replace-with-mxwave-qualify-checkpoint-sha256",
+  "protocol_sha256": "replace-with-frozen-runtime-protocol-sha256",
+  "runtime": {
+    "name": "vllm",
+    "version": "0.29.0",
+    "image": "vllm/vllm-openai:v0.29.0@sha256:replace-with-image-digest",
+    "stock": true,
+    "client_location": "on-device"
+  },
+  "load": {
+    "status": "passed",
+    "kernel_backend": "marlin",
+    "fresh_runtime_cache_startup_seconds": 0.0,
+    "warm_restart_seconds": 0.0
+  },
+  "memory": {
+    "peak_host_used_bytes": 0,
+    "peak_accelerator_bytes": 0
+  },
+  "performance": {
+    "samples": [
+      {
+        "case": "short-decode",
+        "concurrency": 1,
+        "ttft_seconds": 0.0,
+        "output_tokens_per_second": 0.0
+      },
+      {
+        "case": "short-decode",
+        "concurrency": 4,
+        "ttft_seconds": 0.0,
+        "output_tokens_per_second": 0.0
+      }
+    ]
+  },
+  "mtp": {
+    "enabled": true,
+    "proposed_tokens": 0,
+    "accepted_tokens": 0,
+    "token_parity": false
+  },
+  "smoke": {
+    "pass": false
+  }
+}

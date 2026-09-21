@@ -1,0 +1,116 @@
+{
+  "format": "mxwave-qualification-spec-v1",
+  "run_id": "replace-with-stable-run-id",
+  "model": {
+    "path": "/models/candidate",
+    "label": "candidate",
+    "hash_shards": true
+  },
+  "evidence": [
+    {
+      "id": "perplexity",
+      "kind": "perplexity",
+      "path": "/results/candidate-ppl.json",
+      "required": true,
+      "bindings": [
+        {
+          "pointer": "/checkpoint_sha256",
+          "structure_pointer": "/checkpoint_sha256"
+        },
+        {
+          "pointer": "/protocol_sha256",
+          "value": "REPLACE_WITH_FROZEN_PPL_PROTOCOL_SHA256"
+        }
+      ]
+    },
+    {
+      "id": "divergence",
+      "kind": "divergence",
+      "path": "/results/divergence.json",
+      "required": true,
+      "bindings": [
+        {
+          "pointer": "/candidates/candidate/metadata/checkpoint_sha256",
+          "structure_pointer": "/checkpoint_sha256"
+        },
+        {
+          "pointer": "/protocol_sha256",
+          "value": "REPLACE_WITH_FROZEN_DIVERGENCE_PROTOCOL_SHA256"
+        }
+      ]
+    },
+    {
+      "id": "serving",
+      "kind": "serving",
+      "path": "/results/serving-comparison.json",
+      "required": true,
+      "bindings": [
+        {
+          "pointer": "/checkpoint_sha256",
+          "structure_pointer": "/checkpoint_sha256"
+        },
+        {
+          "pointer": "/protocol_sha256",
+          "value": "REPLACE_WITH_FROZEN_SERVING_PROTOCOL_SHA256"
+        }
+      ]
+    },
+    {
+      "id": "runtime",
+      "kind": "runtime",
+      "path": "/results/runtime-evidence.json",
+      "required": true,
+      "bindings": [
+        {
+          "pointer": "/checkpoint_sha256",
+          "structure_pointer": "/checkpoint_sha256"
+        },
+        {
+          "pointer": "/protocol_sha256",
+          "value": "REPLACE_WITH_FROZEN_RUNTIME_PROTOCOL_SHA256"
+        }
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "ppl-limit",
+      "evidence": "perplexity",
+      "pointer": "/perplexity",
+      "operator": "<=",
+      "threshold": "REPLACE_WITH_PREREGISTERED_MAXIMUM_PPL"
+    },
+    {
+      "id": "forward-kl-limit",
+      "evidence": "divergence",
+      "pointer": "/candidates/candidate/forward_kl_nats/mean",
+      "operator": "<=",
+      "threshold": "REPLACE_WITH_PREREGISTERED_MAXIMUM_FORWARD_KL"
+    },
+    {
+      "id": "serving-gate",
+      "evidence": "serving",
+      "pointer": "/gates/pass",
+      "operator": "==",
+      "threshold": true
+    }
+  ],
+  "required_capabilities": [
+    "structural",
+    "perplexity",
+    "distribution_divergence",
+    "stock_vllm_load",
+    "fresh_runtime_cache_startup",
+    "peak_host_memory",
+    "peak_accelerator_memory",
+    "ttft",
+    "decode_throughput",
+    "concurrency",
+    "critical_smoke",
+    "long_context",
+    "mtp_token_parity",
+    "mtp_acceptance",
+    "colocated_runtime_client"
+  ],
+  "success_decision": "qualified-optional"
+}
