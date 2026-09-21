@@ -1,0 +1,135 @@
+{
+  "format": "mxwave-nvfp4-bounded-qualification-v1",
+  "date": "2026-09-21",
+  "decision": "rejected_quality_and_capability_normalized_size",
+  "question": "Can a native NVFP4 W4A4 checkpoint improve the size, quality, and speed frontier over MxWave H64 on DGX Spark?",
+  "artifacts": {
+    "source": {
+      "model": "Qwen/Qwen3.8-27B",
+      "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0"
+    },
+    "h64": {
+      "model": "kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave",
+      "revision": "c0ffe6b8e5b099bf490395c047c8cbea021b100e",
+      "payload_gib": 18.4706,
+      "capabilities": [
+        "language",
+        "vision",
+        "mtp"
+      ]
+    },
+    "candidate": {
+      "model": "minima-ai/mnma_qwen3.8_27b_nvfp4",
+      "revision": "16e768e7d0461b0b86e565ecedd08a24eca53e9a",
+      "payload_gib_approximate": 17.498,
+      "capabilities": [
+        "language"
+      ],
+      "missing_capabilities": [
+        "vision",
+        "mtp"
+      ]
+    },
+    "h64_language_only_payload_gib_approximate": 16.8213,
+    "candidate_raw_size_relative_to_h64_percent": -5.26567,
+    "candidate_size_relative_to_h64_language_only_percent": 4.02288
+  },
+  "runtime": {
+    "hardware": "NVIDIA DGX Spark GB10 / SM121",
+    "image": "vllm/vllm-openai:v0.29.0",
+    "image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+    "vllm": "0.29.0",
+    "compressed_tensors": "0.17.0",
+    "flashinfer": "0.6.18",
+    "torch": "2.13.0+cu130",
+    "cuda": "13.0",
+    "driver": "580.142",
+    "compute_capability": "12.1",
+    "selected_kernel": "FlashInferCutlassNvFp4LinearKernel",
+    "native_w4a4_verified": true,
+    "weight_load_seconds": 141.81,
+    "compile_seconds": 30.06
+  },
+  "perplexity": {
+    "protocol": {
+      "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+      "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "dataset_sha256": "5f1bea067869d04849c0f975a2b29c4ff47d867f484f5010ea5e861eab246d91",
+      "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+      "chunks": 316,
+      "scored_tokens": 297199
+    },
+    "bf16": 7.980864117,
+    "recovery": 8.067760536767397,
+    "h64": 8.120844647734497,
+    "candidate": 8.557928139964986,
+    "candidate_relative_to_h64_percent": 5.382241764130091,
+    "candidate_relative_to_h64_paired_95_percent_ci": [
+      4.787193150970311,
+      6.0530294616518105
+    ],
+    "candidate_h64_window_wins": 18,
+    "candidate_h64_window_losses": 298,
+    "candidate_relative_to_recovery_percent": 6.075634012235942,
+    "candidate_relative_to_recovery_paired_95_percent_ci": [
+      5.471510656637037,
+      6.757956909303671
+    ],
+    "candidate_recovery_window_wins": 7,
+    "candidate_recovery_window_losses": 309,
+    "candidate_report_sha256": "da1ffb27d6e820b30497cdeceb3d6b6049784fdb72c8cf355ece011e54caf106",
+    "h64_comparison_sha256": "a1a70f5c55fccaf8733641088933fd533434c7b89548697e7bf50b78c32c7912",
+    "recovery_comparison_sha256": "eff021f87a415e1e048e87f823060c2282b593306a257cbb34fc98bbbfb241c7"
+  },
+  "next_token_divergence": {
+    "protocol": {
+      "contexts": 128,
+      "vocabulary": 248320,
+      "context_manifest_sha256": "9bac968222690a17af2c53983c900482fd0db4061df5a2b1403db9a4c786e7bf",
+      "selected_context_sha256": "9f5d0489d449bd0126bfc7f0327ecae7dfd7142b8167cc526b2f8c6722d59a76"
+    },
+    "h64": {
+      "forward_kl_mean_nats": 0.04993706014813405,
+      "forward_kl_p95_nats": 0.17524063070701631,
+      "reverse_kl_mean_nats": 0.04473406926059377,
+      "jensen_shannon_mean_nats": 0.010945827767457231,
+      "total_variation_mean": 0.07856522874007699,
+      "top1_agreement_rate": 0.9375
+    },
+    "recovery": {
+      "forward_kl_mean_nats": 0.04908764513671326,
+      "forward_kl_p95_nats": 0.18782615231243874,
+      "reverse_kl_mean_nats": 0.0480151113952508,
+      "jensen_shannon_mean_nats": 0.01116607657936156,
+      "total_variation_mean": 0.07935096720725913,
+      "top1_agreement_rate": 0.9296875
+    },
+    "candidate": {
+      "forward_kl_mean_nats": 0.0724618720607301,
+      "forward_kl_p95_nats": 0.3202128014973323,
+      "reverse_kl_mean_nats": 0.07603693528492907,
+      "jensen_shannon_mean_nats": 0.016406360749454695,
+      "total_variation_mean": 0.09614608193767796,
+      "top1_agreement_rate": 0.9140625,
+      "forward_kl_relative_to_h64_percent": 45.1064,
+      "forward_kl_p95_relative_to_h64_percent": 82.7275,
+      "candidate_minus_h64_forward_kl_mean_nats": 0.022524811912596043,
+      "candidate_minus_h64_bootstrap_95_ci": [
+        0.00727497482880522,
+        0.03876799334825448
+      ],
+      "candidate_lower_contexts": 40,
+      "h64_lower_contexts": 88,
+      "logprobs_sha256": "772d2281f8f87379bcbd1d9ffea2177533f70b6ae265f4d33238a7f8f7706fdd"
+    },
+    "report_sha256": "ffc0b5a054e91e230ae7d32e52d818b783aa2a5bc00a29fab20a0997c40a0dc3"
+  },
+  "stopping_rule": {
+    "phase_0_native_runtime": "passed",
+    "phase_1_quality": "failed",
+    "runtime_throughput": "not_run_by_design",
+    "gsm8k": "not_run_by_design",
+    "long_context": "not_run_by_design"
+  },
+  "interpretation": "Native NVFP4 W4A4 is technically feasible on SM121, but this candidate is larger after capability normalization and significantly worse than H64 on deterministic PPL and exact next-token divergence. Do not open a production MxWave NVFP4 backend from this evidence."
+}
