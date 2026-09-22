@@ -93,6 +93,80 @@ def _make_checkpoint(
     return root
 
 
+def _make_regex_weight_only_checkpoint(
+    tmp_path: Path,
+    *,
+    explicit_null_activations: bool = False,
+) -> Path:
+    root = tmp_path / "regex-weight-only-model"
+    root.mkdir()
+    target_pattern = (
+        r"re:^model\.layers\.0\.mlp\.experts\.\d+\.(?:gate_proj|down_proj)$"
+    )
+    targets = sorted(
+        f"model.layers.0.mlp.experts.{expert}.{projection}"
+        for expert in range(2)
+        for projection in ("gate_proj", "down_proj")
+    )
+    ignored = sorted(
+        (
+            "model.layers.0.mlp.router",
+            "model.visual.blocks.0.mlp",
+        )
+    )
+    tensors: dict[str, torch.Tensor] = {}
+    for module in targets:
+        tensors[f"{module}.weight_packed"] = torch.zeros((2, 32), dtype=torch.uint8)
+        tensors[f"{module}.weight_scale"] = torch.full((2, 2), 127, dtype=torch.uint8)
+    for module in ignored:
+        tensors[f"{module}.weight"] = torch.zeros((2, 64), dtype=torch.bfloat16)
+    shard = root / "model.safetensors"
+    save_file(tensors, shard)
+    tensor_bytes = sum(value.numel() * value.element_size() for value in tensors.values())
+    ignore_patterns = sorted((*ignored, r"re:.*mtp.*", r"re:.*hyper.*"))
+    group = {
+        "targets": [target_pattern],
+        "weights": {
+            "num_bits": 4,
+            "type": "float",
+            "symmetric": True,
+            "group_size": 32,
+            "strategy": "group",
+            "dynamic": False,
+            "scale_dtype": "torch.uint8",
+        },
+    }
+    if explicit_null_activations:
+        group["input_activations"] = None
+    config = {
+        "model_type": "synthetic_moe",
+        "quantization_config": {
+            "format": "mxfp4-pack-quantized",
+            "quant_method": "compressed-tensors",
+            "quantization_status": "compressed",
+            "config_groups": {"group_0": group},
+            "ignore": ignore_patterns,
+        },
+    }
+    index = {
+        "metadata": {"total_size": tensor_bytes},
+        "weight_map": {name: shard.name for name in tensors},
+    }
+    manifest = {
+        "manifest_version": 1,
+        "target_modules": targets,
+        "ignored_modules": ignored,
+        "config_target_patterns": [target_pattern],
+        "config_ignored_patterns": ignore_patterns,
+        "actual_output_bytes": shard.stat().st_size,
+        "copied_assets": [],
+    }
+    (root / "config.json").write_text(json.dumps(config))
+    (root / "model.safetensors.index.json").write_text(json.dumps(index))
+    (root / "mxwave-manifest.json").write_text(json.dumps(manifest))
+    return root
+
+
 _PPL_PROTOCOL = "1" * 64
 _RUNTIME_PROTOCOL = "2" * 64
 
@@ -362,6 +436,108 @@ def test_whole_checkpoint_verification_passes_valid_mxfp4(tmp_path: Path) -> Non
     assert report["tensor_count"] == 3
 
 
+@pytest.mark.parametrize("explicit_null_activations", [False, True])
+def test_whole_checkpoint_verification_expands_weight_only_expert_regex(
+    tmp_path: Path,
+    explicit_null_activations: bool,
+) -> None:
+    root = _make_regex_weight_only_checkpoint(
+        tmp_path,
+        explicit_null_activations=explicit_null_activations,
+    )
+
+    report = verify_checkpoint(root)
+
+    assert report["status"] == "passed"
+    assert report["format"] == "mxfp4-pack-quantized"
+    assert report["target_modules"] == 4
+    assert report["ignored_modules"] == 2
+    assert report["tensor_count"] == 10
+
+
+def test_whole_checkpoint_verification_rejects_invalid_target_regex(tmp_path: Path) -> None:
+    root = _make_regex_weight_only_checkpoint(tmp_path)
+    config_path = root / "config.json"
+    config = json.loads(config_path.read_text())
+    config["quantization_config"]["config_groups"]["group_0"]["targets"] = [
+        "re:["
+    ]
+    config_path.write_text(json.dumps(config))
+
+    with pytest.raises(ValueError, match="invalid regex"):
+        verify_checkpoint(root)
+
+
+def test_whole_checkpoint_verification_rejects_invalid_ignore_regex(tmp_path: Path) -> None:
+    root = _make_regex_weight_only_checkpoint(tmp_path)
+    config_path = root / "config.json"
+    config = json.loads(config_path.read_text())
+    config["quantization_config"]["ignore"] = ["re:("]
+    config_path.write_text(json.dumps(config))
+
+    with pytest.raises(ValueError, match="invalid regex"):
+        verify_checkpoint(root)
+
+
+def test_whole_checkpoint_verification_rejects_unmatched_target_regex(
+    tmp_path: Path,
+) -> None:
+    root = _make_regex_weight_only_checkpoint(tmp_path)
+    config_path = root / "config.json"
+    config = json.loads(config_path.read_text())
+    config["quantization_config"]["config_groups"]["group_0"]["targets"] = [
+        r"re:^model\.does_not_exist$"
+    ]
+    config_path.write_text(json.dumps(config))
+
+    with pytest.raises(ValueError, match="matches no checkpoint modules"):
+        verify_checkpoint(root)
+
+
+def test_whole_checkpoint_verification_rejects_ambiguous_target_selectors(
+    tmp_path: Path,
+) -> None:
+    root = _make_regex_weight_only_checkpoint(tmp_path)
+    config_path = root / "config.json"
+    config = json.loads(config_path.read_text())
+    selectors = config["quantization_config"]["config_groups"]["group_0"]["targets"]
+    selectors.append("model.layers.0.mlp.experts.0.gate_proj")
+    selectors.sort()
+    config_path.write_text(json.dumps(config))
+
+    with pytest.raises(ValueError, match="Ambiguous target selector coverage"):
+        verify_checkpoint(root)
+
+
+def test_whole_checkpoint_verification_rejects_target_ignore_overlap(
+    tmp_path: Path,
+) -> None:
+    root = _make_regex_weight_only_checkpoint(tmp_path)
+    config_path = root / "config.json"
+    config = json.loads(config_path.read_text())
+    config["quantization_config"]["ignore"].append(
+        "model.layers.0.mlp.experts.0.gate_proj"
+    )
+    config["quantization_config"]["ignore"].sort()
+    config_path.write_text(json.dumps(config))
+
+    with pytest.raises(ValueError, match="Ambiguous target/ignore selector coverage"):
+        verify_checkpoint(root)
+
+
+def test_whole_checkpoint_verification_checks_manifest_selector_identity(
+    tmp_path: Path,
+) -> None:
+    root = _make_regex_weight_only_checkpoint(tmp_path)
+    manifest_path = root / "mxwave-manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["config_target_patterns"] = [r"re:^wrong$"]
+    manifest_path.write_text(json.dumps(manifest))
+
+    with pytest.raises(ValueError, match="manifest config_target_patterns differ"):
+        verify_checkpoint(root)
+
+
 def test_whole_checkpoint_verification_rejects_bad_pair_shape(tmp_path: Path) -> None:
     root = _make_checkpoint(tmp_path, bad_scale_shape=True)
 
@@ -398,6 +574,21 @@ def test_whole_checkpoint_verification_rejects_wrong_quantization_scheme(
     config_path.write_text(json.dumps(config))
 
     with pytest.raises(ValueError, match=r"weights\.dynamic"):
+        verify_checkpoint(root)
+
+
+def test_whole_checkpoint_verification_validates_dynamic_mxfp4_activations(
+    tmp_path: Path,
+) -> None:
+    root = _make_checkpoint(tmp_path)
+    config_path = root / "config.json"
+    config = json.loads(config_path.read_text())
+    config["quantization_config"]["config_groups"]["group_0"][
+        "input_activations"
+    ]["dynamic"] = False
+    config_path.write_text(json.dumps(config))
+
+    with pytest.raises(ValueError, match=r"input_activations\.dynamic"):
         verify_checkpoint(root)
 
 

@@ -68,6 +68,7 @@ _NON_ASSET_NAMES = frozenset(
         "model.safetensors.index.json",
         "mxwave-manifest.json",
         "mxwave-run.json",
+        "mxwave-shard-integrity.json",
     }
 )
 
@@ -153,6 +154,29 @@ class QualificationSpec:
     gates: tuple[GateSpec, ...]
     required_capabilities: tuple[str, ...]
     success_decision: Literal["qualified-default", "qualified-optional"]
+
+
+@dataclass(frozen=True, slots=True)
+class _ModuleSelector:
+    """One concrete module name or precompiled ``re:`` selector."""
+
+    raw: str
+    regex: re.Pattern[str] | None
+
+    def matches(self, module: str) -> bool:
+        """Return whether this selector classifies ``module``."""
+        if self.regex is None:
+            return self.raw == module
+        return self.regex.match(module) is not None
+
+
+@dataclass(frozen=True, slots=True)
+class _TargetSelector:
+    """A target selector bound to one quantization group and representation."""
+
+    selector: _ModuleSelector
+    group_name: str
+    target_format: str
 
 
 def _utc_now() -> str:
@@ -462,9 +486,34 @@ def load_spec(path: str | Path) -> tuple[QualificationSpec, str, dict[str, Any]]
     return parsed, _sha256_bytes(raw_bytes), document
 
 
+def _parse_module_selector(raw: str, *, label: str) -> _ModuleSelector:
+    """Parse and compile a configuration module selector exactly once."""
+    if raw.startswith("re:"):
+        expression = raw[3:]
+        if not expression:
+            raise ValueError(f"{label} contains an empty regex selector")
+        try:
+            compiled = re.compile(expression)
+        except re.error as error:
+            raise ValueError(f"{label} contains invalid regex {raw!r}: {error}") from error
+        return _ModuleSelector(raw=raw, regex=compiled)
+    if _MODULE_NAME_PATTERN.fullmatch(raw) is None:
+        raise ValueError(f"{label} contains invalid concrete module name {raw!r}")
+    return _ModuleSelector(raw=raw, regex=None)
+
+
 def _config_modules(
     config: Mapping[str, Any],
-) -> tuple[tuple[str, ...], tuple[str, ...], dict[str, str], str]:
+    module_bases: Sequence[str],
+) -> tuple[
+    tuple[str, ...],
+    tuple[str, ...],
+    dict[str, str],
+    str,
+    tuple[str, ...],
+    tuple[str, ...],
+]:
+    """Expand validated target and ignore selectors over checkpoint modules."""
     quantization = config.get("quantization_config")
     if not isinstance(quantization, dict):
         raise TypeError("config.json has no quantization_config object")
@@ -478,8 +527,7 @@ def _config_modules(
     groups = quantization.get("config_groups")
     if not isinstance(groups, dict) or not groups:
         raise TypeError("quantization_config has no config_groups object")
-    targets: list[str] = []
-    target_formats: dict[str, str] = {}
+    target_selectors: list[_TargetSelector] = []
     observed_formats: set[str] = set()
     for group_name, raw_group in groups.items():
         if not isinstance(raw_group, dict):
@@ -490,13 +538,9 @@ def _config_modules(
         ):
             raise TypeError(f"quantization group {group_name!r} targets must be strings")
         group_targets = cast(list[str], raw_targets)
-        if (
-            not group_targets
-            or group_targets != sorted(set(group_targets))
-            or any(_MODULE_NAME_PATTERN.fullmatch(item) is None for item in group_targets)
-        ):
+        if not group_targets or group_targets != sorted(set(group_targets)):
             raise ValueError(
-                f"quantization group {group_name!r} targets must be sorted concrete names"
+                f"quantization group {group_name!r} targets must be sorted unique selectors"
             )
         group_format = raw_group.get("format", checkpoint_format)
         if group_format not in {"mxfp4-pack-quantized", "float-quantized"}:
@@ -505,21 +549,27 @@ def _config_modules(
             )
         observed_formats.add(str(group_format))
         _validate_group_scheme(str(group_name), raw_group, str(group_format))
-        for target in group_targets:
-            if target in target_formats:
-                raise ValueError(f"quantization config contains duplicate target {target!r}")
-            target_formats[target] = str(group_format)
-        targets.extend(group_targets)
+        for raw_target in group_targets:
+            target_selectors.append(
+                _TargetSelector(
+                    selector=_parse_module_selector(
+                        raw_target,
+                        label=f"quantization group {group_name!r} targets",
+                    ),
+                    group_name=str(group_name),
+                    target_format=str(group_format),
+                )
+            )
     raw_ignore = quantization.get("ignore")
     ignore = _string_list(raw_ignore, "quantization_config.ignore")
-    if tuple(ignore) != tuple(sorted(set(ignore))) or any(
-        _MODULE_NAME_PATTERN.fullmatch(item) is None for item in ignore
-    ):
-        raise ValueError("quantization_config.ignore must contain sorted concrete names")
-    if len(set(targets)) != len(targets):
-        raise ValueError("quantization config contains duplicate target modules")
-    if set(targets).intersection(ignore):
-        raise ValueError("quantization targets and ignores overlap")
+    if tuple(ignore) != tuple(sorted(set(ignore))):
+        raise ValueError("quantization_config.ignore must contain sorted unique selectors")
+    ignore_selectors = tuple(
+        _parse_module_selector(item, label="quantization_config.ignore") for item in ignore
+    )
+    raw_target_selectors = [item.selector.raw for item in target_selectors]
+    if len(set(raw_target_selectors)) != len(raw_target_selectors):
+        raise ValueError("quantization config contains duplicate target selectors")
     if checkpoint_format == "mxfp4-pack-quantized" and observed_formats != {
         "mxfp4-pack-quantized"
     }:
@@ -529,11 +579,52 @@ def _config_modules(
         "float-quantized",
     }:
         raise ValueError("mixed-precision checkpoints require both MXFP4 and FP8 groups")
+
+    concrete_modules = tuple(sorted(set(module_bases)))
+    claims: dict[str, list[_TargetSelector]] = {}
+    for target_selector in target_selectors:
+        matched = [
+            module
+            for module in concrete_modules
+            if target_selector.selector.matches(module)
+        ]
+        if not matched:
+            raise ValueError(
+                f"quantization target selector {target_selector.selector.raw!r} matches no "
+                "checkpoint modules"
+            )
+        for module in matched:
+            claims.setdefault(module, []).append(target_selector)
+
+    ambiguous_targets = {
+        module: values for module, values in claims.items() if len(values) != 1
+    }
+    if ambiguous_targets:
+        module = min(ambiguous_targets)
+        selectors = sorted(item.selector.raw for item in ambiguous_targets[module])
+        raise ValueError(
+            f"Ambiguous target selector coverage for {module!r}: {selectors}"
+        )
+    target_formats = {
+        module: values[0].target_format for module, values in claims.items()
+    }
+    ignored = {
+        module
+        for module in concrete_modules
+        if any(selector.matches(module) for selector in ignore_selectors)
+    }
+    overlap = sorted(set(target_formats).intersection(ignored))
+    if overlap:
+        raise ValueError(
+            f"Ambiguous target/ignore selector coverage for modules: {overlap[:5]}"
+        )
     return (
-        tuple(sorted(targets)),
-        tuple(sorted(ignore)),
+        tuple(sorted(target_formats)),
+        tuple(sorted(ignored)),
         target_formats,
         str(checkpoint_format),
+        tuple(sorted(raw_target_selectors)),
+        tuple(sorted(selector.raw for selector in ignore_selectors)),
     )
 
 
@@ -573,23 +664,25 @@ def _validate_group_scheme(
             label=f"config_groups.{group_name}.weights",
         )
         activations = group.get("input_activations")
-        if not isinstance(activations, dict):
-            raise TypeError(
-                f"quantization group {group_name!r} has no input_activations scheme"
+        if activations is not None:
+            if not isinstance(activations, dict):
+                raise TypeError(
+                    f"quantization group {group_name!r} input_activations must be "
+                    "an object or null"
+                )
+            _require_scheme_fields(
+                activations,
+                {
+                    "num_bits": 4,
+                    "type": "float",
+                    "symmetric": True,
+                    "group_size": 32,
+                    "strategy": "group",
+                    "dynamic": True,
+                    "scale_dtype": "torch.uint8",
+                },
+                label=f"config_groups.{group_name}.input_activations",
             )
-        _require_scheme_fields(
-            activations,
-            {
-                "num_bits": 4,
-                "type": "float",
-                "symmetric": True,
-                "group_size": 32,
-                "strategy": "group",
-                "dynamic": True,
-                "scale_dtype": "torch.uint8",
-            },
-            label=f"config_groups.{group_name}.input_activations",
-        )
     else:
         _require_scheme_fields(
             weights,
@@ -670,6 +763,28 @@ def _validate_tensor_layout(path: Path, tensors: Mapping[str, TensorInfo]) -> No
         cursor = end
 
 
+def _checkpoint_weight_bases(
+    tensors: Mapping[str, TensorInfo],
+) -> tuple[set[str], set[str], set[str]]:
+    """Return exact packed, raw, and scale module bases from checkpoint keys."""
+    packed = {
+        name.removesuffix(".weight_packed")
+        for name in tensors
+        if name.endswith(".weight_packed")
+    }
+    raw = {
+        name.removesuffix(".weight")
+        for name in tensors
+        if name.endswith(".weight")
+    }
+    scales = {
+        name.removesuffix(".weight_scale")
+        for name in tensors
+        if name.endswith(".weight_scale")
+    }
+    return packed, raw, scales
+
+
 def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> dict[str, Any]:
     """Perform header-only whole-checkpoint verification.
 
@@ -687,7 +802,17 @@ def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> di
     config = _read_json_object(config_path)
     index = _read_json_object(index_path)
     manifest = _read_json_object(manifest_path)
-    targets, ignored, target_formats, checkpoint_format = _config_modules(config)
+    info_by_key, weight_map, shards = _checkpoint_headers(root)
+    packed_bases, raw_weight_bases, scale_bases = _checkpoint_weight_bases(info_by_key)
+    module_bases = packed_bases.union(raw_weight_bases, scale_bases)
+    (
+        targets,
+        ignored,
+        target_formats,
+        checkpoint_format,
+        config_target_selectors,
+        config_ignored_selectors,
+    ) = _config_modules(config, sorted(module_bases))
     manifest_targets = _string_list(manifest.get("target_modules"), "manifest target_modules")
     manifest_ignored = _string_list(
         manifest.get("ignored_modules"), "manifest ignored_modules"
@@ -696,6 +821,15 @@ def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> di
         raise ValueError("config and manifest target modules differ")
     if ignored != tuple(sorted(manifest_ignored)):
         raise ValueError("config and manifest ignored modules differ")
+    for field, expected_selectors in (
+        ("config_target_patterns", config_target_selectors),
+        ("config_ignored_patterns", config_ignored_selectors),
+    ):
+        if field not in manifest:
+            continue
+        manifest_selectors = _string_list(manifest.get(field), f"manifest {field}")
+        if tuple(sorted(manifest_selectors)) != expected_selectors:
+            raise ValueError(f"config selectors and manifest {field} differ")
     if checkpoint_format == "mixed-precision":
         manifest_mxfp4 = _string_list(
             manifest.get("mxfp4_target_modules"), "manifest mxfp4_target_modules"
@@ -734,7 +868,6 @@ def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> di
         ) != expected_fp8:
             raise ValueError("manifest composition selected modules differ from FP8 targets")
 
-    info_by_key, weight_map, shards = _checkpoint_headers(root)
     for module in targets:
         raw_name = f"{module}.weight"
         packed_name = f"{module}.weight_packed"
@@ -779,11 +912,6 @@ def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> di
                     f"{weight.shape} and {scale.shape}"
                 )
 
-    packed_bases = {
-        name.removesuffix(".weight_packed")
-        for name in info_by_key
-        if name.endswith(".weight_packed")
-    }
     expected_packed_bases = {
         module
         for module, target_format in target_formats.items()
@@ -796,11 +924,6 @@ def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> di
             f"MXFP4 packed-target disagreement: unexpected={unexpected_packed[:5]}, "
             f"missing={missing_packed[:5]}"
         )
-    raw_weight_bases = {
-        name.removesuffix(".weight")
-        for name in info_by_key
-        if name.endswith(".weight")
-    }
     fp8_bases = {
         module
         for module, target_format in target_formats.items()
@@ -814,11 +937,6 @@ def verify_checkpoint(model_dir: str | Path, *, hash_shards: bool = False) -> di
             f"Raw-weight coverage disagreement: unexpected={unexpected_raw[:5]}, "
             f"missing={missing_raw[:5]}"
         )
-    scale_bases = {
-        name.removesuffix(".weight_scale")
-        for name in info_by_key
-        if name.endswith(".weight_scale")
-    }
     if scale_bases != set(targets):
         unexpected_scales = sorted(scale_bases.difference(targets))
         missing_scales = sorted(set(targets).difference(scale_bases))

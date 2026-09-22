@@ -5,6 +5,7 @@ from pathlib import Path
 
 from mxwave.calibration_cli import build_parser as build_calibration_parser
 from mxwave.cli import build_parser as build_quantize_parser
+from mxwave.expert_cli import build_parser as build_expert_parser
 from mxwave.precision_budget_cli import build_parser as build_precision_budget_parser
 from mxwave.qualification_cli import build_parser as build_qualification_parser
 
@@ -12,6 +13,7 @@ from mxwave.qualification_cli import build_parser as build_qualification_parser
 def test_public_command_names_are_mxwave() -> None:
     assert build_calibration_parser().prog == "mxwave-calibrate"
     assert build_quantize_parser().prog == "mxwave-quantize"
+    assert build_expert_parser().prog == "mxwave-quantize-experts"
     assert build_precision_budget_parser().prog == "mxwave-precision-budget"
     assert build_qualification_parser().prog == "mxwave-qualify"
 
@@ -23,4 +25,5 @@ def test_packaged_entry_points_are_mxwave_only() -> None:
         "mxwave-precision-budget": "mxwave.precision_budget_cli:main",
         "mxwave-qualify": "mxwave.qualification_cli:main",
         "mxwave-quantize": "mxwave.cli:main",
+        "mxwave-quantize-experts": "mxwave.expert_cli:main",
     }
