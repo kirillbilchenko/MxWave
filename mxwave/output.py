@@ -24,6 +24,7 @@ __all__ = [
 
 # Canonical schema emitted by compressed-tensors 0.17.0 for the MXFP4 preset.
 _MXFP4_GROUP: dict[str, Any] = {
+    "format": "mxfp4-pack-quantized",
     "targets": [],
     "weights": {
         "num_bits": 4,
@@ -72,6 +73,7 @@ _SKIPPED_ASSETS = frozenset(
         "model.safetensors.index.json",
         "mxwave-manifest.json",
         "mxwave-run.json",
+        "mxwave-shard-integrity.json",
         # Pre-rename provenance is accepted as input history, never copied into
         # a newly produced MxWave checkpoint.
         "mxstream-manifest.json",
@@ -96,10 +98,12 @@ def build_quantization_config(
     ignored_modules: list[str],
     *,
     compression_ratio: float | None = None,
+    weight_only: bool = False,
 ) -> dict[str, Any]:
     """Build the minimal compressed-tensors 0.17 MXFP4 configuration.
 
-    Targets are concrete checkpoint module names. This avoids broad ``Linear``
+    Targets may be exact checkpoint module names or anchored ``re:`` selectors
+    emitted by a validated architecture adapter. This avoids broad ``Linear``
     matching and remains compatible with vLLM's fused-module mapping.
     """
     if not target_modules:
@@ -109,6 +113,15 @@ def build_quantization_config(
         raise ValueError(f"Modules cannot be both targeted and ignored: {overlap[:5]}")
 
     group = {**_MXFP4_GROUP, "targets": sorted(set(target_modules))}
+    if weight_only:
+        # The stock Marlin MXFP4 MoE path is W4A16.  Omitting activation
+        # schemes matches compressed-tensors' weight-only contract instead of
+        # declaring dynamic W4A4 activations that the selected kernel ignores.
+        group = {
+            "format": group["format"],
+            "targets": group["targets"],
+            "weights": group["weights"],
+        }
     return {
         "config_groups": {"group_0": group},
         "quant_method": "compressed-tensors",
@@ -275,6 +288,21 @@ def build_model_card(manifest: dict[str, Any]) -> str:
             "---",
         ]
     )
+    activation_quantization = str(
+        manifest.get("activation_quantization", "dynamic-mxfp4-group32")
+    )
+    activation_text = (
+        "Unquantized at runtime (weight-only W4A16)"
+        if activation_quantization == "none"
+        else "Dynamic MXFP4, block size 32"
+    )
+    required_backends = manifest.get("required_backends")
+    moe_backend = (
+        " --moe-backend marlin"
+        if isinstance(required_backends, list) and "moe=marlin" in required_backends
+        else ""
+    )
+
     body = [
         f"# {title_source} — MxWave {method.upper()} MXFP4",
         "",
@@ -293,7 +321,7 @@ def build_model_card(manifest: dict[str, Any]) -> str:
         f"| Scale selection | `{selection}` |",
         f"| Tensor row chunk size | {tensor_row_chunk_size} |",
         "| Weight format | OCP MXFP4 E2M1, E8M0 scale, block size 32 |",
-        "| Input activations | Dynamic MXFP4, block size 32 |",
+        f"| Input activations | {activation_text} |",
         f"| Quantized tensors | {targets} |",
         f"| Calibration | {calibration_text} |",
         f"| Artifact data size | {output_gib} |",
@@ -309,7 +337,10 @@ def build_model_card(manifest: dict[str, Any]) -> str:
         "## Usage",
         "",
         "```bash",
-        "vllm serve . --load-format safetensors --linear-backend marlin",
+        (
+            "vllm serve . --load-format safetensors --linear-backend marlin"
+            f"{moe_backend}"
+        ),
         "```",
         "",
         (
@@ -350,6 +381,8 @@ def build_model_card(manifest: dict[str, Any]) -> str:
             "calibration data."
             if not activation and isinstance(gamma, dict)
             else "- Calibration quality depends on the representativeness of the recorded corpus."
+            if activation
+            else "- No activation calibration was used; scale selection is recorded above."
         ),
         "- Runtime compatibility depends on the exact vLLM/compressed-tensors build and GPU.",
         (
@@ -423,6 +456,7 @@ def assemble_output_dir(
     ignored_modules: list[str],
     real_modules: list[str],
     manifest: dict[str, Any],
+    weight_only: bool = False,
 ) -> dict[str, Any]:
     """Assemble and atomically index a drop-in checkpoint.
 
@@ -454,6 +488,7 @@ def assemble_output_dir(
         target_modules,
         ignored_modules,
         compression_ratio=compression_ratio,
+        weight_only=weight_only,
     )
     config["quantization_config"] = quantization_config
 

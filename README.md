@@ -67,6 +67,7 @@ cd MxWave
 pip install -e ".[dev,calibrate]"
 mxwave-calibrate --help
 mxwave-quantize --help
+mxwave-quantize-experts --help
 ```
 
 ## Activation calibration and quantization
@@ -123,6 +124,66 @@ Built-in adapters currently describe the verified Qwen3.5-text layout and the
 standard dense Llama layout, including runtime-fused QKV and gate/up groups.
 Adapters inspect only configuration and safetensors headers, validate every
 required weight, and fail closed when an architecture is unknown or incomplete.
+
+### Experimental routed-expert MoE conversion
+
+`mxwave-quantize-experts` is an opt-in, adapter-driven path for fused MoE expert
+banks. The engine consumes a model-independent layout IR, processes direct
+expert/row slices under a host-memory cap, and preserves every non-target tensor
+exactly. Architecture-specific config checks, tensor mapping, and runtime module
+selectors are isolated in adapters. The first verified adapter covers the
+Qwen3.5-MoE layout used by `nex-agi/Nex-N2.5-mini`; unknown or incomplete
+architectures fail closed.
+
+Inspect the complete plan before writing an artifact:
+
+```bash
+mxwave-quantize-experts \
+    --model-dir /path/to/float-model \
+    --output-dir /path/to/output \
+    --method mse \
+    --scale-percentile 99.5 \
+    --mse-clip-depth 4 \
+    --tensor-row-chunk-size 2048 \
+    --host-tensor-cap-mib 1024 \
+    --source-repository nex-agi/Nex-N2.5-mini \
+    --source-revision 87420286149d9cce9bd46cd335ef9bda33c37c1b \
+    --dry-run
+```
+
+Remove `--dry-run` to emit the checkpoint. If a run is interrupted, rerun the
+identical command with `--resume`; MxWave binds the run to SHA-256 hashes of the
+source shards and validates every completed output shard before reuse.
+`--method rtn` is the reference default. `--method mse` performs fixed,
+unweighted weight-reconstruction scale search; it does **not** use route,
+activation, or Hessian calibration.
+
+Source weight directories must remain immutable during conversion. Each write
+or resume invocation performs one bounded sequential hash pass over all source
+weight shards, trading additional I/O for cryptographically safe shard reuse.
+
+The Qwen3.5-MoE adapter quantizes routed experts only. Routers, shared experts,
+attention/GDN, embeddings, norms, the output head, vision weights, and all other
+non-target tensors remain passthrough. The configured host cap bounds
+materialized tensor payload per output shard; serializer, allocator, mmap,
+page-cache, and filesystem overhead remain outside that bound.
+
+The output uses the standard weight-only `mxfp4-pack-quantized` contract. On DGX
+Spark / SM121 it was validated with the official vLLM 0.29 image and both Marlin
+backends forced:
+
+```bash
+vllm serve /path/to/output \
+    --linear-backend marlin \
+    --moe-backend marlin
+```
+
+The real Nex-N2.5-mini preflight converted 30,720 logical expert matrices into
+61,440 packed/scale tensors across 87 shards while process RSS remained about
+1.3–1.9 GiB. Stock vLLM selected `MarlinExperts`, and text and vision smoke
+forwards passed. These results establish bounded emission and runtime
+compatibility; they are not a claim that RTN or unweighted MSE improves model
+quality.
 
 ### Experimental precision budgets
 
@@ -305,7 +366,10 @@ MxWave/
 │   ├── rotate.py    Hadamard / random-orthogonal rotation + folding
 │   ├── runtime_ir.py Model-independent runtime operations and fused groups
 │   ├── runtime_adapters.py Validated architecture-adapter registry
-│   ├── adapters/    Architecture-specific runtime graph builders
+│   ├── expert_ir.py Model-independent fused-expert bank/slice contract
+│   ├── expert_engine.py Bounded adapter-driven expert planner and emitter
+│   ├── expert_cli.py Installed `mxwave-quantize-experts` command
+│   ├── adapters/    Architecture-specific runtime and expert-layout builders
 │   ├── mixed_precision.py Streaming MXFP4/FP8 checkpoint composition
 │   ├── precision_budget.py Semantic byte-budget candidate planning
 │   ├── qualification.py Whole-checkpoint verification + frozen evidence gates

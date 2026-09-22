@@ -112,7 +112,7 @@ def verify_config_coverage(
     def matches(pattern: str, module: str) -> bool:
         if pattern.startswith("re:"):
             return re.match(pattern[3:], module) is not None
-        return pattern in module
+        return pattern == module
 
     uncovered: list[str] = []
     for module in real_modules:

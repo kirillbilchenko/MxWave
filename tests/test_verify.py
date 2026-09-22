@@ -34,7 +34,7 @@ def test_channel_weighted_sqnr_validates_shape():
 
 def test_config_coverage_finds_uncovered_modules():
     targets = ["re:.*layers\\..*\\..*_proj$"]
-    ignore = ["lm_head"]
+    ignore = ["model.lm_head"]
     real = [
         "model.layers.0.self_attn.q_proj",
         "model.layers.0.mlp.gate_proj",
@@ -50,3 +50,12 @@ def test_config_coverage_empty_when_all_covered():
     targets = ["re:.*"]
     real = ["model.layers.0.self_attn.q_proj"]
     assert verify_config_coverage(targets, [], real) == []
+
+
+def test_config_coverage_uses_exact_matching_for_concrete_module_names():
+    real = [
+        "model.layers.0.mlp.experts.1.gate_proj",
+        "model.layers.0.mlp.experts.10.gate_proj",
+    ]
+
+    assert verify_config_coverage([real[0]], [], real) == [real[1]]

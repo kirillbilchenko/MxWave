@@ -511,7 +511,7 @@ def test_quantize_model_emits_loader_safe_config(tmp_path: Path):
     assert "version" not in quantization
     assert "transform_config" not in quantization
     group = quantization["config_groups"]["group_0"]
-    assert "format" not in group
+    assert group["format"] == "mxfp4-pack-quantized"
     targets = group["targets"]
     assert targets == [
         "model.layers.0.mlp.gate_proj",

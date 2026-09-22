@@ -7,6 +7,7 @@ so neither the full checkpoint nor a full target matrix must enter device memory
 
 from __future__ import annotations
 
+import hashlib
 import json
 import struct
 from dataclasses import dataclass
@@ -25,6 +26,7 @@ __all__ = [
     "read_tensor_row_range",
     "read_tensor_rows",
     "shard_tensor_info",
+    "tensor_payload_sha256",
 ]
 
 
@@ -150,6 +152,45 @@ def shard_tensor_info(shard: ShardFile) -> dict[str, TensorInfo]:
             f"found {shard.path.stat().st_size}"
         )
     return result
+
+
+def tensor_payload_sha256(
+    shard: ShardFile,
+    key: str,
+    *,
+    chunk_size_bytes: int = 8 * 1024**2,
+) -> str:
+    """Hash one tensor's raw safetensors payload with bounded host memory.
+
+    Safetensors offsets are relative to the start of the data section, so the
+    header length is included when seeking to the tensor.  Hashing raw bytes
+    verifies bitwise preservation, including floating-point NaN payloads, and
+    avoids materializing the tensor through PyTorch.
+    """
+    if not isinstance(chunk_size_bytes, int) or chunk_size_bytes <= 0:
+        raise ValueError("chunk_size_bytes must be a positive integer")
+    info = shard_tensor_info(shard).get(key)
+    if info is None:
+        raise KeyError(f"Tensor {key!r} is absent from {shard.path}")
+
+    digest = hashlib.sha256()
+    with shard.path.open("rb") as stream:
+        raw_length = stream.read(8)
+        if len(raw_length) != 8:
+            raise ValueError(f"Invalid safetensors header in {shard.path}")
+        header_length = struct.unpack("<Q", raw_length)[0]
+        start, stop = info.data_offsets
+        stream.seek(8 + header_length + start)
+        remaining = stop - start
+        while remaining:
+            chunk = stream.read(min(remaining, chunk_size_bytes))
+            if not chunk:
+                raise ValueError(
+                    f"Unexpected end of safetensors payload for {key!r} in {shard.path}"
+                )
+            digest.update(chunk)
+            remaining -= len(chunk)
+    return digest.hexdigest()
 
 
 def read_tensor(
