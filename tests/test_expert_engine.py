@@ -458,6 +458,7 @@ def test_full_expert_emission_preserves_assets_and_passthrough(tmp_path: Path) -
 
     emitted_config = json.loads((output / "config.json").read_text())
     group = emitted_config["quantization_config"]["config_groups"]["group_0"]
+    assert group["format"] == "mxfp4-pack-quantized"
     assert group["targets"] == plan.config_target_patterns
     assert "input_activations" not in group
     assert r"re:.*mtp.*" in emitted_config["quantization_config"]["ignore"]

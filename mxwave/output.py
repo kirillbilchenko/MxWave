@@ -24,6 +24,7 @@ __all__ = [
 
 # Canonical schema emitted by compressed-tensors 0.17.0 for the MXFP4 preset.
 _MXFP4_GROUP: dict[str, Any] = {
+    "format": "mxfp4-pack-quantized",
     "targets": [],
     "weights": {
         "num_bits": 4,
@@ -117,6 +118,7 @@ def build_quantization_config(
         # schemes matches compressed-tensors' weight-only contract instead of
         # declaring dynamic W4A4 activations that the selected kernel ignores.
         group = {
+            "format": group["format"],
             "targets": group["targets"],
             "weights": group["weights"],
         }
