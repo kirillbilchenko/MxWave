@@ -188,9 +188,16 @@ but a new model family needs a validated streaming adapter and policy.
 ### 3. Quantize in bounded chunks
 
 Source matrices are read by row ranges and moved to the accelerator in bounded
-chunks. Completed tensors accumulate only until the current output shard can be
-saved atomically. This is how the converter can process a source checkpoint
-larger than available accelerator memory.
+chunks. The output safetensors layout is known from headers before conversion,
+so packed values and scales are written directly to their final offsets and
+passthrough tensors are copied as bounded raw-byte ranges. Calibration statistics
+are likewise opened one target at a time without caching. Atomic rename occurs
+only after every planned payload is complete and the temporary shard passes
+structural verification. The completed file is flushed durably and bound to the
+run through a per-shard size and SHA-256 ledger; resume verifies the complete
+payload and rejects unrecorded crash-window shards. This is how the converter
+can process a source checkpoint larger than available accelerator or host
+memory without weakening recovery integrity.
 
 ### 4. Verify the artifact
 

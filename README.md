@@ -221,8 +221,14 @@ claims and serving instructions are frozen in the
 [mixed-precision model card](docs/QWEN3_8_27B_PRECISION_BUDGET_MODEL_CARD.md).
 
 Target matrices are read from safetensors and quantized in bounded row ranges;
-`--tensor-row-chunk-size` controls the device working set. Completed packed
-tensors accumulate only inside the current output shard before its atomic save.
+`--tensor-row-chunk-size` controls the device working set. The production writer
+predeclares each safetensors layout, writes packed values and scales directly to
+their final offsets, and copies passthrough payloads in bounded raw-byte chunks.
+It therefore retains neither a complete output tensor nor a complete output
+shard in host memory. Activation statistics are opened lazily and one target's
+validated statistic is released before the next target is loaded. Each shard is
+flushed durably before its atomic rename and recorded in a run-bound SHA-256
+ledger; resumed runs verify the complete payload rather than trusting headers.
 
 ### Archived DGX Spark experiments
 
@@ -361,6 +367,7 @@ MxWave/
 │   ├── calibration_stream.py One-decoder-layer-at-a-time calibration runner
 │   ├── core.py      MXFP4 constants, MSE-optimal quantize_mxfp4()
 │   ├── shard.py     safetensors shard discovery + streaming reads
+│   ├── incremental_safetensors.py Direct, bounded output payload writer
 │   ├── engine.py    GPU-streaming quantization orchestration
 │   ├── format.py    input format detection from config.json (not suffix sniffing)
 │   ├── rotate.py    Hadamard / random-orthogonal rotation + folding

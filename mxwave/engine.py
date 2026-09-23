@@ -6,18 +6,19 @@ import hashlib
 import json
 import math
 import os
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import torch
-from safetensors.torch import save_file
 
 from . import __version__
-from .calibration import CalibrationData, CalibrationObjective, load_calibration_data
+from .calibration import CalibrationArtifact, CalibrationObjective, open_calibration_data
 from .core import QuantizationMethod, dequant_mxfp4, quantize_mxfp4
 from .format import InputFormat, detect_input_format
+from .incremental_safetensors import IncrementalSafeTensorsWriter, source_data_start
 from .output import assemble_output_dir, verify_emitted_config
 from .policy import (
     PolicyName,
@@ -172,6 +173,21 @@ _DTYPE_BYTES = {
     "F64": 8,
 }
 _FLOAT_DTYPES = frozenset({"BF16", "F16", "F32"})
+_INTEGRITY_SIDECAR_FILENAME = "mxwave-shard-integrity.json"
+_INTEGRITY_SCHEMA_VERSION = 1
+_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
+
+
+@dataclass(frozen=True)
+class _ShardIntegrityRecord:
+    """Cryptographic identity of one complete output shard file."""
+
+    bytes: int
+    sha256: str
+
+    def as_json(self) -> dict[str, int | str]:
+        """Return the canonical JSON representation persisted in the ledger."""
+        return {"bytes": self.bytes, "sha256": self.sha256}
 
 
 def _tensor_data_bytes(info: TensorInfo) -> int:
@@ -334,8 +350,12 @@ def quantize_shard(
             gamma_device = gamma.to(device=device) if gamma is not None else None
             hessian_device = hessian.to(device=device) if hessian is not None else None
             total_rows, columns = info.shape
-            packed_parts: list[torch.Tensor] = []
-            scale_parts: list[torch.Tensor] = []
+            # This compatibility helper necessarily returns a materialized
+            # shard mapping, but fill each output tensor in place so row
+            # chunking does not also retain a list plus torch.cat copy. The
+            # production model path writes these chunks directly to disk.
+            packed = torch.empty((total_rows, columns // 2), dtype=torch.uint8)
+            scales = torch.empty((total_rows, columns // 32), dtype=torch.uint8)
             for start in range(0, total_rows, cfg.tensor_row_chunk_size):
                 stop = min(start + cfg.tensor_row_chunk_size, total_rows)
                 weight_chunk = read_tensor_row_range(
@@ -357,12 +377,10 @@ def quantize_shard(
                     method=cfg.method,
                     mse_clip_depth=cfg.mse_clip_depth,
                 )
-                packed_parts.append(packed_chunk.cpu().contiguous())
-                scale_parts.append(scale_chunk.cpu().contiguous())
+                packed[start:stop].copy_(packed_chunk, non_blocking=False)
+                scales[start:stop].copy_(scale_chunk, non_blocking=False)
                 del weight_chunk, packed_chunk, scale_chunk
 
-            packed = torch.cat(packed_parts, dim=0)
-            scales = torch.cat(scale_parts, dim=0)
             module = name.removesuffix(".weight")
             result[f"{module}.weight_packed"] = packed
             result[f"{module}.weight_scale"] = scales
@@ -387,7 +405,7 @@ def quantize_shard(
                         original, reconstructed, hessian_device
                     )
                 del original, reconstructed
-            del packed_parts, scale_parts, gamma_device, hessian_device
+            del gamma, hessian, gamma_device, hessian_device
         else:
             result[name] = read_tensor(shard, name, device="cpu").contiguous()
     return result
@@ -421,8 +439,8 @@ def _load_gamma_proxies(
 def _load_activation_calibration(
     cfg: QuantizeConfig,
     plan: ModelPlan,
-) -> CalibrationData | None:
-    """Load exact per-target activation statistics when explicitly supplied."""
+) -> CalibrationArtifact | None:
+    """Open exact per-target activation statistics for non-caching access."""
     if cfg.activation_stats is None:
         return None
     expected_widths = {
@@ -430,7 +448,7 @@ def _load_activation_calibration(
         for item in plan.tensors
         if item.quantized
     }
-    return load_calibration_data(
+    artifact = open_calibration_data(
         cfg.activation_stats,
         cfg.calibration_objective,
         expected_widths,
@@ -438,6 +456,10 @@ def _load_activation_calibration(
         expected_source_repository=cfg.source_repository,
         expected_source_revision=cfg.source_revision,
     )
+    # Fail before emitting any checkpoint shard while retaining only one
+    # statistic tensor at a time.
+    artifact.validate_all()
+    return artifact
 
 
 def _expected_shard_specs(
@@ -499,32 +521,159 @@ def _sample_existing_shard_sqnr(
         results[name] = sqnr(original, reconstructed)
         gamma = gamma_by_target.get(name)
         if gamma is not None:
+            gamma_device = gamma.to(device=device)
             calibration_weighted_results[name] = channel_weighted_sqnr(
-                original, reconstructed, gamma
+                original, reconstructed, gamma_device
             )
+            del gamma_device
+        del gamma
         hessian = hessian_by_target.get(name)
         if hessian is not None:
+            hessian_device = hessian.to(device=device)
             calibration_weighted_results[name] = block_hessian_weighted_sqnr(
-                original, reconstructed, hessian
+                original, reconstructed, hessian_device
             )
+            del hessian_device
+        del hessian
         del original, packed, scales, reconstructed
 
 
-def _atomic_save_shard(tensors: dict[str, torch.Tensor], path: Path) -> None:
+def _fsync_directory(path: Path) -> None:
+    """Persist a rename or unlink in one directory before returning."""
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(path, flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _atomic_quantize_shard(
+    shard: ShardFile,
+    cfg: QuantizeConfig,
+    path: Path,
+    expected: Mapping[str, tuple[tuple[int, ...], str]],
+    *,
+    target_names: frozenset[str],
+    gamma_by_target: Mapping[str, torch.Tensor],
+    hessian_by_target: Mapping[str, torch.Tensor],
+) -> None:
+    """Quantize and atomically emit one shard without full host tensors."""
     temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
     temporary.unlink(missing_ok=True)
     try:
-        save_file(tensors, str(temporary))
+        infos = shard_tensor_info(shard)
+        device = torch.device(cfg.device)
+        with shard.path.open("rb") as source, temporary.open("w+b") as destination:
+            source_payload_start = source_data_start(source, shard.path)
+            writer = IncrementalSafeTensorsWriter(destination, expected)
+            for name, info in infos.items():
+                if not _should_quantize(name, target_names):
+                    writer.copy_tensor_payload(
+                        name,
+                        source,
+                        shard.path,
+                        info,
+                        source_payload_start=source_payload_start,
+                    )
+                    continue
+
+                gamma = gamma_by_target.get(name)
+                hessian = hessian_by_target.get(name)
+                gamma_device = gamma.to(device=device) if gamma is not None else None
+                hessian_device = hessian.to(device=device) if hessian is not None else None
+                total_rows, columns = info.shape
+                module = name.removesuffix(".weight")
+                packed_name = f"{module}.weight_packed"
+                scale_name = f"{module}.weight_scale"
+                for start in range(0, total_rows, cfg.tensor_row_chunk_size):
+                    stop = min(start + cfg.tensor_row_chunk_size, total_rows)
+                    weight_chunk = read_tensor_row_range(
+                        shard,
+                        name,
+                        start,
+                        stop,
+                        device=device,
+                    )
+                    if not torch.isfinite(weight_chunk).all():
+                        raise ValueError(
+                            "Target tensor contains NaN or infinity in rows "
+                            f"[{start}, {stop}): {name}"
+                        )
+                    packed_chunk, scale_chunk = quantize_mxfp4(
+                        weight_chunk,
+                        scale_percentile=cfg.scale_percentile,
+                        gamma=gamma_device,
+                        hessian=hessian_device,
+                        method=cfg.method,
+                        mse_clip_depth=cfg.mse_clip_depth,
+                    )
+                    expected_packed_shape = (stop - start, columns // 2)
+                    expected_scale_shape = (stop - start, columns // 32)
+                    if tuple(packed_chunk.shape) != expected_packed_shape:
+                        raise AssertionError(
+                            f"Packed chunk for {name!r} is {tuple(packed_chunk.shape)}, "
+                            f"expected {expected_packed_shape}"
+                        )
+                    if tuple(scale_chunk.shape) != expected_scale_shape:
+                        raise AssertionError(
+                            f"Scale chunk for {name!r} is {tuple(scale_chunk.shape)}, "
+                            f"expected {expected_scale_shape}"
+                        )
+                    writer.write_u8_chunk(packed_name, packed_chunk)
+                    writer.write_u8_chunk(scale_name, scale_chunk)
+                    del weight_chunk, packed_chunk, scale_chunk
+                del gamma, hessian, gamma_device, hessian_device
+            writer.finish()
+            os.fsync(destination.fileno())
+        _verify_output_shard(temporary, dict(expected))
         temporary.replace(path)
+        _fsync_directory(path.parent)
     finally:
         temporary.unlink(missing_ok=True)
 
 
-def _validate_output_path(model_dir: Path, output_dir: Path, resume: bool) -> None:
+def _stale_shard_temporary_names(expected_filenames: set[str]) -> tuple[re.Pattern[str], ...]:
+    """Return exact patterns for temporary files created by the shard writer."""
+    return tuple(
+        re.compile(rf"\.{re.escape(name)}\.[0-9]+\.incomplete\Z")
+        for name in sorted(expected_filenames)
+    )
+
+
+def _cleanup_stale_shard_temporaries(
+    output_dir: Path,
+    expected_filenames: set[str],
+) -> None:
+    """Remove only stale temporary files for shards in the current model plan."""
+    if not output_dir.is_dir():
+        return
+    patterns = _stale_shard_temporary_names(expected_filenames)
+    removed = False
+    for candidate in output_dir.iterdir():
+        if not any(pattern.fullmatch(candidate.name) for pattern in patterns):
+            continue
+        if candidate.is_dir() and not candidate.is_symlink():
+            raise ValueError(
+                f"Refusing to remove stale shard temporary directory: {candidate}"
+            )
+        candidate.unlink()
+        removed = True
+    if removed:
+        _fsync_directory(output_dir)
+
+
+def _validate_output_path(
+    model_dir: Path,
+    output_dir: Path,
+    resume: bool,
+    expected_filenames: set[str],
+) -> None:
     source = model_dir.resolve()
     output = output_dir.resolve()
     if source == output or output.is_relative_to(source):
         raise ValueError("output_dir must not equal or be nested inside model_dir")
+    _cleanup_stale_shard_temporaries(output_dir, expected_filenames)
     if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise FileExistsError(
             f"Output directory is not empty: {output_dir}; use --resume for a partial run"
@@ -534,7 +683,7 @@ def _validate_output_path(model_dir: Path, output_dir: Path, resume: bool) -> No
 def _run_identity(
     cfg: QuantizeConfig,
     plan: ModelPlan,
-    activation_calibration: CalibrationData | None,
+    activation_calibration: CalibrationArtifact | None,
 ) -> dict[str, Any]:
     """Build the shard-producing identity that a resumed run must exactly match."""
     target_description = [
@@ -586,6 +735,175 @@ def _run_identity(
     }
 
 
+def _canonical_sha256(value: object) -> str:
+    """Hash one JSON-compatible value using a stable canonical encoding."""
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _file_integrity(path: Path) -> _ShardIntegrityRecord:
+    """Hash one shard in bounded chunks and return its exact file size."""
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as stream:
+        while chunk := stream.read(8 * 1024 * 1024):
+            digest.update(chunk)
+            size += len(chunk)
+    stat_size = path.stat().st_size
+    if size != stat_size:
+        raise OSError(
+            f"Shard {path.name} changed size while its integrity hash was computed: "
+            f"read={size}, stat={stat_size}"
+        )
+    return _ShardIntegrityRecord(bytes=size, sha256=digest.hexdigest())
+
+
+def _atomic_write_integrity_ledger(
+    path: Path,
+    *,
+    run_identity_sha256: str,
+    records: Mapping[str, _ShardIntegrityRecord],
+) -> None:
+    """Atomically and durably persist the complete per-shard integrity ledger."""
+    document = {
+        "schema_version": _INTEGRITY_SCHEMA_VERSION,
+        "algorithm": "sha256",
+        "run_identity_sha256": run_identity_sha256,
+        "role": "resume-only metadata; final evidence is copied into mxwave-manifest.json",
+        "shards": {
+            name: record.as_json() for name, record in sorted(records.items())
+        },
+    }
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
+    temporary.unlink(missing_ok=True)
+    try:
+        with temporary.open("w") as stream:
+            stream.write(json.dumps(document, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        temporary.replace(path)
+        _fsync_directory(path.parent)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _parse_integrity_records(
+    path: Path,
+    *,
+    run_identity_sha256: str,
+    expected_filenames: set[str],
+) -> dict[str, _ShardIntegrityRecord]:
+    """Load and strictly validate one run-bound shard-integrity ledger."""
+    try:
+        raw = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            "Cannot safely resume: invalid shard-integrity ledger JSON"
+        ) from exc
+    if not isinstance(raw, dict):
+        raise TypeError("Cannot safely resume: shard-integrity ledger must be an object")
+    if raw.get("schema_version") != _INTEGRITY_SCHEMA_VERSION:
+        raise ValueError("Cannot safely resume: unsupported shard-integrity ledger schema")
+    if raw.get("algorithm") != "sha256":
+        raise ValueError("Cannot safely resume: shard-integrity algorithm changed")
+    if raw.get("run_identity_sha256") != run_identity_sha256:
+        raise ValueError(
+            "Cannot safely resume: shard-integrity ledger does not match run identity"
+        )
+    raw_records = raw.get("shards")
+    if not isinstance(raw_records, dict):
+        raise TypeError("Cannot safely resume: shard-integrity ledger has no shards object")
+
+    records: dict[str, _ShardIntegrityRecord] = {}
+    for name, raw_record in raw_records.items():
+        if not isinstance(name, str) or name not in expected_filenames:
+            raise ValueError(f"Cannot safely resume: unexpected integrity shard {name!r}")
+        if not isinstance(raw_record, dict) or set(raw_record) != {"bytes", "sha256"}:
+            raise TypeError(
+                f"Cannot safely resume: invalid integrity record for {name!r}"
+            )
+        byte_count = raw_record.get("bytes")
+        digest = raw_record.get("sha256")
+        if (
+            not isinstance(byte_count, int)
+            or isinstance(byte_count, bool)
+            or byte_count <= 0
+            or not isinstance(digest, str)
+            or _SHA256_PATTERN.fullmatch(digest) is None
+        ):
+            raise ValueError(
+                f"Cannot safely resume: invalid size or SHA-256 for {name!r}"
+            )
+        records[name] = _ShardIntegrityRecord(bytes=byte_count, sha256=digest)
+    return records
+
+
+def _prepare_integrity_records(
+    output_dir: Path,
+    *,
+    run_identity_sha256: str,
+    expected_filenames: set[str],
+    resume: bool,
+) -> tuple[Path, dict[str, _ShardIntegrityRecord]]:
+    """Create or load the run-bound ledger without trusting existing shards."""
+    ledger_path = output_dir / _INTEGRITY_SIDECAR_FILENAME
+    existing_shards = {
+        path.name
+        for path in output_dir.glob("*.safetensors")
+        if path.name in expected_filenames
+    }
+    if resume:
+        if ledger_path.is_file():
+            records = _parse_integrity_records(
+                ledger_path,
+                run_identity_sha256=run_identity_sha256,
+                expected_filenames=expected_filenames,
+            )
+            orphan_shards = sorted(existing_shards.difference(records))
+            if orphan_shards:
+                raise ValueError(
+                    "Cannot safely resume: existing shard has no integrity record; this is an "
+                    f"untrusted crash window: {orphan_shards[:3]}"
+                )
+            return ledger_path, records
+        if existing_shards:
+            raise ValueError(
+                "Cannot safely resume: shard-integrity ledger is missing while output shards "
+                f"exist ({sorted(existing_shards)[:3]}). This is an untrusted crash window."
+            )
+    records = {}
+    _atomic_write_integrity_ledger(
+        ledger_path,
+        run_identity_sha256=run_identity_sha256,
+        records=records,
+    )
+    return ledger_path, records
+
+
+def _validate_resumed_shard_integrity(
+    path: Path,
+    records: Mapping[str, _ShardIntegrityRecord],
+) -> None:
+    """Require a matching recorded size and full-file SHA-256 before reuse."""
+    recorded = records.get(path.name)
+    if recorded is None:
+        raise ValueError(
+            f"Cannot safely resume: existing shard {path.name!r} has no integrity record. "
+            "This is an untrusted crash window."
+        )
+    actual_size = path.stat().st_size
+    if actual_size != recorded.bytes:
+        raise ValueError(
+            f"Cannot safely resume: shard {path.name!r} size mismatch "
+            f"(recorded={recorded.bytes}, actual={actual_size})"
+        )
+    actual = _file_integrity(path)
+    if actual.sha256 != recorded.sha256:
+        raise ValueError(
+            f"Cannot safely resume: shard {path.name!r} SHA-256 mismatch"
+        )
+
+
 def _prepare_run_marker(output_dir: Path, identity: dict[str, Any], resume: bool) -> None:
     """Create or validate the run marker before any output shard is reused."""
     marker_path = output_dir / "mxwave-run.json"
@@ -607,8 +925,12 @@ def _prepare_run_marker(output_dir: Path, identity: dict[str, Any], resume: bool
     temporary = marker_path.with_name(f".{marker_path.name}.{os.getpid()}.incomplete")
     temporary.unlink(missing_ok=True)
     try:
-        temporary.write_text(json.dumps(identity, indent=2, sort_keys=True) + "\n")
+        with temporary.open("w") as stream:
+            stream.write(json.dumps(identity, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
         temporary.replace(marker_path)
+        _fsync_directory(marker_path.parent)
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -618,11 +940,17 @@ def _manifest(
     plan: ModelPlan,
     sqnr_results: dict[str, float],
     calibration_weighted_sqnr_results: dict[str, float],
-    activation_calibration: CalibrationData | None,
+    activation_calibration: CalibrationArtifact | None,
+    *,
+    run_identity_sha256: str,
+    shard_integrity: Mapping[str, _ShardIntegrityRecord],
 ) -> dict[str, Any]:
     summary = plan.summary()
     values = list(sqnr_results.values())
     calibration_weighted_values = list(calibration_weighted_sqnr_results.values())
+    ordered_shard_integrity = {
+        name: record.as_json() for name, record in sorted(shard_integrity.items())
+    }
     gamma_proxy_source_kinds = sorted(
         {".".join(source_name.rsplit(".", 2)[-2:]) for _, source_name in plan.gamma_proxy_sources}
     )
@@ -686,6 +1014,19 @@ def _manifest(
             "scale_percentile": cfg.scale_percentile if cfg.method == "mse" else None,
             "mse_clip_depth": cfg.mse_clip_depth if cfg.method == "mse" else None,
             "tensor_row_chunk_size": cfg.tensor_row_chunk_size,
+            "host_memory_contract": {
+                "output_emission": "incremental-safetensors",
+                "passthrough_copy_chunk_bytes": 8 * 1024**2,
+                "calibration_tensor_loading": (
+                    "on-demand-non-caching"
+                    if activation_calibration is not None
+                    else None
+                ),
+                "scope": (
+                    "materialized tensor payloads; allocator, CUDA workspace, mmap, and "
+                    "filesystem cache are additional"
+                ),
+            },
             "weight_scale_selection": (
                 "rtn-memoryless-minmax"
                 if cfg.method == "rtn"
@@ -705,6 +1046,15 @@ def _manifest(
             else None,
             "activation_quantization": "dynamic-mxfp4-group32",
             "rotation": "none",
+            "shard_integrity": {
+                "algorithm": "sha256",
+                "run_identity_sha256": run_identity_sha256,
+                "complete": len(ordered_shard_integrity) == len(plan.shards),
+                "shard_count": len(ordered_shard_integrity),
+                "file_bytes": sum(record.bytes for record in shard_integrity.values()),
+                "aggregate_sha256": _canonical_sha256(ordered_shard_integrity),
+                "per_shard": ordered_shard_integrity,
+            },
             "target_modules": plan.target_modules,
             "ignored_modules": plan.ignored_modules,
             "sqnr_sample_rows": cfg.sqnr_rows if cfg.verify_sqnr else None,
@@ -735,27 +1085,53 @@ def quantize_model(cfg: QuantizeConfig) -> int:
     plan = plan_model(cfg)
     model_dir = Path(cfg.model_dir)
     output_dir = Path(cfg.output_dir)
-    _validate_output_path(model_dir, output_dir, cfg.resume)
+    expected_filenames = {shard.path.name for shard in plan.shards}
+    _validate_output_path(
+        model_dir,
+        output_dir,
+        cfg.resume,
+        expected_filenames,
+    )
+    if cfg.resume and output_dir.is_dir():
+        unexpected = sorted(
+            path.name
+            for path in output_dir.glob("*.safetensors")
+            if path.name not in expected_filenames
+        )
+        if unexpected:
+            raise ValueError(
+                f"Cannot safely resume with unexpected output shards: {unexpected[:5]}"
+            )
 
     if cfg.verbose:
         print(json.dumps(plan.summary(), indent=2))
     activation_calibration = _load_activation_calibration(cfg, plan)
     output_dir.mkdir(parents=True, exist_ok=True)
+    run_identity = _run_identity(
+        cfg,
+        plan,
+        activation_calibration,
+    )
+    run_identity_sha256 = _canonical_sha256(run_identity)
     _prepare_run_marker(
         output_dir,
-        _run_identity(
-            cfg,
-            plan,
-            activation_calibration,
-        ),
+        run_identity,
         cfg.resume,
+    )
+    integrity_path, integrity_records = _prepare_integrity_records(
+        output_dir,
+        run_identity_sha256=run_identity_sha256,
+        expected_filenames=expected_filenames,
+        resume=cfg.resume,
     )
 
     sqnr_results: dict[str, float] = {}
     calibration_weighted_sqnr_results: dict[str, float] = {}
+    gamma_by_target: Mapping[str, torch.Tensor]
+    hessian_by_target: Mapping[str, torch.Tensor]
     if activation_calibration is None:
         gamma_by_target = _load_gamma_proxies(plan)
-        hessian_by_target: Mapping[str, torch.Tensor] = {}
+        hessian_by_target = {}
     elif activation_calibration.objective == "block-hessian":
         gamma_by_target = {}
         hessian_by_target = activation_calibration.tensors
@@ -767,6 +1143,7 @@ def quantize_model(cfg: QuantizeConfig) -> int:
         output_path = output_dir / shard.path.name
         expected = _expected_shard_specs(plan, shard.path.name)
         if cfg.resume and output_path.exists():
+            _validate_resumed_shard_integrity(output_path, integrity_records)
             _verify_output_shard(output_path, expected)
             if cfg.verify_sqnr:
                 _sample_existing_shard_sqnr(
@@ -786,23 +1163,47 @@ def quantize_model(cfg: QuantizeConfig) -> int:
                 raise FileExistsError(f"Refusing to replace existing shard: {output_path}")
             if cfg.verbose:
                 print(f"[mxwave] [{index}/{len(plan.shards)}] quantize {shard.path.name}")
-            tensors = quantize_shard(
+            _atomic_quantize_shard(
                 shard,
                 cfg,
+                output_path,
+                expected,
                 target_names=plan.target_names,
                 gamma_by_target=gamma_by_target,
                 hessian_by_target=hessian_by_target,
-                sqnr_results=sqnr_results if cfg.verify_sqnr else None,
-                calibration_weighted_sqnr_results=(
-                    calibration_weighted_sqnr_results if cfg.verify_sqnr else None
-                ),
             )
-            _atomic_save_shard(tensors, output_path)
-            del tensors
             _verify_output_shard(output_path, expected)
+            integrity_records[shard.path.name] = _file_integrity(output_path)
+            _atomic_write_integrity_ledger(
+                integrity_path,
+                run_identity_sha256=run_identity_sha256,
+                records=integrity_records,
+            )
+            if cfg.verify_sqnr:
+                _sample_existing_shard_sqnr(
+                    shard,
+                    output_path,
+                    plan,
+                    cfg,
+                    sqnr_results,
+                    gamma_by_target,
+                    hessian_by_target,
+                    calibration_weighted_sqnr_results,
+                )
             if torch.device(cfg.device).type == "cuda":
                 torch.cuda.empty_cache()
         output_shards.append(output_path)
+
+    if activation_calibration is not None:
+        activation_calibration.verify_unchanged(verify_sha256=True)
+
+    if set(integrity_records) != expected_filenames:
+        missing = sorted(expected_filenames.difference(integrity_records))
+        extra = sorted(set(integrity_records).difference(expected_filenames))
+        raise AssertionError(
+            "Shard integrity coverage failed before final assembly: "
+            f"missing={missing[:5]}, extra={extra[:5]}"
+        )
 
     manifest = _manifest(
         cfg,
@@ -810,6 +1211,8 @@ def quantize_model(cfg: QuantizeConfig) -> int:
         sqnr_results,
         calibration_weighted_sqnr_results,
         activation_calibration,
+        run_identity_sha256=run_identity_sha256,
+        shard_integrity=integrity_records,
     )
     assemble_output_dir(
         model_dir,
