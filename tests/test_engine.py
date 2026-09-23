@@ -307,6 +307,10 @@ def test_activation_statistics_replace_proxy_and_cover_every_target(
     assert torch.equal(observed["64"], statistics["model.layers.1.mlp.gate_proj.weight"])
     manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert manifest["weight_scale_selection"] == "mse-activation-mean-abs"
+    assert (
+        manifest["host_memory_contract"]["calibration_tensor_loading"]
+        == "on-demand-non-caching"
+    )
     assert manifest["gamma_proxy"] is None
     assert manifest["activation_calibration"]["weighted_tensors"] == 2
     assert manifest["activation_calibration"]["unweighted_tensors"] == 0
@@ -382,6 +386,42 @@ def test_block_hessian_scale_selection_is_wired_and_recorded(
     assert manifest["calibration_weighted_sqnr_db"]["count"] == 2
 
 
+def test_invalid_lazy_calibration_fails_before_output_emission(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    stats_path = tmp_path / "activation-stats.safetensors"
+    invalid = torch.ones(128)
+    invalid[0] = torch.nan
+    save_calibration_data(
+        stats_path,
+        {
+            "mean-abs": {
+                "model.layers.0.mlp.gate_proj.weight": invalid,
+                "model.layers.1.mlp.gate_proj.weight": torch.ones(64),
+            }
+        },
+        {
+            "policy": "all-linear",
+            "num_sequences": "1",
+            "sequence_length": "1",
+            "num_tokens": "1",
+            "hessian_damp": "0.0",
+        },
+    )
+
+    with pytest.raises(ValueError, match="NaN or infinity"):
+        quantize_model(
+            _config(
+                model_dir,
+                output_dir,
+                activation_stats=stats_path,
+                calibration_objective="mean-abs",
+            )
+        )
+
+    assert not output_dir.exists()
+
+
 def test_prequantized_source_is_rejected(tmp_path: Path):
     model_dir = _make_fake_model(tmp_path, quantized_config=True)
     with pytest.raises(ValueError, match="unknown_quantized"):
@@ -409,6 +449,131 @@ def test_tensor_row_chunking_is_byte_identical(tmp_path: Path) -> None:
     assert all(torch.equal(whole[name], chunked[name]) for name in whole)
 
 
+def test_incremental_emission_is_byte_identical_to_materialized_reference(
+    tmp_path: Path,
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    reference_dir = tmp_path / "reference"
+    reference_dir.mkdir()
+    config = _config(model_dir, output_dir, tensor_row_chunk_size=7)
+    shards, _ = discover_shards(model_dir)
+
+    for shard in shards:
+        save_file(quantize_shard(shard, config), str(reference_dir / shard.path.name))
+    quantize_model(config)
+
+    for shard in shards:
+        assert (output_dir / shard.path.name).read_bytes() == (
+            reference_dir / shard.path.name
+        ).read_bytes()
+
+
+def test_model_path_streams_quantized_and_passthrough_payloads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    observed_rows: list[int] = []
+
+    def recording_quantize(
+        tensor: torch.Tensor,
+        scale_percentile: float = 99.5,
+        gamma: torch.Tensor | None = None,
+        hessian: torch.Tensor | None = None,
+        method: QuantizationMethod = "mse",
+        mse_clip_depth: int = 1,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        observed_rows.append(tensor.shape[0])
+        return core_quantize_mxfp4(
+            tensor,
+            scale_percentile=scale_percentile,
+            gamma=gamma,
+            hessian=hessian,
+            method=method,
+            mse_clip_depth=mse_clip_depth,
+        )
+
+    def reject_materialized_path(*args: object, **kwargs: object) -> None:
+        raise AssertionError("production conversion must not materialize a shard tensor mapping")
+
+    monkeypatch.setattr(engine_module, "quantize_mxfp4", recording_quantize)
+    monkeypatch.setattr(engine_module, "quantize_shard", reject_materialized_path)
+    monkeypatch.setattr(engine_module, "read_tensor", reject_materialized_path)
+    quantize_model(
+        _config(
+            model_dir,
+            output_dir,
+            tensor_row_chunk_size=7,
+            gamma_proxy=False,
+        )
+    )
+
+    assert observed_rows
+    assert max(observed_rows) <= 7
+    with safe_open(
+        str(output_dir / "model-00001-of-00002.safetensors"),
+        framework="pt",
+        device="cpu",
+    ) as output, safe_open(
+        str(model_dir / "model-00001-of-00002.safetensors"),
+        framework="pt",
+        device="cpu",
+    ) as source:
+        assert torch.equal(
+            output.get_tensor("model.embed_tokens.weight"),
+            source.get_tensor("model.embed_tokens.weight"),
+        )
+
+
+def test_interrupted_incremental_shard_is_atomic_and_resumable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    calls = 0
+
+    def fail_once(
+        tensor: torch.Tensor,
+        scale_percentile: float = 99.5,
+        gamma: torch.Tensor | None = None,
+        hessian: torch.Tensor | None = None,
+        method: QuantizationMethod = "mse",
+        mse_clip_depth: int = 1,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("simulated interruption")
+        return core_quantize_mxfp4(
+            tensor,
+            scale_percentile=scale_percentile,
+            gamma=gamma,
+            hessian=hessian,
+            method=method,
+            mse_clip_depth=mse_clip_depth,
+        )
+
+    monkeypatch.setattr(engine_module, "quantize_mxfp4", fail_once)
+    with pytest.raises(RuntimeError, match="simulated interruption"):
+        quantize_model(_config(model_dir, output_dir, tensor_row_chunk_size=7))
+
+    first_shard = output_dir / "model-00001-of-00002.safetensors"
+    assert not first_shard.exists()
+    assert not list(output_dir.glob(".*.incomplete"))
+
+    monkeypatch.setattr(engine_module, "quantize_mxfp4", core_quantize_mxfp4)
+    assert (
+        quantize_model(
+            _config(model_dir, output_dir, tensor_row_chunk_size=7, resume=True)
+        )
+        == 2
+    )
+    assert first_shard.exists()
+
+
 def test_tensor_row_chunk_size_must_be_positive(tmp_path: Path) -> None:
     model_dir = _make_fake_model(tmp_path)
     with pytest.raises(ValueError, match="tensor_row_chunk_size must be a positive integer"):
@@ -431,6 +596,16 @@ def test_quantize_model_writes_output_shards_and_assets(tmp_path: Path):
     assert (output_dir / "tokenizer.json").read_text() == '{"version":"1.0"}'
     assert (output_dir / "chat_template.jinja").exists()
     assert (output_dir / "mxwave-manifest.json").exists()
+    manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
+    assert manifest["host_memory_contract"] == {
+        "output_emission": "incremental-safetensors",
+        "passthrough_copy_chunk_bytes": 8 * 1024**2,
+        "calibration_tensor_loading": None,
+        "scope": (
+            "materialized tensor payloads; allocator, CUDA workspace, mmap, and "
+            "filesystem cache are additional"
+        ),
+    }
     card = (output_dir / "README.md").read_text()
     assert "compressed-tensors" in card
     assert "--linear-backend marlin" in card
@@ -438,6 +613,15 @@ def test_quantize_model_writes_output_shards_and_assets(tmp_path: Path):
     assert "Not measured yet" in card
     assert not (output_dir / "mxstream-manifest.json").exists()
     assert not (output_dir / "mxstream-run.json").exists()
+    integrity_path = output_dir / "mxwave-shard-integrity.json"
+    integrity = json.loads(integrity_path.read_text())
+    assert integrity["algorithm"] == "sha256"
+    assert set(integrity["shards"]) == {
+        "model-00001-of-00002.safetensors",
+        "model-00002-of-00002.safetensors",
+    }
+    assert manifest["shard_integrity"]["complete"] is True
+    assert manifest["shard_integrity"]["per_shard"] == integrity["shards"]
     assert "mxwave-manifest.json" not in json.loads(
         (output_dir / "mxwave-manifest.json").read_text()
     )["copied_assets"]
@@ -553,6 +737,63 @@ def test_nonempty_output_requires_resume_and_validates_shards(tmp_path: Path):
     with pytest.raises(FileExistsError, match="not empty"):
         quantize_model(_config(model_dir, output_dir))
     assert quantize_model(_config(model_dir, output_dir, resume=True)) == 2
+
+
+def test_resume_rejects_header_valid_payload_corruption(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    quantize_model(_config(model_dir, output_dir))
+    shard_path = output_dir / "model-00001-of-00002.safetensors"
+
+    with shard_path.open("r+b") as stream:
+        stream.seek(-1, 2)
+        original = stream.read(1)
+        assert len(original) == 1
+        stream.seek(-1, 1)
+        stream.write(bytes([original[0] ^ 1]))
+    with safe_open(str(shard_path), framework="pt", device="cpu") as shard:
+        assert shard.keys()
+
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        quantize_model(_config(model_dir, output_dir, resume=True))
+
+
+def test_resume_rejects_orphan_final_shard_without_integrity_record(
+    tmp_path: Path,
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    quantize_model(_config(model_dir, output_dir))
+    ledger_path = output_dir / "mxwave-shard-integrity.json"
+    ledger = json.loads(ledger_path.read_text())
+    orphan_name = min(ledger["shards"])
+    del ledger["shards"][orphan_name]
+    ledger_path.write_text(json.dumps(ledger))
+
+    with pytest.raises(ValueError, match="untrusted crash window"):
+        quantize_model(_config(model_dir, output_dir, resume=True))
+
+
+def test_exact_stale_shard_temporaries_are_cleaned_without_near_misses(
+    tmp_path: Path,
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    output_dir.mkdir()
+    shard_name = "model-00001-of-00002.safetensors"
+    stale = output_dir / f".{shard_name}.999.incomplete"
+    stale.write_bytes(b"partial")
+
+    assert quantize_model(_config(model_dir, output_dir)) == 2
+    assert not stale.exists()
+
+    resume_stale = output_dir / f".{shard_name}.1000.incomplete"
+    near_miss = output_dir / f".{shard_name}.worker.incomplete"
+    resume_stale.write_bytes(b"partial")
+    near_miss.write_bytes(b"keep")
+    assert quantize_model(_config(model_dir, output_dir, resume=True)) == 2
+    assert not resume_stale.exists()
+    assert near_miss.read_bytes() == b"keep"
 
 
 def test_resume_rejects_changed_scale_search(tmp_path: Path) -> None:

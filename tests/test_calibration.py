@@ -13,6 +13,7 @@ from mxwave.calibration import (
     ActivationCollector,
     attach_activation_hooks,
     load_calibration_data,
+    open_calibration_data,
     save_calibration_data,
 )
 from mxwave.calibration_cli import _load_corpus, _parse_objectives, _tokenize_sequences
@@ -190,6 +191,119 @@ def test_calibration_safetensors_round_trip_and_identity(tmp_path: Path) -> None
     assert loaded.metadata["format"] == "mxwave-activation-stats"
     assert loaded.metadata["num_tokens"] == "6"
     assert len(loaded.file_sha256) == 64
+
+
+def test_lazy_calibration_artifact_loads_each_tensor_without_caching(tmp_path: Path) -> None:
+    path = tmp_path / "stats.safetensors"
+    expected = torch.linspace(0.1, 1.0, 32)
+    save_calibration_data(
+        path,
+        {"mean-abs": {"proj.weight": expected}},
+        _metadata(),
+    )
+
+    artifact = open_calibration_data(
+        path,
+        "mean-abs",
+        {"proj.weight": 32},
+        expected_policy="all-linear",
+    )
+
+    assert list(artifact.tensors) == ["proj.weight"]
+    assert len(artifact.tensors) == 1
+    first = artifact.load_tensor("proj.weight")
+    first.zero_()
+    second = artifact.tensors.get("proj.weight")
+    assert second is not None
+    assert torch.equal(second, expected)
+    with pytest.raises(KeyError, match="missing.weight"):
+        artifact.load_tensor("missing.weight")
+
+
+def test_lazy_calibration_defers_numerical_validation_until_access(tmp_path: Path) -> None:
+    path = tmp_path / "invalid-values.safetensors"
+    metadata = _metadata()
+    metadata.update(
+        {
+            "format": "mxwave-activation-stats",
+            "format_version": "1",
+            "objectives": '["mean-abs"]',
+            "target_count": "1",
+        }
+    )
+    values = torch.ones(32)
+    values[4] = torch.nan
+    save_file({"mean-abs::proj.weight": values}, path, metadata=metadata)
+
+    artifact = open_calibration_data(
+        path,
+        "mean-abs",
+        {"proj.weight": 32},
+        expected_policy="all-linear",
+    )
+    with pytest.raises(ValueError, match="NaN or infinity"):
+        artifact.load_tensor("proj.weight")
+    with pytest.raises(ValueError, match="NaN or infinity"):
+        artifact.validate_all()
+
+
+def test_lazy_calibration_rejects_artifact_replacement(tmp_path: Path) -> None:
+    path = tmp_path / "stats.safetensors"
+    save_calibration_data(
+        path,
+        {"mean-abs": {"proj.weight": torch.ones(32)}},
+        _metadata(),
+    )
+    artifact = open_calibration_data(
+        path,
+        "mean-abs",
+        {"proj.weight": 32},
+        expected_policy="all-linear",
+    )
+
+    save_calibration_data(
+        path,
+        {"mean-abs": {"proj.weight": torch.full((32,), 2.0)}},
+        _metadata(),
+    )
+
+    with pytest.raises(ValueError, match="changed during quantization"):
+        artifact.load_tensor("proj.weight")
+    with pytest.raises(ValueError, match="changed during quantization"):
+        artifact.verify_unchanged(verify_sha256=True)
+
+
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        (torch.ones(31), "has shape"),
+        (torch.ones(32, dtype=torch.float16), "must be float32"),
+    ],
+)
+def test_lazy_calibration_rejects_invalid_tensor_headers(
+    tmp_path: Path,
+    value: torch.Tensor,
+    message: str,
+) -> None:
+    path = tmp_path / "invalid-header.safetensors"
+    metadata = _metadata()
+    metadata.update(
+        {
+            "format": "mxwave-activation-stats",
+            "format_version": "1",
+            "objectives": '["mean-abs"]',
+            "target_count": "1",
+        }
+    )
+    save_file({"mean-abs::proj.weight": value}, path, metadata=metadata)
+
+    with pytest.raises(ValueError, match=message):
+        open_calibration_data(
+            path,
+            "mean-abs",
+            {"proj.weight": 32},
+            expected_policy="all-linear",
+        )
 
 
 def test_calibration_loader_accepts_pre_rename_artifact(tmp_path: Path) -> None:

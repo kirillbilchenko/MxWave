@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import torch
 from safetensors import safe_open
@@ -33,10 +33,12 @@ _KEY_SEPARATOR = "::"
 
 __all__ = [
     "ActivationCollector",
+    "CalibrationArtifact",
     "CalibrationData",
     "CalibrationObjective",
     "attach_activation_hooks",
     "load_calibration_data",
+    "open_calibration_data",
     "save_calibration_data",
 ]
 
@@ -49,6 +51,103 @@ class CalibrationData:
     tensors: dict[str, torch.Tensor]
     metadata: dict[str, str]
     file_sha256: str
+
+
+@dataclass(frozen=True)
+class _CalibrationFileIdentity:
+    device: int
+    inode: int
+    size: int
+    mtime_ns: int
+
+
+def _calibration_file_identity(path: Path) -> _CalibrationFileIdentity:
+    stat = path.stat()
+    return _CalibrationFileIdentity(
+        device=stat.st_dev,
+        inode=stat.st_ino,
+        size=stat.st_size,
+        mtime_ns=stat.st_mtime_ns,
+    )
+
+
+def _require_calibration_file_identity(
+    path: Path,
+    expected: _CalibrationFileIdentity,
+) -> None:
+    if _calibration_file_identity(path) != expected:
+        raise ValueError(f"Calibration artifact changed during quantization: {path}")
+
+
+class _LazyCalibrationTensors(Mapping[str, torch.Tensor]):
+    """Non-caching, on-demand view of one calibration objective."""
+
+    def __init__(
+        self,
+        path: Path,
+        objective: CalibrationObjective,
+        target_widths: Mapping[str, int],
+        file_identity: _CalibrationFileIdentity,
+    ) -> None:
+        self._path = path
+        self._objective = objective
+        self._target_widths = dict(target_widths)
+        self._target_names = tuple(sorted(target_widths))
+        self._file_identity = file_identity
+
+    def __getitem__(self, target_name: str) -> torch.Tensor:
+        try:
+            width = self._target_widths[target_name]
+        except KeyError:
+            raise KeyError(target_name) from None
+        _require_calibration_file_identity(self._path, self._file_identity)
+        key = _tensor_key(self._objective, target_name)
+        with safe_open(str(self._path), framework="pt", device="cpu") as artifact:
+            tensor = cast(torch.Tensor, artifact.get_tensor(key))
+        _validate_statistic(target_name, self._objective, tensor, width)
+        _require_calibration_file_identity(self._path, self._file_identity)
+        return tensor
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._target_names)
+
+    def __len__(self) -> int:
+        return len(self._target_names)
+
+
+@dataclass(frozen=True)
+class CalibrationArtifact:
+    """Validated calibration artifact whose statistic tensors load on demand.
+
+    The ``tensors`` mapping never caches values. Each lookup opens the
+    safetensors artifact, loads only the requested statistic, validates its
+    numerical contents, and returns it to the caller. Iterating the mapping or
+    taking its length only inspects the validated target-name plan.
+    """
+
+    objective: CalibrationObjective
+    tensors: Mapping[str, torch.Tensor]
+    metadata: dict[str, str]
+    file_sha256: str
+    path: Path
+    _file_identity: _CalibrationFileIdentity
+
+    def load_tensor(self, target_name: str) -> torch.Tensor:
+        """Load and fully validate one target statistic without caching it."""
+        return self.tensors[target_name]
+
+    def validate_all(self) -> None:
+        """Numerically validate every target while retaining only one at a time."""
+        for target_name in self.tensors:
+            tensor = self.tensors[target_name]
+            del tensor
+
+    def verify_unchanged(self, *, verify_sha256: bool = False) -> None:
+        """Fail if the artifact changed since it was opened."""
+        _require_calibration_file_identity(self.path, self._file_identity)
+        if verify_sha256 and _sha256_file(self.path) != self.file_sha256:
+            raise ValueError(f"Calibration artifact content changed during quantization: {self.path}")
+        _require_calibration_file_identity(self.path, self._file_identity)
 
 
 class ActivationCollector:
@@ -245,17 +344,48 @@ def _parse_objectives(metadata: Mapping[str, str]) -> frozenset[str]:
     return objectives
 
 
+def _expected_statistic_shape(
+    objective: CalibrationObjective,
+    width: int,
+) -> tuple[int, ...]:
+    if width <= 0:
+        raise ValueError(f"Calibration target width must be positive, got {width}")
+    if objective == "block-hessian" and width % BLOCK_SIZE != 0:
+        raise ValueError(
+            f"Block-Hessian calibration target width {width} is not divisible by {BLOCK_SIZE}"
+        )
+    if objective == "block-hessian":
+        return (width // BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+    return (width,)
+
+
+def _validate_statistic_header(
+    target_name: str,
+    objective: CalibrationObjective,
+    shape: tuple[int, ...],
+    dtype: str,
+    width: int,
+) -> None:
+    expected_shape = _expected_statistic_shape(objective, width)
+    if shape != expected_shape:
+        raise ValueError(
+            f"Calibration statistic {target_name!r}/{objective} has shape "
+            f"{shape}, expected {expected_shape}"
+        )
+    if dtype != "F32":
+        raise ValueError(
+            f"Calibration statistic {target_name!r}/{objective} must be float32, "
+            f"got safetensors dtype {dtype}"
+        )
+
+
 def _validate_statistic(
     target_name: str,
     objective: CalibrationObjective,
     tensor: torch.Tensor,
     width: int,
 ) -> None:
-    expected_shape = (
-        (width // BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
-        if objective == "block-hessian"
-        else (width,)
-    )
+    expected_shape = _expected_statistic_shape(objective, width)
     if tensor.shape != expected_shape:
         raise ValueError(
             f"Calibration statistic {target_name!r}/{objective} has shape "
@@ -333,7 +463,7 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def load_calibration_data(
+def open_calibration_data(
     path: str | Path,
     objective: CalibrationObjective,
     expected_widths: Mapping[str, int],
@@ -341,15 +471,23 @@ def load_calibration_data(
     expected_policy: str,
     expected_source_repository: str | None = None,
     expected_source_revision: str | None = None,
-) -> CalibrationData:
-    """Load and strictly validate a module-keyed calibration objective."""
+) -> CalibrationArtifact:
+    """Open a validated calibration objective without retaining its tensors.
+
+    Metadata, target coverage, tensor shapes, and tensor dtypes are validated
+    eagerly from the safetensors header. Numerical contents are validated when
+    each target is requested from the returned non-caching ``tensors`` mapping.
+    """
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(f"Calibration artifact is missing: {source}")
     if objective not in _OBJECTIVES:
         raise ValueError(f"Unsupported calibration objective: {objective}")
 
-    tensors: dict[str, torch.Tensor] = {}
+    file_identity = _calibration_file_identity(source)
+    target_widths = dict(expected_widths)
+    if not target_widths:
+        raise ValueError("At least one expected calibration target is required")
     prefix = f"{objective}{_KEY_SEPARATOR}"
     with safe_open(str(source), framework="pt", device="cpu") as artifact:
         raw_metadata = artifact.metadata()
@@ -394,28 +532,75 @@ def load_calibration_data(
                 raise ValueError(
                     f"Calibration {key} {metadata.get(key)!r} does not match {expected!r}"
                 )
-        for key in list(artifact.keys()):
-            if key.startswith(prefix):
-                target_name = key.removeprefix(prefix)
-                tensors[target_name] = artifact.get_tensor(key)
+        keys = list(artifact.keys())
+        actual_names = {
+            key.removeprefix(prefix) for key in keys if key.startswith(prefix)
+        }
+        expected_names = set(target_widths)
+        if actual_names != expected_names:
+            missing = sorted(expected_names.difference(actual_names))
+            extra = sorted(actual_names.difference(expected_names))
+            raise ValueError(
+                "Calibration target coverage mismatch: "
+                f"missing={missing[:5]}, extra={extra[:5]}"
+            )
+        if int(metadata["target_count"]) != len(target_widths):
+            raise ValueError("Calibration metadata target_count does not match the target plan")
+        for target_name, width in target_widths.items():
+            statistic = artifact.get_slice(_tensor_key(objective, target_name))
+            _validate_statistic_header(
+                target_name,
+                objective,
+                tuple(statistic.get_shape()),
+                statistic.get_dtype(),
+                width,
+            )
 
-    actual_names = set(tensors)
-    expected_names = set(expected_widths)
-    if actual_names != expected_names:
-        missing = sorted(expected_names.difference(actual_names))
-        extra = sorted(actual_names.difference(expected_names))
-        raise ValueError(
-            "Calibration target coverage mismatch: "
-            f"missing={missing[:5]}, extra={extra[:5]}"
-        )
-    if int(metadata["target_count"]) != len(expected_widths):
-        raise ValueError("Calibration metadata target_count does not match the target plan")
-    for target_name, width in expected_widths.items():
-        _validate_statistic(target_name, objective, tensors[target_name], width)
+    file_sha256 = _sha256_file(source)
+    _require_calibration_file_identity(source, file_identity)
+    return CalibrationArtifact(
+        objective=objective,
+        tensors=_LazyCalibrationTensors(
+            source,
+            objective,
+            target_widths,
+            file_identity,
+        ),
+        metadata=metadata,
+        file_sha256=file_sha256,
+        path=source,
+        _file_identity=file_identity,
+    )
+
+
+def load_calibration_data(
+    path: str | Path,
+    objective: CalibrationObjective,
+    expected_widths: Mapping[str, int],
+    *,
+    expected_policy: str,
+    expected_source_repository: str | None = None,
+    expected_source_revision: str | None = None,
+) -> CalibrationData:
+    """Eagerly load a calibration objective for API compatibility.
+
+    New streaming callers should use :func:`open_calibration_data` and release
+    each value from its non-caching ``tensors`` mapping after processing the
+    corresponding target or output shard.
+    """
+    artifact = open_calibration_data(
+        path,
+        objective,
+        expected_widths,
+        expected_policy=expected_policy,
+        expected_source_repository=expected_source_repository,
+        expected_source_revision=expected_source_revision,
+    )
+    tensors = {target_name: artifact.load_tensor(target_name) for target_name in artifact.tensors}
 
     return CalibrationData(
-        objective=objective,
+        objective=artifact.objective,
         tensors=tensors,
-        metadata=metadata,
-        file_sha256=_sha256_file(source),
+        metadata=artifact.metadata,
+        file_sha256=artifact.file_sha256,
     )
