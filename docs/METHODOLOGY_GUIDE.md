@@ -336,6 +336,7 @@ likelihood, but this checkpoint is not sufficiently differentiated to publish.
 | Coupled gate/up rounding | Product NMSE improved 4.1--9.3% with legal codes | Every layer reversed direction across the two held-out splits | Multiplicative local cancellation was real but not predictive |
 | FP8 `lm_head` compression | Removed 1.183 GiB / 6.406% | Forward KL regressed 4.670% with a positive paired interval | The byte reservoir is real, but naive per-row FP8 is not quality-neutral |
 | MLX affine mixed-bit allocation | PPL improved 4.251% over affine 3-bit | Missed the 5% gate and had split-unstable KL | Format-specific sensitivity matters; splicing third-party weights is not MxWave quantization |
+| Nex route-aware diagonal RMS | Used actual normalized router weights, true routed gate/up inputs, and post-activation down inputs | Only 1/4 replica/split cells improved mean teacher KL; pooled delta was worse and inconclusive | Better conditional statistics do not guarantee that a diagonal reconstruction objective improves the end-to-end distribution |
 
 These outcomes fall into different categories:
 

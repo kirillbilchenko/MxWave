@@ -1,0 +1,469 @@
+{
+  "schema_version": 2,
+  "experiment": "nex-n2.5-mini-moe-expert-rtn-preflight",
+  "date": "2026-09-22",
+  "decision": {
+    "engineering_preflight": "pass",
+    "publication_candidate": "reject",
+    "scope": "original raw-RTN preflight artifact",
+    "reason": "Bounded stock-vLLM execution passed, but the raw-RTN artifact was only 4.21% smaller than the public control and had no demonstrated quality or speed advantage. The later unweighted-MSE candidate improved paired PPL but regressed exact BF16-forward KL by 10.01% versus RTN on the frozen 64-context gate, so it is also stopped before broader qualification."
+  },
+  "later_owner_directed_followup": {
+    "record": "benchmarks/nex-n2.5-mini-publication-gate-2026-09-22.json",
+    "classification": "mixed_not_publication_candidate",
+    "note": "The owner later reopened one bounded MSE-versus-public-NVFP4 comparison. It does not reverse the MSE-versus-RTN directional failure recorded here."
+  },
+  "source": {
+    "model": "nex-agi/Nex-N2.5-mini",
+    "revision": "87420286149d9cce9bd46cd335ef9bda33c37c1b"
+  },
+  "control": {
+    "model": "primitive-ai/Nex-N2.5-mini-NVFP4",
+    "revision": "ceaa4ce6d942c3d5456322d183b535a0c89a5fa6",
+    "method": "weight round-to-nearest; no calibration",
+    "representation": "NVFP4 group-16 weights with a per-module global scale and dynamic W4A4 activations"
+  },
+  "runtime": {
+    "image": "vllm/vllm-openai:v0.29.0",
+    "image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+    "hardware": "DGX Spark GB10 / SM121",
+    "moe_backend": "MarlinExperts",
+    "loaded_shards": 87,
+    "model_load_gib": 21.47,
+    "model_load_seconds": 140.746,
+    "text_smoke_response": "MARLIN_OK",
+    "vision_smoke_response": "Red"
+  },
+  "conversion": {
+    "method": "expert-only MXFP4 round-to-nearest; no activation calibration",
+    "wall_seconds_approx": 460,
+    "source_expert_banks": 80,
+    "logical_expert_matrices": 30720,
+    "quantized_tensors": 61440,
+    "passthrough_tensors": 946,
+    "total_output_tensors": 62386,
+    "output_shards": 87,
+    "full_run_process_rss_gib_range": [
+      1.3,
+      1.9
+    ],
+    "one_bank_probe_peak_cuda_allocated_bytes": 26640384,
+    "one_bank_probe_cgroup_peak_bytes": 2386784256
+  },
+  "artifact": {
+    "tensor_data_bytes": 22902614752,
+    "control_tensor_data_bytes": 23909493472,
+    "bytes_smaller_than_control": 1006878720,
+    "percent_smaller_than_control": 4.2112089124,
+    "checkpoint_sha256": "eadbf27940485f0c9200e3189a8db03dee0a5380f274a80d182a63ca44abdcd5",
+    "config_sha256": "8ea02e392011595c2394a26862e51966608abab24fa2b750ce798b4ce67f6351",
+    "index_sha256": "69d4da6c13645e868454a7e22537e3f2ceef8883cf63817d67e2239145ad293c",
+    "manifest_sha256": "91a1a1c5ead3ba7a42fa0800aaa559b960010650bb8bd2010203f1c30fd2fb6c"
+  },
+  "unweighted_mse_followup": {
+    "state": "exact_kl_gate_failed_stop",
+    "method": {
+      "name": "unweighted-mse",
+      "activation_calibration": false,
+      "route_aware": false,
+      "scale_percentile": 99.5,
+      "mse_clip_depth": 4,
+      "includes_no_clipping_candidate": true,
+      "parameter_sweep": false
+    },
+    "local_reconstruction_probe": {
+      "layers": [
+        0,
+        13,
+        26,
+        39
+      ],
+      "experts_per_layer": 8,
+      "matrix_count": 96,
+      "matrix_roles": [
+        "gate",
+        "up",
+        "down"
+      ],
+      "rtn_normalized_mse": 0.012807993656,
+      "mse_normalized_mse": 0.0126586091887,
+      "relative_error_reduction_percent": 1.166337768,
+      "all_layer_bank_groups_improved": true,
+      "report_sha256": "26469a0951d6647d7aad413def94d910342760d4a252fbe7043609a31b7c109a",
+      "remote_report": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/nex-mse-scale-probe.json"
+    },
+    "conversion": {
+      "wall_seconds": 517.7,
+      "output_shards": 87,
+      "tensor_count": 62386,
+      "tensor_data_bytes": 22902614752,
+      "same_tensor_bytes_as_rtn": true,
+      "same_checkpoint_format_as_rtn": true,
+      "runtime_path": "MarlinExperts W4A16"
+    },
+    "structural_verification": {
+      "status": "passed",
+      "checkpoint_sha256": "1d134e5d5c704cc76fe85268ee1f65ece0107e932e9de856c141bdb5fa9e8738",
+      "config_sha256": "8ea02e392011595c2394a26862e51966608abab24fa2b750ce798b4ce67f6351",
+      "index_sha256": "69d4da6c13645e868454a7e22537e3f2ceef8883cf63817d67e2239145ad293c",
+      "manifest_sha256": "29bd6b121e705e041f1e1520ce12d7e49b4fb4f07c66174907f6b63bd49a76c3",
+      "target_modules": 30720,
+      "ignored_modules": 720,
+      "shard_count": 87,
+      "tensor_count": 62386,
+      "tensor_data_bytes": 22902614752,
+      "clean_cli_resume": {
+        "status": "passed",
+        "resumed_shards": 87,
+        "requantized_shards": 0,
+        "manifest_hash_unchanged": true,
+        "source_snapshot": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/mxwave-src-mse-clean"
+      }
+    },
+    "paired_perplexity": {
+      "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+      "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+      "protocol_sha256": "ecc777cb86672560e95196d90e8bc63e2d5c2f7e9eaa9e8b90ba1babefdf91ed",
+      "chunk_characters": 4096,
+      "num_chunks": 64,
+      "scored_tokens_per_model": 61408,
+      "pair_fields": [
+        "index",
+        "text_sha256",
+        "token_sha256",
+        "prompt_tokens",
+        "scored_tokens"
+      ],
+      "pairing_validated": true,
+      "candidates": {
+        "bf16": {
+          "perplexity": 8.873219361368083,
+          "report_sha256": "f7b59e8e6e949659458939431a9a0dbd01f322281e50c6446beb3d9b3cfc329e",
+          "remote_report": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/nex-bf16-ppl-4k64.json"
+        },
+        "mxwave_mse": {
+          "perplexity": 8.88092346829577,
+          "relative_to_bf16_percent": 0.08682425863637544,
+          "report_sha256": "214412fa20af08502cdfc1d8bc804aa463a5178905f6da33376180ee2ee89080",
+          "remote_report": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/nex-mse-ppl-4k64.json"
+        },
+        "mxwave_rtn": {
+          "perplexity": 8.910399525521493,
+          "relative_to_bf16_percent": 0.4190154963967574,
+          "report_sha256": "646f639df2b786d5b1dc405f05c38c3417cfd319496e4b3bd4c7df060b967f13",
+          "remote_report": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/nex-rtn-ppl-4k64.json"
+        },
+        "public_nvfp4": {
+          "perplexity": 9.009808322664837,
+          "relative_to_bf16_percent": 1.539339395703787,
+          "report_sha256": "26f11841fdaad5bc1b4e1af62ac0fc8ca06f4b14e5028c7413c8463a49fc6f0d",
+          "remote_report": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/nex-nvfp4-ppl-4k64.json"
+        }
+      },
+      "bootstrap": {
+        "method": "paired cluster bootstrap over chunks",
+        "samples": 100000,
+        "seed": 20260922,
+        "statistic": "token-weighted relative perplexity percent"
+      },
+      "comparisons": {
+        "mse_vs_rtn": {
+          "relative_perplexity_percent": -0.33080511307373994,
+          "first_32_percent": -0.3730234966988766,
+          "last_32_percent": -0.2860728788616984,
+          "ci_95_percent": [
+            -0.5766198372962338,
+            -0.08254719559334224
+          ],
+          "wins": 41,
+          "losses": 23
+        },
+        "mse_vs_public_nvfp4": {
+          "relative_perplexity_percent": -1.4304949645249199,
+          "first_32_percent": -1.4859570701899472,
+          "last_32_percent": -1.3717220048492074,
+          "ci_95_percent": [
+            -1.9551596707608463,
+            -0.930192025935001
+          ],
+          "wins": 45,
+          "losses": 19
+        },
+        "bf16_vs_mse": {
+          "relative_perplexity_percent": -0.08674893951275964,
+          "first_32_percent": -0.025395241759584852,
+          "last_32_percent": -0.15168647692107573,
+          "ci_95_percent": [
+            -0.5146869320407989,
+            0.3490660657926509
+          ],
+          "bf16_wins": 39,
+          "bf16_losses": 25
+        }
+      },
+      "rtn_gap_to_bf16_recovered_percent": 79.27898624681028,
+      "nvfp4_gap_to_bf16_recovered_percent": 94.35964161778149,
+      "raw_reports_checkpoint_bound": false
+    },
+    "exact_next_token_divergence": {
+      "protocol": {
+        "dataset": "Salesforce/wikitext:wikitext-2-raw-v1:test",
+        "dataset_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+        "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+        "source_nonempty_chunks": 316,
+        "context_selection": "64 evenly spaced non-empty 4096-character chunks, inclusive endpoints",
+        "num_contexts": 64,
+        "prediction_positions": 64,
+        "max_context_tokens": 512,
+        "vocab_size": 248320,
+        "distribution_dtype": "float32",
+        "context_manifest_sha256": "9b72a2aa2b32c13dce3ff2e387d4f4a8d1383a240baf620a58d351566d8c9d3f",
+        "selected_context_sha256": "7d7862658899865454bb43c2f2329d203b31929813f247c8cf2e470963709866",
+        "comparison_protocol_sha256": "e37d5803afa723cd7505baf407476f36e86c3168e9fbaa69251289e672013f38",
+        "evaluator_script_sha256": "c0f445f3b945786a2e86141dfb3a94fb82f0890b065d9a2187fce35b2c6b74a2",
+        "bootstrap_iterations": 100000,
+        "bootstrap_seed": 20260922,
+        "runtime_image": "vllm/vllm-openai:v0.29.0",
+        "runtime_image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+        "max_model_len": 1024,
+        "gpu_memory_utilization": 0.65,
+        "kv_cache_dtype": "bfloat16",
+        "mxwave_linear_backend": "marlin",
+        "mxwave_moe_backend": "marlin"
+      },
+      "artifacts": {
+        "remote_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/next-token-kl/exact-64-20260922",
+        "contexts": {
+          "filename": "contexts.json",
+          "bytes": 468996,
+          "sha256": "9b72a2aa2b32c13dce3ff2e387d4f4a8d1383a240baf620a58d351566d8c9d3f"
+        },
+        "bf16_logprobs": {
+          "filename": "bf16-logprobs.safetensors",
+          "bytes": 63570808,
+          "sha256": "1855120a7c294ddd21d7ccd8d06e98048b50778e810eaf09e7d758c4bc05effb"
+        },
+        "mxwave_mse_logprobs": {
+          "filename": "mxwave-mse-logprobs.safetensors",
+          "bytes": 63570816,
+          "sha256": "db6a838b5bf757136802497782d36d4b16ca6ff641f15a44a73b2ba7fbeff36b"
+        },
+        "mxwave_rtn_logprobs": {
+          "filename": "mxwave-rtn-logprobs.safetensors",
+          "bytes": 63570816,
+          "sha256": "4f99505c481803f808c33f576b47bcc35562d5b1ab537a535c85a7d13ba8ae1e"
+        },
+        "comparison_report": {
+          "filename": "next-token-divergence.json",
+          "bytes": 78622,
+          "sha256": "fd86f5797bb452ec0997f5c25efbb3f0b28cb919c965e49cac499dcb889d97d7"
+        }
+      },
+      "candidates": {
+        "mxwave_mse": {
+          "forward_kl_nats": {
+            "mean": 0.034157400213428626,
+            "median": 0.02241986987310154,
+            "p95": 0.09373886136481567,
+            "max": 0.2606149711053384
+          },
+          "reverse_kl_nats": {
+            "mean": 0.034255365677786774,
+            "median": 0.021187867120183973,
+            "p95": 0.10523854070026155,
+            "max": 0.24454550676781223
+          },
+          "jensen_shannon_nats_mean": 0.008237349552055137,
+          "total_variation_mean": 0.07029316082563283,
+          "teacher_top1_matches": 58,
+          "teacher_top1_agreement_rate": 0.90625,
+          "mean_top5_overlap": 4.453125
+        },
+        "mxwave_rtn": {
+          "forward_kl_nats": {
+            "mean": 0.03104926163519605,
+            "median": 0.015635834164868623,
+            "p95": 0.08081187981793388,
+            "max": 0.25504507479149846
+          },
+          "reverse_kl_nats": {
+            "mean": 0.03171535841435413,
+            "median": 0.013660361665118689,
+            "p95": 0.10982438368849468,
+            "max": 0.25080205604228967
+          },
+          "jensen_shannon_nats_mean": 0.007577370193779262,
+          "total_variation_mean": 0.06673025736186833,
+          "teacher_top1_matches": 58,
+          "teacher_top1_agreement_rate": 0.90625,
+          "mean_top5_overlap": 4.453125
+        }
+      },
+      "mse_vs_rtn": {
+        "mean_forward_kl_delta_nats": 0.0031081385782325737,
+        "relative_mean_forward_kl_percent": 10.010346187135499,
+        "bootstrap_95_ci_nats": [
+          -0.0014569435380622593,
+          0.007564995300692233
+        ],
+        "mse_lower_contexts": 34,
+        "rtn_lower_contexts": 30,
+        "ties": 0,
+        "fixed_halves": [
+          {
+            "context_ordinals": "0-31",
+            "mse_mean_forward_kl_nats": 0.031178132665765107,
+            "rtn_mean_forward_kl_nats": 0.025075037505465025,
+            "mse_minus_rtn_nats": 0.006103095160300086
+          },
+          {
+            "context_ordinals": "32-63",
+            "mse_mean_forward_kl_nats": 0.03713666776109213,
+            "rtn_mean_forward_kl_nats": 0.03702348576492708,
+            "mse_minus_rtn_nats": 0.0001131819961650612
+          }
+        ],
+        "teacher_top1_transitions": {
+          "both_match": 58,
+          "mse_only_matches": 0,
+          "rtn_only_matches": 0,
+          "neither_matches": 6
+        }
+      },
+      "gate": {
+        "mse_lower_overall": false,
+        "mse_lower_on_both_fixed_halves": false,
+        "paired_bootstrap_ci_upper_below_zero": false,
+        "teacher_top1_losses_vs_rtn_at_most_one": true,
+        "passed": false,
+        "decision": "hard stop; do not rerun 128 contexts, collect the optional NVFP4 distribution, or begin broader qualification"
+      },
+      "interpretation": "Unweighted MSE improved local weight reconstruction and paired sequence PPL, but it worsened exact BF16-forward distribution KL versus RTN overall and on both fixed halves. The scale-search objective is therefore not a reliable teacher-distribution selector for this model. The interval crosses zero, so the 10.01% point regression is not a resolved population estimate; the pre-registered directional gate still fails."
+    },
+    "interim_decision": "stop the unweighted-MSE candidate after exact KL reversed the PPL gain; retain the adapter/emitter/runtime implementation and the conflicting evidence record; do not publish or sweep settings",
+    "limitations": [
+      "Exact BF16-teacher divergence was measured at one terminal next-token position for each of 64 contexts; this is a bounded directional rejection gate, not publication-strength distribution evidence.",
+      "The candidate was stopped before the frozen downstream screen and multi-length long-context qualification because the exact-KL directional gate failed.",
+      "Serving speed is expected to match RTN by construction but has not been established by a repeated controlled benchmark.",
+      "The raw PPL reports have empty checkpoint_sha256 fields because the structural fingerprint was computed after evaluation."
+    ]
+  },
+  "frozen_no_thinking_screen": {
+    "cases_total": 82,
+    "cases_scored": 69,
+    "cases_unscored": 13,
+    "request_errors": {
+      "mxwave_rtn": 0,
+      "bf16": 0,
+      "public_nvfp4": 0
+    },
+    "mxwave_rtn": {
+      "passed": 45,
+      "failed": 24,
+      "rate": 0.652173913,
+      "wall_seconds": 47.8813
+    },
+    "bf16": {
+      "passed": 46,
+      "failed": 23,
+      "rate": 0.6666666667,
+      "wall_seconds": 68.8755
+    },
+    "public_nvfp4": {
+      "passed": 47,
+      "failed": 22,
+      "rate": 0.6811594203,
+      "wall_seconds": 47.8315
+    },
+    "mxwave_delta_passes_vs_bf16": -1,
+    "mxwave_delta_percentage_points_vs_bf16": -1.4492753623,
+    "nvfp4_delta_passes_vs_bf16": 1,
+    "nvfp4_delta_percentage_points_vs_bf16": 1.4492753623,
+    "mxwave_delta_passes": -2,
+    "mxwave_delta_percentage_points": -2.8985507246,
+    "categories": {
+      "arithmetic": {
+        "mxwave_rtn": "5/20",
+        "bf16": "7/20",
+        "public_nvfp4": "8/20"
+      },
+      "logic_ordering": {
+        "mxwave_rtn": "6/15",
+        "bf16": "5/15",
+        "public_nvfp4": "5/15"
+      },
+      "structured_output": {
+        "mxwave_rtn": "15/15",
+        "bf16": "15/15",
+        "public_nvfp4": "15/15"
+      },
+      "short_retrieval": {
+        "mxwave_rtn": "10/10",
+        "bf16": "10/10",
+        "public_nvfp4": "10/10"
+      },
+      "retrieval_8k": {
+        "mxwave_rtn": "9/9",
+        "bf16": "9/9",
+        "public_nvfp4": "9/9"
+      }
+    },
+    "answer_flips": {
+      "public_pass_to_mxwave_fail": [
+        "arithmetic-04",
+        "arithmetic-05",
+        "arithmetic-07",
+        "arithmetic-12",
+        "ordering-07"
+      ],
+      "public_fail_to_mxwave_pass": [
+        "arithmetic-08",
+        "ordering-06",
+        "ordering-10"
+      ]
+    },
+    "paired_exact_mcnemar": {
+      "mxwave_vs_bf16": {
+        "losses": 3,
+        "wins": 2,
+        "discordant": 5,
+        "p_value": 1.0
+      },
+      "public_nvfp4_vs_bf16": {
+        "losses": 3,
+        "wins": 4,
+        "discordant": 7,
+        "p_value": 1.0
+      },
+      "mxwave_vs_public_nvfp4": {
+        "losses": 5,
+        "wins": 3,
+        "discordant": 8,
+        "p_value": 0.7265625
+      }
+    },
+    "interpretation": "MxWave RTN, BF16, and public NVFP4 are indistinguishable on this small task screen; it does not demonstrate quantization damage."
+  },
+  "matched_single_run_throughput": {
+    "completion_tokens": 512,
+    "includes_ttft": true,
+    "mxwave_rtn": {
+      "elapsed_seconds": 13.664248823,
+      "output_tokens_per_second": 37.47
+    },
+    "public_nvfp4": {
+      "elapsed_seconds": 14.1576,
+      "output_tokens_per_second": 36.1644
+    },
+    "mxwave_percent_faster": 3.6101801772,
+    "interpretation": "inconclusive single-run diagnostic; not a throughput claim"
+  },
+  "limitations": [
+    "The original preflight candidate used raw RTN; the admitted follow-up used unweighted weight-MSE scale search, not route-aware activation/Hessian calibration.",
+    "The 69-case strict screen is a rejection gate, not a precise capability estimate.",
+    "Paired PPL favors the MSE follow-up, but exact BF16-forward KL is 10.01% worse than RTN and reverses on both fixed halves; the MSE candidate is stopped.",
+    "The throughput comparison used one run and did not separate TTFT, prefill, and decode."
+  ],
+  "remote_evidence_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922"
+}

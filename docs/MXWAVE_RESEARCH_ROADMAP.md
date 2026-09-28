@@ -2,7 +2,7 @@
 
 > Working research note. This document records hypotheses and possible experiments;
 > it is not a claim of novelty or measured improvement. Keep completed experiment
-> results in separate reproducibility records. Last reviewed: 2026-09-21.
+> results in separate reproducibility records. Last reviewed: 2026-09-28.
 
 ## Purpose
 
@@ -58,7 +58,7 @@ The current north-star hypothesis is:
 - A new method must be accepted using disjoint data and an end-to-end signal such
   as teacher KL, perplexity, or a suitably validated proxy.
 
-### Latest completed cycle: September 20--21
+### Latest completed cycle: September 20--22
 
 | Experiment | Result | Decision |
 |---|---|---|
@@ -67,6 +67,10 @@ The current north-star hypothesis is:
 | Large fake-MXFP4 recovery | PPL improved 0.654% versus H64 and recovered 37.92% of the BF16 gap; exact divergence was mixed and full GSM8K tied | Successful mechanism, local-only checkpoint; not an H64 replacement |
 | FP8 `lm_head` compression | Saved 1.183 GiB / 6.406%, but mean forward KL regressed 4.670% with a positive paired interval | Rejected before PPL, tasks, MTP, or MXFP4-head escalation |
 | MLX affine 3/4-bit allocation | Improved PPL 4.251% versus affine 3-bit but missed the frozen 5% gate; KL was split-unstable | Local Pareto evidence only; this spliced third-party weights and did not test MxWave quantization or export |
+| Exact-distribution recovery v3 | Training KL fell, but the best of 12 candidates improved Selection-A mean KL by only 0.098% while losing 9 teacher top-1 matches | Rejected at selection; Hidden B was not read and no adapter was emitted |
+| Nex-N2.5-mini expert-only MXFP4 RTN | Bounded conversion and stock-vLLM Marlin execution passed; the artifact was 4.21% smaller than the public NVFP4 control. MxWave/BF16/NVFP4 scored 45/46/47 of 69, with every paired exact McNemar test unresolved | Engineering preflight passed; raw-RTN artifact rejected for publication because it has no demonstrated material size, quality, or speed advantage. Measure paired NLL/PPL and teacher KL before considering route-aware calibration |
+| Nex expert unweighted-MSE scale search | Fixed scale search improved reconstruction NMSE 1.166% and paired PPL 0.331% versus RTN, but exact BF16-forward KL was 10.01% worse; both fixed halves reversed and the paired interval crossed zero | Rejected at exact-KL gate; stop before 128 contexts, optional NVFP4 KL, or broader qualification. Retain the MoE infrastructure and conflicting evidence record |
+| Nex route-aware diagonal-RMS calibration | Two disjoint 32-sequence replicas patched four representative layers, but only 1/4 replica/split cells improved mean teacher KL; the pooled delta was +0.009503 nats with 95% interval [-0.039305, +0.072428] | Rejected at the pre-registered quality gate; stop before vision/task testing or a 40-layer route-aware conversion. Retain the generic collection/overlay/evaluation infrastructure, not this calibration policy |
 
 The scaled recovery result supersedes the earlier statement that recovery was
 closed after the 6.44% local probe. It reopens recovery only as a materially
@@ -397,8 +401,13 @@ The remaining work is no longer another inexpensive H64 variation:
 1. **Qualification infrastructure.** Use one fail-closed scorecard for
    structure, PPL, multi-position distribution evidence, tasks, stock-vLLM
    load, memory, TTFT, decode, concurrency, long context, and MTP.
-2. **Generality.** Complete one second dense architecture with a real streaming
-   calibration adapter before describing MxWave as a general engine.
+2. **Generality.** Complete one recent second architecture with a real
+   streaming calibration adapter before describing MxWave as a general engine.
+   MoE is a first-class candidate, not a deferred afterthought: use a recent
+   Qwen3.5-MoE checkpoint to land generic expert plumbing, then require a
+   non-Qwen model before making an architecture-general MoE claim. The bounded
+   shortlist and feasibility gate are recorded in
+   [the 2026-09-22 candidate audit](RECENT_MODEL_CANDIDATES_2026-09-22.md).
 3. **Blackwell representation choice is evidence-gated.** The first existing
    native NVFP4 W4A4 checkpoint was evaluated on the same harness and rejected:
    it was worse than H64 in PPL and KL and larger after capability normalization.
@@ -407,7 +416,10 @@ The remaining work is no longer another inexpensive H64 variation:
 4. **Recovery at materially larger scale.** The large recovery run proves the
    mechanism can improve PPL, but another run is justified only with more
    diverse/longer data and a frozen goal expressed as BF16-gap recovery, not a
-   nominal 5% PPL improvement.
+   nominal 5% PPL improvement. The subsequent exact-distribution recovery-v3
+   run tested 12 snapshot/trust candidates and found no candidate satisfying
+   its four-metric Selection-A gate. Unchanged-size recovery under the frozen
+   MXFP4 scales is therefore closed for this checkpoint.
 5. **Passthrough compression.** Embeddings, `lm_head`, vision, and MTP are the
    remaining byte reservoir. Naive FP8 `lm_head` is closed; any retry needs a
    head-specific recovered or frequency-aware objective and capability-specific
@@ -429,6 +441,10 @@ stronger claim requires at least:
 1. one dense decoder-only transformer;
 2. one hybrid recurrent/attention architecture such as Qwen3.8;
 3. one MoE model if expert routing is claimed to be supported.
+
+These are evidence requirements, not a mandated implementation order. A recent
+MoE model may precede the second dense model when it offers more project value,
+but a Qwen-derived MoE still does not satisfy the non-Qwen generality claim.
 
 Architecture adapters may describe fused groups and operator boundaries, but
 the scoring algorithm, calibration contract, streaming engine, and checkpoint
@@ -461,7 +477,7 @@ metric that improved after the run.
 |---|---|---|---|
 | R0 | Preserve H64 as frozen baseline | Complete | Existing reproducibility record |
 | R1 | Literature/prior-art map | In progress | Review and categorize primary sources |
-| R2 | Define runtime fused-group IR | In progress | Add a second dense-model adapter; Qwen header validation covers 128 operations and 496 weights |
+| R2 | Define runtime fused-group IR | In progress | Add a second-architecture adapter; Qwen header validation covers 128 operations and 496 weights |
 | R3 | Finite operator-response scorer | Complete | Generic scoring, real MLP replay, diagonal/full-Hessian controls, and bounded suffix teacher KL implemented |
 | R4 | Bounded Qwen local-NMSE probe | Rejected | 2/6 teacher-winner agreement; 70% gate became unreachable |
 | R5 | Robust calibration portfolio | In progress | Two hashed disjoint splits measured; add positions/domains before selection |
@@ -472,8 +488,8 @@ metric that improved after the run.
 | R6d | Residual-counteraction selector | Rejected; infrastructure retained | Mean Spearman -0.0167, 4/12 cross-split improvements, and 3/6 stable selections |
 | R6e | Complete-suffix forward-AD selector | Rejected; infrastructure retained | Mean Spearman 0.3333, below weight NMSE at 0.4000; 4/6 cross-split improvements and 1/3 stable selections |
 | R6f | Layer-62 unweighted-MSE confirmation | Rejected | Fresh split was 0.91% worse than H64, won 9/16 contexts, and its paired interval crossed zero |
-| R7 | Dense-model replication | Not started | Add and fully qualify one non-Qwen streaming-calibration adapter |
-| R8 | MoE replication | Deferred | Only needed for an MoE support claim |
+| R7 | Cross-architecture replication | Not started | Add and fully qualify one non-Qwen streaming-calibration adapter; recent candidates are screened in the 2026-09-22 audit |
+| R8 | MoE expert-RTN preflight | Complete | [Real Nex result](NEX_N2_5_MINI_MOE_PREFLIGHT_RESULT_2026-09-22.md): 30,720 expert matrices / 61,440 quant tensors emitted with bounded memory; stock vLLM 0.29 selected MarlinExperts and passed text/vision forwards. The artifact is not a publication candidate |
 | R9 | Characterize standard-format failures | Blocked on R4 | Stable failure shape across splits and models |
 | R10 | Adaptive FP4 numerical prototype | Blocked on R9 | Pareto gain over standard mixed precision |
 | R11 | Adaptive FP4 kernel feasibility | Blocked on R10 | Projected end-to-end size/latency gain |
@@ -486,6 +502,9 @@ metric that improved after the run.
 | R18 | MLX affine mixed-bit allocation | Rejected as an MxWave model; local record only | Missed the 5% PPL gate, KL was split-unstable, and no MxWave quantization/export occurred |
 | R19 | Unified qualification command | Complete locally; GPU integration pending | Packaged structural verifier, evidence hooks, capability inference, frozen gates, and atomic JSON/Markdown report |
 | R20 | Existing native NVFP4 W4A4 checkpoint | Rejected before performance/tasks | Native SM121 execution passed, but PPL was 5.382% worse, mean forward KL was 45.1% worse, and normalized language-only size was about 4.02% larger than H64 |
+| R21 | Exact-distribution recovery v3 | Rejected at Selection A; research branch retained | Best candidate improved mean KL 0.098%, p95 KL 0.348%, and NLL 0.027%, but lost 9/8,152 teacher top-1 matches; Hidden B was not read and no adapter was emitted |
+| R22 | Route-aware MoE diagonal-RMS calibration | Rejected | [The bounded disjoint gate failed](NEX_ROUTE_DIAGONAL_PROBE_RESULT_2026-09-22.md): only A/B improved, A/A and B/A regressed, B/B was slightly worse, and the pooled interval crossed zero. Stop before vision/tasks or a 40-layer conversion; retain infrastructure only |
+| R23 | Nex expert unweighted-MSE scale search | Rejected | [Exact-KL gate failed](NEX_N2_5_MINI_MOE_PREFLIGHT_RESULT_2026-09-22.md): mean BF16-forward KL was 10.01% worse than RTN, both 32-context halves reversed, and the paired interval crossed zero despite favorable paired PPL and unchanged teacher top-1 agreement |
 
 Allowed states are `Not started`, `In progress`, `Blocked`, `Rejected`,
 `Complete`, and `Deferred`. Every transition should link to a dated experiment
@@ -524,6 +543,14 @@ direction changes.
 | 2026-09-21 | Reject the MLX affine mix as an MxWave artifact | 4.251% PPL improvement missed the 5% gate; KL was unstable; weights came from third-party affine checkpoints | Keep the result local and leave the true MxWave-to-MLX question unanswered |
 | 2026-09-21 | Consolidate qualification behind one fail-closed command | Existing evidence was fragmented across structural, PPL, KL, serving, and platform reports | Use `mxwave-qualify`; missing runtime capabilities produce `incomplete`, never a silent pass |
 | 2026-09-21 | Reject the tested Minima native-NVFP4 checkpoint at Phase 1 | Native W4A4 execution was verified, but paired PPL and KL both significantly favored H64 and the normalized artifact was larger | Stop before throughput, GSM8K, and long-context testing; do not open an MxWave NVFP4 backend from this evidence |
+| 2026-09-22 | Reject exact-distribution recovery v3 at Selection A | None of 12 snapshot/trust candidates improved mean NLL, mean KL, KL p95, and teacher top-1 agreement together; the best mean-KL candidate lost 9 top-1 matches for a 0.098% KL gain | Do not read Hidden B, emit an adapter, or retry unchanged-size recovery under the frozen MXFP4 scales |
+| 2026-09-22 | Expand the next-model track beyond dense architectures and apply a July–September 2026 freshness preference | Current MxWave is structurally matrix-only; recent Qwen3.5-MoE models offer a bounded implementation target, while Nemotron 3.5 is a harder non-Qwen candidate with a known non-128-aligned Marlin risk | Run the two-day MoE feasibility gate and a real forward before adapter work; do not equate Qwen-derived MoE support with generality |
+| 2026-09-22 | Select Nex-N2.5-mini for the bounded MoE preflight | It is a recent Apache-2.0 BF16 Qwen3.5-MoE checkpoint with stock-vLLM model support and legal aligned expert dimensions; an existing NVFP4 checkpoint supplies a strong external control | Target MxWave MXFP4 only; use NVFP4 as a comparator and stop before full download if standard MXFP4 FusedMoE execution or bounded emission fails |
+| 2026-09-22 | Isolate Nex routed-expert RTN emission from the calibrated dense engine | Reusing the dense mirror-shard writer would materialize excessive passthrough/output payload and its planner assumes rank-2 `.weight` sources; Nex uses 80 rank-3 banks without that suffix | Use the opt-in expert RTN engine, direct expert/row slices, one open handle per bank, independently resumable bank shards, capped passthrough shards, compact decoder-only target regex, and weight-only Marlin W4A16 config; do not claim calibration support |
+| 2026-09-22 | Complete the Nex expert-RTN preflight but reject its artifact for publication | [Bounded emission and stock Marlin execution passed](NEX_N2_5_MINI_MOE_PREFLIGHT_RESULT_2026-09-22.md), but the artifact saved only 4.21% versus the public NVFP4 control. The 45/69 MxWave, 46/69 BF16, and 47/69 NVFP4 screen results were statistically indistinguishable; the favorable 3.61% one-run throughput delta is inconclusive | Retain the adapter/emitter/runtime infrastructure on the research branch. Do not claim quantization damage or publish raw RTN. Measure paired NLL/perplexity and teacher KL first; open route-aware calibration only if they establish a reproducible MXFP4 deficit |
+| 2026-09-22 | Admit exactly one Nex unweighted-MSE scale-search candidate and stop the scale sweep | A 96-matrix probe improved reconstruction NMSE 1.166%, then the same-size checkpoint improved paired PPL 0.331% over RTN and 1.430% over public NVFP4 on both fixed halves. Its 0.0868% point gap to BF16 was unresolved by the paired interval | Retain the MSE candidate, parameterize the expert engine reproducibly, and run exact teacher KL before broader qualification. Do not vary percentile/depth or start route-aware calibration unless a reproducible deficit remains |
+| 2026-09-22 | Reject the Nex unweighted-MSE checkpoint at the exact-distribution gate | On 64 frozen terminal distributions, MSE mean BF16-forward KL was 0.034157 versus 0.031049 for RTN (+10.01%); both fixed halves were worse, the paired interval crossed zero, and teacher top-1 agreement tied 58/64 | Stop before a 128-context rerun, optional NVFP4 collection, and broader qualification. Retain the bounded MoE adapter/emitter/runtime work; require a new small held-out gate before any route-aware full build |
+| 2026-09-22 | Reject Nex route-aware diagonal RMS at its disjoint exact-KL gate | Conditions 1 and 2 failed: three of four replica/split means were non-negative and pooled candidate-minus-RTN KL was +0.009503 nats with interval [-0.039305, +0.072428]. It preserved all RTN top-1 matches and gained two, but that guardrail cannot override the KL failures | Do not run vision/tasks or build a 40-layer route-aware checkpoint. Keep the bounded MoE calibration/overlay/evaluation machinery experimental; do not retry the same policy with post-hoc ESS, layer, or scale-search changes |
 
 ## Primary-source watchlist
 

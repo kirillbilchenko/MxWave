@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "experiment": "nex-n2.5-mini-mxwave-mse-publication-gate",
+  "date": "2026-09-22",
+  "decision": {
+    "classification": "mixed_not_publication_candidate",
+    "upload_authorized": false,
+    "summary": "The MxWave MSE artifact is a credible local Pareto experiment, but it does not clear the conservative publication gate. It is 4.21% smaller than the public NVFP4 control, has 1.43% lower paired PPL, and is modestly faster in decode. However, the frozen task screen is two cases lower, exact teacher top-1 agreement is two contexts lower, the relative forward-KL interval includes a 6.66% regression, and the two fixed KL halves disagree. Long-prefill TTFT is also about 8.47% slower.",
+    "allowed_claim": "interesting workload-dependent trade-off; not a generally better quantization",
+    "disallowed_claims": [
+      "better overall model quality than BF16 or public NVFP4",
+      "statistically established teacher-KL superiority",
+      "universally faster serving",
+      "publication-ready replacement for the public NVFP4 artifact"
+    ]
+  },
+  "owner_release_override": {
+    "date": "2026-09-22",
+    "authorized": true,
+    "scope": "experimental Pareto release only",
+    "scientific_gate_changed": false,
+    "repository": "kirillbilchenko/Nex-N2.5-mini-MXFP4-MxWave",
+    "hub_revision": "a70ef66648e6f3d744def04f538c82e9c9455f52",
+    "release_qualification_fingerprint": "c8ddd02b6015a72fdfd3dd7d0be11dd4393e065141ff335087eb0df196a9f7eb",
+    "remote_validation_report_sha256": "a26f4710c733e7a54c9e82a07ca9e7c0c430fd159b797ab6c58ec3ecdd3d1794",
+    "interpretation": "The owner authorized publication with the original mixed/failed promotion result disclosed. This does not convert the checkpoint into a gate pass or support any disallowed claim above."
+  },
+  "source": {
+    "model": "nex-agi/Nex-N2.5-mini",
+    "revision": "87420286149d9cce9bd46cd335ef9bda33c37c1b"
+  },
+  "artifacts": {
+    "mxwave_mse_checkpoint_sha256": "1d134e5d5c704cc76fe85268ee1f65ece0107e932e9de856c141bdb5fa9e8738",
+    "public_nvfp4_model": "primitive-ai/Nex-N2.5-mini-NVFP4",
+    "public_nvfp4_revision": "ceaa4ce6d942c3d5456322d183b535a0c89a5fa6",
+    "mxwave_tensor_data_bytes": 22902614752,
+    "public_nvfp4_tensor_data_bytes": 23909493472,
+    "mxwave_bytes_smaller": 1006878720,
+    "mxwave_percent_smaller": 4.2112089124,
+    "size_gate_percent": 5.0,
+    "size_gate_passed": false
+  },
+  "paired_perplexity": {
+    "contexts": 64,
+    "scored_tokens_per_model": 61408,
+    "bf16": 8.873219361368083,
+    "mxwave_mse": 8.88092346829577,
+    "public_nvfp4": 9.009808322664837,
+    "mxwave_mse_vs_public_nvfp4_percent": -1.4304949645249199,
+    "paired_95_ci_percent": [
+      -1.9551596707608463,
+      -0.930192025935001
+    ],
+    "mxwave_context_wins": 45,
+    "public_nvfp4_context_wins": 19,
+    "interpretation": "A resolved observed-token likelihood advantage for MSE over public NVFP4, but not a task-capability or full-distribution guarantee."
+  },
+  "frozen_task_screen": {
+    "manifest_sha256": "e3c92c54288ab0530bbe3c11d5cdc80b5ca95dd517e125c260cad7b56febebd8",
+    "runtime": {
+      "vllm": "0.29.0",
+      "temperature": 0,
+      "seed": 1234,
+      "reasoning_effort": "none",
+      "expected_mtp_tokens": 0,
+      "context_length": 32768,
+      "concurrency": 1
+    },
+    "cases_total": 82,
+    "cases_scored": 69,
+    "request_errors": 0,
+    "scores": {
+      "mxwave_mse": 45,
+      "mxwave_rtn": 45,
+      "bf16": 46,
+      "public_nvfp4": 47
+    },
+    "mxwave_mse_categories": {
+      "arithmetic": "6/20",
+      "logic": "5/15",
+      "structured_output": "15/15",
+      "short_retrieval": "10/10",
+      "retrieval_8k": "9/9"
+    },
+    "mxwave_mse_vs_public_nvfp4": {
+      "both_pass": 43,
+      "mxwave_only": 2,
+      "public_nvfp4_only": 4,
+      "both_fail": 20,
+      "pass_rate_delta_percentage_points": -2.8985507246,
+      "exact_two_sided_mcnemar_p": 0.6875,
+      "stratified_paired_bootstrap_95_ci_percentage_points": [
+        -10.1449,
+        4.3478
+      ],
+      "interpretation": "Two-case point deficit, entirely within arithmetic/logic, with a wide unresolved interval. Functional formatting and retrieval guardrails passed."
+    },
+    "mxwave_mse_vs_bf16": {
+      "both_pass": 44,
+      "mxwave_only": 1,
+      "bf16_only": 2,
+      "both_fail": 22,
+      "pass_rate_delta_percentage_points": -1.4492753623,
+      "exact_two_sided_mcnemar_p": 1.0,
+      "stratified_paired_bootstrap_95_ci_percentage_points": [
+        -5.7971,
+        2.8986
+      ]
+    },
+    "reports": {
+      "mxwave_mse_sha256": "bfa6a7737008691cd151f4361a2140d1454063c7457db28c9a73b5437a6baeed",
+      "public_nvfp4_sha256": "99457f409289ce54178470b2413ef953d57866284af695f8ef31492302f865d1",
+      "bf16_sha256": "9106ca876ecd1aee82745072f2086e1cdcdebb6b4cf848e2bfc696a3201f782f",
+      "mxwave_rtn_sha256": "574210c08f9bde33d150435db6fff806729937ef305bc54f9f78fa20d134b5d7"
+    },
+    "invalid_diagnostic": {
+      "filename": "mxwave-mse-qualification-chat-template-disabled.json",
+      "sha256": "66e3c1eb23363a8c099ebf95a3584d1b15a4026900f4bab995f76437a09d9482",
+      "reason_excluded": "It used chat_template_kwargs instead of the frozen reasoning_effort=none request field, changed tokenization, and is not protocol-identical."
+    }
+  },
+  "exact_next_token_divergence": {
+    "contexts": 64,
+    "vocab_size": 248320,
+    "context_manifest_sha256": "9b72a2aa2b32c13dce3ff2e387d4f4a8d1383a240baf620a58d351566d8c9d3f",
+    "selected_context_sha256": "7d7862658899865454bb43c2f2329d203b31929813f247c8cf2e470963709866",
+    "protocol_sha256": "e37d5803afa723cd7505baf407476f36e86c3168e9fbaa69251289e672013f38",
+    "bootstrap_iterations": 100000,
+    "bootstrap_seed": 20260922,
+    "mxwave_mse": {
+      "mean_forward_kl_nats": 0.034157400213428626,
+      "median_forward_kl_nats": 0.02241986987310154,
+      "p95_forward_kl_nats": 0.09373886136481567,
+      "mean_reverse_kl_nats": 0.034255365677786774,
+      "mean_jensen_shannon_nats": 0.008237349552055137,
+      "mean_total_variation": 0.07029316082563283,
+      "teacher_top1_matches": 58,
+      "mean_top5_overlap": 4.453125
+    },
+    "public_nvfp4": {
+      "mean_forward_kl_nats": 0.040895130280308944,
+      "median_forward_kl_nats": 0.018090111416420654,
+      "p95_forward_kl_nats": 0.12237639143604806,
+      "mean_reverse_kl_nats": 0.04061212178165058,
+      "mean_jensen_shannon_nats": 0.009731172148659758,
+      "mean_total_variation": 0.07552920846909883,
+      "teacher_top1_matches": 60,
+      "mean_top5_overlap": 4.28125
+    },
+    "mxwave_mse_minus_public_nvfp4": {
+      "mean_forward_kl_delta_nats": -0.006737730066880321,
+      "mean_forward_kl_relative_percent": -16.4756293004,
+      "paired_delta_bootstrap_95_ci_nats": [
+        -0.015860470347829968,
+        0.002066035169414502
+      ],
+      "paired_relative_bootstrap_95_ci_percent": [
+        -30.9038180725,
+        6.6579154677
+      ],
+      "fixed_half_relative_percent": [
+        1.333808353,
+        -27.21513065
+      ],
+      "mxwave_lower_contexts": 39,
+      "public_nvfp4_lower_contexts": 25,
+      "teacher_top1_transitions": {
+        "both_match": 57,
+        "mxwave_only_matches": 1,
+        "public_nvfp4_only_matches": 3,
+        "neither_matches": 3
+      },
+      "interpretation": "The mean and p95 favor MSE, but the interval crosses the +5% non-inferiority boundary, the fixed halves disagree, the median favors NVFP4, and MSE loses two net teacher-top1 matches. This is favorable but unresolved, not a superiority result."
+    },
+    "artifacts": {
+      "remote_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/next-token-kl/exact-64-20260922",
+      "public_nvfp4_logprobs_sha256": "ba719d217fbef957e112c9750f23958062ec642be15a67e1aa79cc9d3cd1933b",
+      "comparison_report": "next-token-divergence-with-nvfp4.json",
+      "comparison_report_sha256": "fa88d1976435a81502b00d441f3d0f79a64a7e2556f64c13a21b20f045e9d8bd"
+    }
+  },
+  "repeated_serving": {
+    "protocol": {
+      "vllm": "0.29.0",
+      "runtime_image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+      "paired_seeds": [
+        20260922,
+        20260923,
+        20260924
+      ],
+      "prefix_cache": false,
+      "max_model_len": 32768,
+      "max_num_seqs": 4,
+      "max_num_batched_tokens": 8192,
+      "gpu_memory_utilization": 0.6,
+      "kv_cache_dtype": "bfloat16",
+      "mxwave_backend": "MarlinExperts W4A16",
+      "public_nvfp4_backend": "FLASHINFER_CUTLASS W4A4"
+    },
+    "reliability": {
+      "mxwave_completed_requests": 132,
+      "public_nvfp4_completed_requests": 132,
+      "failed_requests": 0,
+      "ooms": 0,
+      "server_restarts": 0,
+      "passed": true
+    },
+    "load": {
+      "mxwave_model_gib": 21.47,
+      "public_nvfp4_model_gib": 22.41,
+      "mxwave_model_load_seconds": 145.028,
+      "public_nvfp4_model_load_seconds": 164.412,
+      "mxwave_start_to_ready_seconds": 320.15,
+      "public_nvfp4_start_to_ready_seconds": 362.10
+    },
+    "median_results": {
+      "prefill_8192_concurrency_1": {
+        "mxwave_effective_input_tokens_per_second": 6596.38,
+        "public_nvfp4_effective_input_tokens_per_second": 7152.96,
+        "mxwave_relative_throughput_percent": -7.781,
+        "mxwave_median_ttft_ms": 1240.51,
+        "public_nvfp4_median_ttft_ms": 1144.66,
+        "mxwave_relative_ttft_percent": 8.468
+      },
+      "decode_32_to_512_concurrency_1": {
+        "mxwave_output_tokens_per_second": 37.395,
+        "public_nvfp4_output_tokens_per_second": 36.440,
+        "mxwave_relative_throughput_percent": 2.625,
+        "mxwave_median_tpot_ms": 26.656,
+        "public_nvfp4_median_tpot_ms": 27.342
+      },
+      "balanced_512_to_128_concurrency_4": {
+        "mxwave_output_tokens_per_second": 125.315,
+        "public_nvfp4_output_tokens_per_second": 119.619,
+        "mxwave_relative_throughput_percent": 4.771,
+        "mxwave_median_ttft_ms": 392.58,
+        "public_nvfp4_median_ttft_ms": 370.70,
+        "mxwave_relative_ttft_percent": 5.739,
+        "mxwave_median_tpot_ms": 29.185,
+        "public_nvfp4_median_tpot_ms": 30.943
+      }
+    },
+    "gate": {
+      "passed": true,
+      "interpretation": "Operationally competitive and stable. MSE trades an approximately 8% long-prefill loss and 6% C4 TTFT loss for approximately 2.6% C1 decode throughput and 4.8% C4 throughput. No universal speed claim is justified."
+    },
+    "raw_reports": {
+      "remote_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/publication-gate-20260922/performance/raw",
+      "file_count": 18,
+      "sorted_sha256_manifest_sha256": "e334c863cdd2c2b72b7d7072e459ab3fc44002404e57ce36597cc073e23838a5"
+    }
+  },
+  "next_bounded_experiment": {
+    "name": "route-aware expert block-Hessian probe",
+    "full_checkpoint_build_authorized": false,
+    "layers": [
+      0,
+      13,
+      26,
+      39
+    ],
+    "calibration": "Capture actual top-8 routed expert inputs. Share the expert-conditioned hidden-input Hessian for gate/up, but use the real post-activation gate-times-up input for down. Weight contributions by squared normalized router coefficients and fall back to RTN below ESS 64.",
+    "initial_budget": "16 sequences x 512 tokens per split; one predeclared extension to 32 x 512 only if calibrated experts cover less than 95% of router mass",
+    "validation": "Two disjoint calibration replicas and two disjoint held-out exact teacher-KL splits. Patch only the eight selected source banks into the RTN checkpoint.",
+    "promotion_gate": "Both calibration replicas improve mean KL over RTN on both held-out splits, pooled paired CI upper bound below zero, at most one teacher-top1 loss, and no format/runtime/memory regression.",
+    "estimated_resident_statistics_memory": "about 80 MiB per layer",
+    "expectation": "Plausible moderate fidelity recovery, but low probability of a five-percent end-to-end quality gain. Stop before a 40-layer build if the probe fails."
+  },
+  "remote_evidence_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922"
+}
