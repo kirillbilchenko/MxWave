@@ -1,0 +1,62 @@
+{
+  "calibration": {
+    "accumulation_dtype": "float64",
+    "attention_implementation": "sdpa",
+    "batch_size": 1,
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "initial_num_sequences": 16,
+    "layer_selection": {
+      "mode": "auto-evenly-spaced-inclusive-endpoints",
+      "probe_layer_count": 4
+    },
+    "maximum_num_sequences": 32,
+    "minimum_ess": 64.0,
+    "route_chunk_size": 4096,
+    "route_weighting": "normalized-router-coefficient-squared",
+    "sequence_length": 512
+  },
+  "created_at_utc": "2026-09-22T17:11:53Z",
+  "extension_rule": {
+    "action": "rerun the complete replica with 32 sequences exactly once",
+    "condition": "any selected layer has eligible route-energy coverage below 0.95 after 16 sequences",
+    "lower_ess_or_third_collection_forbidden": true
+  },
+  "format": "mxwave-nex-route-calibration-prerun-v2",
+  "implementation": {
+    "calibration_cli_sha256": "7d9e7f3f11287aeab98c810ce36bd25518309b08b14169e88d492056018ccf40",
+    "frozen_source_file_manifest_sha256": "d02b8fe64ced84797ac1068b6e1ff16b08864eb302a443b64ba8e6535a417e9c",
+    "frozen_source_file_manifest_path": "route-diagonal/frozen-source-v2-files.sha256",
+    "overlay_builder_sha256": "438f55c7f52de01dc3ec4b993189ba410260c3646fc161c838cfcdf3e96b4500",
+    "run_script_sha256": "ad7aff68097722b776ff27fcc39d935fde8b21bdb9a9208abf4093aa3e5cb9a0"
+  },
+  "model": {
+    "config_sha256": "aed18afaa5edbc5cd9177aa3f8b2a095e0f539caedca9a3d68fe87ac838ee8d5",
+    "index_sha256": "79ca2088682301f4c37e460fa2bd06739275041436074e0ed5a2ad1f803706a0",
+    "repository": "nex-agi/Nex-N2.5-mini",
+    "revision": "87420286149d9cce9bd46cd335ef9bda33c37c1b"
+  },
+  "provenance_amendment": {
+    "prior_record_sha256": "2404187b664d11db8ad0fdb23e46f5ad44afeb6aadfb88d35d4f33edf22a3475",
+    "reason": "The prior record was malformed and bound a post-run compatibility edit rather than the exact executed calibration CLI bytes.",
+    "treatment": "Preserve the prior record, rerun calibration from this frozen source, and use only v2 artifacts for the quality gate."
+  },
+  "replicas": {
+    "a": {
+      "sequence_offset": 0
+    },
+    "b": {
+      "sequence_offset": 32
+    }
+  },
+  "runtime": {
+    "image": "vllm/vllm-openai:v0.29.0",
+    "image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+    "per_collection_timeout_seconds": 600
+  },
+  "source_corpus": {
+    "path": "route-diagonal/calibration-corpus/wikitext-2-raw-v1-train-rows-0-599.txt",
+    "sha256": "d82a254c22464dd827493e6b36958564fc6f3f3b92143976f81c359bb987a9e7"
+  },
+  "status": "frozen-before-rerun"
+}

@@ -1,0 +1,65 @@
+{
+  "format": "mxwave-experiment-summary-v1",
+  "date": "2026-09-22",
+  "status": "rejected-selection",
+  "implementation": {
+    "branch": "research/exact-distribution-recovery-v3",
+    "commit": "18fb7808bc4625c63d34f283610afbda63d1e935"
+  },
+  "teacher_cache": {
+    "samples": 400,
+    "positions": 81520,
+    "payload_bytes": 40487181120,
+    "manifest_sha256": "d1e3db3c22b30a021a44ce4481e53be008500bf356cf94423acfe7fffceee467",
+    "elapsed_seconds": 720.52,
+    "peak_process_rss_bytes": 41831682048,
+    "peak_accelerator_memory_allocated_bytes": 55006647808
+  },
+  "training": {
+    "processed_sequences": 320,
+    "optimizer_updates": 64,
+    "first_16_mean_group_kl": 0.058237169694621116,
+    "last_16_mean_group_kl": 0.03859148241463117,
+    "max_gradient_norm_before_clipping": 2.059091806411743,
+    "gradient_clip_norm": 1.0
+  },
+  "selection": {
+    "candidate_count": 12,
+    "context_count": 40,
+    "positions": 8152,
+    "baseline": {
+      "mean_forward_kl": 0.02804349723886205,
+      "p95_forward_kl": 0.05891611780971284,
+      "mean_next_token_nll": 1.6895834774407719,
+      "top1_agreement": 0.9363346418056918,
+      "top1_matches": 7633
+    },
+    "best_mean_kl_candidate": {
+      "id": "step-240-trust-1p0",
+      "mean_forward_kl": 0.028016152911750056,
+      "mean_forward_kl_delta": -0.000027344327111992334,
+      "p95_forward_kl": 0.05871118679642673,
+      "p95_forward_kl_delta": -0.00020493101328611374,
+      "mean_next_token_nll": 1.6891264069507355,
+      "mean_next_token_nll_delta": -0.0004570704900364042,
+      "top1_agreement": 0.9352306182531894,
+      "top1_agreement_delta": -0.0011040235525023867,
+      "top1_matches": 7624
+    },
+    "selected_candidate_id": null,
+    "baseline_equivalent_candidates": 9
+  },
+  "hidden_gate_read": false,
+  "selected_adapter": null,
+  "resources": {
+    "elapsed_seconds": 1824.3541356399946,
+    "peak_process_rss_bytes": 51282907136,
+    "peak_accelerator_memory_allocated_bytes": 59498771968
+  },
+  "cleanup": {
+    "remote_experiment_directories_deleted": true,
+    "stopped_experiment_containers_deleted": 7,
+    "approximate_reclaimed_gib": 38,
+    "shared_runtime_image_retained": true
+  }
+}

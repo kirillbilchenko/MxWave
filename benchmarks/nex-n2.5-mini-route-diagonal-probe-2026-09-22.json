@@ -1,0 +1,417 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "experiment": "Nex-N2.5-mini route-aware diagonal-RMS bounded probe",
+  "decision": {
+    "status": "rejected",
+    "quality_gate_passed": false,
+    "overall_probe_passed": false,
+    "reason": "Only one of four fixed cells had negative mean candidate-minus-RTN BF16-forward KL, and the pooled stratified paired-bootstrap interval crossed zero with a positive upper bound.",
+    "stop": "Stopped before prescribed text/vision smoke, tasks, full 40-layer route-aware conversion, long-context evaluation, and throughput.",
+    "publication_candidate": false
+  },
+  "claim_boundary": {
+    "tested": "Whether squared-normalized-route-weighted per-expert diagonal RMS improves four selected routed-expert layers over routed-expert RTN.",
+    "not_tested": [
+      "A direct held-out superiority comparison against the earlier unweighted-MSE candidate",
+      "A direct held-out superiority comparison against public NVFP4",
+      "A complete 40-layer route-aware conversion",
+      "Model task quality, long-context quality, or controlled serving performance",
+      "Architecture-general MoE calibration"
+    ],
+    "size_or_speed_gain_possible_by_design": false,
+    "failed_scope_only": "This rejects the frozen diagonal-RMS configuration, not every possible route-aware calibration method."
+  },
+  "records": {
+    "preregistration": {
+      "path": "docs/NEX_ROUTE_DIAGONAL_PROBE_2026-09-22.md",
+      "sha256": "ea0f35d1a9a9e7a27f5a85ba3852b94acd654e187fa9732c11336ba9986495ba"
+    },
+    "v2_prerun_plan": {
+      "path": "benchmarks/nex-n2.5-mini-route-diagonal-calibration-v2-plan.json",
+      "sha256": "d5b1c29adc0a5fcd01cb961f2a06a4b664ce991591712c934ffc8b08210c5ebf"
+    },
+    "authoritative_full_gate_report": {
+      "path": "benchmarks/nex-n2.5-mini-route-diagonal-gate-2026-09-22.json",
+      "sha256": "3c079a0e6e2bdaafcec2686fc70d75a0589a46fd4843921f04d5230bea402aaf",
+      "format": "mxwave-nex-route-calibration-exact-kl-gate-v1",
+      "protocol_sha256": "254d98ffc79ffc07ad07136bc7629ab104925542c06e1d63cf07139b064826e9",
+      "contains_all_per_context_values": true
+    },
+    "evidence_checksum_manifest": {
+      "path": "benchmarks/nex-n2.5-mini-route-diagonal-evidence-2026-09-22.sha256",
+      "sha256": "d9f30f803687ae8bb55a57e56abf947b3702525aff2a02112556c3ce4af02229",
+      "files": 43
+    },
+    "human_result": "docs/NEX_ROUTE_DIAGONAL_PROBE_RESULT_2026-09-22.md"
+  },
+  "source": {
+    "repository": "nex-agi/Nex-N2.5-mini",
+    "revision": "87420286149d9cce9bd46cd335ef9bda33c37c1b",
+    "config_sha256": "aed18afaa5edbc5cd9177aa3f8b2a095e0f539caedca9a3d68fe87ac838ee8d5",
+    "index_sha256": "79ca2088682301f4c37e460fa2bd06739275041436074e0ed5a2ad1f803706a0"
+  },
+  "baseline": {
+    "name": "MxWave routed-expert RTN",
+    "structural_checkpoint_fingerprint_sha256": "eadbf27940485f0c9200e3189a8db03dee0a5380f274a80d182a63ca44abdcd5",
+    "collection_checkpoint_identity_sha256": "78d675492db34c8c17954490be9d29b957a032680ce25b110b732f1e0d9f1af8",
+    "config_sha256": "8ea02e392011595c2394a26862e51966608abab24fa2b750ce798b4ce67f6351",
+    "index_sha256": "69d4da6c13645e868454a7e22537e3f2ceef8883cf63817d67e2239145ad293c",
+    "manifest_sha256": "91a1a1c5ead3ba7a42fa0800aaa559b960010650bb8bd2010203f1c30fd2fb6c",
+    "run_file_sha256": "0802cb78507aa2553395cbcc7e411c195d0148c31ffb6a2224248ceec244a711",
+    "integrity_ledger_file_sha256": "efa7f73b5f9a00f92c9db5ef3520ca1aa17850b0d9661853e5f47e6419fdba4b",
+    "tensor_data_bytes": 22902614752
+  },
+  "runtime": {
+    "hardware": "NVIDIA DGX Spark GB10 / SM121",
+    "image": "vllm/vllm-openai:v0.29.0",
+    "image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+    "quantized_linear_backend": "marlin",
+    "quantized_moe_backend": "marlin",
+    "serving_precision": "MXFP4 W4A16"
+  },
+  "method": {
+    "name": "route-aware expert diagonal RMS",
+    "route_weighting": "squared normalized top-k router coefficient",
+    "statistic": "per-channel second moment of actual routed gate/up inputs and actual BF16 post-activation down-projection inputs",
+    "objective_interface": "gamma squared weighted error",
+    "not_a_hessian": true,
+    "selected_layers": [
+      0,
+      13,
+      26,
+      39
+    ],
+    "layer_selection": "four evenly spaced inclusive endpoints, resolved and frozen before statistics",
+    "selected_source_banks": 8,
+    "scale_percentile": 99.5,
+    "mse_clip_depth": 4,
+    "includes_no_clipping_candidate": true,
+    "minimum_effective_sample_size": 64.0,
+    "unsupported_expert_fallback": "gate, up, and down all use exact RTN"
+  },
+  "calibration": {
+    "corpus_sha256": "d82a254c22464dd827493e6b36958564fc6f3f3b92143976f81c359bb987a9e7",
+    "sequence_length": 512,
+    "initial_sequences_per_replica": 16,
+    "final_sequences_per_replica": 32,
+    "extension_threshold_eligible_route_energy": 0.95,
+    "both_replicas_extended": true,
+    "resource_measurements": {
+      "A16": {
+        "elapsed_seconds": 49.679535292001674,
+        "peak_process_rss_bytes": 5636091904,
+        "peak_accelerator_memory_allocated_bytes": 1835343360
+      },
+      "A32": {
+        "elapsed_seconds": 63.72042223199969,
+        "peak_process_rss_bytes": 5705433088,
+        "peak_accelerator_memory_allocated_bytes": 1835343360
+      },
+      "B16": {
+        "elapsed_seconds": 55.97750392000307,
+        "peak_process_rss_bytes": 5634564096,
+        "peak_accelerator_memory_allocated_bytes": 1835343360
+      },
+      "B32": {
+        "elapsed_seconds": 67.89609708299395,
+        "peak_process_rss_bytes": 5704953856,
+        "peak_accelerator_memory_allocated_bytes": 1835343360
+      }
+    },
+    "replicas": {
+      "A": {
+        "sequence_offset": 0,
+        "extension_trigger_layers": [
+          26,
+          39
+        ],
+        "token_ids_sha256": "d94862ca54413721a36db35ec7897cd948121465aff2b26104557cedc8167bce",
+        "artifact_sha256": "caab329b6901a67d3df9c87fade0abb74b0f8b95ff39dfd6ffefab0639852d1a",
+        "aggregate_energy_mass_coverage": 0.9842039193299273,
+        "eligible_experts": 848,
+        "fallback_experts": 176,
+        "calibrated_matrices": 2544,
+        "exact_rtn_fallback_matrices": 528,
+        "per_layer_energy_mass_coverage": {
+          "0": 0.9971776,
+          "13": 0.9857978,
+          "26": 0.9784999,
+          "39": 0.975332
+        }
+      },
+      "B": {
+        "sequence_offset": 32,
+        "extension_trigger_layers": [
+          13,
+          26,
+          39
+        ],
+        "token_ids_sha256": "4177e5bff9019eb9f5e3d7b004dda0261c9ec65474f784e4175216fd5d1f8a7c",
+        "artifact_sha256": "e114100b59f79359ddf053ba0ff7eaf2daad50696d517d3ad511406c6caf06c9",
+        "aggregate_energy_mass_coverage": 0.9824127022395706,
+        "eligible_experts": 835,
+        "fallback_experts": 189,
+        "calibrated_matrices": 2505,
+        "exact_rtn_fallback_matrices": 567,
+        "per_layer_energy_mass_coverage": {
+          "0": 0.9988821,
+          "13": 0.9783174,
+          "26": 0.9776526,
+          "39": 0.9751416
+        }
+      }
+    }
+  },
+  "candidate_overlays": {
+    "A": {
+      "overlay_report_sha256": "a621e2805660f2d757791bfce5a0888c2723ec1e0b282abc3b46bd42eb2bc915",
+      "output_integrity_sha256": "2fb91daea0563bfab9c0bd6581b5805f04ef91b5c166e385edd99d976fe3bb7d",
+      "config_sha256": "8ea02e392011595c2394a26862e51966608abab24fa2b750ce798b4ce67f6351",
+      "index_sha256": "69d4da6c13645e868454a7e22537e3f2ceef8883cf63817d67e2239145ad293c",
+      "tensor_data_bytes": 22902614752
+    },
+    "B": {
+      "overlay_report_sha256": "fefce843a3ef011586a93da73e17803f8ff09255d003fcc892e77e65b45491cc",
+      "output_integrity_sha256": "555e59da6aa3cccecc919fa3fc086a180a69d88852d9013dd56fc830326971cf",
+      "config_sha256": "8ea02e392011595c2394a26862e51966608abab24fa2b750ce798b4ce67f6351",
+      "index_sha256": "69d4da6c13645e868454a7e22537e3f2ceef8883cf63817d67e2239145ad293c",
+      "tensor_data_bytes": 22902614752
+    },
+    "shared_invariants": {
+      "selected_expert_bank_shards": 8,
+      "baseline_tree_unchanged": true,
+      "non_selected_files_byte_identical": true,
+      "ineligible_selected_matrices_exact_rtn": true,
+      "config_byte_identical": true,
+      "index_byte_identical": true,
+      "tensor_layout_unchanged": true,
+      "tensor_data_bytes_unchanged": true,
+      "stock_format_unchanged": true
+    }
+  },
+  "heldout": {
+    "corpus": "WikiText-2 raw v1 test",
+    "corpus_sha256": "696cca6b65a171b0a358a4be6732cdfdf2dd6164a32e20fd70e3c13fc4dfae83",
+    "contexts": 32,
+    "maximum_tokens_per_context": 512,
+    "output_vocabulary": 248320,
+    "prediction_positions": 32,
+    "replica_context_observations": 64,
+    "independent_resampling_unit": "held-out context, carrying both calibration replicas",
+    "chunk_indices": {
+      "A": [
+        64,
+        81,
+        97,
+        113,
+        129,
+        146,
+        161,
+        177,
+        193,
+        209,
+        226,
+        242,
+        258,
+        274,
+        291,
+        307
+      ],
+      "B": [
+        72,
+        88,
+        104,
+        121,
+        137,
+        153,
+        169,
+        186,
+        202,
+        218,
+        233,
+        249,
+        266,
+        282,
+        298,
+        314
+      ]
+    },
+    "raw_prepare_manifest_sha256": "d07346969238bb2e18410c2e460ced5321d2a44d669aaced31c8cd2feae72600",
+    "combined_manifest_sha256": "d05a14341e5ed8e0050da7166f277c21a112570d7e5e116bed3568928eb64bc4",
+    "split_a_manifest_sha256": "328ace1941421b251a59ac73a564cf632113aa5831818cef825f9e8518ed9666",
+    "split_b_manifest_sha256": "78328c0d6357d4c13cf98d8b0a048669a3079c795f9aae396ad3d93314a9b3a1",
+    "selected_context_sha256": "bc4febabf2cff4de0d8eb57f18b403ab473d78d4926e9edfd9aadf2015f81d5f"
+  },
+  "exact_distribution": {
+    "metric": "D_KL(P_BF16 || P_model)",
+    "delta": "candidate minus RTN; negative favors route-aware candidate",
+    "cells": [
+      {
+        "cell": "A/A",
+        "rtn_mean_forward_kl_nats": 0.1394276472566293,
+        "candidate_mean_forward_kl_nats": 0.16190715741221035,
+        "candidate_minus_rtn_mean_forward_kl_nats": 0.022479510155581077,
+        "candidate_minus_rtn_relative_percent": 16.12270636268106,
+        "candidate_lower_contexts": 7,
+        "rtn_lower_contexts": 9,
+        "ties": 0,
+        "passed": false
+      },
+      {
+        "cell": "A/B",
+        "rtn_mean_forward_kl_nats": 0.09893664151369709,
+        "candidate_mean_forward_kl_nats": 0.06813259961242638,
+        "candidate_minus_rtn_mean_forward_kl_nats": -0.03080404190127071,
+        "candidate_minus_rtn_relative_percent": -31.135119840313262,
+        "candidate_lower_contexts": 7,
+        "rtn_lower_contexts": 9,
+        "ties": 0,
+        "passed": true
+      },
+      {
+        "cell": "B/A",
+        "rtn_mean_forward_kl_nats": 0.1394276472566293,
+        "candidate_mean_forward_kl_nats": 0.18493734150455626,
+        "candidate_minus_rtn_mean_forward_kl_nats": 0.04550969424792698,
+        "candidate_minus_rtn_relative_percent": 32.640365912624375,
+        "candidate_lower_contexts": 4,
+        "rtn_lower_contexts": 12,
+        "ties": 0,
+        "passed": false
+      },
+      {
+        "cell": "B/B",
+        "rtn_mean_forward_kl_nats": 0.09893664151369709,
+        "candidate_mean_forward_kl_nats": 0.0997626410935602,
+        "candidate_minus_rtn_mean_forward_kl_nats": 0.000825999579863128,
+        "candidate_minus_rtn_relative_percent": 0.8348773186815465,
+        "candidate_lower_contexts": 6,
+        "rtn_lower_contexts": 10,
+        "ties": 0,
+        "passed": false
+      }
+    ],
+    "pooled": {
+      "rtn_mean_forward_kl_nats": 0.11918214438516317,
+      "candidate_mean_forward_kl_nats": 0.1286849349056883,
+      "candidate_minus_rtn_mean_forward_kl_nats": 0.00950279052052512,
+      "candidate_minus_rtn_relative_percent": 7.973334067404236,
+      "candidate_lower_observations": 24,
+      "rtn_lower_observations": 40,
+      "ties": 0,
+      "bootstrap_95_ci_nats": [
+        -0.039304935211531625,
+        0.07242815664526647
+      ],
+      "bootstrap_iterations": 100000,
+      "bootstrap_seed": 20260922,
+      "passed": false
+    },
+    "teacher_top1": {
+      "observations": 64,
+      "both_match": 56,
+      "rtn_match_candidate_mismatch_losses": 0,
+      "rtn_mismatch_candidate_match_gains": 2,
+      "neither_matches": 6,
+      "loss_limit": 1,
+      "gains_do_not_offset_losses": true,
+      "passed": true
+    }
+  },
+  "raw_logprob_artifacts": {
+    "bf16": {
+      "sha256": "964ee8a9f5318cd67cdec4e28aced924c181f6f29a7024e2964cef916f9ea3fe",
+      "checkpoint_identity_sha256": "79ca2088682301f4c37e460fa2bd06739275041436074e0ed5a2ad1f803706a0",
+      "shape": [
+        32,
+        248320
+      ],
+      "dtype": "float32",
+      "linear_backend": "auto",
+      "moe_backend": "auto",
+      "elapsed_seconds": 389.86482
+    },
+    "rtn": {
+      "sha256": "149f054a9b1e9182457a20354f9d89479e066dc2e3651beec7bab07432b781d3",
+      "checkpoint_identity_sha256": "78d675492db34c8c17954490be9d29b957a032680ce25b110b732f1e0d9f1af8",
+      "shape": [
+        32,
+        248320
+      ],
+      "dtype": "float32",
+      "linear_backend": "marlin",
+      "moe_backend": "marlin",
+      "elapsed_seconds": 274.475596
+    },
+    "route_a": {
+      "sha256": "df6397db68d9419e3281aa152f5dda5cbff40da462b9f44497846bc10504c1ab",
+      "checkpoint_identity_sha256": "2fb91daea0563bfab9c0bd6581b5805f04ef91b5c166e385edd99d976fe3bb7d",
+      "shape": [
+        32,
+        248320
+      ],
+      "dtype": "float32",
+      "linear_backend": "marlin",
+      "moe_backend": "marlin",
+      "elapsed_seconds": 286.58861
+    },
+    "route_b": {
+      "sha256": "4d1d449f5bc4f6a77fc96b570b5007d2183f239718b7198d3ad999eae1669097",
+      "checkpoint_identity_sha256": "555e59da6aa3cccecc919fa3fc086a180a69d88852d9013dd56fc830326971cf",
+      "shape": [
+        32,
+        248320
+      ],
+      "dtype": "float32",
+      "linear_backend": "marlin",
+      "moe_backend": "marlin",
+      "elapsed_seconds": 283.577467
+    }
+  },
+  "six_condition_gate": {
+    "condition_1_all_four_cell_means_strictly_negative": "failed",
+    "condition_2_bootstrap_upper_bound_strictly_negative": "failed",
+    "condition_3_at_most_one_teacher_top1_loss": "passed",
+    "condition_4_format_layout_coverage_and_bytes_identical": "passed",
+    "condition_5_nonselected_and_fallback_exact_rtn": "passed",
+    "condition_6_pinned_runtime_text_and_vision_smokes": "not_run_due_to_frozen_stop",
+    "overall": "failed"
+  },
+  "provenance": {
+    "base_commit": "309cfe6",
+    "implementation_identity": "base commit plus frozen source manifest; no single commit represented all executed bytes",
+    "frozen_source_file_manifest_sha256": "d02b8fe64ced84797ac1068b6e1ff16b08864eb302a443b64ba8e6535a417e9c",
+    "calibration_cli_sha256": "7d9e7f3f11287aeab98c810ce36bd25518309b08b14169e88d492056018ccf40",
+    "calibration_runner_sha256": "ad7aff68097722b776ff27fcc39d935fde8b21bdb9a9208abf4093aa3e5cb9a0",
+    "frozen_overlay_builder_sha256": "438f55c7f52de01dc3ec4b993189ba410260c3646fc161c838cfcdf3e96b4500",
+    "context_evaluator_sha256": "c5e5d2f3b6e3479890906e3db44442f7e8e44def7fb503830968373761f2b0ed",
+    "gate_analyzer_sha256": "25b655af7b4e1646affae2248c976e0d2cbaea62293b539ca99d787e28a70392",
+    "executed_exact_kl_runner_sha256": "08e6fd84ec7d71dc721f3cfb249a77ce61a3a82072f1a83d7f9cc530bb5ecc57",
+    "superseded_v1": {
+      "used_for_quality_gate": false,
+      "prior_record_sha256": "2404187b664d11db8ad0fdb23e46f5ad44afeb6aadfb88d35d4f33edf22a3475",
+      "reason": "The prior record was malformed and bound a post-run compatibility edit rather than the exact executed calibration CLI bytes."
+    },
+    "pre_registration_implementation_commit_deviation": "The pre-registration preferred one implementation commit; the executed code is instead bound by base commit 309cfe6 plus the frozen source byte manifest and individual tool hashes.",
+    "collection_driver": {
+      "outer_status": 123,
+      "bf16_collector_status": 0,
+      "rtn_collector_status": 0,
+      "route_a_collector_status": 0,
+      "route_b_collector_status": 0,
+      "failure_scope": "Final host-side hash could not read root-owned safetensors after all four collections completed.",
+      "repair": "chmod a+r inside a container; bytes unchanged",
+      "post_repair_collection_manifest_sha256": "948da503c949f1bc8037595f6f2c2a4187ab9cea0886644731e0b60b59fb1669",
+      "interpretation": "Permission-only postcondition failure, neither a clean outer-driver exit nor a model/evaluation failure."
+    }
+  },
+  "retained_evidence": {
+    "spark_experiment_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922",
+    "route_root": "/home/kirya/local-spark/experiments/nex-n2.5-moe-preflight-20260922/route-diagonal",
+    "calibration_results": "route-diagonal/results-v2",
+    "candidate_a": "route-diagonal/candidate-a-v2",
+    "candidate_b": "route-diagonal/candidate-b-v2",
+    "heldout": "route-diagonal/heldout-kl-20260922"
+  }
+}
