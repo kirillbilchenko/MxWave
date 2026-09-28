@@ -26,6 +26,7 @@ _MANIFEST_FORMAT = "mxwave-serving-qualification-cases-v1"
 _COLLECTION_FORMAT = "mxwave-serving-qualification-collection-v1"
 _COMPARISON_FORMAT = "mxwave-serving-qualification-comparison-v1"
 _SEED = 1234
+_REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh", "max")
 _TOKENS_PER_DISTRACTOR_RECORD = 21
 _LONG_CONTEXT_RESERVE = 250
 
@@ -460,7 +461,7 @@ def _score_content(case: dict[str, Any], content: str) -> bool | None:
             value = json.loads(content)
         except json.JSONDecodeError:
             return False
-        return value == expected
+        return bool(value == expected)
     raise ValueError(f"Case {case.get('id')} has unsupported scorer {kind}")
 
 
@@ -514,7 +515,21 @@ def _empty_collection(
     manifest_sha256: str,
     discovered_models: list[str],
     checkpoint_sha256: str,
+    reasoning_effort: str | None = None,
 ) -> dict[str, object]:
+    enable_thinking = reasoning_effort not in {None, "none"}
+    runtime: dict[str, object] = {
+        "expected_mtp_tokens": expected_mtp_tokens,
+        "context_length": context_length,
+        "temperature": 0,
+        "seed": _SEED,
+        "concurrency": 1,
+        "enable_thinking": enable_thinking,
+        "logprobs": True,
+        "top_logprobs": 0,
+    }
+    if reasoning_effort is not None:
+        runtime["reasoning_effort"] = reasoning_effort
     return {
         "format": _COLLECTION_FORMAT,
         "complete": False,
@@ -522,16 +537,7 @@ def _empty_collection(
         "protocol_sha256": manifest_sha256,
         "label": label,
         "model": model,
-        "runtime": {
-            "expected_mtp_tokens": expected_mtp_tokens,
-            "context_length": context_length,
-            "temperature": 0,
-            "seed": _SEED,
-            "concurrency": 1,
-            "enable_thinking": False,
-            "logprobs": True,
-            "top_logprobs": 0,
-        },
+        "runtime": runtime,
         "manifest": str(manifest_path),
         "manifest_sha256": manifest_sha256,
         "discovered_models": discovered_models,
@@ -554,12 +560,16 @@ def collect(
     context_length: int,
     timeout_seconds: float,
     checkpoint_sha256: str,
+    reasoning_effort: str | None = None,
 ) -> Path:
     """Collect one resumable deterministic response set."""
     if expected_mtp_tokens not in {0, 2}:
         raise ValueError("Expected MTP tokens must be 0 or 2")
     if context_length < 1:
         raise ValueError("Context length must be positive")
+    if reasoning_effort is not None and reasoning_effort not in _REASONING_EFFORTS:
+        supported = ", ".join(_REASONING_EFFORTS)
+        raise ValueError(f"Reasoning effort must be one of: {supported}")
     manifest, manifest_sha256 = _load_manifest(manifest_path)
     api_key = _read_env_secret(env_file, "LLM_API_KEY")
     discovered_models = _discover_models(base_url, api_key, timeout_seconds)
@@ -577,6 +587,7 @@ def collect(
             expected_mtp_tokens,
             context_length,
             checkpoint_sha256,
+            reasoning_effort,
         )
         runtime = report.get("runtime")
         if not isinstance(runtime, dict):
@@ -588,6 +599,7 @@ def collect(
             runtime.get("expected_mtp_tokens"),
             runtime.get("context_length"),
             report.get("checkpoint_sha256"),
+            runtime.get("reasoning_effort"),
         )
         if actual_identity != expected_identity:
             raise ValueError("Existing collection identity does not match this run")
@@ -604,6 +616,7 @@ def collect(
             manifest_sha256=manifest_sha256,
             discovered_models=discovered_models,
             checkpoint_sha256=checkpoint_sha256,
+            reasoning_effort=reasoning_effort,
         )
 
     raw_results = report.get("results")
@@ -635,8 +648,11 @@ def collect(
             "seed": _SEED,
             "logprobs": True,
             "top_logprobs": 0,
-            "chat_template_kwargs": {"enable_thinking": False},
         }
+        if reasoning_effort is None:
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
+        else:
+            payload["reasoning_effort"] = reasoning_effort
         started = time.monotonic()
         try:
             response = _request_json(
@@ -838,8 +854,15 @@ def compare(
     second_long = cast(
         dict[str, dict[str, object]], second_quality["long_context_by_target_tokens"]
     )
+    def all_cases_passed(summary: dict[str, object]) -> bool:
+        passed = summary.get("passed")
+        total = summary.get("total")
+        if not isinstance(passed, int) or not isinstance(total, int):
+            raise TypeError("Long-context quality counts must be integers")
+        return passed == total
+
     semantic_gate = all(
-        int(summary["passed"]) == int(summary["total"])
+        all_cases_passed(summary)
         for summary in [*first_long.values(), *second_long.values()]
     )
     parity_gate = token_equal_count == len(per_case)
@@ -928,6 +951,7 @@ def build_parser() -> argparse.ArgumentParser:
     collect_parser.add_argument("--context-length", type=int, default=65536)
     collect_parser.add_argument("--timeout-seconds", type=float, default=900.0)
     collect_parser.add_argument("--checkpoint-sha256", required=True)
+    collect_parser.add_argument("--reasoning-effort", choices=_REASONING_EFFORTS)
 
     compare_parser = subparsers.add_parser("compare")
     compare_parser.add_argument("--cases", type=Path, required=True)
@@ -955,6 +979,7 @@ def main() -> int:
                 context_length=args.context_length,
                 timeout_seconds=args.timeout_seconds,
                 checkpoint_sha256=args.checkpoint_sha256,
+                reasoning_effort=args.reasoning_effort,
             )
         elif args.command == "compare":
             compare(
