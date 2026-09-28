@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_script() -> ModuleType:
     path = Path("scripts/evaluate_serving_qualification.py")
@@ -49,6 +51,138 @@ def test_scorers_are_strict_but_json_key_order_is_irrelevant() -> None:
     assert module._score_content(structured, '{"items":3,"enabled":true}') is True
     assert module._score_content(structured, "```json\n{}\n```") is False
     assert module._score_content(unscored, "anything") is None
+
+
+@pytest.mark.parametrize("reasoning_effort", [None, "none", "high"])
+def test_collect_optionally_sends_top_level_reasoning_effort(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    reasoning_effort: str | None,
+) -> None:
+    module = _load_script()
+    manifest_path = tmp_path / "cases.json"
+    cli_args = [
+        "collect",
+        "--cases",
+        str(manifest_path),
+        "--output",
+        str(tmp_path / "collection.json"),
+        "--label",
+        "nex",
+        "--model",
+        "nex",
+        "--env-file",
+        str(tmp_path / ".env"),
+        "--expected-mtp-tokens",
+        "0",
+        "--checkpoint-sha256",
+        "a" * 64,
+    ]
+    if reasoning_effort is not None:
+        cli_args.extend(["--reasoning-effort", reasoning_effort])
+    assert module.build_parser().parse_args(cli_args).reasoning_effort == reasoning_effort
+
+    case = module._case(
+        case_id="reasoning-effort",
+        category="smoke",
+        content="Return VALUE.",
+        max_tokens=8,
+        scoring={"kind": "exact", "expected": "VALUE"},
+    )
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "format": "mxwave-serving-qualification-cases-v1",
+                "case_count": 1,
+                "cases": [case],
+            }
+        )
+    )
+    env_file = tmp_path / ".env"
+    env_file.write_text("LLM_API_KEY=test-key\n")
+    requests: list[dict[str, object]] = []
+
+    def fake_request_json(
+        *,
+        url: str,
+        api_key: str,
+        payload: dict[str, object] | None,
+        timeout_seconds: float,
+    ) -> dict[str, object]:
+        assert api_key == "test-key"
+        assert timeout_seconds == 30.0
+        if url.endswith("/models"):
+            assert payload is None
+            return {"data": [{"id": "nex"}]}
+        assert url.endswith("/chat/completions")
+        assert payload is not None
+        requests.append(payload)
+        return {
+            "choices": [
+                {
+                    "message": {"content": "VALUE"},
+                    "finish_reason": "stop",
+                    "logprobs": {
+                        "content": [
+                            {
+                                "token": "VALUE",
+                                "bytes": list(b"VALUE"),
+                                "logprob": 0.0,
+                            }
+                        ]
+                    },
+                }
+            ],
+            "usage": {"prompt_tokens": 4},
+        }
+
+    monkeypatch.setattr(module, "_request_json", fake_request_json)
+    output = tmp_path / "collection.json"
+    module.collect(
+        manifest_path=manifest_path,
+        output=output,
+        label="nex",
+        model="nex",
+        env_file=env_file,
+        base_url="http://localhost/v1",
+        expected_mtp_tokens=0,
+        context_length=4096,
+        timeout_seconds=30.0,
+        checkpoint_sha256="a" * 64,
+        reasoning_effort=reasoning_effort,
+    )
+
+    assert len(requests) == 1
+    report = json.loads(output.read_text())
+    if reasoning_effort is None:
+        assert "reasoning_effort" not in requests[0]
+        assert "reasoning_effort" not in report["runtime"]
+        assert requests[0]["chat_template_kwargs"] == {"enable_thinking": False}
+        assert report["runtime"]["enable_thinking"] is False
+    else:
+        assert requests[0]["reasoning_effort"] == reasoning_effort
+        assert report["runtime"]["reasoning_effort"] == reasoning_effort
+        assert "chat_template_kwargs" not in requests[0]
+        assert report["runtime"]["enable_thinking"] is (reasoning_effort != "none")
+
+
+def test_collect_rejects_unsupported_reasoning_effort(tmp_path: Path) -> None:
+    module = _load_script()
+
+    with pytest.raises(ValueError, match="Reasoning effort must be one of"):
+        module.collect(
+            manifest_path=tmp_path / "missing-cases.json",
+            output=tmp_path / "collection.json",
+            label="invalid",
+            model="invalid",
+            env_file=tmp_path / ".env",
+            base_url="http://localhost/v1",
+            expected_mtp_tokens=0,
+            context_length=4096,
+            timeout_seconds=30.0,
+            checkpoint_sha256="a" * 64,
+            reasoning_effort="unsupported",
+        )
 
 
 def test_compare_reports_exact_parity_and_long_context_gate(tmp_path: Path) -> None:

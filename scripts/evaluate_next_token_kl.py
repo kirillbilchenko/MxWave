@@ -21,6 +21,8 @@ import torch
 from safetensors import safe_open
 from safetensors.torch import load_file, save_file
 
+_DEFAULT_NUM_CONTEXTS = 128
+
 
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
@@ -71,6 +73,44 @@ def _evenly_spaced_indices(population: int, count: int) -> list[int]:
     return indices
 
 
+def _fixed_chunk_indices(value: str, population: int) -> list[int]:
+    """Parse and validate an ordered, explicit list of corpus chunk indices."""
+    raw_items = value.split(",")
+    if not raw_items or any(not item.strip() for item in raw_items):
+        raise ValueError("--chunk-indices must be a non-empty comma-separated list of integers")
+
+    indices: list[int] = []
+    for raw_item in raw_items:
+        try:
+            index = int(raw_item)
+        except ValueError as exc:
+            raise ValueError("--chunk-indices must contain only integers") from exc
+        if index < 0:
+            raise ValueError("--chunk-indices must contain only nonnegative integers")
+        if index >= population:
+            raise ValueError(
+                f"Chunk index {index} is out of range for {population} non-empty chunks"
+            )
+        indices.append(index)
+
+    if len(set(indices)) != len(indices):
+        raise ValueError("--chunk-indices must not contain duplicate indices")
+    return indices
+
+
+def _select_chunk_indices(args: argparse.Namespace, population: int) -> tuple[list[int], str]:
+    """Select corpus chunks using either the legacy even spacing or fixed indices."""
+    chunk_indices = getattr(args, "chunk_indices", None)
+    if chunk_indices is None:
+        return (
+            _evenly_spaced_indices(population, args.num_contexts),
+            "evenly-spaced-inclusive-endpoints",
+        )
+    if args.num_contexts != _DEFAULT_NUM_CONTEXTS:
+        raise ValueError("--chunk-indices cannot be combined with a non-default --num-contexts")
+    return _fixed_chunk_indices(chunk_indices, population), "explicit-chunk-indices"
+
+
 def prepare_contexts(args: argparse.Namespace) -> Path:
     """Create one immutable token-ID manifest shared by every model."""
     from transformers import AutoTokenizer
@@ -80,7 +120,7 @@ def prepare_contexts(args: argparse.Namespace) -> Path:
     output_path = Path(args.output)
     corpus_bytes = corpus_path.read_bytes()
     chunks = _nonempty_chunks(corpus_bytes.decode("utf-8"), args.chunk_characters)
-    indices = _evenly_spaced_indices(len(chunks), args.num_contexts)
+    indices, selection = _select_chunk_indices(args, len(chunks))
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
         local_files_only=True,
@@ -112,13 +152,15 @@ def prepare_contexts(args: argparse.Namespace) -> Path:
         "corpus_sha256": _sha256_bytes(corpus_bytes),
         "chunk_characters": args.chunk_characters,
         "available_nonempty_chunks": len(chunks),
-        "selection": "evenly-spaced-inclusive-endpoints",
+        "selection": selection,
         "num_contexts": len(contexts),
         "context_tokens_max": args.context_tokens,
         "tokenizer_class": tokenizer.__class__.__name__,
         "tokenizer_vocab_size": len(tokenizer),
         "contexts": contexts,
     }
+    if selection == "explicit-chunk-indices":
+        manifest["selected_chunk_indices"] = indices
     _write_json_atomic(output_path, manifest)
     print(
         f"prepared {len(contexts)} contexts from {len(chunks)} chunks: {output_path}",
@@ -203,18 +245,12 @@ def _extract_full_logprobs(flat: Any, vocab_size: int) -> torch.Tensor:
     return row
 
 
-def collect_distributions(args: argparse.Namespace) -> Path:
-    """Load one model and collect exact next-token log probabilities."""
-    from vllm import LLM, SamplingParams
-    from vllm.logprobs import FlatLogprobs
-
-    model_path = Path(args.model)
-    contexts_path = Path(args.contexts)
-    output_path = Path(args.output)
-    manifest, manifest_sha256 = _load_context_manifest(contexts_path, args.limit)
-    contexts = cast(list[dict[str, Any]], manifest["contexts"])
-    vocab_size, config_sha256 = _model_vocab_size(model_path)
-    max_context = max(int(item["token_count"]) for item in contexts)
+def _build_engine_kwargs(
+    args: argparse.Namespace,
+    model_path: Path,
+    max_context: int,
+) -> tuple[dict[str, object], int]:
+    """Build vLLM engine arguments for one distribution collection run."""
     max_model_len = max(args.max_model_len, max_context + 1)
     engine_kwargs: dict[str, object] = {
         "model": str(model_path),
@@ -233,6 +269,33 @@ def collect_distributions(args: argparse.Namespace) -> Path:
     }
     if args.linear_backend:
         engine_kwargs["linear_backend"] = args.linear_backend
+    moe_backend = str(getattr(args, "moe_backend", ""))
+    if moe_backend:
+        engine_kwargs["moe_backend"] = moe_backend
+    return engine_kwargs, max_model_len
+
+
+def _backend_metadata(args: argparse.Namespace) -> dict[str, str]:
+    """Return the effective backend choices recorded with an output artifact."""
+    return {
+        "linear_backend": args.linear_backend or "auto",
+        "moe_backend": str(getattr(args, "moe_backend", "")) or "auto",
+    }
+
+
+def collect_distributions(args: argparse.Namespace) -> Path:
+    """Load one model and collect exact next-token log probabilities."""
+    from vllm import LLM, SamplingParams
+    from vllm.logprobs import FlatLogprobs
+
+    model_path = Path(args.model)
+    contexts_path = Path(args.contexts)
+    output_path = Path(args.output)
+    manifest, manifest_sha256 = _load_context_manifest(contexts_path, args.limit)
+    contexts = cast(list[dict[str, Any]], manifest["contexts"])
+    vocab_size, config_sha256 = _model_vocab_size(model_path)
+    max_context = max(int(item["token_count"]) for item in contexts)
+    engine_kwargs, max_model_len = _build_engine_kwargs(args, model_path, max_context)
 
     print(
         f"loading {args.model_label}: contexts={len(contexts)} vocab={vocab_size} "
@@ -297,7 +360,7 @@ def collect_distributions(args: argparse.Namespace) -> Path:
         "seed": str(args.seed),
         "max_model_len": str(max_model_len),
         "gpu_memory_utilization": str(args.gpu_memory_utilization),
-        "linear_backend": args.linear_backend or "auto",
+        **_backend_metadata(args),
         "runtime_image": args.runtime_image,
         "elapsed_seconds": f"{time.monotonic() - started:.6f}",
         "mean_context_seconds": f"{sum(per_context_seconds) / len(per_context_seconds):.6f}",
@@ -525,7 +588,11 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--model", required=True)
     prepare.add_argument("--corpus", required=True)
     prepare.add_argument("--output", required=True)
-    prepare.add_argument("--num-contexts", type=int, default=128)
+    prepare.add_argument("--num-contexts", type=int, default=_DEFAULT_NUM_CONTEXTS)
+    prepare.add_argument(
+        "--chunk-indices",
+        help="ordered comma-separated chunk indices; conflicts with non-default --num-contexts",
+    )
     prepare.add_argument("--context-tokens", type=int, default=512)
     prepare.add_argument("--chunk-characters", type=int, default=4096)
     prepare.set_defaults(handler=prepare_contexts)
@@ -538,6 +605,7 @@ def build_parser() -> argparse.ArgumentParser:
     collect.add_argument("--runtime-image", required=True)
     collect.add_argument("--checkpoint-sha256", default="")
     collect.add_argument("--linear-backend", default="")
+    collect.add_argument("--moe-backend", default="")
     collect.add_argument("--limit", type=int)
     collect.add_argument("--seed", type=int, default=20260916)
     collect.add_argument("--max-model-len", type=int, default=1024)
