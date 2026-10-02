@@ -4,7 +4,9 @@ The pure helpers in this module validate and repack MxWave's
 ``compressed-tensors`` representation.  :func:`install_llama_cpp_exporter`
 adds that representation to a pinned llama.cpp converter at runtime, leaving
 llama.cpp responsible for architecture metadata, tokenizer conversion, and
-ordinary floating-point tensors.
+ordinary floating-point tensors.  Projector-only and MTP-only exports contain
+no MxWave-compressed tensors in the current Qwen3.5 checkpoint contract and
+are delegated to llama.cpp with an explicit fail-closed check.
 """
 
 from __future__ import annotations
@@ -31,6 +33,57 @@ __all__ = [
 _EXPECTED_FORMAT = "mxfp4-pack-quantized"
 _EXPECTED_METHOD = "compressed-tensors"
 _HOOK_MARKER = "_mxwave_gguf_hook_installed"
+
+
+def _mxfp4_quantization_config(model: Any) -> Mapping[str, Any] | None:
+    """Return an MxWave config from either the active or global model config.
+
+    llama.cpp replaces ``hparams`` with ``vision_config`` for ``--mmproj``, but
+    retains the complete Hugging Face configuration as ``global_config``.  Text
+    and MTP exports keep the quantization config in ``hparams``.
+    """
+    candidates = (
+        getattr(model, "hparams", {}).get("quantization_config"),
+        getattr(model, "global_config", {}).get("quantization_config"),
+    )
+    for candidate in candidates:
+        if not isinstance(candidate, Mapping):
+            continue
+        if (
+            candidate.get("quant_method") == _EXPECTED_METHOD
+            and candidate.get("format") == _EXPECTED_FORMAT
+        ):
+            return candidate
+    return None
+
+
+def _prepare_float_only_export(
+    model: Any,
+    original_prepare_tensors: Callable[[Any], None],
+    mode: str,
+) -> None:
+    """Delegate a projector or MTP-only export after excluding MXFP4 payloads."""
+    packed = sorted(name for name in model.model_tensors if name.endswith(".weight_packed"))
+    if packed:
+        raise ValueError(
+            f"MxWave {mode} export contains unsupported MXFP4 tensors: {packed[:5]} "
+            f"({len(packed)} total)"
+        )
+
+    # Upstream llama.cpp does not understand MxWave's compressed-tensors
+    # format.  It does understand every BF16/F32 tensor selected by its
+    # --mmproj and --mtp filters, so hide only the irrelevant quantization
+    # descriptor for the duration of the delegated conversion.
+    hparams = model.hparams
+    had_quantization = "quantization_config" in hparams
+    raw_quantization = hparams.get("quantization_config")
+    if had_quantization:
+        hparams["quantization_config"] = None
+    try:
+        original_prepare_tensors(model)
+    finally:
+        if had_quantization:
+            hparams["quantization_config"] = raw_quantization
 
 
 @dataclass(frozen=True)
@@ -382,16 +435,22 @@ def install_llama_cpp_exporter() -> None:
     original_prepare_tensors = model_base.prepare_tensors
 
     def prepare_tensors_with_mxwave(model: Any) -> None:
-        raw_quantization = model.hparams.get("quantization_config") or {}
-        if not isinstance(raw_quantization, Mapping):
+        raw_quantization = _mxfp4_quantization_config(model)
+        if raw_quantization is None:
             original_prepare_tensors(model)
             return
-        is_mxwave = (
-            raw_quantization.get("quant_method") == _EXPECTED_METHOD
-            and raw_quantization.get("format") == _EXPECTED_FORMAT
-        )
-        if not is_mxwave:
-            original_prepare_tensors(model)
+
+        # Both auxiliary modes select only original floating-point tensors:
+        # Qwen3.5's vision tower is emitted by the MMPROJ model, while --mtp
+        # filters out the quantized target layers and retains the BF16 MTP head
+        # plus its shared embedding/output tensors.  Do not require the target
+        # coverage contract in either mode, but fail rather than silently lose
+        # data if a future checkpoint quantizes an auxiliary tensor.
+        if model.model_arch == gguf_module.MODEL_ARCH.MMPROJ:
+            _prepare_float_only_export(model, original_prepare_tensors, "projector")
+            return
+        if bool(getattr(model, "mtp_only", False)):
+            _prepare_float_only_export(model, original_prepare_tensors, "MTP-only")
             return
 
         # llama.cpp's multimodal config loader selects the registered model

@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 import torch
 from torch import Tensor
 
+import mxwave.gguf as gguf_export
 from mxwave.gguf import (
     Qwen35LinearAttentionConfig,
+    install_llama_cpp_exporter,
     repack_mxfp4_blocks,
     transform_qwen35_mxfp4,
 )
@@ -150,3 +154,113 @@ def test_qwen35_out_projection_rejects_unaligned_head_permutation() -> None:
             scale,
             config,
         )
+
+
+def _quantization_config() -> dict[str, object]:
+    return {
+        "quant_method": "compressed-tensors",
+        "format": "mxfp4-pack-quantized",
+    }
+
+
+def _install_fake_llama_cpp(monkeypatch: pytest.MonkeyPatch) -> tuple[type[object], object]:
+    class FakeModelBase:
+        def prepare_tensors(self) -> None:
+            self.quantization_seen_by_upstream = self.hparams.get("quantization_config")
+
+    architectures = SimpleNamespace(QWEN35="qwen35", MMPROJ="mmproj")
+    fake_modules = {
+        "gguf": SimpleNamespace(MODEL_ARCH=architectures),
+        "conversion.base": SimpleNamespace(
+            ModelBase=FakeModelBase,
+            LazyTorchTensor=object(),
+            logger=object(),
+        ),
+    }
+    monkeypatch.setattr(
+        gguf_export.importlib,
+        "import_module",
+        lambda name: fake_modules[name],
+    )
+    install_llama_cpp_exporter()
+    return FakeModelBase, architectures
+
+
+def test_main_export_keeps_strict_mxfp4_conversion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    model_base, architectures = _install_fake_llama_cpp(monkeypatch)
+    converted: list[object] = []
+    monkeypatch.setattr(
+        gguf_export,
+        "_write_compressed_mxfp4",
+        lambda model, *_args: converted.append(model),
+    )
+    raw_quantization = _quantization_config()
+    model = SimpleNamespace(
+        hparams={"quantization_config": raw_quantization},
+        global_config={},
+        model_arch=architectures.QWEN35,
+        mtp_only=False,
+        model_tensors={"model.layers.0.weight_packed": object()},
+    )
+
+    model_base.prepare_tensors(model)
+
+    assert converted == [model]
+    assert model.quantization_seen_by_upstream is None
+    assert model.hparams["quantization_config"] is raw_quantization
+    assert model._is_mxfp4 is True
+
+
+@pytest.mark.parametrize(
+    ("model_arch", "mtp_only", "quantization_location"),
+    [
+        ("qwen35", True, "hparams"),
+        ("mmproj", False, "global_config"),
+    ],
+)
+def test_float_only_export_modes_delegate_without_mxwave_quantization(
+    monkeypatch: pytest.MonkeyPatch,
+    model_arch: str,
+    mtp_only: bool,
+    quantization_location: str,
+) -> None:
+    model_base, _architectures = _install_fake_llama_cpp(monkeypatch)
+    raw_quantization = _quantization_config()
+    hparams: dict[str, object] = {}
+    global_config: dict[str, object] = {}
+    config = hparams if quantization_location == "hparams" else global_config
+    config["quantization_config"] = raw_quantization
+    model = SimpleNamespace(
+        hparams=hparams,
+        global_config=global_config,
+        model_arch=model_arch,
+        mtp_only=mtp_only,
+        model_tensors={"mtp.layers.0.mlp.up_proj.weight": object()},
+    )
+
+    model_base.prepare_tensors(model)
+
+    assert model.quantization_seen_by_upstream is None
+    assert config["quantization_config"] is raw_quantization
+    assert not hasattr(model, "_is_mxfp4")
+
+
+@pytest.mark.parametrize(("model_arch", "mtp_only"), [("qwen35", True), ("mmproj", False)])
+def test_float_only_export_modes_reject_quantized_auxiliary_tensors(
+    monkeypatch: pytest.MonkeyPatch,
+    model_arch: str,
+    mtp_only: bool,
+) -> None:
+    model_base, _architectures = _install_fake_llama_cpp(monkeypatch)
+    model = SimpleNamespace(
+        hparams={"quantization_config": _quantization_config()},
+        global_config={},
+        model_arch=model_arch,
+        mtp_only=mtp_only,
+        model_tensors={"mtp.layers.0.mlp.up_proj.weight_packed": object()},
+    )
+
+    with pytest.raises(ValueError, match="unsupported MXFP4 tensors"):
+        model_base.prepare_tensors(model)
