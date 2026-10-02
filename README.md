@@ -70,6 +70,29 @@ mxwave-quantize --help
 mxwave-quantize-experts --help
 ```
 
+### Experimental lossless GGUF export
+
+MxWave can export a pure Qwen3.5 `compressed-tensors`
+`mxfp4-pack-quantized` checkpoint to native GGUF MXFP4 without dequantizing or
+requantizing its weights. The exporter preserves every four-bit code and E8M0
+scale, applies the Qwen3.5 linear-attention V-head ordering required by ggml,
+and delegates tokenizer, metadata, and unquantized tensors to llama.cpp.
+
+The current adapter is validated against llama.cpp tag `b11232`, commit
+`6f767fe960c3b97cf37fac4626c86400561ca1e4`. Put that checkout and its
+`gguf-py` package on `PYTHONPATH`, then run:
+
+```bash
+PYTHONPATH=/path/to/llama.cpp:/path/to/llama.cpp/gguf-py \
+  mxwave-export-gguf /path/to/mxwave-checkpoint \
+    --outfile /path/to/model.gguf \
+    --outtype bf16
+```
+
+This command creates an inference artifact only. Runtime deployment, API
+authentication, activation precision, context sizing, and Ollama/vLLM
+lifecycle configuration intentionally remain outside MxWave.
+
 ## Activation calibration and quantization
 
 ```bash
@@ -376,6 +399,8 @@ MxWave/
 │   ├── expert_ir.py Model-independent fused-expert bank/slice contract
 │   ├── expert_engine.py Bounded adapter-driven expert planner and emitter
 │   ├── expert_cli.py Installed `mxwave-quantize-experts` command
+│   ├── gguf.py      Lossless MXFP4 repack + pinned llama.cpp adapter
+│   ├── gguf_cli.py  Installed `mxwave-export-gguf` bridge command
 │   ├── adapters/    Architecture-specific runtime and expert-layout builders
 │   ├── mixed_precision.py Streaming MXFP4/FP8 checkpoint composition
 │   ├── precision_budget.py Semantic byte-budget candidate planning

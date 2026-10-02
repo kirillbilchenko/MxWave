@@ -24,6 +24,16 @@ Primary references:
 - [GPTQ](https://arxiv.org/abs/2210.17323)
 - [QuaRot](https://arxiv.org/abs/2404.00456)
 
+GGUF compatibility reference:
+
+- `ggml-org/llama.cpp`, MIT license, commit
+  `6f767fe960c3b97cf37fac4626c86400561ca1e4` (`b11232`), specifically the
+  public `block_mxfp4` serialization contract in `conversion/base.py` and the
+  Qwen3.5 grouped-to-tiled linear-attention V-head ordering in
+  `conversion/qwen.py`. `mxwave/gguf.py` independently implements those two
+  compatibility transforms behind MxWave's typed validation API; it does not
+  incorporate qstream code.
+
 ## Setup
 
 ```bash
