@@ -89,6 +89,42 @@ PYTHONPATH=/path/to/llama.cpp:/path/to/llama.cpp/gguf-py \
     --outtype bf16
 ```
 
+For a complete Qwen3.5 multimodal package, publish the main GGUF above together
+with a separate vision projector. The main GGUF already contains the embedded
+MTP tensors used by runtimes such as Ollama:
+
+```bash
+# Vision tower/projector paired with that target.
+PYTHONPATH=/path/to/llama.cpp:/path/to/llama.cpp/gguf-py \
+  mxwave-export-gguf /path/to/mxwave-checkpoint \
+    --mmproj --outfile /path/to/mmproj-model.gguf --outtype bf16
+```
+
+As an advanced, runtime-specific alternative, llama.cpp can split the embedded
+MTP head into a standalone speculative-draft GGUF. This is not needed for
+Ollama and duplicates the shared embedding and output tensors:
+
+```bash
+# Language target without embedded MTP tensors.
+PYTHONPATH=/path/to/llama.cpp:/path/to/llama.cpp/gguf-py \
+  mxwave-export-gguf /path/to/mxwave-checkpoint \
+    --no-mtp --outfile /path/to/model-target.gguf --outtype bf16
+
+# Standalone MTP draft for runtimes that accept a separate draft GGUF.
+PYTHONPATH=/path/to/llama.cpp:/path/to/llama.cpp/gguf-py \
+  mxwave-export-gguf /path/to/mxwave-checkpoint \
+    --mtp --outfile /path/to/mtp-model.gguf --outtype bf16
+```
+
+The main target retains MxWave's strict, exact MXFP4 target-coverage check.
+The current MxWave Qwen3.5 policy intentionally keeps both the vision tower and
+MTP head in their source floating-point precision, so `--mmproj` and `--mtp`
+delegate those selected tensors to llama.cpp. Those modes fail closed if a
+future checkpoint contains selected `weight_packed` tensors; they will not
+silently omit or dequantize an auxiliary MXFP4 weight. Prefer the default
+embedded-MTP main GGUF plus `--mmproj`; use `--no-mtp` plus `--mtp` only when a
+runtime explicitly accepts a separate draft model.
+
 This command creates an inference artifact only. Runtime deployment, API
 authentication, activation precision, context sizing, and Ollama/vLLM
 lifecycle configuration intentionally remain outside MxWave.
