@@ -1,0 +1,203 @@
+{
+  "checkpoint_sha256": {
+    "bf16-mtp0": "3a18b4c7bcb5e34151daeec5d1747d0baffb4d28feb2b71ee653a06eb70c5147",
+    "h64-mtp0": "fb093892699b24a64fdd99963d31c5f233cf54202c3fc4d257cba9ee86ce789d",
+    "h64-mtp2": "fb093892699b24a64fdd99963d31c5f233cf54202c3fc4d257cba9ee86ce789d"
+  },
+  "complete": true,
+  "executed_source_sha256": "e9041461c80582beb9f33f60f8e4369c3d5542c07d6581ae9af2d18aff3f68eb",
+  "format": "mxwave-fast-pilot-comparison-v1",
+  "long_context": {
+    "dataset": {
+      "manifest_sha256": "e66d9f76a39a7a73a62270e98395c9532d306ecd2b7a10ae4098dcdd133d179b",
+      "repository": "deepmind/pg19",
+      "revision": "4d28bd77e66947ad3835cf78ed7aaeb4dd87ad8b",
+      "selection": "first eligible books in pinned manifest; skip first 1024 tokens",
+      "skipped_short_books": [],
+      "split": "validation"
+    },
+    "intervals": "nominal 95%; unadjusted; one next-token position per book/prefix",
+    "longest_minus_shortest_kl": {
+      "ci95": [
+        -0.0025015606866264214,
+        0.10655746832177562
+      ],
+      "mean": 0.044270408792908854,
+      "window_count": 12
+    },
+    "prefixes": [
+      {
+        "forward_kl": {
+          "ci95": [
+            0.012438922840431988,
+            0.03393870505747984
+          ],
+          "mean": 0.022531462371037994,
+          "window_count": 12
+        },
+        "kl_per_book": [
+          0.010185645113559913,
+          0.06819925886951612,
+          0.04357316486953225,
+          0.030379980034518035,
+          0.01848472652827658,
+          0.0007158734450399439,
+          0.007066981447507389,
+          0.024693738271767445,
+          0.0014818173530613639,
+          0.018686720054648585,
+          0.009915188548663731,
+          0.03699445391636459
+        ],
+        "prefix_tokens": 512,
+        "top1_agreement_count": 11
+      },
+      {
+        "forward_kl": {
+          "ci95": [
+            0.028567003856478906,
+            0.05675813848679221
+          ],
+          "mean": 0.04191521115495373,
+          "window_count": 12
+        },
+        "kl_per_book": [
+          0.09448741345384754,
+          0.029975510659874104,
+          0.03479707492416757,
+          0.016587440945809804,
+          0.027969289584554632,
+          0.01994748988334198,
+          0.032942024455573884,
+          0.05361711045982427,
+          0.006765647433810684,
+          0.07787508024521647,
+          0.062396016801644166,
+          0.04562243501177962
+        ],
+        "prefix_tokens": 2048,
+        "top1_agreement_count": 11
+      },
+      {
+        "forward_kl": {
+          "ci95": [
+            0.025123721560536372,
+            0.12379154905646016
+          ],
+          "mean": 0.06680187116394684,
+          "window_count": 12
+        },
+        "kl_per_book": [
+          0.012323422924128207,
+          0.005334421166357168,
+          0.05986724807978805,
+          0.004983410125616351,
+          0.12590571841796683,
+          0.32353911757270387,
+          0.05150024149946425,
+          0.12226801474105463,
+          1.5665307447434624e-05,
+          0.06794045674477789,
+          0.021419780353917114,
+          0.00652495703414023
+        ],
+        "prefix_tokens": 8192,
+        "top1_agreement_count": 10
+      }
+    ],
+    "uncertainty_unit": "book, prefixes travel together"
+  },
+  "mtp": {
+    "groups": [
+      {
+        "accepted_tokens": 4113,
+        "category": "all",
+        "draft_acceptance_rate": 0.7355150214592274,
+        "mean_acceptance_length": 2.471030042918455,
+        "off_median_tpot_seconds": 0.07565016679576853,
+        "off_median_ttft_seconds": 0.10657702100434108,
+        "off_output_tokens_per_second": 13.176023227166736,
+        "on_median_tpot_seconds": 0.04732730383507046,
+        "on_median_ttft_seconds": 0.21245690250361804,
+        "on_output_tokens_per_second": 21.27320146873319,
+        "paired_median_decode_speedup": 1.5984324003578823,
+        "proposed_tokens": 5592,
+        "requests": 36,
+        "token_parity_count": 27
+      },
+      {
+        "accepted_tokens": 981,
+        "category": "chat",
+        "draft_acceptance_rate": 0.6592741935483871,
+        "mean_acceptance_length": 2.318548387096774,
+        "off_median_tpot_seconds": 0.07558617014660383,
+        "off_median_ttft_seconds": 0.10611369500111323,
+        "off_output_tokens_per_second": 13.194907695982705,
+        "on_median_tpot_seconds": 0.049363369602132195,
+        "on_median_ttft_seconds": 0.21586789899447467,
+        "on_output_tokens_per_second": 20.048921402585083,
+        "paired_median_decode_speedup": 1.5334147274080792,
+        "proposed_tokens": 1488,
+        "requests": 9,
+        "token_parity_count": 3
+      },
+      {
+        "accepted_tokens": 1074,
+        "category": "math",
+        "draft_acceptance_rate": 0.8211009174311926,
+        "mean_acceptance_length": 2.6422018348623855,
+        "off_median_tpot_seconds": 0.07564127362297887,
+        "off_median_ttft_seconds": 0.16591514500032645,
+        "off_output_tokens_per_second": 13.13713054499852,
+        "on_median_tpot_seconds": 0.04163275416753028,
+        "on_median_ttft_seconds": 0.18805566999071743,
+        "on_output_tokens_per_second": 22.671435899858594,
+        "paired_median_decode_speedup": 1.8160809471367592,
+        "proposed_tokens": 1308,
+        "requests": 9,
+        "token_parity_count": 9
+      },
+      {
+        "accepted_tokens": 1116,
+        "category": "code",
+        "draft_acceptance_rate": 0.9073170731707317,
+        "mean_acceptance_length": 2.8146341463414632,
+        "off_median_tpot_seconds": 0.07571785647645458,
+        "off_median_ttft_seconds": 0.10925882399897091,
+        "off_output_tokens_per_second": 13.181194770537171,
+        "on_median_tpot_seconds": 0.03984822273820929,
+        "on_median_ttft_seconds": 0.2168857590004336,
+        "on_output_tokens_per_second": 24.12650124851393,
+        "paired_median_decode_speedup": 1.9016583795936728,
+        "proposed_tokens": 1230,
+        "requests": 9,
+        "token_parity_count": 9
+      },
+      {
+        "accepted_tokens": 942,
+        "category": "prose",
+        "draft_acceptance_rate": 0.6015325670498084,
+        "mean_acceptance_length": 2.203065134099617,
+        "off_median_tpot_seconds": 0.07569639610468851,
+        "off_median_ttft_seconds": 0.1060509649978485,
+        "off_output_tokens_per_second": 13.191021148226072,
+        "on_median_tpot_seconds": 0.051754983549776694,
+        "on_median_ttft_seconds": 0.21124420799606014,
+        "on_output_tokens_per_second": 19.01305607142054,
+        "paired_median_decode_speedup": 1.4634918598330748,
+        "proposed_tokens": 1566,
+        "requests": 9,
+        "token_parity_count": 6
+      }
+    ],
+    "parity": "exact greedy token equality; any mismatch blocks deployment",
+    "timing_scope": "colocated AsyncLLM stream, includes prefill, no network/proxy latency"
+  },
+  "protocol_sha256": "af931c85a40b7fd3068334b5b2d141e45877b64adc8880feb5b5a2dd9ef051e8",
+  "report_sha256": {
+    "bf16-mtp0": "49a618be06a13885424e2d254bea472207c20c2ab3ddc7081540634b755888dd",
+    "h64-mtp0": "3a8d9aed64a43675df2a7ce56464390f52528f20813da12bb9d62fddc70a130c",
+    "h64-mtp2": "541d5ab3f119aa5b72454500453cec7f6b4c5089f22962d9e0c6de8875874707"
+  },
+  "scope": "small exploratory development screen; no model promotion or accuracy conclusion"
+}

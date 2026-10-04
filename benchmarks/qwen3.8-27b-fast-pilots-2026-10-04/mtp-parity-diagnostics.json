@@ -1,0 +1,69 @@
+{
+  "examples": [
+    {
+      "case_id": "chat-0",
+      "common_prefix_text": "A robust home backup plan ensures that a lost laptop is a minor inconvenience rather than a data catastrophe. The core strategy relies on the **3-2-1 rule**: keep three copies of your data, on two different media types, with one copy off-site.\n\n**The Concrete Plan**\n\n1.  **Local Backup (The \"Hot\" Copy):** Use an external hard drive or SSD connected via USB. Schedule automated backups using software like Time Machine (macOS), File History (Windows), or third-party tools like Backblaze or Carbon Copy Cloner. This should run daily or weekly, capturing documents, photos, and critical project files.\n2.  **Cloud Backup (The \"Off-Site\" Copy):** Subscribe to a reputable cloud service (e.g., Backblaze, Dropbox, OneDrive, or Google Drive). Enable automatic syncing for your",
+      "first_difference_zero_based": 176,
+      "off_length": 192,
+      "off_remaining_text": " most critical folders. This protects against physical disasters like fire or theft that could destroy",
+      "on_length": 192,
+      "on_remaining_text": " \"Documents\" and \"Pictures\" folders. This protects against physical disasters like fire"
+    },
+    {
+      "case_id": "chat-1",
+      "common_prefix_text": "To investigate slow requests following a deployment, you must systematically analyze the three primary bottlenecks: cache warmup, database connection establishment, and startup overhead.\n\n**1. Cache Warmup**\nCold caches are a common culprit. When a service restarts, in-memory caches (like Redis or local JVM/Go caches) are empty. The first batch of requests triggers expensive",
+      "first_difference_zero_based": 76,
+      "off_length": 192,
+      "off_remaining_text": " database queries or external API calls to populate these caches, causing latency spikes.\n*   **Investigation:** Monitor cache hit rates immediately post-deployment. If hit rates start near 0% and gradually increase, you have a warmup issue.\n*   **Mitigation:** Implement a \"warmup\" phase where the service pre-loads critical data into the cache during startup before accepting traffic. Alternatively, use a blue/green deployment strategy to keep the old instance serving traffic while the new one warms up, then switch over.\n\n**2. Database Connections**",
+      "on_length": 192,
+      "on_remaining_text": " lookups against the database or external APIs, causing latency spikes.\n*   **Investigation:** Monitor cache hit rates immediately post-deployment. If hit rates start near 0% and gradually increase, you have a warmup issue.\n*   **Mitigation:** Implement a \"warmup\" phase where the service pre-loads critical data into the cache during startup. Alternatively, use a \"soft\" warmup where the first few requests are throttled or routed to a secondary instance while the primary cache populates. Ensure your monitoring dashboards track cache hit ratios per"
+    },
+    {
+      "case_id": "prose-2",
+      "common_prefix_text": "**How to Read a Scientific Experiment Critically**\n\nReading scientific literature requires more than passive absorption; it demands active skepticism. To evaluate the validity of an experiment, you must look beyond the headline results and scrutinize the methodology. Here is a five-step guide to critical analysis.\n\n**1. Examine the Controls**\nThe foundation of any valid experiment is the control group. Ask yourself: Is there a proper baseline for comparison? In clinical trials, this might be a placebo; in physics, it",
+      "first_difference_zero_based": 102,
+      "off_length": 192,
+      "off_remaining_text": " might be a null condition. If the control group is poorly defined or lacks randomization, the results may reflect external variables rather than the effect of the independent variable. A strong study clearly isolates the variable being tested, ensuring that any observed change is directly attributable to the intervention.\n\n**2. Assess Uncertainty and Error**\nNo measurement is perfect. Look for the reported confidence intervals, standard deviations, or p-values. A result with a",
+      "on_length": 192,
+      "on_remaining_text": " could be a null condition. If the control group is poorly defined or lacks randomization, the results may reflect external variables rather than the effect of the independent variable. A strong study clearly isolates the variable being tested, ensuring that any observed change is directly attributable to the intervention.\n\n**2. Assess Uncertainty and Error**\nNo measurement is perfect. Look for the reported confidence intervals, standard deviations, or p-values. A result with a"
+    }
+  ],
+  "format": "mxwave-mtp-parity-diagnostics-v1",
+  "protocol_sha256": "af931c85a40b7fd3068334b5b2d141e45877b64adc8880feb5b5a2dd9ef051e8",
+  "report_sha256": {
+    "off": "3a8d9aed64a43675df2a7ce56464390f52528f20813da12bb9d62fddc70a130c",
+    "on": "541d5ab3f119aa5b72454500453cec7f6b4c5089f22962d9e0c6de8875874707"
+  },
+  "scope": "Decoded mismatch inspection only; cause and semantic equivalence unestablished",
+  "unique_mismatched_prompts": 3,
+  "within_mode_repeat_determinism": {
+    "off": {
+      "chat-0": true,
+      "chat-1": true,
+      "chat-2": true,
+      "code-0": true,
+      "code-1": true,
+      "code-2": true,
+      "math-0": true,
+      "math-1": true,
+      "math-2": true,
+      "prose-0": true,
+      "prose-1": true,
+      "prose-2": true
+    },
+    "on": {
+      "chat-0": true,
+      "chat-1": true,
+      "chat-2": true,
+      "code-0": true,
+      "code-1": true,
+      "code-2": true,
+      "math-0": true,
+      "math-1": true,
+      "math-2": true,
+      "prose-0": true,
+      "prose-1": true,
+      "prose-2": true
+    }
+  }
+}

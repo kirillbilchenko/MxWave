@@ -114,6 +114,28 @@ conversion took 255.46 seconds with 79.8 MiB peak CUDA allocation and 1.44 GiB
 process RSS. The full protocol, uncertainty, conversion resources, and raw
 reports are in the [dated control experiment](docs/CORRECTED_CONTROLS_2026-10-03.md).
 
+### Fast serving and long-context pilots
+
+A separate development screen used the same unpublished corrected H64,
+12 frozen chat/math/code/prose prompts, three timing repetitions and c1:
+
+| Serving profile | Output tok/s | Median TTFT | Median TPOT | Draft acceptance | Exact token parity |
+|---|---:|---:|---:|---:|---:|
+| MTP off | 13.18 | 106.58 ms | 75.65 ms | — | reference |
+| Native MTP, 2 draft tokens | 21.27 | 212.46 ms | 47.33 ms | 73.55% | 9/12 unique prompts |
+
+The paired median decode speedup was 1.60×, reaching 1.90× on code. TTFT was
+worse, and three prompts diverged repeatably, so the strict deployment parity
+gate failed. This is a measured serving opportunity requiring qualification;
+production serving was restored to its prior configuration.
+
+On 12 separate PG-19 validation books, H64 mean next-token KL from BF16 was
+0.022531 at 512 tokens, 0.041915 at 2k and 0.066802 at 8k. The 8k-minus-512
+interval includes zero: this small screen is inconclusive, with different
+token positions at each length. The final WikiText windows remain reserved.
+Protocols, exact report hashes, per-domain serving rates, parity diagnostics
+and uncertainty are in the [dated pilot record](docs/FAST_PILOTS_2026-10-04.md).
+
 ## Install
 
 ```bash
