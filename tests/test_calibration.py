@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,7 +18,85 @@ from mxwave.calibration import (
     save_calibration_data,
 )
 from mxwave.calibration_cli import _load_corpus, _parse_objectives, _tokenize_sequences
-from mxwave.calibration_stream import calibrate_decoder_sequentially
+from mxwave.calibration_stream import _attention_mask_for_layer, calibrate_decoder_sequentially
+
+
+def create_causal_mask(**kwargs: object) -> torch.Tensor:
+    """Supply the toy decoder's explicit attention mask contract."""
+    hidden = kwargs["inputs_embeds"]
+    assert isinstance(hidden, torch.Tensor)
+    length = hidden.shape[1]
+    return torch.full((length, length), -torch.inf, device=hidden.device).triu(1)[None, None]
+
+
+@pytest.mark.parametrize("missing_helper", [True, False])
+def test_eager_calibration_refuses_a_missing_causal_mask(
+    monkeypatch: pytest.MonkeyPatch, missing_helper: bool
+) -> None:
+    module = sys.modules[__name__]
+    if missing_helper:
+        monkeypatch.delattr(module, "create_causal_mask")
+    else:
+        monkeypatch.setattr(module, "create_causal_mask", lambda **_kwargs: None)
+    with pytest.raises(ValueError, match="create_causal_mask|explicit causal mask"):
+        _attention_mask_for_layer(
+            _ToyDecoder(), torch.zeros(1, 3, 32), torch.ones(1, 3), torch.arange(3)[None], 0
+        )
+
+
+def test_sdpa_accepts_an_intentionally_implicit_causal_mask(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(sys.modules[__name__], "create_causal_mask", lambda **_kwargs: None)
+    decoder = _ToyDecoder()
+    decoder.config._attn_implementation = "sdpa"
+    assert (
+        _attention_mask_for_layer(
+            decoder, torch.zeros(1, 3, 32), torch.ones(1, 3), torch.arange(3)[None], 0
+        )
+        is None
+    )
+
+
+def test_prefix_exclusion_drops_each_window_sink_and_counts_only_kept_tokens() -> None:
+    activations = torch.ones(2, 3, 32)
+    activations[:, 0] = 10000
+    collector = ActivationCollector(
+        {"proj.weight": 32}, ("rms", "block-hessian"), hessian_damp=0, skip_first_tokens=1
+    )
+    collector.update("proj.weight", activations)
+    stats = collector.finalize()
+    torch.testing.assert_close(stats["rms"]["proj.weight"], torch.ones(32))
+    torch.testing.assert_close(stats["block-hessian"]["proj.weight"], torch.ones(1, 32, 32))
+    assert collector.observation_counts == {"proj.weight": 4}
+    with pytest.raises(ValueError, match="batch, sequence, channels"):
+        collector.update("proj.weight", activations.reshape(-1, 32))
+
+
+def test_relative_damping_tracks_each_block_and_activation_scale() -> None:
+    inputs = torch.cat([torch.ones(7, 32), torch.full((7, 32), 3.0)], dim=1)
+
+    def collect(values: torch.Tensor) -> torch.Tensor:
+        collector = ActivationCollector(
+            {"proj.weight": 64},
+            ("block-hessian",),
+            hessian_damp=0.1,
+            hessian_damp_mode="relative",
+        )
+        collector.update("proj.weight", values[:3])
+        collector.update("proj.weight", values[3:])
+        return collector.finalize()["block-hessian"]["proj.weight"]
+
+    hessian = collect(inputs)
+    torch.testing.assert_close(hessian[0], torch.ones(32, 32) + torch.eye(32) * 0.1)
+    torch.testing.assert_close(hessian[1], torch.ones(32, 32) * 9 + torch.eye(32) * 0.9)
+    torch.testing.assert_close(collect(inputs * 7), hessian * 49)
+
+
+@pytest.mark.parametrize("damping", [float("nan"), float("inf"), -1.0])
+def test_collector_rejects_invalid_damping(damping: float) -> None:
+    with pytest.raises(ValueError, match="finite and non-negative"):
+        ActivationCollector({"proj.weight": 32}, hessian_damp=damping)
 
 
 class _TinyModel(torch.nn.Module):

@@ -15,6 +15,7 @@ from safetensors import safe_open
 from safetensors.torch import save_file
 
 from mxwave import expert_cli, expert_engine
+from mxwave.checkpoint import locked_output_directory
 from mxwave.core import quantize_mxfp4
 from mxwave.expert_cli import build_parser as build_expert_parser
 from mxwave.expert_engine import (
@@ -34,15 +35,11 @@ def _make_moe_model(tmp_path: Path) -> Path:
     shard_1 = "model-00001-of-00002.safetensors"
     shard_2 = "model-00002-of-00002.safetensors"
     tensors_1 = {
-        "model.language_model.embed_tokens.weight": torch.randn(
-            16, 64, dtype=torch.bfloat16
-        ),
+        "model.language_model.embed_tokens.weight": torch.randn(16, 64, dtype=torch.bfloat16),
         "model.language_model.layers.0.mlp.experts.gate_up_proj": torch.randn(
             2, 64, 64, dtype=torch.bfloat16
         ),
-        "model.language_model.layers.0.mlp.gate.weight": torch.randn(
-            2, 64, dtype=torch.bfloat16
-        ),
+        "model.language_model.layers.0.mlp.gate.weight": torch.randn(2, 64, dtype=torch.bfloat16),
     }
     tensors_2 = {
         "model.language_model.layers.0.mlp.experts.down_proj": torch.randn(
@@ -125,30 +122,71 @@ def test_expert_plan_has_exact_coverage_and_capped_units(tmp_path: Path) -> None
     assert plan.maximum_unit_bytes <= 16 * 1024
     assert len(plan.config_target_patterns) == 1
     target_pattern = re.compile(plan.config_target_patterns[0].removeprefix("re:"))
-    assert target_pattern.match(
-        "model.language_model.layers.0.mlp.experts.1.gate_proj"
-    )
-    assert target_pattern.match(
-        "language_model.model.layers.0.mlp.experts.1.gate_proj"
-    )
-    assert target_pattern.match(
-        "model.language_model.model.layers.0.mlp.experts.1.down_proj"
-    )
-    assert not target_pattern.match(
-        "model.visual.layers.0.mlp.experts.1.gate_proj"
-    )
-    assert not target_pattern.match(
-        "model.language_model.mtp.layers.0.mlp.experts.1.gate_proj"
-    )
+    assert target_pattern.match("model.language_model.layers.0.mlp.experts.1.gate_proj")
+    assert target_pattern.match("language_model.model.layers.0.mlp.experts.1.gate_proj")
+    assert target_pattern.match("model.language_model.model.layers.0.mlp.experts.1.down_proj")
+    assert not target_pattern.match("model.visual.layers.0.mlp.experts.1.gate_proj")
+    assert not target_pattern.match("model.language_model.mtp.layers.0.mlp.experts.1.gate_proj")
     assert r"re:.*mtp.*" in plan.config_ignored_patterns
     assert r"re:.*hyper.*" in plan.config_ignored_patterns
     assert len(plan.target_modules) == 6
     assert not any("shared_expert" in target for target in plan.target_modules)
-    assert summary["policy_description"] == (
-        "adapter-validated routed experts only; RTN baseline"
-    )
+    assert summary["policy_description"] == ("adapter-validated routed experts only; RTN baseline")
     assert summary["method"] == "rtn"
     assert "scale_search" not in summary
+
+
+def test_expert_conversion_streams_output_and_bounds_input_elements(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = _make_moe_model(tmp_path)
+    config = _config(source, tensor_chunk_max_elements=256, mse_clip_depth=8, method="mse")
+    original = expert_engine.quantize_mxfp4
+    seen = []
+
+    def check_chunk(weight: torch.Tensor, **kwargs: Any) -> tuple[torch.Tensor, torch.Tensor]:
+        seen.append(weight.numel())
+        assert weight.numel() <= 256
+        return original(weight, **kwargs)
+
+    def refuse_materialization(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("Production must stream raw passthrough and packed expert chunks")
+
+    monkeypatch.setattr(expert_engine, "quantize_mxfp4", check_chunk)
+    monkeypatch.setattr(expert_engine, "emit_expert_unit", refuse_materialization)
+    monkeypatch.setattr(expert_engine, "read_tensor", refuse_materialization)
+    assert quantize_expert_model(config) == 3
+    assert max(seen) == 256
+    assert verify_checkpoint(config.output_dir)["status"] == "passed"
+
+
+def test_materialized_expert_cap_is_checked_before_loading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = _make_moe_model(tmp_path)
+    config = _config(source)
+    plan = plan_expert_model(config)
+    config.host_tensor_cap_bytes = 1
+
+    def refuse_loading(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("Cap must be checked before opening any tensor payload")
+
+    monkeypatch.setattr(expert_engine, "safe_open", refuse_loading)
+    with pytest.raises(ValueError, match="above host_tensor_cap_bytes"):
+        emit_expert_unit(
+            plan.units[0], config, shards_by_name={s.path.name: s for s in plan.shards}
+        )
+
+
+def test_expert_writer_uses_the_same_output_lock(tmp_path: Path) -> None:
+    source = _make_moe_model(tmp_path)
+    output = tmp_path / "output"
+    with locked_output_directory(output, source_dir=source):
+        temporary = output / ".model-00001-of-00003.safetensors.12345.incomplete"
+        temporary.write_bytes(b"active writer")
+        with pytest.raises(FileExistsError, match="output lock"):
+            quantize_expert_model(_config(source, output, resume=True))
+        assert temporary.read_bytes() == b"active writer"
 
 
 def test_bank_task_opens_safetensors_once_and_never_reads_full_bank(
@@ -223,12 +261,8 @@ def test_expert_emission_matches_core_on_exact_adapter_slices(
                 scale_percentile=config.scale_percentile,
                 mse_clip_depth=config.mse_clip_depth,
             )
-            assert torch.equal(
-                emitted[f"{matrix.output_module}.weight_packed"], expected_packed
-            )
-            assert torch.equal(
-                emitted[f"{matrix.output_module}.weight_scale"], expected_scales
-            )
+            assert torch.equal(emitted[f"{matrix.output_module}.weight_packed"], expected_packed)
+            assert torch.equal(emitted[f"{matrix.output_module}.weight_scale"], expected_scales)
 
 
 def test_expert_cli_preserves_rtn_default_and_exposes_tested_mse_search() -> None:
@@ -267,6 +301,7 @@ def test_expert_cli_preserves_rtn_default_and_exposes_tested_mse_search() -> Non
                 "removed.safetensors",
             ]
         )
+
 
 def test_expert_cli_forwards_mse_settings(
     monkeypatch: pytest.MonkeyPatch,
@@ -402,12 +437,9 @@ def test_unweighted_mse_metadata_is_explicit_and_calibration_free(tmp_path: Path
     assert manifest["scale_search"] == scale_search
     assert "scale_percentile" not in manifest
     assert "mse_clip_depth" not in manifest
-    assert manifest["weight_scale_selection"] == (
-        "unweighted-mse-p98.25-depth3-plus-no-clipping"
-    )
+    assert manifest["weight_scale_selection"] == ("unweighted-mse-p98.25-depth3-plus-no-clipping")
     assert manifest["experimental_scope"] == (
-        "routed-expert unweighted-MSE scale-search candidate; "
-        "no activation calibration"
+        "routed-expert unweighted-MSE scale-search candidate; no activation calibration"
     )
     assert manifest["activation_calibration"] is None
     assert manifest["gamma_proxy"] is None
@@ -431,14 +463,8 @@ def test_full_expert_emission_preserves_assets_and_passthrough(tmp_path: Path) -
     assert len(weight_map) == plan.emitted_tensor_count
     assert "model.language_model.layers.0.mlp.experts.gate_up_proj" not in weight_map
     assert "model.language_model.layers.0.mlp.experts.down_proj" not in weight_map
-    assert (
-        "model.language_model.layers.0.mlp.experts.1.gate_proj.weight_packed"
-        in weight_map
-    )
-    assert (
-        "model.language_model.layers.0.mlp.experts.1.down_proj.weight_scale"
-        in weight_map
-    )
+    assert "model.language_model.layers.0.mlp.experts.1.gate_proj.weight_packed" in weight_map
+    assert "model.language_model.layers.0.mlp.experts.1.down_proj.weight_scale" in weight_map
 
     for name in (
         "model.language_model.embed_tokens.weight",
@@ -446,9 +472,10 @@ def test_full_expert_emission_preserves_assets_and_passthrough(tmp_path: Path) -
         "model.language_model.norm.weight",
         "model.visual.blocks.0.mlp.weight",
     ):
-        source_shard = source / json.loads(
-            (source / "model.safetensors.index.json").read_text()
-        )["weight_map"][name]
+        source_shard = (
+            source
+            / json.loads((source / "model.safetensors.index.json").read_text())["weight_map"][name]
+        )
         output_shard = output / weight_map[name]
         with safe_open(str(source_shard), framework="pt", device="cpu") as source_handle:
             expected = source_handle.get_tensor(name)
@@ -491,18 +518,14 @@ def test_full_expert_emission_preserves_assets_and_passthrough(tmp_path: Path) -
     }
     integrity_path = output / "mxwave-shard-integrity.json"
     integrity = json.loads(integrity_path.read_text())
-    assert integrity["run_identity_sha256"] == manifest["shard_integrity"][
-        "run_identity_sha256"
-    ]
+    assert integrity["run_identity_sha256"] == manifest["shard_integrity"]["run_identity_sha256"]
     assert integrity["shards"] == manifest["shard_integrity"]["per_shard"]
     assert manifest["shard_integrity"]["complete"] is True
     assert manifest["shard_integrity"]["shard_count"] == len(plan.units)
     assert manifest["shard_integrity"]["file_bytes"] == sum(
         path.stat().st_size for path in output.glob("*.safetensors")
     )
-    assert "mxwave-shard-integrity.json" in manifest[
-        "fingerprint_excluded_metadata_assets"
-    ]
+    assert "mxwave-shard-integrity.json" in manifest["fingerprint_excluded_metadata_assets"]
     assert "mxwave-shard-integrity.json" not in manifest["copied_assets"]
     card = (output / "README.md").read_text()
     assert "weight-only W4A16" in card
@@ -569,7 +592,7 @@ def test_resume_rejects_source_payload_change_with_restored_metadata(tmp_path: P
     assert after.st_size == before.st_size
     assert after.st_mtime_ns == before.st_mtime_ns
 
-    with pytest.raises(ValueError, match="source, layout, quantization"):
+    with pytest.raises(ValueError, match="Cannot safely resume.*source changed"):
         quantize_expert_model(_config(source, output, resume=True))
 
 
@@ -607,16 +630,19 @@ def test_resume_rejects_changed_mse_scale_search(tmp_path: Path) -> None:
         "mse_clip_depth": 4,
         "includes_no_clipping_candidate": True,
     }
-    assert quantize_expert_model(
-        _config(
-            source,
-            output,
-            method="mse",
-            scale_percentile=99.5,
-            mse_clip_depth=4,
-            resume=True,
+    assert (
+        quantize_expert_model(
+            _config(
+                source,
+                output,
+                method="mse",
+                scale_percentile=99.5,
+                mse_clip_depth=4,
+                resume=True,
+            )
         )
-    ) == 3
+        == 3
+    )
 
     with pytest.raises(ValueError, match="quantization settings"):
         quantize_expert_model(
@@ -636,17 +662,17 @@ def test_interrupted_emission_persists_each_complete_unit_and_resumes(
 ) -> None:
     source = _make_moe_model(tmp_path)
     output = tmp_path / "output"
-    actual_emit = expert_engine.emit_expert_unit
+    actual_emit = expert_engine._atomic_emit_expert_unit
     calls = 0
 
-    def interrupt_second_unit(*args: Any, **kwargs: Any) -> dict[str, torch.Tensor]:
+    def interrupt_second_unit(*args: Any, **kwargs: Any) -> None:
         nonlocal calls
         calls += 1
         if calls == 2:
             raise RuntimeError("simulated interruption before second output")
-        return actual_emit(*args, **kwargs)
+        actual_emit(*args, **kwargs)
 
-    monkeypatch.setattr(expert_engine, "emit_expert_unit", interrupt_second_unit)
+    monkeypatch.setattr(expert_engine, "_atomic_emit_expert_unit", interrupt_second_unit)
     with pytest.raises(RuntimeError, match="simulated interruption"):
         quantize_expert_model(_config(source, output))
 
@@ -656,7 +682,7 @@ def test_interrupted_emission_persists_each_complete_unit_and_resumes(
     assert (output / "model-00001-of-00003.safetensors").is_file()
     assert not (output / "model-00002-of-00003.safetensors").exists()
 
-    monkeypatch.setattr(expert_engine, "emit_expert_unit", actual_emit)
+    monkeypatch.setattr(expert_engine, "_atomic_emit_expert_unit", actual_emit)
     assert quantize_expert_model(_config(source, output, resume=True)) == 3
     completed = json.loads(sidecar_path.read_text())
     assert set(completed["shards"]) == {
@@ -696,7 +722,7 @@ def test_resume_rejects_missing_or_mismatched_integrity_sidecar(
 
     if mutation == "missing":
         sidecar_path.unlink()
-        match = "sidecar is missing"
+        match = "ledger is missing"
     else:
         sidecar = json.loads(sidecar_path.read_text())
         if mutation == "wrong-identity":
@@ -728,6 +754,32 @@ def test_resume_rejects_crash_window_shard_without_integrity_record(
         quantize_expert_model(_config(source, output, resume=True))
 
 
+def test_resume_recovers_expert_rename_before_ledger_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from mxwave import checkpoint
+
+    source = _make_moe_model(tmp_path)
+    output = tmp_path / "output"
+    original = checkpoint._atomic_write_integrity_ledger
+
+    def interrupted(path: Path, **kwargs: Any) -> None:
+        if kwargs["records"]:
+            raise RuntimeError("crash after rename")
+        original(path, **kwargs)
+
+    monkeypatch.setattr(checkpoint, "_atomic_write_integrity_ledger", interrupted)
+    with pytest.raises(RuntimeError, match="crash after rename"):
+        quantize_expert_model(_config(source, output))
+    first = output / "model-00001-of-00003.safetensors"
+    initial_hash = checkpoint._file_integrity(first)
+    assert (output / "mxwave-shard-pending.json").is_file()
+    monkeypatch.setattr(checkpoint, "_atomic_write_integrity_ledger", original)
+    assert quantize_expert_model(_config(source, output, resume=True)) == 3
+    assert checkpoint._file_integrity(first) == initial_hash
+    assert not (output / "mxwave-shard-pending.json").exists()
+
+
 def test_resume_rejects_passthrough_payload_corruption(tmp_path: Path) -> None:
     source = _make_moe_model(tmp_path)
     output = tmp_path / "output"
@@ -746,9 +798,7 @@ def test_resume_recomputes_complete_sqnr_coverage(tmp_path: Path) -> None:
     source = _make_moe_model(tmp_path)
     output = tmp_path / "output"
     quantize_expert_model(_config(source, output, verify_sqnr=True, sqnr_rows=3))
-    quantize_expert_model(
-        _config(source, output, resume=True, verify_sqnr=True, sqnr_rows=3)
-    )
+    quantize_expert_model(_config(source, output, resume=True, verify_sqnr=True, sqnr_rows=3))
 
     manifest = json.loads((output / "mxwave-manifest.json").read_text())
     assert manifest["sqnr_db"]["count"] == 6

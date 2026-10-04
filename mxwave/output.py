@@ -10,6 +10,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from .checkpoint import _atomic_write_text, _fsync_directory
 from .shard import ShardFile, shard_tensor_keys
 from .verify import verify_config_coverage
 
@@ -80,17 +81,6 @@ _SKIPPED_ASSETS = frozenset(
         "mxstream-run.json",
     }
 )
-
-
-def _atomic_write_text(path: Path, value: str) -> None:
-    """Atomically replace a small text artifact in the output directory."""
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
-    temporary.unlink(missing_ok=True)
-    try:
-        temporary.write_text(value)
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
 
 
 def build_quantization_config(
@@ -288,9 +278,7 @@ def build_model_card(manifest: dict[str, Any]) -> str:
             "---",
         ]
     )
-    activation_quantization = str(
-        manifest.get("activation_quantization", "dynamic-mxfp4-group32")
-    )
+    activation_quantization = str(manifest.get("activation_quantization", "dynamic-mxfp4-group32"))
     activation_text = (
         "Unquantized at runtime (weight-only W4A16)"
         if activation_quantization == "none"
@@ -337,10 +325,7 @@ def build_model_card(manifest: dict[str, Any]) -> str:
         "## Usage",
         "",
         "```bash",
-        (
-            "vllm serve . --load-format safetensors --linear-backend marlin"
-            f"{moe_backend}"
-        ),
+        (f"vllm serve . --load-format safetensors --linear-backend marlin{moe_backend}"),
         "```",
         "",
         (
@@ -440,7 +425,10 @@ def copy_model_assets(model_dir: str | Path, output_dir: str | Path) -> list[str
         temporary.unlink(missing_ok=True)
         try:
             shutil.copy2(path, temporary)
+            with temporary.open("rb") as stream:
+                os.fsync(stream.fileno())
             temporary.replace(destination)
+            _fsync_directory(destination.parent)
         finally:
             temporary.unlink(missing_ok=True)
         copied.append(relative.as_posix())

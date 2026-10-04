@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 
+from .checkpoint import DEFAULT_TENSOR_CHUNK_MAX_ELEMENTS
 from .engine import QuantizeConfig, plan_model, quantize_model
 
 
@@ -54,6 +55,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum output rows of one weight tensor processed on device at once",
     )
     parser.add_argument(
+        "--tensor-chunk-max-elements",
+        type=int,
+        default=DEFAULT_TENSOR_CHUNK_MAX_ELEMENTS,
+        help="Maximum input elements per chunk, also bounded by the row limit",
+    )
+    parser.add_argument(
         "--activation-stats",
         default=None,
         help="Module-keyed calibration safetensors from mxwave-calibrate",
@@ -65,10 +72,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Objective to load from --activation-stats",
     )
     parser.add_argument(
-        "--no-gamma-proxy",
-        action="store_false",
-        dest="gamma_proxy",
-        help="Disable architecture-aware Qwen RMSNorm weighting for MSE",
+        "--gamma-proxy",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Opt into architecture-aware Qwen RMSNorm weighting for uncalibrated MSE",
     )
     parser.add_argument("--device", default="cuda", help="Quantization device")
     parser.add_argument(
@@ -117,6 +124,7 @@ def main(argv: list[str] | None = None) -> int:
         scale_percentile=args.scale_percentile,
         mse_clip_depth=args.mse_clip_depth,
         tensor_row_chunk_size=args.tensor_row_chunk_size,
+        tensor_chunk_max_elements=args.tensor_chunk_max_elements,
         activation_stats=args.activation_stats,
         calibration_objective=args.calibration_objective,
         gamma_proxy=args.gamma_proxy,

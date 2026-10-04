@@ -12,12 +12,15 @@ quantization methods.
 
 from __future__ import annotations
 
+import math
 from typing import Literal
 
 import torch
 
 BLOCK_SIZE = 32
+QUANTIZATION_REVISION = "mxfp4-rne-v2"
 QuantizationMethod = Literal["rtn", "mse"]
+HessianDampingMode = Literal["absolute", "relative"]
 
 # MXFP4 E2M1 representable positive values and their rounding boundaries.
 _POS_VALUES = torch.tensor([0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0], dtype=torch.float32)
@@ -28,6 +31,7 @@ def compute_block_hessian(
     X: torch.Tensor,
     block_size: int = BLOCK_SIZE,
     damp: float = 1e-6,
+    damp_mode: HessianDampingMode = "absolute",
 ) -> torch.Tensor:
     """Compute block-diagonal Hessian H_b = X_b^T @ X_b / N for each block.
 
@@ -38,6 +42,7 @@ def compute_block_hessian(
         X: [N, in_features] activation matrix.
         block_size: Block size for MXFP4 quantization.
         damp: Dampening added to the diagonal for stability.
+        damp_mode: Absolute diagonal addition, or a fraction of each block's mean diagonal.
 
     Returns:
         [num_blocks, block_size, block_size] symmetric PSD.
@@ -49,15 +54,37 @@ def compute_block_hessian(
     num_blocks = K // block_size
     X_b = X.float().reshape(N, num_blocks, block_size)
     H = torch.einsum("nbs,nbt->bst", X_b, X_b) / max(N, 1)
-    H.diagonal(dim1=-2, dim2=-1).add_(damp)
+    _damp_block_hessian(H, damp, damp_mode)
     return H
 
 
-def _round_to_mxfp4(scaled: torch.Tensor) -> torch.Tensor:
-    """Round values in [-6, 6] to the nearest MXFP4 representable value (dequantized floats)."""
+def _damp_block_hessian(hessian: torch.Tensor, damp: float, mode: HessianDampingMode) -> None:
+    """Add absolute or per-block relative diagonal damping in place."""
+    if not math.isfinite(damp) or damp < 0:
+        raise ValueError("Hessian damping must be finite and non-negative")
+    if mode not in ("absolute", "relative"):
+        raise ValueError(f"Unknown Hessian damping mode: {mode}")
+    diagonal = hessian.diagonal(dim1=-2, dim2=-1)
+    addition = damp if mode == "absolute" else diagonal.mean(dim=-1, keepdim=True) * damp
+    diagonal.add_(addition)
+
+
+def _nearest_magnitudes(scaled: torch.Tensor) -> torch.Tensor:
+    """Return E2M1 magnitude codes with OCP roundTiesToEven semantics."""
     abs_scaled = scaled.abs().clamp(max=6.0)
-    bucket = torch.searchsorted(_BOUNDARIES.to(scaled.device), abs_scaled.reshape(-1))
-    dequant_abs = _POS_VALUES.to(scaled.device)[bucket].reshape_as(abs_scaled)
+    boundaries = _BOUNDARIES.to(scaled.device)
+    values = abs_scaled.reshape(-1)
+    bucket = torch.searchsorted(boundaries, values)
+    ties = values == boundaries[bucket.clamp(max=len(boundaries) - 1)]
+    # Adjacent E2M1 codes alternate the low significand bit, including the
+    # subnormal boundary. Only an odd lower code must round upward at a tie.
+    return (bucket + (ties & (bucket % 2 == 1)).long()).reshape_as(scaled)
+
+
+def _round_to_mxfp4(scaled: torch.Tensor) -> torch.Tensor:
+    """Round to nearest E2M1, resolving exact midpoint ties to even."""
+    bucket = _nearest_magnitudes(scaled)
+    dequant_abs = _POS_VALUES.to(scaled.device)[bucket]
     return dequant_abs * scaled.sign()
 
 
@@ -78,13 +105,13 @@ def _rtn_scale_exponent(block_max: torch.Tensor) -> torch.Tensor:
 
 
 def _nearest_mxfp4_codes(scaled: torch.Tensor) -> torch.Tensor:
-    """Return packed-nibble values for nearest representable E2M1 numbers."""
-    abs_scaled = scaled.abs().clamp(max=6.0)
-    bucket = torch.searchsorted(_BOUNDARIES.to(scaled.device), abs_scaled.reshape(-1))
-    sign_mask = (scaled.reshape(-1) < 0).to(torch.uint8) * 8
-    return (bucket.to(torch.uint8) + sign_mask).reshape_as(scaled)
+    """Return E2M1 nibbles with nearest rounding and midpoint ties to even."""
+    bucket = _nearest_magnitudes(scaled)
+    sign_mask = (scaled < 0).to(torch.uint8) * 8
+    return bucket.to(torch.uint8) + sign_mask
 
 
+@torch.no_grad()
 def quantize_mxfp4(
     tensor: torch.Tensor,
     scale_percentile: float = 99.5,
@@ -100,6 +127,9 @@ def quantize_mxfp4(
     that cannot clip the true maximum is always included as a control. With
     ``method="rtn"``, scale construction matches the reference
     compressed-tensors memoryless-minmax MXFP4 path.
+
+    Codes use OCP roundTiesToEven. MSE candidates are evaluated one at a time,
+    so increasing search depth does not multiply the weight-sized workspace.
 
     Scale selection priority:
         1. hessian: Hessian-weighted reconstruction error (AWQ/GPTQ-style).
@@ -178,29 +208,34 @@ def quantize_mxfp4(
         safe_exp = torch.ceil(torch.log2(actual_max.clamp(min=1e-12) / 6.0)).unsqueeze(-1)
         candidates = torch.cat([local_candidates, safe_exp], dim=-1).clamp(-127, 127)
 
-        t_cand = t_blocked.unsqueeze(-2)  # [out, B, 1, 32]
-        scales = torch.pow(2.0, candidates).unsqueeze(-1)
-        scaled = (t_cand / scales).clamp(-6.0, 6.0)
-        dequant_orig = _round_to_mxfp4(scaled) * scales
-        dW = dequant_orig - t_cand
-
-        if hessian_f32 is not None:
-            weighted = torch.einsum("obcs,bsd->obcd", dW, hessian_f32)
-            err = (weighted * dW).sum(dim=-1)
-        elif gamma is not None:
+        gamma_squared: torch.Tensor | None = None
+        if gamma is not None:
             if gamma.shape != (K,):
                 raise ValueError(f"gamma must have shape {(K,)}, got {tuple(gamma.shape)}")
             if not torch.isfinite(gamma).all() or (gamma < 0).any():
                 raise ValueError("gamma must contain finite, non-negative magnitudes")
-            gamma_b = gamma.to(device=t.device, dtype=torch.float32).reshape(
-                num_blocks, BLOCK_SIZE
-            )
-            err = (dW**2 * (gamma_b**2)[None, :, None, :]).mean(dim=-1)
-        else:
-            err = (dW**2).mean(dim=-1)
+            gamma_b = gamma.to(device=t.device, dtype=torch.float32).reshape(num_blocks, BLOCK_SIZE)
+            gamma_squared = gamma_b.square()
 
-        best_idx = err.argmin(dim=-1, keepdim=True)
-        raw_exp = candidates.gather(-1, best_idx).squeeze(-1)
+        best_error = torch.full_like(block_max, float("inf"))
+        raw_exp = candidates[..., 0].clone()
+        for index in range(candidates.shape[-1]):
+            exponent = candidates[..., index]
+            scale = torch.pow(2.0, exponent).unsqueeze(-1)
+            scaled = (t_blocked / scale).clamp(-6.0, 6.0)
+            dW = _round_to_mxfp4(scaled) * scale - t_blocked
+            if hessian_f32 is not None:
+                weighted = torch.einsum("obs,bsd->obd", dW, hessian_f32)
+                err = (weighted * dW).sum(dim=-1)
+                del weighted
+            elif gamma_squared is not None:
+                err = (dW.square() * gamma_squared).mean(dim=-1)
+            else:
+                err = dW.square().mean(dim=-1)
+            better = err < best_error
+            raw_exp = torch.where(better, exponent, raw_exp)
+            best_error = torch.minimum(best_error, err)
+            del scaled, dW
 
     # E8M0 reserves 255; clamp the exponent before both storage and quantization
     # so the encoded scale and the scale used for rounding can never disagree.

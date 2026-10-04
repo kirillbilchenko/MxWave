@@ -181,6 +181,31 @@ def test_fp8_composition_emits_verified_mixed_checkpoint(tmp_path: Path) -> None
     assert plan.premium_bytes > 0
 
 
+def test_composed_metrics_preserve_partial_primary_coverage(tmp_path: Path) -> None:
+    primary, dense = _make_checkpoints(tmp_path)
+    selected = [
+        "model.language_model.layers.1.mlp.gate_proj",
+        "model.language_model.layers.1.mlp.up_proj",
+    ]
+    measured = "model.language_model.layers.0.mlp.down_proj.weight"
+    path = primary / "mxwave-manifest.json"
+    source = json.loads(path.read_text())
+    source["sqnr_db"] = {
+        "count": 2,
+        "coverage": 2 / len(_target_modules()),
+        "per_tensor": {measured: 20.0, f"{selected[0]}.weight": 18.0},
+    }
+    source["activation_calibration"]["weighted_tensors"] = 2
+    path.write_text(json.dumps(source))
+    plan = build_fp8_composition_plan(primary, dense, selected)
+    manifest = compose_fp8_checkpoint(plan, tmp_path / "out", verbose=False)
+    metric = manifest["sqnr_db"]
+    assert metric["per_tensor"] == {measured: 20.0}
+    assert metric["count"] == 1
+    assert metric["coverage"] == 1 / len(plan.mxfp4_modules)
+    assert manifest["activation_calibration"]["weighted_tensors"] is None
+
+
 def test_precision_budget_builds_twelve_bounded_fusion_safe_buckets(
     tmp_path: Path,
 ) -> None:

@@ -96,6 +96,40 @@ def test_context_selection_keeps_legacy_even_spacing_by_default() -> None:
     assert selection == "evenly-spaced-inclusive-endpoints"
 
 
+@pytest.mark.parametrize("overlap", ["corpus_sha256", "text_sha256", "token_ids_sha256"])
+def test_preparation_rejects_prior_evaluation_data(tmp_path: Path, overlap: str) -> None:
+    previous = tmp_path / "previous.json"
+    if overlap == "corpus_sha256":
+        previous.write_text(json.dumps({"protocol": {overlap: "corpus"}}))
+    else:
+        previous.write_text(json.dumps({"contexts": [{overlap: "same"}]}))
+    contexts = [{"text_sha256": "same", "token_ids_sha256": "same"}]
+    with pytest.raises(ValueError, match=f"overlaps.*{overlap}"):
+        _load_script()._check_evaluation_exclusions("corpus", contexts, [str(previous)])
+
+
+def test_preparation_records_a_distinct_corpus_audit(tmp_path: Path) -> None:
+    previous = tmp_path / "previous.json"
+    previous.write_text(
+        json.dumps(
+            {
+                "corpus_sha256": "old",
+                "contexts": [{"text_sha256": "old-window", "token_ids_sha256": "old-tokens"}],
+            }
+        )
+    )
+    audit = _load_script()._check_evaluation_exclusions(
+        "new",
+        [{"text_sha256": "new-window", "token_ids_sha256": "new-tokens"}],
+        [str(previous)],
+    )
+    assert audit["passed"] is True
+    assert (
+        audit["excluded_evaluations"][0]["sha256"]
+        == hashlib.sha256(previous.read_bytes()).hexdigest()
+    )
+
+
 def test_prepare_records_explicit_fixed_chunk_selection(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -128,6 +162,8 @@ def test_prepare_records_explicit_fixed_chunk_selection(
     )
     corpus = tmp_path / "corpus.txt"
     corpus.write_text("aaaabbbbccccdddd")
+    previous = tmp_path / "prior-evaluation.json"
+    previous.write_text(json.dumps({"corpus_sha256": "0" * 64}))
     output = tmp_path / "contexts.json"
     args = SimpleNamespace(
         model=str(tmp_path / "model"),
@@ -137,6 +173,10 @@ def test_prepare_records_explicit_fixed_chunk_selection(
         chunk_indices="3,1",
         context_tokens=512,
         chunk_characters=4,
+        dataset_name="example/data",
+        dataset_revision="pinned-revision",
+        dataset_split="validation",
+        exclude_evaluation=[str(previous)],
     )
 
     _load_script().prepare_contexts(args)
@@ -146,6 +186,12 @@ def test_prepare_records_explicit_fixed_chunk_selection(
     assert manifest["selected_chunk_indices"] == [3, 1]
     assert manifest["num_contexts"] == 2
     assert [item["chunk_index"] for item in manifest["contexts"]] == [3, 1]
+    assert manifest["dataset_provenance"] == {
+        "name": "example/data",
+        "revision": "pinned-revision",
+        "split": "validation",
+    }
+    assert manifest["exclusion_audit"]["passed"] is True
 
 
 def _collect_args(module: ModuleType, *backend_args: str) -> object:

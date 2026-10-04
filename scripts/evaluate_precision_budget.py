@@ -58,6 +58,27 @@ def _selected_context_digest(contexts_path: Path, count: int) -> str:
     return hashlib.sha256("".join(digests).encode()).hexdigest()
 
 
+def _validate_context_partition(contexts_path: Path, screen_rows: int) -> None:
+    """Reject duplicated windows or token contexts across selection and confirmation."""
+    manifest = _read_json_object(contexts_path)
+    contexts = manifest.get("contexts")
+    if not isinstance(contexts, list) or not 0 < screen_rows < len(contexts):
+        raise ValueError("Context manifest must contain selection and confirmation contexts")
+    for field in ("text_sha256", "token_ids_sha256"):
+        selection = {
+            item[field]
+            for item in contexts[:screen_rows]
+            if isinstance(item, dict) and isinstance(item.get(field), str)
+        }
+        confirmation = {
+            item[field]
+            for item in contexts[screen_rows:]
+            if isinstance(item, dict) and isinstance(item.get(field), str)
+        }
+        if selection.intersection(confirmation):
+            raise ValueError(f"Selection and confirmation data overlap: matching {field}")
+
+
 def _load_logprobs(
     path: Path,
     *,
@@ -189,6 +210,7 @@ def select_candidates(args: argparse.Namespace) -> Path:
     contexts_path = Path(args.contexts)
     contexts_sha256 = _sha256_file(contexts_path)
     screen_rows = args.split_size * 2
+    _validate_context_partition(contexts_path, screen_rows)
     expected_selected_digest = _selected_context_digest(contexts_path, screen_rows)
     reference, _reference_metadata = _load_logprobs(
         Path(args.reference),
@@ -300,6 +322,8 @@ def select_candidates(args: argparse.Namespace) -> Path:
         "contexts": str(contexts_path),
         "contexts_sha256": contexts_sha256,
         "screen_contexts": screen_rows,
+        "selected_context_sha256": expected_selected_digest,
+        "data_provenance": _read_json_object(contexts_path).get("dataset_provenance"),
         "split_size": args.split_size,
         "selection_rule": (
             "negative candidate-minus-baseline mean forward KL on both fixed splits; "
@@ -325,13 +349,22 @@ def select_candidates(args: argparse.Namespace) -> Path:
 
 
 def validate_final_candidate(args: argparse.Namespace) -> Path:
-    """Validate a combined candidate only on the untouched context suffix."""
+    """Validate a combined candidate on the disjoint confirmation context suffix."""
     if args.selection_contexts <= 0:
         raise ValueError("--selection-contexts must be positive")
     if args.bootstrap_iterations <= 0:
         raise ValueError("--bootstrap-iterations must be positive")
     contexts_path = Path(args.contexts)
     contexts_sha256 = _sha256_file(contexts_path)
+    _validate_context_partition(contexts_path, args.selection_contexts)
+    selection_path = Path(args.selection)
+    selection = _read_json_object(selection_path)
+    if (
+        selection.get("format") != "mxwave-precision-budget-selection-v1"
+        or selection.get("contexts_sha256") != contexts_sha256
+        or selection.get("screen_contexts") != args.selection_contexts
+    ):
+        raise ValueError("Final context partition does not match the frozen selection report")
     reference, _reference_metadata = _load_logprobs(
         Path(args.reference), expected_contexts_sha256=contexts_sha256
     )
@@ -362,8 +395,6 @@ def validate_final_candidate(args: argparse.Namespace) -> Path:
     passed = (
         first_mean < 0.0 and second_mean < 0.0 and candidate_agreement >= baseline_agreement - 1
     )
-    selection_path = Path(args.selection)
-    selection = _read_json_object(selection_path)
     report = {
         "format": "mxwave-precision-budget-final-v1",
         "selection": str(selection_path),
@@ -373,6 +404,8 @@ def validate_final_candidate(args: argparse.Namespace) -> Path:
         "selection_contexts_excluded": args.selection_contexts,
         "holdout_contexts": holdout_rows,
         "holdout_halves": [half, half],
+        "data_provenance": _read_json_object(contexts_path).get("dataset_provenance"),
+        "holdout_scope": "disjoint from this selection; prior evaluation history is not certified",
         "candidate_minus_baseline_forward_kl_nats": {
             "first_half_mean": first_mean,
             "second_half_mean": second_mean,
@@ -396,7 +429,7 @@ def validate_final_candidate(args: argparse.Namespace) -> Path:
             "total": holdout_rows,
         },
         "promotion_rule": (
-            "lower mean forward KL than baseline on both untouched halves and no more "
+            "lower mean forward KL than baseline on both confirmation halves and no more "
             "than one lost BF16 top-1 agreement"
         ),
         "promotion_passed": passed,

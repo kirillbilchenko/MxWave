@@ -31,21 +31,25 @@ class InputFormat:
 
 
 def load_config_json(model_dir: str | Path) -> dict[str, object]:
-    """Load the model's ``config.json`` as a dict (empty if absent)."""
+    """Load ``config.json``, allowing an absent file but rejecting invalid content."""
     path = Path(model_dir) / "config.json"
-    if not path.exists():
-        return {}
     try:
         data = json.loads(path.read_text())
-        return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, OSError):
+    except FileNotFoundError:
         return {}
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ValueError(f"Invalid model config JSON: {path}") from exc
+    if not isinstance(data, dict):
+        raise TypeError(f"Model config must be a JSON object: {path}")
+    return data
 
 
 def detect_input_format(model_dir: str | Path) -> InputFormat:
     """Detect input quantization format from config.json (defaulting to fp16)."""
     cfg = load_config_json(model_dir)
     raw_qcfg = cfg.get("quantization_config")
+    if raw_qcfg is not None and not isinstance(raw_qcfg, dict):
+        raise ValueError("quantization_config must be a JSON object or null")
     qcfg: dict[str, object] = raw_qcfg if isinstance(raw_qcfg, dict) else {}
 
     quant_method = str(qcfg.get("quant_method", "")).lower()

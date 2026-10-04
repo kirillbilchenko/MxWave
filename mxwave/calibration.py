@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,15 +20,13 @@ import torch
 from safetensors import safe_open
 from safetensors.torch import save_file
 
-from .core import BLOCK_SIZE
+from .core import BLOCK_SIZE, HessianDampingMode, _damp_block_hessian
 
 CalibrationObjective = Literal["mean-abs", "rms", "block-hessian"]
 
 _FORMAT = "mxwave-activation-stats"
 _FORMAT_VERSION = "1"
-_SUPPORTED_FORMATS: frozenset[str] = frozenset(
-    {_FORMAT, "mxstream-activation-stats"}
-)
+_SUPPORTED_FORMATS: frozenset[str] = frozenset({_FORMAT, "mxstream-activation-stats"})
 _OBJECTIVES: frozenset[str] = frozenset({"mean-abs", "rms", "block-hessian"})
 _KEY_SEPARATOR = "::"
 
@@ -146,7 +145,9 @@ class CalibrationArtifact:
         """Fail if the artifact changed since it was opened."""
         _require_calibration_file_identity(self.path, self._file_identity)
         if verify_sha256 and _sha256_file(self.path) != self.file_sha256:
-            raise ValueError(f"Calibration artifact content changed during quantization: {self.path}")
+            raise ValueError(
+                f"Calibration artifact content changed during quantization: {self.path}"
+            )
         _require_calibration_file_identity(self.path, self._file_identity)
 
 
@@ -164,12 +165,18 @@ class ActivationCollector:
         objectives: Iterable[CalibrationObjective] = ("mean-abs",),
         *,
         hessian_damp: float = 1e-6,
+        hessian_damp_mode: HessianDampingMode = "absolute",
+        skip_first_tokens: int = 0,
     ) -> None:
         """Create a collector for exact target weight names and input widths."""
         if not target_widths:
             raise ValueError("At least one calibration target is required")
-        if hessian_damp < 0.0:
-            raise ValueError("hessian_damp must be non-negative")
+        if not math.isfinite(hessian_damp) or hessian_damp < 0.0:
+            raise ValueError("hessian_damp must be finite and non-negative")
+        if hessian_damp_mode not in ("absolute", "relative"):
+            raise ValueError(f"Unknown Hessian damping mode: {hessian_damp_mode}")
+        if not isinstance(skip_first_tokens, int) or skip_first_tokens < 0:
+            raise ValueError("skip_first_tokens must be a non-negative integer")
         normalized_objectives = frozenset(objectives)
         if not normalized_objectives:
             raise ValueError("At least one calibration objective is required")
@@ -189,6 +196,8 @@ class ActivationCollector:
         self.target_widths = dict(target_widths)
         self.objectives = normalized_objectives
         self.hessian_damp = hessian_damp
+        self.hessian_damp_mode = hessian_damp_mode
+        self.skip_first_tokens = skip_first_tokens
         self._counts: dict[str, int] = {}
         self._absolute_sums: dict[str, torch.Tensor] = {}
         self._square_sums: dict[str, torch.Tensor] = {}
@@ -204,6 +213,12 @@ class ActivationCollector:
                 f"Input for {target_name!r} has shape {tuple(activation.shape)}, "
                 f"expected final dimension {width}"
             )
+        if self.skip_first_tokens:
+            if activation.ndim != 3:
+                raise ValueError("Token exclusion requires [batch, sequence, channels] inputs")
+            if activation.shape[1] <= self.skip_first_tokens:
+                raise ValueError("Token exclusion would remove every observation in a window")
+            activation = activation[:, self.skip_first_tokens :, :]
         values = activation.detach().to(torch.float32).reshape(-1, width)
         if values.shape[0] == 0:
             return
@@ -251,8 +266,7 @@ class ActivationCollector:
                     value = torch.sqrt(self._square_sums[name] / count)
                 else:
                     value = self._gram_sums[name] / count
-                    if self.hessian_damp:
-                        value.diagonal(dim1=-2, dim2=-1).add_(self.hessian_damp)
+                    _damp_block_hessian(value, self.hessian_damp, self.hessian_damp_mode)
                 value = value.cpu().to(torch.float32).contiguous()
                 _validate_statistic(name, objective, value, self.target_widths[name])
                 objective_values[name] = value
@@ -288,8 +302,7 @@ def attach_activation_hooks(
             prefix = f"{module_prefix}."
             if not module_name.startswith(prefix):
                 raise ValueError(
-                    f"Calibration target {target_name!r} is outside module prefix "
-                    f"{module_prefix!r}"
+                    f"Calibration target {target_name!r} is outside module prefix {module_prefix!r}"
                 )
             local_module_name = module_name.removeprefix(prefix)
         module = modules.get(local_module_name)
@@ -393,8 +406,7 @@ def _validate_statistic(
         )
     if tensor.dtype != torch.float32:
         raise ValueError(
-            f"Calibration statistic {target_name!r}/{objective} must be float32, "
-            f"got {tensor.dtype}"
+            f"Calibration statistic {target_name!r}/{objective} must be float32, got {tensor.dtype}"
         )
     if not torch.isfinite(tensor).all():
         raise ValueError(
@@ -432,7 +444,9 @@ def save_calibration_data(
         elif current_names != target_names:
             raise ValueError("Every calibration objective must cover the same target names")
         for target_name, value in objective_values.items():
-            tensors[_tensor_key(objective, target_name)] = value.cpu().to(torch.float32).contiguous()
+            tensors[_tensor_key(objective, target_name)] = (
+                value.cpu().to(torch.float32).contiguous()
+            )
     if not target_names:
         raise ValueError("Calibration statistics contain no targets")
 
@@ -513,6 +527,19 @@ def open_calibration_data(
                 raise ValueError(f"Calibration metadata {key!r} must be an integer") from exc
             if parsed_value <= 0:
                 raise ValueError(f"Calibration metadata {key!r} must be positive")
+        try:
+            skip_first_tokens = int(metadata.get("skip_first_tokens", "0"))
+        except ValueError as exc:
+            raise ValueError("Calibration metadata 'skip_first_tokens' must be an integer") from exc
+        if not 0 <= skip_first_tokens < int(metadata["sequence_length"]):
+            raise ValueError("Calibration metadata 'skip_first_tokens' is outside the window")
+        if objective == "block-hessian":
+            if metadata.get("hessian_damp_mode", "absolute") not in ("absolute", "relative"):
+                raise ValueError("Calibration metadata has an unknown Hessian damping mode")
+            if "hessian_damp" in metadata:
+                damping = float(metadata["hessian_damp"])
+                if not math.isfinite(damping) or damping < 0:
+                    raise ValueError("Calibration Hessian damping must be finite and non-negative")
         raw_offset = metadata.get("sequence_offset")
         if raw_offset is not None:
             try:
@@ -533,16 +560,13 @@ def open_calibration_data(
                     f"Calibration {key} {metadata.get(key)!r} does not match {expected!r}"
                 )
         keys = list(artifact.keys())
-        actual_names = {
-            key.removeprefix(prefix) for key in keys if key.startswith(prefix)
-        }
+        actual_names = {key.removeprefix(prefix) for key in keys if key.startswith(prefix)}
         expected_names = set(target_widths)
         if actual_names != expected_names:
             missing = sorted(expected_names.difference(actual_names))
             extra = sorted(actual_names.difference(expected_names))
             raise ValueError(
-                "Calibration target coverage mismatch: "
-                f"missing={missing[:5]}, extra={extra[:5]}"
+                f"Calibration target coverage mismatch: missing={missing[:5]}, extra={extra[:5]}"
             )
         if int(metadata["target_count"]) != len(target_widths):
             raise ValueError("Calibration metadata target_count does not match the target plan")

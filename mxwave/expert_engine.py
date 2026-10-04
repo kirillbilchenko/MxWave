@@ -13,19 +13,36 @@ import json
 import math
 import os
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any, Literal, cast
 
 import torch
 from safetensors import safe_open
-from safetensors.torch import save_file
 
 from . import __version__
 from .adapters import resolve_expert_layout
-from .core import QuantizationMethod, dequant_mxfp4, quantize_mxfp4
+from .checkpoint import (
+    _INTEGRITY_SIDECAR_FILENAME,
+    DEFAULT_TENSOR_CHUNK_MAX_ELEMENTS,
+    _canonical_sha256,
+    _commit_shard,
+    _prepare_integrity_records,
+    _prepare_run_marker,
+    _ShardIntegrityRecord,
+    _source_checkpoint_identity,
+    _validate_output_path,
+    _validate_resumed_shard_integrity,
+    iter_quantized_row_chunks,
+    locked_output_directory,
+    tensor_chunk_rows,
+)
+from .core import QUANTIZATION_REVISION, QuantizationMethod, dequant_mxfp4, quantize_mxfp4
 from .expert_ir import ExpertQuantizationLayout, LogicalExpertMatrix
 from .format import InputFormat, detect_input_format, load_config_json
+from .incremental_safetensors import IncrementalSafeTensorsWriter, source_data_start
 from .output import assemble_output_dir, verify_emitted_config
 from .shard import (
     ShardFile,
@@ -50,9 +67,6 @@ __all__ = [
 _DEFAULT_HOST_TENSOR_CAP_BYTES = 1024**3
 _DEFAULT_MSE_SCALE_PERCENTILE = 99.5
 _DEFAULT_MSE_CLIP_DEPTH = 4
-_INTEGRITY_SIDECAR_FILENAME = "mxwave-shard-integrity.json"
-_INTEGRITY_SCHEMA_VERSION = 1
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 _DTYPE_BYTES = {
     "BOOL": 1,
     "U8": 1,
@@ -74,18 +88,6 @@ UnitKind = Literal["expert-bank", "passthrough"]
 TensorSpec = tuple[tuple[int, ...], str]
 
 
-@dataclass(frozen=True)
-class _ShardIntegrityRecord:
-    """Cryptographic identity of one complete output shard file."""
-
-    bytes: int
-    sha256: str
-
-    def as_json(self) -> dict[str, int | str]:
-        """Return the canonical JSON representation persisted in the sidecar."""
-        return {"bytes": self.bytes, "sha256": self.sha256}
-
-
 @dataclass
 class ExpertQuantizationConfig:
     """Options for the experimental routed-expert converter."""
@@ -97,6 +99,7 @@ class ExpertQuantizationConfig:
     scale_percentile: float = _DEFAULT_MSE_SCALE_PERCENTILE
     mse_clip_depth: int = _DEFAULT_MSE_CLIP_DEPTH
     tensor_row_chunk_size: int = 2048
+    tensor_chunk_max_elements: int = DEFAULT_TENSOR_CHUNK_MAX_ELEMENTS
     host_tensor_cap_bytes: int = _DEFAULT_HOST_TENSOR_CAP_BYTES
     resume: bool = False
     verify_sqnr: bool = False
@@ -136,7 +139,9 @@ class PlannedExpertSource:
         """Return emitted tensor-data bytes for this source tensor."""
         if not self.is_expert_bank:
             return _tensor_data_bytes(self.info)
-        return sum(math.prod(shape) * _dtype_bytes(dtype) for shape, dtype in self.output_specs().values())
+        return sum(
+            math.prod(shape) * _dtype_bytes(dtype) for shape, dtype in self.output_specs().values()
+        )
 
 
 @dataclass(frozen=True)
@@ -191,9 +196,7 @@ class ExpertQuantizationPlan:
     def target_modules(self) -> list[str]:
         """Return concrete routed-expert modules selected for MXFP4."""
         return sorted(
-            matrix.output_module
-            for source in self.tensors
-            for matrix in source.logical_matrices
+            matrix.output_module for source in self.tensors for matrix in source.logical_matrices
         )
 
     @property
@@ -321,14 +324,8 @@ def _validate_config_classification(plan: ExpertQuantizationPlan) -> None:
     target_patterns = tuple(plan.config_target_patterns)
     ignored_patterns = tuple(plan.config_ignored_patterns)
     for module in real_modules:
-        target_match = any(
-            _matches_config_pattern(pattern, module)
-            for pattern in target_patterns
-        )
-        ignore_match = any(
-            _matches_config_pattern(pattern, module)
-            for pattern in ignored_patterns
-        )
+        target_match = any(_matches_config_pattern(pattern, module) for pattern in target_patterns)
+        ignore_match = any(_matches_config_pattern(pattern, module) for pattern in ignored_patterns)
         if target_match != (module in targets):
             raise ValueError(f"Compact expert target regex misclassifies {module!r}")
         if target_match and ignore_match:
@@ -355,6 +352,8 @@ def _validate_options(cfg: ExpertQuantizationConfig) -> None:
         raise ValueError("mse_clip_depth must be an integer in [0, 8]")
     if not isinstance(cfg.tensor_row_chunk_size, int) or cfg.tensor_row_chunk_size <= 0:
         raise ValueError("tensor_row_chunk_size must be a positive integer")
+    if not isinstance(cfg.tensor_chunk_max_elements, int) or cfg.tensor_chunk_max_elements <= 0:
+        raise ValueError("tensor_chunk_max_elements must be a positive integer")
     if not isinstance(cfg.host_tensor_cap_bytes, int) or cfg.host_tensor_cap_bytes <= 0:
         raise ValueError("host_tensor_cap_bytes must be a positive integer")
     if not isinstance(cfg.sqnr_rows, int) or cfg.sqnr_rows <= 0:
@@ -435,7 +434,10 @@ def plan_expert_model(cfg: ExpertQuantizationConfig) -> ExpertQuantizationPlan:
             if info.name in seen:
                 raise ValueError(f"Duplicate source tensor key: {info.name}")
             seen.add(info.name)
-            if source_weight_map is not None and source_weight_map.get(info.name) != shard.path.name:
+            if (
+                source_weight_map is not None
+                and source_weight_map.get(info.name) != shard.path.name
+            ):
                 raise ValueError(
                     f"Source index maps {info.name!r} inconsistently with {shard.path.name!r}"
                 )
@@ -478,6 +480,10 @@ def plan_expert_model(cfg: ExpertQuantizationConfig) -> ExpertQuantizationPlan:
                 )
 
     units = _build_units(planned, layout, cfg.host_tensor_cap_bytes)
+    for matrix in layout.iter_logical_matrices():
+        tensor_chunk_rows(
+            matrix.shape[-1], cfg.tensor_row_chunk_size, cfg.tensor_chunk_max_elements
+        )
     covered_sources = [source.info.name for unit in units for source in unit.sources]
     if len(covered_sources) != len(planned) or set(covered_sources) != seen:
         raise AssertionError("Emission units do not cover each source tensor exactly once")
@@ -506,40 +512,35 @@ def _quantize_logical_matrix(
     matrix: LogicalExpertMatrix,
     cfg: ExpertQuantizationConfig,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    device = torch.device(cfg.device)
     rows, columns = matrix.shape
-    packed_parts: list[torch.Tensor] = []
-    scale_parts: list[torch.Tensor] = []
-    for start in range(0, rows, cfg.tensor_row_chunk_size):
-        stop = min(start + cfg.tensor_row_chunk_size, rows)
-        weight = _read_logical_rows(
-            source_slice,
-            matrix,
-            start,
-            stop,
-            device=device,
-        )
-        if not torch.isfinite(weight).all():
-            raise ValueError(
-                f"Expert matrix {matrix.output_module!r} contains NaN or infinity "
-                f"in rows [{start}, {stop})"
-            )
-        packed, scales = quantize_mxfp4(
-            weight,
+    packed_result = torch.empty((rows, columns // 2), dtype=torch.uint8)
+    scale_result = torch.empty((rows, columns // 32), dtype=torch.uint8)
+    for start, stop, packed, scales in _logical_chunks(source_slice, matrix, cfg):
+        packed_result[start:stop].copy_(packed)
+        scale_result[start:stop].copy_(scales)
+        del packed, scales
+    return packed_result, scale_result
+
+
+def _logical_chunks(
+    source_slice: Any,
+    matrix: LogicalExpertMatrix,
+    cfg: ExpertQuantizationConfig,
+) -> Iterator[tuple[int, int, torch.Tensor, torch.Tensor]]:
+    return iter_quantized_row_chunks(
+        partial(_read_logical_rows, source_slice, matrix, device=cfg.device),
+        partial(
+            quantize_mxfp4,
             method=cfg.method,
             scale_percentile=cfg.scale_percentile,
             mse_clip_depth=cfg.mse_clip_depth,
-        )
-        packed_parts.append(packed.cpu().contiguous())
-        scale_parts.append(scales.cpu().contiguous())
-        del weight, packed, scales
-    packed_result = torch.cat(packed_parts, dim=0)
-    scale_result = torch.cat(scale_parts, dim=0)
-    if tuple(packed_result.shape) != (rows, columns // 2):
-        raise AssertionError(f"Packed expert shape changed for {matrix.output_module!r}")
-    if tuple(scale_result.shape) != (rows, columns // 32):
-        raise AssertionError(f"Expert scale shape changed for {matrix.output_module!r}")
-    return packed_result, scale_result
+        ),
+        rows=matrix.shape[0],
+        columns=matrix.shape[1],
+        max_rows=cfg.tensor_row_chunk_size,
+        max_elements=cfg.tensor_chunk_max_elements,
+        name=matrix.output_module,
+    )
 
 
 def _read_logical_rows(
@@ -552,9 +553,7 @@ def _read_logical_rows(
 ) -> torch.Tensor:
     """Slice logical rows from an already-open fused bank handle."""
     if not 0 <= start < stop <= matrix.shape[0]:
-        raise ValueError(
-            f"Logical row range [{start}, {stop}) is outside {matrix.output_module!r}"
-        )
+        raise ValueError(f"Logical row range [{start}, {stop}) is outside {matrix.output_module!r}")
     sliced = cast(
         torch.Tensor,
         source_slice[
@@ -580,6 +579,7 @@ def emit_expert_unit(
     sqnr_results: dict[str, float] | None = None,
 ) -> dict[str, torch.Tensor]:
     """Build one cap-bounded output shard without loading a full expert bank."""
+    _validate_unit_cap(unit, cfg)
     result: dict[str, torch.Tensor] = {}
     for source in unit.sources:
         shard = shards_by_name[source.shard_name]
@@ -632,186 +632,69 @@ def emit_expert_unit(
     return result
 
 
-def _atomic_save_shard(tensors: dict[str, torch.Tensor], path: Path) -> None:
+def _validate_unit_cap(unit: ExpertQuantizationUnit, cfg: ExpertQuantizationConfig) -> None:
+    actual_bytes = sum(source.projected_data_bytes for source in unit.sources)
+    if actual_bytes != unit.projected_data_bytes:
+        raise ValueError(f"Emission unit {unit.filename} has inconsistent planned bytes")
+    if actual_bytes > cfg.host_tensor_cap_bytes:
+        raise ValueError(
+            f"Emission unit {unit.filename} needs {actual_bytes} bytes above "
+            f"host_tensor_cap_bytes={cfg.host_tensor_cap_bytes}"
+        )
+
+
+def _atomic_emit_expert_unit(
+    unit: ExpertQuantizationUnit,
+    cfg: ExpertQuantizationConfig,
+    path: Path,
+    shards_by_name: dict[str, ShardFile],
+    *,
+    integrity_path: Path,
+    run_identity_sha256: str,
+    integrity_records: dict[str, _ShardIntegrityRecord],
+) -> None:
+    """Stream an expert or passthrough unit to disk before its durable rename."""
+    _validate_unit_cap(unit, cfg)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
-    temporary.unlink(missing_ok=True)
     try:
-        save_file(tensors, str(temporary))
-        temporary.replace(path)
+        with temporary.open("w+b") as destination:
+            writer = IncrementalSafeTensorsWriter(destination, unit.expected_specs())
+            for source in unit.sources:
+                shard = shards_by_name[source.shard_name]
+                if not source.is_expert_bank:
+                    with shard.path.open("rb") as stream:
+                        writer.copy_tensor_payload(
+                            source.info.name,
+                            stream,
+                            shard.path,
+                            source.info,
+                            source_payload_start=source_data_start(stream, shard.path),
+                            chunk_size_bytes=min(8 * 1024**2, cfg.host_tensor_cap_bytes),
+                        )
+                    continue
+                with safe_open(str(shard.path), framework="pt", device="cpu") as handle:
+                    source_slice = handle.get_slice(source.info.name)
+                    if tuple(source_slice.get_shape()) != source.info.shape:
+                        raise ValueError(f"Expert bank {source.info.name!r} changed shape")
+                    for matrix in source.logical_matrices:
+                        for _start, _stop, packed, scales in _logical_chunks(
+                            source_slice, matrix, cfg
+                        ):
+                            writer.write_u8_chunk(f"{matrix.output_module}.weight_packed", packed)
+                            writer.write_u8_chunk(f"{matrix.output_module}.weight_scale", scales)
+                            del packed, scales
+            writer.finish()
+            os.fsync(destination.fileno())
+        _verify_output_shard(temporary, unit.expected_specs())
+        _commit_shard(
+            temporary,
+            path,
+            integrity_path=integrity_path,
+            run_identity_sha256=run_identity_sha256,
+            records=integrity_records,
+        )
     finally:
         temporary.unlink(missing_ok=True)
-
-
-def _canonical_sha256(value: object) -> str:
-    """Hash one JSON-compatible value using a stable canonical encoding."""
-    payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    return hashlib.sha256(payload).hexdigest()
-
-
-def _file_integrity(path: Path) -> _ShardIntegrityRecord:
-    """Hash one shard in bounded chunks and return its exact file size."""
-    digest = hashlib.sha256()
-    size = 0
-    with path.open("rb") as stream:
-        while chunk := stream.read(8 * 1024 * 1024):
-            digest.update(chunk)
-            size += len(chunk)
-    stat_size = path.stat().st_size
-    if size != stat_size:
-        raise OSError(
-            f"Shard {path.name} changed size while its integrity hash was computed: "
-            f"read={size}, stat={stat_size}"
-        )
-    return _ShardIntegrityRecord(bytes=size, sha256=digest.hexdigest())
-
-
-def _atomic_write_integrity_sidecar(
-    path: Path,
-    *,
-    run_identity_sha256: str,
-    records: dict[str, _ShardIntegrityRecord],
-) -> None:
-    """Atomically persist the complete per-shard resume-integrity ledger."""
-    document = {
-        "schema_version": _INTEGRITY_SCHEMA_VERSION,
-        "algorithm": "sha256",
-        "run_identity_sha256": run_identity_sha256,
-        "role": "resume-only metadata; final evidence is copied into mxwave-manifest.json",
-        "shards": {
-            name: record.as_json() for name, record in sorted(records.items())
-        },
-    }
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
-    temporary.unlink(missing_ok=True)
-    try:
-        with temporary.open("w") as stream:
-            stream.write(json.dumps(document, indent=2, sort_keys=True) + "\n")
-            stream.flush()
-            os.fsync(stream.fileno())
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
-
-
-def _parse_integrity_records(
-    path: Path,
-    *,
-    run_identity_sha256: str,
-    expected_filenames: set[str],
-) -> dict[str, _ShardIntegrityRecord]:
-    """Load and strictly validate one run-bound integrity sidecar."""
-    try:
-        raw = json.loads(path.read_text())
-    except json.JSONDecodeError as exc:
-        raise ValueError(
-            "Cannot safely resume expert conversion: invalid shard-integrity sidecar JSON"
-        ) from exc
-    if not isinstance(raw, dict):
-        raise TypeError(
-            "Cannot safely resume expert conversion: integrity sidecar must be an object"
-        )
-    if raw.get("schema_version") != _INTEGRITY_SCHEMA_VERSION:
-        raise ValueError(
-            "Cannot safely resume expert conversion: unsupported integrity sidecar schema"
-        )
-    if raw.get("algorithm") != "sha256":
-        raise ValueError(
-            "Cannot safely resume expert conversion: integrity sidecar algorithm changed"
-        )
-    if raw.get("run_identity_sha256") != run_identity_sha256:
-        raise ValueError(
-            "Cannot safely resume expert conversion: integrity sidecar does not match run "
-            "identity"
-        )
-    raw_records = raw.get("shards")
-    if not isinstance(raw_records, dict):
-        raise TypeError(
-            "Cannot safely resume expert conversion: integrity sidecar has no shards object"
-        )
-
-    records: dict[str, _ShardIntegrityRecord] = {}
-    for name, raw_record in raw_records.items():
-        if not isinstance(name, str) or name not in expected_filenames:
-            raise ValueError(
-                f"Cannot safely resume expert conversion: unexpected integrity shard {name!r}"
-            )
-        if not isinstance(raw_record, dict) or set(raw_record) != {"bytes", "sha256"}:
-            raise TypeError(
-                f"Cannot safely resume expert conversion: invalid integrity record for {name!r}"
-            )
-        byte_count = raw_record.get("bytes")
-        digest = raw_record.get("sha256")
-        if (
-            not isinstance(byte_count, int)
-            or isinstance(byte_count, bool)
-            or byte_count <= 0
-            or not isinstance(digest, str)
-            or _SHA256_PATTERN.fullmatch(digest) is None
-        ):
-            raise ValueError(
-                f"Cannot safely resume expert conversion: invalid size or SHA-256 for {name!r}"
-            )
-        records[name] = _ShardIntegrityRecord(bytes=byte_count, sha256=digest)
-    return records
-
-
-def _prepare_integrity_records(
-    output_dir: Path,
-    *,
-    run_identity_sha256: str,
-    expected_filenames: set[str],
-    resume: bool,
-) -> tuple[Path, dict[str, _ShardIntegrityRecord]]:
-    """Create or load the run-bound ledger without trusting existing shards."""
-    sidecar = output_dir / _INTEGRITY_SIDECAR_FILENAME
-    existing_shards = sorted(
-        path.name for path in output_dir.glob("*.safetensors") if path.name in expected_filenames
-    )
-    if resume:
-        if sidecar.is_file():
-            return sidecar, _parse_integrity_records(
-                sidecar,
-                run_identity_sha256=run_identity_sha256,
-                expected_filenames=expected_filenames,
-            )
-        if existing_shards:
-            raise ValueError(
-                "Cannot safely resume expert conversion: shard-integrity sidecar is missing "
-                f"while output shards exist ({existing_shards[:3]}). This is an untrusted crash "
-                "window; remove the orphan shard(s) before retrying --resume."
-            )
-    records: dict[str, _ShardIntegrityRecord] = {}
-    _atomic_write_integrity_sidecar(
-        sidecar,
-        run_identity_sha256=run_identity_sha256,
-        records=records,
-    )
-    return sidecar, records
-
-
-def _validate_resumed_shard_integrity(
-    path: Path,
-    records: dict[str, _ShardIntegrityRecord],
-) -> None:
-    """Require a matching recorded size and full-file SHA-256 before reuse."""
-    recorded = records.get(path.name)
-    if recorded is None:
-        raise ValueError(
-            f"Cannot safely resume expert conversion: existing shard {path.name!r} has no "
-            "integrity record. This is an untrusted crash window; remove that orphan shard before "
-            "retrying --resume."
-        )
-    actual_size = path.stat().st_size
-    if actual_size != recorded.bytes:
-        raise ValueError(
-            f"Cannot safely resume expert conversion: shard {path.name!r} size mismatch "
-            f"(recorded={recorded.bytes}, actual={actual_size})"
-        )
-    actual = _file_integrity(path)
-    if actual.sha256 != recorded.sha256:
-        raise ValueError(
-            f"Cannot safely resume expert conversion: shard {path.name!r} SHA-256 mismatch"
-        )
 
 
 def _verify_output_shard(path: Path, expected: dict[str, TensorSpec]) -> None:
@@ -826,8 +709,7 @@ def _verify_output_shard(path: Path, expected: dict[str, TensorSpec]) -> None:
         info = actual[name]
         if info.shape != shape or info.dtype != dtype:
             raise ValueError(
-                f"Emitted tensor {name!r} is {info.shape}/{info.dtype}, "
-                f"expected {shape}/{dtype}"
+                f"Emitted tensor {name!r} is {info.shape}/{info.dtype}, expected {shape}/{dtype}"
             )
 
 
@@ -848,9 +730,7 @@ def _verify_passthrough_payloads(
         source_digest = tensor_payload_sha256(source_shard, source.info.name)
         output_digest = tensor_payload_sha256(output_shard, source.info.name)
         if output_digest != source_digest:
-            raise ValueError(
-                f"Passthrough tensor {source.info.name!r} changed raw payload bytes"
-            )
+            raise ValueError(f"Passthrough tensor {source.info.name!r} changed raw payload bytes")
         results[source.info.name] = source_digest
 
 
@@ -882,15 +762,11 @@ def _sample_existing_unit_sqnr(
             )
             packed = cast(
                 torch.Tensor,
-                output_handle.get_slice(
-                    f"{matrix.output_module}.weight_packed"
-                )[:rows],
+                output_handle.get_slice(f"{matrix.output_module}.weight_packed")[:rows],
             ).to(cfg.device)
             scales = cast(
                 torch.Tensor,
-                output_handle.get_slice(
-                    f"{matrix.output_module}.weight_scale"
-                )[:rows],
+                output_handle.get_slice(f"{matrix.output_module}.weight_scale")[:rows],
             ).to(cfg.device)
             reconstructed = dequant_mxfp4(
                 packed,
@@ -899,17 +775,6 @@ def _sample_existing_unit_sqnr(
             )
             results[matrix.output_module] = sqnr(original, reconstructed)
             del original, packed, scales, reconstructed
-
-
-def _validate_output_path(model_dir: Path, output_dir: Path, resume: bool) -> None:
-    source = model_dir.resolve()
-    output = output_dir.resolve()
-    if source == output or output.is_relative_to(source):
-        raise ValueError("output_dir must not equal or be nested inside model_dir")
-    if output_dir.exists() and any(output_dir.iterdir()) and not resume:
-        raise FileExistsError(
-            f"Output directory is not empty: {output_dir}; use --resume for a partial run"
-        )
 
 
 def _run_identity(cfg: ExpertQuantizationConfig, plan: ExpertQuantizationPlan) -> dict[str, Any]:
@@ -943,32 +808,22 @@ def _run_identity(cfg: ExpertQuantizationConfig, plan: ExpertQuantizationPlan) -
     plan_sha256 = hashlib.sha256(
         json.dumps(plan_description, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    source_shards: dict[str, dict[str, int | str]] = {}
-    for shard in sorted(plan.shards, key=lambda item: item.path.name):
-        integrity = _file_integrity(shard.path)
-        source_shards[shard.path.name] = integrity.as_json()
-    model_dir = Path(cfg.model_dir)
-    source_identity: dict[str, Any] = {
-        "repository": cfg.source_repository,
-        "revision": cfg.source_revision,
-        "config_sha256": hashlib.sha256(
-            (model_dir / "config.json").read_bytes()
-        ).hexdigest(),
-        "shards": source_shards,
-    }
-    index_path = model_dir / "model.safetensors.index.json"
-    if index_path.is_file():
-        source_identity["weight_index_sha256"] = hashlib.sha256(
-            index_path.read_bytes()
-        ).hexdigest()
+    source_identity = _source_checkpoint_identity(
+        Path(cfg.model_dir),
+        [shard.path for shard in plan.shards],
+        repository=cfg.source_repository,
+        revision=cfg.source_revision,
+    )
     identity: dict[str, Any] = {
         "schema_version": 2,
         "engine": "adapter-driven-expert-quantization-v1",
         "producer": {"name": "mxwave", "version": __version__},
+        "quantization_revision": QUANTIZATION_REVISION,
         "layout_policy": plan.layout.policy_name,
         "method": "rtn" if cfg.method == "rtn" else "unweighted-mse",
         "calibration": {"kind": "none"},
         "tensor_row_chunk_size": cfg.tensor_row_chunk_size,
+        "tensor_chunk_max_elements": cfg.tensor_chunk_max_elements,
         "host_tensor_cap_bytes": cfg.host_tensor_cap_bytes,
         "target_plan_sha256": plan_sha256,
         "source": source_identity,
@@ -983,34 +838,6 @@ def _run_identity(cfg: ExpertQuantizationConfig, plan: ExpertQuantizationPlan) -
             }
         )
     return identity
-
-
-def _prepare_run_marker(output_dir: Path, identity: dict[str, Any], resume: bool) -> None:
-    marker_path = output_dir / "mxwave-run.json"
-    if resume and any(output_dir.iterdir()):
-        if not marker_path.is_file():
-            raise ValueError(
-                "Cannot safely resume expert conversion: mxwave-run.json is missing"
-            )
-        try:
-            recorded = json.loads(marker_path.read_text())
-        except json.JSONDecodeError as exc:
-            raise ValueError(
-                "Cannot safely resume expert conversion: invalid run marker"
-            ) from exc
-        if recorded != identity:
-            raise ValueError(
-                "Cannot safely resume expert conversion: source, layout, quantization "
-                "settings, chunking, or cap changed"
-            )
-        return
-    temporary = marker_path.with_name(f".{marker_path.name}.{os.getpid()}.incomplete")
-    temporary.unlink(missing_ok=True)
-    try:
-        temporary.write_text(json.dumps(identity, indent=2, sort_keys=True) + "\n")
-        temporary.replace(marker_path)
-    finally:
-        temporary.unlink(missing_ok=True)
 
 
 def _manifest(
@@ -1043,6 +870,7 @@ def _manifest(
         {
             "manifest_version": 1,
             "producer": {"name": "mxwave", "version": __version__},
+            "quantization_revision": QUANTIZATION_REVISION,
             "source": source_identity,
             "method": "rtn" if cfg.method == "rtn" else "unweighted-mse",
             "experimental": True,
@@ -1050,8 +878,7 @@ def _manifest(
                 "routed-expert RTN baseline; no activation calibration"
                 if cfg.method == "rtn"
                 else (
-                    "routed-expert unweighted-MSE scale-search candidate; "
-                    "no activation calibration"
+                    "routed-expert unweighted-MSE scale-search candidate; no activation calibration"
                 )
             ),
             "weight_scale_selection": (
@@ -1063,6 +890,7 @@ def _manifest(
                 )
             ),
             "tensor_row_chunk_size": cfg.tensor_row_chunk_size,
+            "tensor_chunk_max_elements": cfg.tensor_chunk_max_elements,
             "activation_quantization": "none",
             "activation_calibration": None,
             "gamma_proxy": None,
@@ -1072,11 +900,12 @@ def _manifest(
             "config_target_patterns": plan.config_target_patterns,
             "config_ignored_patterns": plan.config_ignored_patterns,
             "host_memory_contract": {
+                "output_emission": "incremental-safetensors",
                 "resident_tensor_cap_bytes": cfg.host_tensor_cap_bytes,
                 "maximum_planned_unit_bytes": plan.maximum_unit_bytes,
                 "scope": (
-                    "materialized tensor payload only; allocator, serializer, mmap, and "
-                    "filesystem cache overhead are not included"
+                    "planned output tensor payload per unit; output is streamed, and "
+                    "allocator, device workspace, mmap, and filesystem cache are additional"
                 ),
             },
             "passthrough_payload_verification": {
@@ -1093,9 +922,7 @@ def _manifest(
                 "scope": "source safetensors files; copied model assets are excluded",
                 "canonical_aggregate": "sha256(canonical-json(per_shard))",
                 "shard_count": len(source_shards),
-                "file_bytes": sum(
-                    cast(int, record["bytes"]) for record in source_shards.values()
-                ),
+                "file_bytes": sum(cast(int, record["bytes"]) for record in source_shards.values()),
                 "aggregate_sha256": _canonical_sha256(source_shards),
                 "per_shard": source_shards,
             },
@@ -1152,9 +979,16 @@ def _verify_complete_index(output_dir: Path, plan: ExpertQuantizationPlan) -> No
 def quantize_expert_model(cfg: ExpertQuantizationConfig) -> int:
     """Emit and structurally verify an expert-only, weight-only MXFP4 checkpoint."""
     plan = plan_expert_model(cfg)
+    with locked_output_directory(Path(cfg.output_dir), source_dir=Path(cfg.model_dir)):
+        return _quantize_expert_model_locked(cfg, plan)
+
+
+def _quantize_expert_model_locked(
+    cfg: ExpertQuantizationConfig, plan: ExpertQuantizationPlan
+) -> int:
     model_dir = Path(cfg.model_dir)
     output_dir = Path(cfg.output_dir)
-    _validate_output_path(model_dir, output_dir, cfg.resume)
+    _validate_output_path(model_dir, output_dir, cfg.resume, {unit.filename for unit in plan.units})
     if cfg.verbose:
         print(json.dumps(plan.summary(), indent=2))
 
@@ -1167,7 +1001,9 @@ def quantize_expert_model(cfg: ExpertQuantizationConfig) -> int:
             if path.name not in expected_filenames
         )
         if unexpected:
-            raise ValueError(f"Cannot safely resume with unexpected output shards: {unexpected[:5]}")
+            raise ValueError(
+                f"Cannot safely resume with unexpected output shards: {unexpected[:5]}"
+            )
     run_identity = _run_identity(cfg, plan)
     run_identity_sha256 = _canonical_sha256(run_identity)
     _prepare_run_marker(output_dir, run_identity, cfg.resume)
@@ -1203,18 +1039,19 @@ def quantize_expert_model(cfg: ExpertQuantizationConfig) -> int:
             if output_path.exists():
                 raise FileExistsError(f"Refusing to replace existing shard: {output_path}")
             if cfg.verbose:
-                print(
-                    f"[mxwave] [{index}/{len(plan.units)}] emit {unit.kind} {unit.filename}"
-                )
-            tensors = emit_expert_unit(
+                print(f"[mxwave] [{index}/{len(plan.units)}] emit {unit.kind} {unit.filename}")
+            _atomic_emit_expert_unit(
                 unit,
                 cfg,
-                shards_by_name=shards_by_name,
-                sqnr_results=sqnr_results if cfg.verify_sqnr else None,
+                output_path,
+                shards_by_name,
+                integrity_path=integrity_path,
+                run_identity_sha256=run_identity_sha256,
+                integrity_records=integrity_records,
             )
-            _atomic_save_shard(tensors, output_path)
-            del tensors
             _verify_output_shard(output_path, expected)
+            if cfg.verify_sqnr:
+                _sample_existing_unit_sqnr(unit, output_path, cfg, shards_by_name, sqnr_results)
             if torch.device(cfg.device).type == "cuda":
                 torch.cuda.empty_cache()
         _verify_passthrough_payloads(
@@ -1223,13 +1060,6 @@ def quantize_expert_model(cfg: ExpertQuantizationConfig) -> int:
             shards_by_name,
             passthrough_payload_hashes,
         )
-        if not reused:
-            integrity_records[unit.filename] = _file_integrity(output_path)
-            _atomic_write_integrity_sidecar(
-                integrity_path,
-                run_identity_sha256=run_identity_sha256,
-                records=integrity_records,
-            )
         output_shards.append(output_path)
 
     expected_passthrough = {
