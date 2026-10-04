@@ -136,6 +136,17 @@ token positions at each length. The final WikiText windows remain reserved.
 Protocols, exact report hashes, per-domain serving rates, parity diagnostics
 and uncertainty are in the [dated pilot record](docs/FAST_PILOTS_2026-10-04.md).
 
+A completed [follow-up](docs/MTP_FOLLOWUP_2026-10-04.md) reproduced the three
+MTP divergences: the target scores changed to exact ties, with no non-argmax
+selection in 4,608 traced tokens. Eager execution also failed exact parity.
+All 32 paired requests on 16 new diagnostic tasks matched; corrected scoring
+gave 8/8 Python tasks and 1/8 final-answer arithmetic tasks in both modes.
+Code had a 1.87× paired total speedup, while short arithmetic replies were
+slower and TTFT increased. On 24 different books with the same targets at
+each length, KL was 0.037718/0.037700/0.036664 at 512/2k/8k; the paired
+8k-minus-512 interval [−0.009941, +0.007150] includes zero. These sparse
+checks do not establish general task quality or qualify production MTP.
+
 ## Install
 
 ```bash
