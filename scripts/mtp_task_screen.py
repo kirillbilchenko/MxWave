@@ -225,6 +225,7 @@ def _worker(payload: dict[str, Any]) -> dict[str, Any]:
         "enumerate",
         "float",
         "int",
+        "isinstance",
         "len",
         "list",
         "max",

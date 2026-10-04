@@ -171,3 +171,17 @@ def test_runner_rejects_changed_source_before_pausing_service(
     )
     with pytest.raises(ValueError, match="sources changed"):
         runner.main()
+
+
+def test_code_grader_accepts_public_type_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+    script = _script(monkeypatch, "mtp_task_screen")
+    case = next(c for c in script.task_cases() if c["id"] == "code-4")
+    source = (
+        "def first_missing(values):\n"
+        "    present = {x for x in values if isinstance(x, int) and x > 0}\n"
+        "    result = 1\n"
+        "    while result in present:\n"
+        "        result += 1\n"
+        "    return result\n"
+    )
+    assert script.score(case, source)["passed"]
