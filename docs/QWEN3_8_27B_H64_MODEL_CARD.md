@@ -31,6 +31,13 @@ baseline is pinned to
 
 Hugging Face repository: `kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave`.
 
+This card describes the **published legacy-rounding checkpoint**, built at the
+pinned release above. Its PPL **8.119445** belongs to the historical WikiText
+test-split protocol. The separately measured corrected `mxfp4-rne-v2` H64
+checkpoint is **not published**; its validation PPL **7.954455** belongs to the
+[new control experiment](CORRECTED_CONTROLS_2026-10-03.md), not this Hub payload.
+The different splits do not measure a quality change caused by corrected rounding.
+
 On the same 297,199-token paired WikiText-2 protocol, this 18.47 GiB checkpoint had
 **0.832% lower perplexity than AMD's Quark-AWQ MXFP4 release**. See the evaluation and
 uncertainty details below before comparing that number with results from other protocols.
@@ -113,10 +120,18 @@ projections received block-32 input second-moment statistics with damping `1e-6`
 
 After scale selection, values are assigned to their nearest E2M1 codes. This final recipe is
 deliberately scale-only: it uses no sequential GPTQ rounding, error feedback, cross-block
-recovery, rotation, mixed-precision layer promotion, or recovery training. Those experimental
-variants did not improve the held-out result enough to justify inclusion.
+recovery, rotation, mixed-precision layer promotion, or recovery training.
 
-## Evaluation
+This describes the historical published payload. Current `mxfp4-rne-v2` code
+uses ties-to-even for exact E2M1 midpoints and may produce different packed
+weights. The corrected Qwen norm fallback is bypassed by H64's real Hessians.
+Fresh current-code benchmarks are recorded in the
+[corrected-control validation experiment](CORRECTED_CONTROLS_2026-10-03.md).
+They describe new local checkpoints, not this published payload. The block-local feedback probes
+do not establish that sequential full-Hessian GPTQ or integrated rotations
+would fail.
+
+## Evaluation of the published checkpoint
 
 All comparisons used the same DGX Spark (GB10, SM121), model source, prompts, tokenizer,
 and pinned vLLM image:
@@ -151,8 +166,13 @@ with literature numbers produced using different token windows or strides. Full 
 
 ### Exact next-token distribution divergence
 
-For 128 deterministic held-out WikiText contexts of up to 512 tokens, the evaluator collected
+For 128 deterministic WikiText contexts of up to 512 tokens, the evaluator collected
 all **248,320** next-token log probabilities and compared each candidate with BF16.
+These are prefixes of a subset of the headline PPL windows, with one measured
+next-token position per context. They are not an independent validation split.
+Earlier recipe selection also used this test corpus, so the paired intervals
+do not account for adaptive model selection. BF16 top-1 matches were 120/128
+for H64 and 117/128 for AMD.
 
 | Metric | **MxWave** | AMD Quark-AWQ MXFP4 |
 |---|---:|---:|
