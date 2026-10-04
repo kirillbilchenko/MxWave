@@ -26,6 +26,7 @@ from .calibration import (
     CalibrationObjective,
     attach_activation_hooks,
 )
+from .core import HessianDampingMode
 
 _LAYER_TARGET = re.compile(r"^(?P<stack>.+\.layers)\.(?P<index>\d+)\..+\.weight$")
 _SUPPORTED_MODEL_TYPES = frozenset({"qwen3_5_text"})
@@ -232,11 +233,9 @@ def _attention_mask_for_layer(
     )
     mask_function = getattr(module, function_name, None)
     if mask_function is None:
-        if layer_type == "linear_attention":
-            raise ValueError(
-                f"{type(base).__name__} does not expose {function_name} for streaming calibration"
-            )
-        return None
+        raise ValueError(
+            f"{type(base).__name__} does not expose {function_name} for streaming calibration"
+        )
     result = mask_function(
         config=base.config,
         inputs_embeds=hidden_states,
@@ -246,6 +245,12 @@ def _attention_mask_for_layer(
     )
     if result is not None and not isinstance(result, torch.Tensor):
         raise TypeError("Sequential calibration currently requires tensor attention masks")
+    if (
+        result is None
+        and layer_type != "linear_attention"
+        and (getattr(base.config, "_attn_implementation", None) or "eager") == "eager"
+    ):
+        raise ValueError("Eager attention requires an explicit causal mask for calibration")
     return result
 
 
@@ -299,6 +304,8 @@ def calibrate_decoder_sequentially(
     dtype: torch.dtype,
     batch_size: int,
     hessian_damp: float,
+    hessian_damp_mode: HessianDampingMode = "absolute",
+    skip_first_tokens: int = 0,
     progress: Callable[[int, int], None] | None = None,
 ) -> StreamingCalibrationResult:
     """Capture statistics while keeping at most one decoder layer resident."""
@@ -309,6 +316,8 @@ def calibrate_decoder_sequentially(
     sequence_length = len(sequences[0])
     if sequence_length == 0 or any(len(sequence) != sequence_length for sequence in sequences):
         raise ValueError("Sequential calibration requires equal non-empty sequence lengths")
+    if not 0 <= skip_first_tokens < sequence_length:
+        raise ValueError("skip_first_tokens must be in [0, sequence_length)")
 
     layout = infer_sequential_decoder_layout(model, target_widths, checkpoint_files)
     base = _module_at(model, layout.base_prefix)
@@ -378,6 +387,8 @@ def calibrate_decoder_sequentially(
                     layer_widths,
                     objectives,
                     hessian_damp=hessian_damp,
+                    hessian_damp_mode=hessian_damp_mode,
+                    skip_first_tokens=skip_first_tokens,
                 )
                 if layer_widths
                 else None

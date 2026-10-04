@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,8 +18,14 @@ from typing import Any, cast
 
 import torch
 from safetensors import safe_open
-from safetensors.torch import save_file
 
+from .checkpoint import (
+    _atomic_save_shard,
+    _atomic_write_text,
+    _directory_has_artifacts,
+    _validate_source_output,
+    locked_output_directory,
+)
 from .output import build_quantization_config, copy_model_assets, verify_emitted_config
 from .runtime_adapters import resolve_runtime_graph
 from .shard import ShardFile, TensorInfo, discover_shards, read_tensor, shard_tensor_info
@@ -372,26 +378,6 @@ def quantize_fp8_channelwise(
     return quantized.cpu().contiguous(), scale.cpu().contiguous()
 
 
-def _atomic_save_shard(tensors: Mapping[str, torch.Tensor], path: Path) -> None:
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
-    temporary.unlink(missing_ok=True)
-    try:
-        save_file(dict(tensors), str(temporary))
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
-
-
-def _atomic_write_text(path: Path, value: str) -> None:
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.incomplete")
-    temporary.unlink(missing_ok=True)
-    try:
-        temporary.write_text(value)
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
-
-
 def _verify_shard(
     path: Path,
     expected: Mapping[str, tuple[tuple[int, ...], str]],
@@ -474,7 +460,11 @@ def _manifest_path(root: Path) -> Path:
     raise FileNotFoundError(f"Primary checkpoint has no MxWave manifest: {root}")
 
 
-def _filter_metric(value: Any, selected: frozenset[str]) -> Any:
+def _filter_metric(
+    value: Any,
+    selected: frozenset[str],
+    expected_modules: frozenset[str],
+) -> Any:
     if not isinstance(value, dict):
         return value
     raw_per_tensor = value.get("per_tensor")
@@ -483,13 +473,21 @@ def _filter_metric(value: Any, selected: frozenset[str]) -> Any:
     per_tensor = {
         name: score
         for name, score in raw_per_tensor.items()
-        if isinstance(name, str) and name.removesuffix(".weight") not in selected
+        if (
+            isinstance(name, str)
+            and name.removesuffix(".weight") not in selected
+            and name.removesuffix(".weight") in expected_modules
+            and isinstance(score, int | float)
+            and not isinstance(score, bool)
+            and not math.isnan(score)
+        )
     }
     scores = [float(score) for score in per_tensor.values() if isinstance(score, int | float)]
     result = dict(value)
     result["per_tensor"] = per_tensor
     result["count"] = len(scores)
-    result["coverage"] = 1.0 if scores else 0.0
+    result["coverage"] = len(scores) / len(expected_modules) if expected_modules else 0.0
+    result["expected_count"] = len(expected_modules)
     result["mean"] = sum(scores) / len(scores) if scores else None
     result["minimum"] = min(scores) if scores else None
     return result
@@ -506,11 +504,23 @@ def _build_manifest(
     selected = frozenset(plan.selected_modules)
     for field in _METRIC_FIELDS:
         if field in manifest:
-            manifest[field] = _filter_metric(manifest[field], selected)
+            manifest[field] = _filter_metric(
+                manifest[field], selected, frozenset(plan.mxfp4_modules)
+            )
     activation = manifest.get("activation_calibration")
     if isinstance(activation, dict):
         updated_activation = dict(activation)
-        updated_activation["weighted_tensors"] = len(plan.mxfp4_modules)
+        source_weighted = activation.get("weighted_tensors")
+        primary_count = len(plan.mxfp4_modules) + len(plan.selected_modules)
+        if source_weighted == primary_count:
+            updated_activation["weighted_tensors"] = len(plan.mxfp4_modules)
+            updated_activation["unweighted_tensors"] = 0
+        else:
+            # Aggregate source counts cannot identify which selected modules
+            # had statistics; keep that uncertainty explicit.
+            updated_activation["source_weighted_tensors"] = source_weighted
+            updated_activation["weighted_tensors"] = None
+            updated_activation["unweighted_tensors"] = None
         manifest["activation_calibration"] = updated_activation
     source_data_bytes = manifest.get("source_data_bytes")
     ratio = (
@@ -577,7 +587,19 @@ def compose_fp8_checkpoint(
 ) -> dict[str, Any]:
     """Execute a validated mixed-precision plan and return its manifest."""
     output = Path(output_dir)
-    if output.exists() and any(output.iterdir()):
+    _validate_source_output(plan.dense.root, output)
+    with locked_output_directory(output, source_dir=plan.primary.root):
+        return _compose_fp8_locked(plan, output, quant_device=quant_device, verbose=verbose)
+
+
+def _compose_fp8_locked(
+    plan: Fp8CompositionPlan,
+    output: Path,
+    *,
+    quant_device: torch.device | str,
+    verbose: bool,
+) -> dict[str, Any]:
+    if _directory_has_artifacts(output):
         raise FileExistsError(f"Output directory is not empty: {output}")
     output.mkdir(parents=True, exist_ok=True)
 

@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 import torch
 from safetensors import safe_open
-from safetensors.torch import save_file
+from safetensors.torch import load_file, save_file
 
 import mxwave.engine as engine_module
+from mxwave import checkpoint
 from mxwave.calibration import save_calibration_data
+from mxwave.checkpoint import locked_output_directory
 from mxwave.core import QuantizationMethod
 from mxwave.core import quantize_mxfp4 as core_quantize_mxfp4
 from mxwave.engine import QuantizeConfig, plan_model, quantize_model, quantize_shard
@@ -148,7 +151,7 @@ def test_auto_policy_refuses_unknown_architecture(tmp_path: Path):
 
 def test_auto_policy_selects_only_qwen_mlp_phase_one(tmp_path: Path):
     model_dir = _make_qwen_model(tmp_path)
-    plan = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu"))
+    plan = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu", gamma_proxy=True))
     assert plan.policy.name == "qwen3.8-27b-mlp"
     assert len(plan.target_names) == 192
     assert len(plan.gamma_proxy_sources) == 128
@@ -161,10 +164,14 @@ def test_auto_policy_selects_only_qwen_mlp_phase_one(tmp_path: Path):
     assert "model.language_model.layers.3.self_attn.q_proj.weight" not in plan.target_names
 
 
-def test_gamma_proxy_can_be_disabled_and_rtn_never_uses_it(tmp_path: Path):
+def test_gamma_proxy_is_opt_in_and_rtn_never_uses_it(tmp_path: Path):
     model_dir = _make_qwen_model(tmp_path)
+    default = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu"))
     disabled = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu", gamma_proxy=False))
-    rtn = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu", method="rtn"))
+    rtn = plan_model(
+        QuantizeConfig(model_dir=model_dir, device="cpu", method="rtn", gamma_proxy=True)
+    )
+    assert default.gamma_proxy_sources == ()
     assert disabled.gamma_proxy_sources == ()
     assert rtn.gamma_proxy_sources == ()
 
@@ -176,6 +183,7 @@ def test_compatible_policy_weights_direct_attention_inputs_with_input_norm(tmp_p
             model_dir=model_dir,
             device="cpu",
             policy="qwen3.8-27b-compatible",
+            gamma_proxy=True,
         )
     )
     assert len(plan.target_names) == 400
@@ -214,6 +222,7 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
         else:
             gamma_calls += 1
             assert gamma.shape == (tensor.shape[-1],)
+            torch.testing.assert_close(gamma, torch.full_like(gamma, 2.0))
         return core_quantize_mxfp4(
             tensor,
             scale_percentile=scale_percentile,
@@ -231,6 +240,7 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
             device="cpu",
             verbose=False,
             verify_sqnr=True,
+            gamma_proxy=True,
         )
     )
 
@@ -239,6 +249,7 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
     manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert manifest["weight_scale_selection"] == "mse-layernorm-gamma-proxy"
     assert manifest["gamma_proxy"] == {
+        "stored_weight_offset": 1.0,
         "sources": ["post_attention_layernorm.weight"],
         "weighted_tensors": 128,
         "unweighted_tensors": 64,
@@ -246,6 +257,120 @@ def test_qwen_quantization_passes_module_keyed_gamma_and_records_it(
     assert manifest["gamma_weighted_sqnr_db"]["count"] == 128
     assert manifest["gamma_weighted_sqnr_db"]["coverage"] == 1.0
     assert "Gamma-weighted SQNR" in (output_dir / "README.md").read_text()
+
+
+def test_qwen_gamma_proxy_uses_effective_zero_centered_norm(tmp_path: Path) -> None:
+    model_dir = _make_qwen_model(tmp_path)
+    shard = model_dir / "model.safetensors"
+    tensors = load_file(shard)
+    norm = "model.language_model.layers.0.post_attention_layernorm.weight"
+    tensors[norm] = torch.tensor([-2.0, -1.0, 0.0, 1.0]).repeat(8).to(torch.bfloat16)
+    save_file(tensors, shard)
+    plan = plan_model(QuantizeConfig(model_dir=model_dir, device="cpu", gamma_proxy=True))
+    proxies = engine_module._load_gamma_proxies(plan)
+    expected = torch.tensor([1.0, 0.0, 1.0, 2.0]).repeat(8)
+    torch.testing.assert_close(
+        proxies["model.language_model.layers.0.mlp.gate_proj.weight"], expected
+    )
+
+
+@pytest.mark.parametrize("change", ["unknown-module", "wrong-layer"])
+def test_qwen_coverage_is_independent_of_target_count(tmp_path: Path, change: str) -> None:
+    model_dir = _make_qwen_model(tmp_path)
+    shard = model_dir / "model.safetensors"
+    tensors = load_file(shard)
+    if change == "unknown-module":
+        tensors["model.language_model.layers.0.unrecognized_proj.weight"] = torch.zeros(1, 32)
+        message = "unclassified weighted modules"
+    else:
+        original = "model.language_model.layers.0.mlp.up_proj.weight"
+        tensors[original.replace("layers.0.", "layers.64.")] = tensors.pop(original)
+        message = "Target names disagree"
+    save_file(tensors, shard)
+    (model_dir / "model.safetensors.index.json").write_text(
+        json.dumps({"weight_map": {name: shard.name for name in tensors}})
+    )
+    with pytest.raises(ValueError, match=message):
+        plan_model(QuantizeConfig(model_dir=model_dir, device="cpu"))
+
+
+def test_all_linear_excludes_moe_routers_and_mtp(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    shard = model_dir / "model-00001-of-00002.safetensors"
+    tensors = load_file(shard)
+    exclusions = (
+        "model.layers.0.mlp.gate.weight",
+        "model.layers.0.mlp.shared_expert_gate.weight",
+        "mtp.layers.0.proj.weight",
+        "model.mtp.layers.0.proj.weight",
+    )
+    tensors.update({name: torch.ones(2, 128) for name in exclusions})
+    save_file(tensors, shard)
+    index = model_dir / "model.safetensors.index.json"
+    document = json.loads(index.read_text())
+    document["weight_map"].update({name: shard.name for name in exclusions})
+    index.write_text(json.dumps(document))
+    plan = plan_model(_config(model_dir))
+    assert len(plan.target_names) == 2
+    assert all(name.removesuffix(".weight") in plan.ignored_modules for name in exclusions)
+
+
+def test_dense_plan_refuses_unclassified_fused_expert_bank(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    shard = model_dir / "model-00001-of-00002.safetensors"
+    tensors = load_file(shard)
+    name = "model.layers.0.mlp.experts.down_proj"
+    tensors[name] = torch.zeros(2, 32, 128)
+    save_file(tensors, shard)
+    index = model_dir / "model.safetensors.index.json"
+    document = json.loads(index.read_text())
+    document["weight_map"][name] = shard.name
+    index.write_text(json.dumps(document))
+    with pytest.raises(ValueError, match="requires mxwave-quantize-experts"):
+        plan_model(_config(model_dir))
+
+
+def test_busy_output_lock_preserves_another_writers_temporary(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    with locked_output_directory(output_dir, source_dir=model_dir):
+        active = output_dir / ".model-00001-of-00002.safetensors.12345.incomplete"
+        active.write_bytes(b"another writer's data")
+        with pytest.raises(FileExistsError, match="output lock"):
+            quantize_model(_config(model_dir, output_dir, resume=True))
+        assert active.read_bytes() == b"another writer's data"
+
+
+def test_dense_element_limit_bounds_wide_tensor_reads(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    seen = []
+    original = engine_module.quantize_mxfp4
+
+    def check_chunk(weight: torch.Tensor, **kwargs: object) -> tuple[torch.Tensor, torch.Tensor]:
+        seen.append(weight.numel())
+        assert weight.numel() <= 512
+        return original(weight, **kwargs)
+
+    monkeypatch.setattr(engine_module, "quantize_mxfp4", check_chunk)
+    quantize_model(_config(model_dir, tensor_chunk_max_elements=512, mse_clip_depth=8))
+    assert max(seen) == 512
+
+
+def test_resume_refuses_the_previous_quantization_revision(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    config = _config(model_dir)
+    quantize_model(config)
+    output = Path(config.output_dir)
+    marker_path = output / "mxwave-run.json"
+    marker = json.loads(marker_path.read_text())
+    assert marker.pop("quantization_revision") == "mxfp4-rne-v2"
+    marker_path.write_text(json.dumps(marker))
+    before = {p.name: p.read_bytes() for p in output.glob("*.safetensors")}
+    with pytest.raises(ValueError, match="Cannot safely resume"):
+        quantize_model(_config(model_dir, output, resume=True))
+    assert before == {p.name: p.read_bytes() for p in output.glob("*.safetensors")}
 
 
 def test_activation_statistics_replace_proxy_and_cover_every_target(
@@ -307,10 +432,7 @@ def test_activation_statistics_replace_proxy_and_cover_every_target(
     assert torch.equal(observed["64"], statistics["model.layers.1.mlp.gate_proj.weight"])
     manifest = json.loads((output_dir / "mxwave-manifest.json").read_text())
     assert manifest["weight_scale_selection"] == "mse-activation-mean-abs"
-    assert (
-        manifest["host_memory_contract"]["calibration_tensor_loading"]
-        == "on-demand-non-caching"
-    )
+    assert manifest["host_memory_contract"]["calibration_tensor_loading"] == "on-demand-non-caching"
     assert manifest["gamma_proxy"] is None
     assert manifest["activation_calibration"]["weighted_tensors"] == 2
     assert manifest["activation_calibration"]["unweighted_tensors"] == 0
@@ -512,15 +634,18 @@ def test_model_path_streams_quantized_and_passthrough_payloads(
 
     assert observed_rows
     assert max(observed_rows) <= 7
-    with safe_open(
-        str(output_dir / "model-00001-of-00002.safetensors"),
-        framework="pt",
-        device="cpu",
-    ) as output, safe_open(
-        str(model_dir / "model-00001-of-00002.safetensors"),
-        framework="pt",
-        device="cpu",
-    ) as source:
+    with (
+        safe_open(
+            str(output_dir / "model-00001-of-00002.safetensors"),
+            framework="pt",
+            device="cpu",
+        ) as output,
+        safe_open(
+            str(model_dir / "model-00001-of-00002.safetensors"),
+            framework="pt",
+            device="cpu",
+        ) as source,
+    ):
         assert torch.equal(
             output.get_tensor("model.embed_tokens.weight"),
             source.get_tensor("model.embed_tokens.weight"),
@@ -565,12 +690,7 @@ def test_interrupted_incremental_shard_is_atomic_and_resumable(
     assert not list(output_dir.glob(".*.incomplete"))
 
     monkeypatch.setattr(engine_module, "quantize_mxfp4", core_quantize_mxfp4)
-    assert (
-        quantize_model(
-            _config(model_dir, output_dir, tensor_row_chunk_size=7, resume=True)
-        )
-        == 2
-    )
+    assert quantize_model(_config(model_dir, output_dir, tensor_row_chunk_size=7, resume=True)) == 2
     assert first_shard.exists()
 
 
@@ -622,12 +742,14 @@ def test_quantize_model_writes_output_shards_and_assets(tmp_path: Path):
     }
     assert manifest["shard_integrity"]["complete"] is True
     assert manifest["shard_integrity"]["per_shard"] == integrity["shards"]
-    assert "mxwave-manifest.json" not in json.loads(
-        (output_dir / "mxwave-manifest.json").read_text()
-    )["copied_assets"]
-    assert "mxwave-run.json" not in json.loads(
-        (output_dir / "mxwave-manifest.json").read_text()
-    )["copied_assets"]
+    assert (
+        "mxwave-manifest.json"
+        not in json.loads((output_dir / "mxwave-manifest.json").read_text())["copied_assets"]
+    )
+    assert (
+        "mxwave-run.json"
+        not in json.loads((output_dir / "mxwave-manifest.json").read_text())["copied_assets"]
+    )
 
 
 def test_runtime_validation_regenerates_evidence_in_model_card(tmp_path: Path):
@@ -772,6 +894,60 @@ def test_resume_rejects_orphan_final_shard_without_integrity_record(
 
     with pytest.raises(ValueError, match="untrusted crash window"):
         quantize_model(_config(model_dir, output_dir, resume=True))
+
+
+def test_resume_binds_source_contents_even_when_size_and_mtime_are_preserved(
+    tmp_path: Path,
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    quantize_model(_config(model_dir, output_dir))
+    source = model_dir / "model-00001-of-00002.safetensors"
+    before = source.stat()
+    with source.open("r+b") as stream:
+        stream.seek(-1, 2)
+        value = stream.read(1)
+        stream.seek(-1, 1)
+        stream.write(bytes([value[0] ^ 1]))
+    os.utime(source, ns=(before.st_atime_ns, before.st_mtime_ns))
+    assert source.stat().st_size == before.st_size
+    assert source.stat().st_mtime_ns == before.st_mtime_ns
+    with pytest.raises(ValueError, match="source changed"):
+        quantize_model(_config(model_dir, output_dir, resume=True))
+
+
+def test_resume_allows_source_timestamp_changes_when_contents_match(tmp_path: Path) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    quantize_model(_config(model_dir, output_dir))
+    source = model_dir / "model-00001-of-00002.safetensors"
+    before = source.stat()
+    os.utime(source, ns=(before.st_atime_ns, before.st_mtime_ns + 1_000_000_000))
+    assert quantize_model(_config(model_dir, output_dir, resume=True)) == 2
+
+
+def test_resume_recovers_dense_rename_before_ledger_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    model_dir = _make_fake_model(tmp_path)
+    output_dir = tmp_path / "out"
+    original = checkpoint._atomic_write_integrity_ledger
+
+    def interrupted(path: Path, **kwargs: object) -> None:
+        if kwargs["records"]:
+            raise RuntimeError("crash after rename")
+        original(path, **kwargs)
+
+    monkeypatch.setattr(checkpoint, "_atomic_write_integrity_ledger", interrupted)
+    with pytest.raises(RuntimeError, match="crash after rename"):
+        quantize_model(_config(model_dir, output_dir))
+    first = output_dir / "model-00001-of-00002.safetensors"
+    initial_hash = checkpoint._file_integrity(first)
+    assert (output_dir / "mxwave-shard-pending.json").is_file()
+    monkeypatch.setattr(checkpoint, "_atomic_write_integrity_ledger", original)
+    assert quantize_model(_config(model_dir, output_dir, resume=True)) == 2
+    assert checkpoint._file_integrity(first) == initial_hash
+    assert not (output_dir / "mxwave-shard-pending.json").exists()
 
 
 def test_exact_stale_shard_temporaries_are_cleaned_without_near_misses(

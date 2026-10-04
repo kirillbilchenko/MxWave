@@ -39,6 +39,17 @@ Use separate data for selection and final validation. Never add candidates after
 the untouched holdout. If no pre-registered candidate passes, record a clean negative result
 and stop.
 
+Reserve that holdout before all recipe choices, including earlier experiments.
+The historical Qwen run's 96-context suffix was excluded from its own 32-context
+selection screen, but all 128 contexts came from WikiText test windows already
+used for H64/PPL/KL evaluation. Its gate is within-experiment confirmation, not
+independent final validation. Use a fresh corpus or separately frozen split for
+new runs, record its dataset revision and split, and supply prior context/PPL
+reports to `evaluate_next_token_kl.py prepare --exclude-evaluation`.
+The exclusion audit checks corpus bytes and exact window/token hashes; it
+cannot certify unseen data or remove semantic duplicates. See the
+[fresh evaluation protocol](QUANTIZATION_FIXES_AND_VALIDATION.md).
+
 ## Reference protocol
 
 The measured Qwen3.8-27B experiment used the following bounded protocol:
@@ -49,7 +60,7 @@ The measured Qwen3.8-27B experiment used the following bounded protocol:
 | Window width | 4 decoder layers |
 | Candidate cap | 12 buckets |
 | Selection | two disjoint 16-context splits |
-| Combined holdout | 96 untouched contexts, checked as two halves |
+| Historical confirmation | 96 disjoint suffix contexts, checked as two halves; previously evaluated corpus |
 | Selected bucket cap | 4 |
 | Added tensor-data cap | 1 GiB |
 | Runtime regression cap | 3% |

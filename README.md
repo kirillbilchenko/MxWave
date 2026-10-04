@@ -47,9 +47,9 @@ ideas:
 🚧 **Experimental, with a working core and streaming engine.** Module-keyed calibration,
 shard discovery, on-device quantization, output assembly, and strict output
 verification are implemented and unit-tested. A paired 297k-token DGX Spark
-likelihood screen found the recommended block-Hessian scale-only artifact 0.83%
+likelihood screen of the historical published artifact found it 0.83%
 lower in perplexity than AMD Quark-AWQ MXFP4 and 1.74% above BF16. On 128
-held-out contexts it also had 12.0% lower mean next-token forward KL from BF16
+overlapping WikiText contexts it also had 12.0% lower mean next-token forward KL from BF16
 than AMD, although that paired interval crosses zero. The exact protocols and
 uncertainty are recorded below; the earlier 100-item task screens remain
 diagnostic rather than reportable benchmark scores.
@@ -58,6 +58,61 @@ The checked-in benchmark JSON was produced before the MxWave rename and retains
 its original `mxstream-*` schema and model labels so the recorded SHA-256 hashes
 remain valid. Current Python imports, console commands, and newly generated
 artifacts use `mxwave` exclusively.
+
+Current conversions use quantization revision `mxfp4-rne-v2`: exact E2M1 ties
+round to the even neighbour, and Qwen's norm proxy uses `abs(1 + weight)`.
+These corrections can change newly generated weights. Published artifacts and
+their recorded scores describe the earlier implementation; reproducing their
+exact bytes requires the pinned release commit. Resume rejects runs from the
+earlier revision. Corrected models have not yet received whole-model quality
+benchmarks on a reserved final corpus. The fixed validation comparison below
+has completed. See the [evaluation record](docs/QUANTIZATION_FIXES_AND_VALIDATION.md).
+
+The corrected-code Spark chunk benchmark has completed two sweep orders with
+identical packed/scales hashes. For the tested H64 matrices, the current
+1,048,576-element budget was faster than larger chunks. Two further sweep
+orders included production output copies, disk writes and fsync, with the
+same conclusion on those matrices. The
+[dated control experiment](docs/CORRECTED_CONTROLS_2026-10-03.md) records both
+timing scopes and the completed fresh quality comparison.
+
+### Corrected-code validation controls
+
+The Hugging Face link above points to the **published legacy-rounding H64**
+artifact: its historical test-split PPL is **8.119445**. The **7.954455** below
+belongs to a newly converted, **unpublished** `mxfp4-rne-v2` H64 checkpoint on
+the validation split. These different evaluation splits are not an old-versus-new
+rounding ablation. Exact checkpoint identities are recorded in the linked reports.
+
+The fixed `mxfp4-rne-v2` comparison completed on Spark using stock vLLM 0.29.0:
+128 frozen WikiText validation windows (121,284 scored tokens) for prompt PPL,
+and 64 different windows with eight prefixes each for full-vocabulary KL.
+No recipe tuning or model promotion occurred; another 89 windows remain reserved.
+
+| Control | Prompt PPL ↓ | Mean forward KL from BF16 ↓ | Top-1 / 512 | Sampled SQNR, dB | Output tok/s, c1 | Output tok/s, c4 |
+|---|---:|---:|---:|---:|---:|---:|
+| BF16 | 7.831635 | reference | 512 | — | 4.65 | 17.55 |
+| Corrected RTN | 8.059076 | 0.059035 | 455 | 18.911 | 12.98 | 44.18 |
+| Unweighted MSE | 8.034145 | 0.062363 | 461 | 18.958 | 12.96 | 44.03 |
+| Corrected norm fallback MSE | 8.040323 | 0.074429 | 456 | 18.956 | 12.81 | 43.38 |
+| Local corrected H64 scale-only | **7.954455** | **0.054833** | 461 | 18.821 | 12.77 | 43.49 |
+| AMD Quark-AWQ MXFP4 | 7.993200 | 0.060078 | 465 | — | 12.53 | 42.32 |
+
+H64 is 0.485% lower in PPL than AMD (paired 95% interval: 0.151%–0.823% lower),
+1.568% above BF16, and 1.298% below RTN. The corrected norm fallback did not
+improve unweighted MSE: its PPL interval includes equality and its KL was worse.
+H64's KL is 8.73% below AMD on this screen; top-1 agreement favors AMD.
+These are scale-only gains on a fixed validation sample, with nominal paired
+window intervals. They do not establish universal task superiority.
+
+Decode rates are medians of three runs with 512 input tokens and 128 forced
+output tokens, including prefill; c4 is aggregate output throughput. Small
+differences among MXFP4 models are observations from this short run. SQNR is
+the mean unweighted score of the first 16 rows of each target; AMD was not
+remeasured for reconstruction. Downstream task accuracies were not rerun. H64
+conversion took 255.46 seconds with 79.8 MiB peak CUDA allocation and 1.44 GiB
+process RSS. The full protocol, uncertainty, conversion resources, and raw
+reports are in the [dated control experiment](docs/CORRECTED_CONTROLS_2026-10-03.md).
 
 ## Install
 
@@ -162,6 +217,16 @@ objective. The Hessian affects scale selection only; code assignment remains
 nearest-E2M1. The calibration file must cover every selected target exactly;
 MxWave never silently mixes real statistics with gamma or unweighted MSE.
 
+Without `--activation-stats`, MSE uses unweighted scale search by default.
+The Qwen norm fallback requires explicit `--gamma-proxy`; `--no-gamma-proxy`
+remains accepted. The corrected proxy did not improve plain MSE in the fixed
+validation comparison, so it is retained as an experimental opt-in.
+
+Hessian damping defaults to an absolute diagonal addition of `1e-6`.
+Use `--hessian-damp-mode relative --hessian-damp 0.01` to add 1% of each block's
+mean diagonal instead. This option is recorded in the artifact and is not a
+newly validated H64 recommendation.
+
 Calibration defaults to bounded-residency `--weight-loading streaming`. It
 constructs the model on the meta device, loads the embedding and then one
 decoder layer at a time, keeps the evolving hidden states on CPU, and releases
@@ -224,8 +289,10 @@ weight shards, trading additional I/O for cryptographically safe shard reuse.
 The Qwen3.5-MoE adapter quantizes routed experts only. Routers, shared experts,
 attention/GDN, embeddings, norms, the output head, vision weights, and all other
 non-target tensors remain passthrough. The configured host cap bounds
-materialized tensor payload per output shard; serializer, allocator, mmap,
-page-cache, and filesystem overhead remain outside that bound.
+planned output tensor payload per shard and is checked before loading payloads.
+Current emission writes chunks directly to disk. Quantization inputs are also
+bounded by `--tensor-chunk-max-elements`; device workspace, allocator, mmap,
+page-cache, and filesystem overhead remain additional.
 
 The output uses the standard weight-only `mxfp4-pack-quantized` contract. On DGX
 Spark / SM121 it was validated with the official vLLM 0.29 image and both Marlin
@@ -237,7 +304,7 @@ vllm serve /path/to/output \
     --moe-backend marlin
 ```
 
-The real Nex-N2.5-mini preflight converted 30,720 logical expert matrices into
+The historical Nex-N2.5-mini preflight converted 30,720 logical expert matrices into
 61,440 packed/scale tensors across 87 shards while process RSS remained about
 1.3–1.9 GiB. Stock vLLM selected `MarlinExperts`, and text and vision smoke
 forwards passed. These results establish bounded emission and runtime
@@ -268,14 +335,17 @@ mxwave-precision-budget compose \
 
 This remains opt-in: a plan defines candidates but does not establish that any
 candidate improves the model. Promotion requires frozen reference and baseline
-outputs, disjoint selection splits, an untouched holdout, and whole-model task
+outputs, disjoint selection splits, a final split reserved before recipe selection, and whole-model task
 checks. The first Qwen3.8-27B experiment improved prompt PPL from `8.119445` to
 `8.111578` while adding 375.6 MiB. On the paired full GSM8K run it scored
 `92.0394%` strict versus H64's `91.5845%`; the positive 0.455-point difference
 was not statistically conclusive. The candidate is therefore a qualified
 optional quality variant, not the new default. See the reusable
 [precision-budget runbook](docs/PRECISION_BUDGET_RUNBOOK.md) and the complete
-[Qwen experiment record](docs/QWEN3_8_27B_PRECISION_BUDGET.md). The release
+[Qwen experiment record](docs/QWEN3_8_27B_PRECISION_BUDGET.md). Its 96-context
+confirmation suffix was disjoint from that experiment's selection prefix but
+came from the previously evaluated WikiText test corpus. It was not globally
+untouched evaluation data. The release
 claims and serving instructions are frozen in the
 [mixed-precision model card](docs/QWEN3_8_27B_PRECISION_BUDGET_MODEL_CARD.md).
 
@@ -288,6 +358,9 @@ shard in host memory. Activation statistics are opened lazily and one target's
 validated statistic is released before the next target is loaded. Each shard is
 flushed durably before its atomic rename and recorded in a run-bound SHA-256
 ledger; resumed runs verify the complete payload rather than trusting headers.
+Both engines hash source-shard contents, config and index files for run identity.
+A durable pending-shard journal lets resume complete a crash between shard
+rename and ledger update without manually deleting the completed shard.
 
 ### Archived DGX Spark experiments
 
@@ -318,13 +391,19 @@ misleading weight-objective improvement.
 | Artifact | Flexible | Strict | Calibration-weighted SQNR |
 |---|---:|---:|---:|
 | AMD Quark AWQ MXFP4 | 93% | 93% | not available |
-| MxWave gamma-proxy MSE | 91% | 90% | 19.04 dB on 272/400 targets |
+| MxWave historical `abs(weight)` MSE (incorrect norm proxy) | 91% | 90% | 19.04 dB on 272/400 targets |
 | MxWave block-Hessian scale selection, 16×512 | 92% | 91% | 19.15 dB |
 | MxWave block-Hessian scale selection, 64×512 | 92% | 91% | 19.14 dB |
 | MxWave block-local Hessian feedback, 64×512 | 94% | 94% | 19.68 dB |
 | MxWave Hessian feedback + 1.125× MSE trust region, 64×512 | 93% | 93% | 19.26 dB |
 | MxWave real-RMS scale selection | 90% | 88% | 19.08 dB |
 | MxWave + one full Hessian rounding sweep | 86% | 86% | 19.69 dB |
+
+The historical norm-proxy row used `abs(weight)` despite Qwen3.5 RMSNorm
+applying `1 + weight`. Its task scores remain measurements of that artifact,
+but it is not a valid test of the corrected gamma proxy. The local rounding
+experiments used block Hessians and float-prefix inputs; they do not rule out
+sequential full-Hessian GPTQ or combinations with channel scaling and rotations.
 
 The rounding sweep lost eight paired items to AMD and gained one on both
 extractors (two-sided exact McNemar `p=0.039`). This is direct evidence that
@@ -353,7 +432,7 @@ trust region. It improved held-out local SQNR, but on the deterministic
 bootstrap interval: 0.020% to 0.271% worse). This rejects feedback as the default
 and demonstrates why local reconstruction metrics are not promotion criteria.
 
-## Deterministic DGX Spark likelihood screen
+## Historical deterministic DGX Spark likelihood screen
 
 Model: `Qwen/Qwen3.8-27B`. Hardware: NVIDIA GB10 / SM121 (DGX Spark). The source
 is the pinned Salesforce WikiText-2 raw test parquet at revision
@@ -376,6 +455,12 @@ the [machine-readable benchmark summary](benchmarks/qwen3.8-27b-wikitext2-prompt
 The complete pinned commands, configuration, hashes, and replay checks are in the
 [Qwen3.8-27B H64 reproducibility record](docs/QWEN3_8_27B_H64_REPRODUCIBILITY.md).
 
+Earlier recipe probes used windows from this test corpus. These intervals
+describe paired sampling variation; they do not adjust for adaptive recipe
+selection. The corrected controls above use a separate validation split and
+include whole-model RTN and unweighted MSE. The reserved final windows remain
+unscored; these historical intervals are not evidence from an untouched holdout.
+
 | Artifact | Prompt PPL ↓ | Change vs BF16 | Paired window wins vs BF16 |
 |---|---:|---:|---:|
 | Qwen3.8-27B BF16 | 7.980864 | reference | — |
@@ -394,6 +479,10 @@ sampled GSM8K screen was effectively tied (MxWave 92%/91%, AMD 93%/93%).
 The complementary distribution test uses 128 evenly spaced WikiText contexts
 of up to 512 tokens and collects all 248,320 next-token log probabilities. Both
 MXFP4 candidates are compared against the same BF16 reference distribution.
+These contexts are prefixes of a subset of the PPL windows above, so this is
+another metric on overlapping data. It scores one next-token position per
+context, not 128 full sequence distributions; top-1 agreement is 120 versus
+117 of 128 positions.
 The complete inputs, per-context values, artifact hashes, and paired bootstrap
 are in the
 [machine-readable divergence report](benchmarks/qwen3.8-27b-next-token-divergence.json).
@@ -429,7 +518,7 @@ MxWave/
 │   ├── incremental_safetensors.py Direct, bounded output payload writer
 │   ├── engine.py    GPU-streaming quantization orchestration
 │   ├── format.py    input format detection from config.json (not suffix sniffing)
-│   ├── rotate.py    Hadamard / random-orthogonal rotation + folding
+│   ├── rotate.py    Experimental block Hadamard / orthogonal primitives
 │   ├── runtime_ir.py Model-independent runtime operations and fused groups
 │   ├── runtime_adapters.py Validated architecture-adapter registry
 │   ├── expert_ir.py Model-independent fused-expert bank/slice contract
@@ -464,7 +553,7 @@ MxWave/
 - [ ] **Rotation folding** — emit standard `compressed-tensors` `transform_config`
 - [ ] **Auto per-layer precision** — Hessian-trace-driven MXFP4/FP8/BF16 assignment
 - [x] **Measured precision-budget experiment** — adapter-driven, fusion-safe FP8
-      allocation passed frozen selection, untouched KL, and full-corpus PPL gates;
+      allocation passed within-experiment selection/confirmation and full-corpus PPL gates;
       retained as an opt-in feature pending broader task validation
 - [ ] **Sequential layer reconstruction** — calibrate each block on inputs from the
       already-quantized prefix and compensate errors across full input dimensions

@@ -120,9 +120,51 @@ def test_rtn_scale_matches_compressed_tensors_reference_edges():
     assert scales[:, 0].tolist() == [0, 101, 105, 127, 127, 128, 128]
     reconstructed = dequant_mxfp4(packed, scales, weight.shape)
     assert reconstructed[3, 0] == 6.0
-    assert reconstructed[5, 0] == 6.0
+    # 7 / scale(2) is the 3.5 midpoint; E2M1 ties-to-even chooses 4.
+    assert reconstructed[5, 0] == 8.0
 
 
 def test_rtn_rejects_calibration_weighting():
     with torch.no_grad(), pytest.raises(ValueError, match="rtn does not use"):
         quantize_mxfp4(torch.randn(2, 32), method="rtn", gamma=torch.ones(32))
+
+
+@pytest.mark.parametrize("method", ["rtn", "mse"])
+def test_ocp_rounding_midpoints_and_nibble_order(method: str) -> None:
+    midpoints = torch.tensor([0.25, 0.75, 1.25, 1.75, 2.5, 3.5, 5.0])
+    weight = torch.full((1, BLOCK_SIZE), 6.0)
+    weight[0, :7] = midpoints
+    weight[0, 7:14] = -midpoints
+    packed, scales = quantize_mxfp4(weight, method=method, scale_percentile=100)
+    assert scales.item() == 127
+    codes = torch.stack((packed & 15, packed >> 4), dim=-1).reshape(-1)
+    assert codes[:14].tolist() == [0, 2, 2, 4, 4, 6, 6, 8, 10, 10, 12, 12, 14, 14]
+    reconstructed = dequant_mxfp4(packed, scales, weight.shape)
+    expected = torch.tensor([0.0, 1.0, 1.0, 2.0, 2.0, 4.0, 4.0])
+    torch.testing.assert_close(reconstructed[0, :7], expected)
+    torch.testing.assert_close(reconstructed[0, 7:14], -expected)
+
+
+def test_deep_hessian_search_keeps_weight_workspace_independent_of_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from mxwave import core
+
+    weight = torch.randn(5, 128, requires_grad=True)
+    hessian = torch.eye(32).repeat(4, 1, 1)
+    original = core._round_to_mxfp4
+    calls = []
+
+    def record_workspace(values: torch.Tensor) -> torch.Tensor:
+        calls.append(tuple(values.shape))
+        assert values.numel() == weight.numel()
+        assert not values.requires_grad
+        return original(values)
+
+    monkeypatch.setattr(core, "_round_to_mxfp4", record_workspace)
+    packed, scales = quantize_mxfp4(weight, hessian=hessian, mse_clip_depth=8)
+    assert len(calls) == 11
+    reconstructed = dequant_mxfp4(packed, scales, weight.shape)
+    rtn_packed, rtn_scales = quantize_mxfp4(weight, method="rtn")
+    rtn = dequant_mxfp4(rtn_packed, rtn_scales, weight.shape)
+    assert (weight - reconstructed).square().sum() <= (weight - rtn).square().sum()

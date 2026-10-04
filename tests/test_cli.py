@@ -20,6 +20,14 @@ def test_public_command_names_are_mxwave() -> None:
     assert build_qualification_parser().prog == "mxwave-qualify"
 
 
+def test_norm_proxy_requires_explicit_cli_opt_in() -> None:
+    parser = build_quantize_parser()
+    required = ["--model-dir", "source", "--output-dir", "output", "--method", "mse"]
+    assert parser.parse_args(required).gamma_proxy is False
+    assert parser.parse_args([*required, "--gamma-proxy"]).gamma_proxy is True
+    assert parser.parse_args([*required, "--no-gamma-proxy"]).gamma_proxy is False
+
+
 def test_packaged_entry_points_are_mxwave_only() -> None:
     project = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
     assert project["project"]["scripts"] == {

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from mxwave.format import detect_input_format, scale_suffix_for
 
 
@@ -68,3 +70,16 @@ def test_detects_modelopt_nvfp4(tmp_path: Path):
 def test_unknown_quantized_config_never_defaults_to_fp16(tmp_path: Path):
     d = _write_config(tmp_path, {"quant_method": "gptq", "bits": 4})
     assert detect_input_format(d).kind == "unknown_quantized"
+
+
+@pytest.mark.parametrize("content", ["{broken", "[1,2]", "null"])
+def test_invalid_config_never_defaults_to_float(tmp_path: Path, content: str) -> None:
+    (tmp_path / "config.json").write_text(content)
+    with pytest.raises((ValueError, TypeError), match="config"):
+        detect_input_format(tmp_path)
+
+
+def test_invalid_quantization_config_type_never_defaults_to_float(tmp_path: Path) -> None:
+    (tmp_path / "config.json").write_text('{"quantization_config": []}')
+    with pytest.raises(ValueError, match="quantization_config"):
+        detect_input_format(tmp_path)

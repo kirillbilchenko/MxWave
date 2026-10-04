@@ -81,6 +81,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="sdpa",
     )
     parser.add_argument("--hessian-damp", type=float, default=1e-6)
+    parser.add_argument(
+        "--hessian-damp-mode",
+        choices=("absolute", "relative"),
+        default="absolute",
+        help="Use an absolute diagonal addition or a fraction of each block's mean diagonal",
+    )
+    parser.add_argument(
+        "--skip-first-tokens",
+        type=int,
+        default=0,
+        help="Exclude this many leading positions per window from statistics (default: 0)",
+    )
     parser.add_argument("--source-repository", default=None)
     parser.add_argument("--source-revision", default=None)
     parser.add_argument("--trust-remote-code", action="store_true")
@@ -240,11 +252,7 @@ def _model_class(transformers: Any, config: Any) -> Any:
 
 
 def _target_widths(plan: ModelPlan) -> dict[str, int]:
-    return {
-        item.info.name: item.info.shape[-1]
-        for item in plan.tensors
-        if item.quantized
-    }
+    return {item.info.name: item.info.shape[-1] for item in plan.tensors if item.quantized}
 
 
 def _checkpoint_files(plan: ModelPlan) -> dict[str, Path]:
@@ -263,6 +271,8 @@ def run(args: argparse.Namespace) -> Path:
     """Capture and save calibration statistics for parsed CLI arguments."""
     if args.batch_size <= 0:
         raise ValueError("batch_size must be positive")
+    if not 0 <= args.skip_first_tokens < args.sequence_length:
+        raise ValueError("--skip-first-tokens must be in [0, sequence_length)")
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is unavailable")
@@ -318,6 +328,8 @@ def run(args: argparse.Namespace) -> Path:
             widths,
             objectives,
             hessian_damp=args.hessian_damp,
+            hessian_damp_mode=args.hessian_damp_mode,
+            skip_first_tokens=args.skip_first_tokens,
         )
         handles = attach_activation_hooks(empty_model, collector)
         for handle in handles:
@@ -333,6 +345,7 @@ def run(args: argparse.Namespace) -> Path:
                     "sequences": len(sequences),
                     "sequence_offset": args.sequence_offset,
                     "sequence_length": args.sequence_length,
+                    "skip_first_tokens": args.skip_first_tokens,
                     "tokens": len(sequences) * args.sequence_length,
                     "weight_loading": args.weight_loading,
                     "corpus_sha256": _sha256_file(corpus_path),
@@ -377,6 +390,8 @@ def run(args: argparse.Namespace) -> Path:
             dtype=dtype,
             batch_size=args.batch_size,
             hessian_damp=args.hessian_damp,
+            hessian_damp_mode=args.hessian_damp_mode,
+            skip_first_tokens=args.skip_first_tokens,
             progress=lambda completed, total: print(
                 f"[mxwave] calibration layer {completed}/{total}"
             ),
@@ -395,9 +410,7 @@ def run(args: argparse.Namespace) -> Path:
         if device.type != "cpu":
             model_kwargs["device_map"] = {"": str(device)}
         print(f"[mxwave] loading the full float model on {device} (resident mode)")
-        model = _model_class(transformers, model_config).from_pretrained(
-            model_dir, **model_kwargs
-        )
+        model = _model_class(transformers, model_config).from_pretrained(model_dir, **model_kwargs)
         if device.type == "cpu":
             model.to(device)
         model.eval()
@@ -406,6 +419,8 @@ def run(args: argparse.Namespace) -> Path:
             widths,
             objectives,
             hessian_damp=args.hessian_damp,
+            hessian_damp_mode=args.hessian_damp_mode,
+            skip_first_tokens=args.skip_first_tokens,
         )
         handles = attach_activation_hooks(model, collector)
         try:
@@ -431,9 +446,7 @@ def run(args: argparse.Namespace) -> Path:
         del model, collector
 
     elapsed = time.monotonic() - started
-    peak_accelerator = (
-        int(torch.cuda.max_memory_allocated(device)) if device.type == "cuda" else 0
-    )
+    peak_accelerator = int(torch.cuda.max_memory_allocated(device)) if device.type == "cuda" else 0
     metadata = {
         "policy": policy_name,
         "source_repository": args.source_repository or "",
@@ -450,6 +463,8 @@ def run(args: argparse.Namespace) -> Path:
         "config_sha256": _optional_file_sha256(model_dir / "config.json"),
         "index_sha256": _optional_file_sha256(model_dir / "model.safetensors.index.json"),
         "hessian_damp": str(args.hessian_damp),
+        "hessian_damp_mode": args.hessian_damp_mode,
+        "skip_first_tokens": str(args.skip_first_tokens),
         "minimum_observations": str(min(counts.values())),
         "maximum_observations": str(max(counts.values())),
         "capture_seconds": f"{elapsed:.6f}",
@@ -458,8 +473,7 @@ def run(args: argparse.Namespace) -> Path:
     }
     save_calibration_data(output_path, statistics, metadata)
     print(
-        f"[mxwave] saved {','.join(sorted(statistics))} for {len(widths)} targets "
-        f"to {output_path}"
+        f"[mxwave] saved {','.join(sorted(statistics))} for {len(widths)} targets to {output_path}"
     )
     print(
         f"[mxwave] peak RSS {_peak_rss_bytes() / (1024**3):.2f} GiB; "

@@ -3,7 +3,7 @@
 ## Outcome
 
 This is the first bounded MxWave precision-allocation experiment that passed its
-predeclared selection and untouched-holdout gates. Starting from the H64 MXFP4
+predeclared selection and within-experiment confirmation gates. Starting from the H64 MXFP4
 checkpoint, it promotes only 12 of 400 quantized tensors to channel-wise FP8:
 
 - four early sequence-output projections in layers 8-11;
@@ -43,7 +43,7 @@ The screen was registered before candidate evaluation:
 - two disjoint 16-context selection splits;
 - eligibility required lower mean forward KL than H64 on both splits;
 - at most four buckets and 1 GiB of additional tensor data;
-- a final, untouched 96-context gate split into two 48-context halves;
+- a disjoint 96-context confirmation gate split into two 48-context halves;
 - final promotion required lower mean KL on both halves and no more than one
   lost BF16 top-1 agreement.
 
@@ -58,9 +58,13 @@ The combined premium is 393,854,976 tensor bytes (375.6 MiB). The final
 checkpoint is 20,226,686,160 manifest-accounted bytes with a 2.747x global
 compression ratio; its full directory is 20,250,144,780 bytes.
 
-## Untouched forward-KL gate
+## Within-experiment forward-KL confirmation
 
-The combined candidate passed the untouched 96-context gate:
+The combined candidate passed the disjoint 96-context gate. These contexts
+were excluded from this experiment's selection prefix, but all 128 contexts
+reused previously scored WikiText test windows from the H64/PPL/KL evaluation.
+They were not a globally untouched holdout. The values below describe that
+historical protocol; future validation should use a separately reserved corpus.
 
 | Metric | H64 | Candidate |
 |---|---:|---:|
@@ -192,7 +196,7 @@ not unique:
 
 MxWave's differentiator is narrower: allocate a strict byte budget using
 measured end-to-end sensitivity, require agreement across disjoint selection
-splits, and verify the combined allocation on untouched data while emitting a
+splits, and verify the combined allocation on disjoint confirmation data while emitting a
 standard vLLM compressed-tensors checkpoint. The candidate promotes only 12
 tensors rather than assigning an entire architectural family to FP8.
 

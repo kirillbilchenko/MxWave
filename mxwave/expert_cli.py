@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 
+from .checkpoint import DEFAULT_TENSOR_CHUNK_MAX_ELEMENTS
 from .expert_engine import ExpertQuantizationConfig, plan_expert_model, quantize_expert_model
 
 
@@ -48,12 +49,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum logical expert rows processed on device at once",
     )
     parser.add_argument(
+        "--tensor-chunk-max-elements",
+        type=int,
+        default=DEFAULT_TENSOR_CHUNK_MAX_ELEMENTS,
+        help="Maximum input elements per logical expert chunk, also bounded by the row limit",
+    )
+    parser.add_argument(
         "--host-tensor-cap-mib",
         type=int,
         default=1024,
         help=(
-            "Hard cap in MiB for materialized tensor payload per output shard; "
-            "serializer and filesystem-cache overhead are additional"
+            "Maximum planned output tensor payload per shard in MiB; output is streamed, "
+            "and device workspace, allocator, and filesystem cache are additional"
         ),
     )
     parser.add_argument(
@@ -101,6 +108,7 @@ def main(argv: list[str] | None = None) -> int:
         scale_percentile=args.scale_percentile,
         mse_clip_depth=args.mse_clip_depth,
         tensor_row_chunk_size=args.tensor_row_chunk_size,
+        tensor_chunk_max_elements=args.tensor_chunk_max_elements,
         host_tensor_cap_bytes=args.host_tensor_cap_mib * 1024**2,
         resume=args.resume,
         verify_sqnr=args.verify_sqnr,
@@ -113,7 +121,14 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(plan_expert_model(config).summary(), indent=2))
             return 0
         processed = quantize_expert_model(config)
-    except (FileNotFoundError, FileExistsError, OSError, RuntimeError, TypeError, ValueError) as exc:
+    except (
+        FileNotFoundError,
+        FileExistsError,
+        OSError,
+        RuntimeError,
+        TypeError,
+        ValueError,
+    ) as exc:
         print(f"mxwave: error: {exc}", file=sys.stderr)
         return 1
     method = args.method.upper()

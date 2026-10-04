@@ -111,6 +111,54 @@ def _select_chunk_indices(args: argparse.Namespace, population: int) -> tuple[li
     return _fixed_chunk_indices(chunk_indices, population), "explicit-chunk-indices"
 
 
+def _evaluation_digests(value: object) -> dict[str, set[str]]:
+    """Find corpus and context identities in context manifests or PPL reports."""
+    result: dict[str, set[str]] = {
+        "corpus_sha256": set(),
+        "text_sha256": set(),
+        "token_ids_sha256": set(),
+    }
+
+    def visit(item: object) -> None:
+        if isinstance(item, dict):
+            for key, child in item.items():
+                if key in result and isinstance(child, str):
+                    result[key].add(child)
+                else:
+                    visit(child)
+        elif isinstance(item, list):
+            for child in item:
+                visit(child)
+
+    visit(value)
+    return result
+
+
+def _check_evaluation_exclusions(
+    corpus_sha256: str, contexts: list[dict[str, object]], paths: list[str]
+) -> dict[str, object] | None:
+    """Reject reuse of a supplied evaluated corpus or exact context identity."""
+    if not paths:
+        return None
+    current = _evaluation_digests({"corpus_sha256": corpus_sha256, "contexts": contexts})
+    artifacts = []
+    for filename in paths:
+        path = Path(filename)
+        raw = path.read_bytes()
+        previous = _evaluation_digests(json.loads(raw))
+        if not any(previous.values()):
+            raise ValueError(f"Excluded evaluation has no corpus or context hashes: {path}")
+        for field in current:
+            if current[field].intersection(previous[field]):
+                raise ValueError(f"Evaluation data overlaps {path}: matching {field}")
+        artifacts.append({"path": str(path), "sha256": _sha256_bytes(raw)})
+    return {
+        "passed": True,
+        "scope": "distinct corpus bytes and exact text/token hashes; not semantic deduplication",
+        "excluded_evaluations": artifacts,
+    }
+
+
 def prepare_contexts(args: argparse.Namespace) -> Path:
     """Create one immutable token-ID manifest shared by every model."""
     from transformers import AutoTokenizer
@@ -118,6 +166,10 @@ def prepare_contexts(args: argparse.Namespace) -> Path:
     model_path = Path(args.model)
     corpus_path = Path(args.corpus)
     output_path = Path(args.output)
+    if output_path.exists():
+        raise FileExistsError(f"Refusing to overwrite a frozen context manifest: {output_path}")
+    if args.context_tokens <= 0:
+        raise ValueError("--context-tokens must be positive")
     corpus_bytes = corpus_path.read_bytes()
     chunks = _nonempty_chunks(corpus_bytes.decode("utf-8"), args.chunk_characters)
     indices, selection = _select_chunk_indices(args, len(chunks))
@@ -146,6 +198,9 @@ def prepare_contexts(args: argparse.Namespace) -> Path:
             }
         )
 
+    exclusion_audit = _check_evaluation_exclusions(
+        _sha256_bytes(corpus_bytes), contexts, getattr(args, "exclude_evaluation", [])
+    )
     manifest = {
         "format": "mxwave-next-token-contexts-v1",
         "corpus": str(corpus_path),
@@ -158,6 +213,12 @@ def prepare_contexts(args: argparse.Namespace) -> Path:
         "tokenizer_class": tokenizer.__class__.__name__,
         "tokenizer_vocab_size": len(tokenizer),
         "contexts": contexts,
+        "dataset_provenance": {
+            "name": getattr(args, "dataset_name", None),
+            "revision": getattr(args, "dataset_revision", None),
+            "split": getattr(args, "dataset_split", None),
+        },
+        "exclusion_audit": exclusion_audit,
     }
     if selection == "explicit-chunk-indices":
         manifest["selected_chunk_indices"] = indices
@@ -534,14 +595,10 @@ def compare_distributions(args: argparse.Namespace) -> Path:
     }
     protocol_identity = {
         "reference_artifact_sha256": _sha256_file(reference_path),
-        "reference_selected_context_sha256": reference_metadata.get(
-            "selected_context_sha256"
-        ),
+        "reference_selected_context_sha256": reference_metadata.get("selected_context_sha256"),
         "context_manifest_sha256": reference_metadata.get("contexts_manifest_sha256"),
         "context_protocol_manifest_sha256": (
-            context_protocol.get("manifest_sha256")
-            if isinstance(context_protocol, dict)
-            else None
+            context_protocol.get("manifest_sha256") if isinstance(context_protocol, dict) else None
         ),
         "num_contexts": reference_metadata.get("num_contexts"),
         "vocab_size": reference_metadata.get("vocab_size"),
@@ -595,6 +652,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     prepare.add_argument("--context-tokens", type=int, default=512)
     prepare.add_argument("--chunk-characters", type=int, default=4096)
+    prepare.add_argument("--dataset-name", help="Dataset identity for the selected corpus")
+    prepare.add_argument("--dataset-revision", help="Immutable dataset revision")
+    prepare.add_argument("--dataset-split", help="Declared train, validation, or test split")
+    prepare.add_argument(
+        "--exclude-evaluation",
+        action="append",
+        default=[],
+        help="Reject corpus/context reuse from this prior context manifest or PPL report; repeatable",
+    )
     prepare.set_defaults(handler=prepare_contexts)
 
     collect = subparsers.add_parser("collect", help="collect full next-token distributions")

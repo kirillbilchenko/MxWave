@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from types import ModuleType
 
+import pytest
 import torch
 from safetensors.torch import save_file
 
@@ -197,3 +198,12 @@ def test_screen_runner_uses_explicit_artifacts_and_official_vllm() -> None:
     )
     assert command[command.index("--contexts") + 1] == "frozen-contexts.json"
     assert command[command.index("--runtime-image") + 1] == "vllm/vllm-openai:v0.29.0"
+
+
+def test_precision_selection_rejects_overlapping_token_contexts(tmp_path: Path) -> None:
+    contexts, *_ = _context_files(tmp_path)
+    document = json.loads(contexts.read_text())
+    document["contexts"][4]["token_ids_sha256"] = document["contexts"][0]["token_ids_sha256"]
+    contexts.write_text(json.dumps(document))
+    with pytest.raises(ValueError, match="Selection and confirmation data overlap"):
+        _load_script()._validate_context_partition(contexts, 4)

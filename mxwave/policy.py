@@ -43,6 +43,10 @@ _QWEN_LINEAR_ATTN = re.compile(
 _GENERIC_EXCLUDE = re.compile(
     r"(?:embed|embedding|lm_head|norm|router|conv|patch|position|relative_attention)"
 )
+_ROUTER_EXCLUDE = re.compile(r"(?:^|\.)(?:gate|shared_expert_gate|mtp)(?:\.|$)")
+_QWEN_AUXILIARY_INPUT = re.compile(
+    r"^model\.language_model\.layers\.\d+\.linear_attn\.(?:in_proj_a|in_proj_b)\.weight$"
+)
 _FLOAT_DTYPES = frozenset({"BF16", "F16", "F32"})
 
 
@@ -62,7 +66,37 @@ class QuantizationPolicy:
                 pattern.fullmatch(name) is not None
                 for pattern in (_QWEN_MLP, _QWEN_FULL_ATTN, _QWEN_LINEAR_ATTN)
             )
-        return name.endswith(".weight") and _GENERIC_EXCLUDE.search(name) is None
+        return (
+            name.endswith(".weight")
+            and _GENERIC_EXCLUDE.search(name) is None
+            and _ROUTER_EXCLUDE.search(name) is None
+        )
+
+    def ignores(self, info: TensorInfo) -> bool:
+        """Classify explicit passthrough weights independently of the selected targets.
+
+        Unknown weighted modules in an architecture-specific policy remain
+        unclassified, so the coverage check can reject an incomplete policy.
+        """
+        name = info.name
+        if not name.endswith(".weight"):
+            return False
+        if _GENERIC_EXCLUDE.search(name) or _ROUTER_EXCLUDE.search(name):
+            return True
+        if self.name == "all-linear":
+            return False
+        if name.startswith(("model.visual.", "model.vision_tower.")):
+            return True
+        if _QWEN_AUXILIARY_INPUT.fullmatch(name):
+            return True
+        return self.name == "qwen3.8-27b-mlp" and any(
+            pattern.fullmatch(name) for pattern in (_QWEN_FULL_ATTN, _QWEN_LINEAR_ATTN)
+        )
+
+    @property
+    def gamma_proxy_offset(self) -> float:
+        """Return the offset used by the policy's stored RMSNorm parameters."""
+        return 1.0 if self.name.startswith("qwen3.8") else 0.0
 
     def selects(self, info: TensorInfo) -> bool:
         """Return whether a tensor is both named and shaped for MXFP4."""
@@ -75,6 +109,8 @@ class QuantizationPolicy:
     def gamma_proxy_source(self, target_name: str) -> str | None:
         """Return the RMSNorm tensor that directly scales a target's input.
 
+        Qwen3.5 RMSNorm stores a zero-centered weight: its effective multiplier
+        is ``1 + weight``, as represented by ``gamma_proxy_offset``.
         Qwen's gate and up projections consume the output of the same
         post-attention RMSNorm.  Attention input projections consume the input
         RMSNorm output.  Output projections and the MLP down projection consume
@@ -149,6 +185,15 @@ def expected_target_count(
     policy: QuantizationPolicy,
 ) -> int | None:
     """Return the architecture-derived target count when it is knowable."""
+    names = expected_target_names(model_dir, policy)
+    return len(names) if names is not None else None
+
+
+def expected_target_names(
+    model_dir: str | Path,
+    policy: QuantizationPolicy,
+) -> frozenset[str] | None:
+    """Derive exact target names from the model's declared decoder layout."""
     if policy.name == "all-linear":
         return None
     config = load_config_json(model_dir)
@@ -159,8 +204,13 @@ def expected_target_count(
     if not isinstance(raw_num_layers, int) or raw_num_layers <= 0:
         raise ValueError("Qwen text_config has an invalid num_hidden_layers")
     num_layers = raw_num_layers
+    names = {
+        f"model.language_model.layers.{index}.mlp.{projection}.weight"
+        for index in range(num_layers)
+        for projection in ("gate_proj", "up_proj", "down_proj")
+    }
     if policy.name == "qwen3.8-27b-mlp":
-        return num_layers * 3
+        return frozenset(names)
 
     raw_layer_types = text_config.get("layer_types")
     if not isinstance(raw_layer_types, list) or len(raw_layer_types) != num_layers:
@@ -170,7 +220,18 @@ def expected_target_count(
     linear_attention = sum(item == "linear_attention" for item in layer_types)
     if full_attention + linear_attention != num_layers:
         raise ValueError("Qwen layer_types contains an unsupported layer type")
-    return num_layers * 3 + full_attention * 4 + linear_attention * 3
+    for index, layer_type in enumerate(layer_types):
+        projections = (
+            ("q_proj", "k_proj", "v_proj", "o_proj")
+            if layer_type == "full_attention"
+            else ("in_proj_qkv", "in_proj_z", "out_proj")
+        )
+        attention = "self_attn" if layer_type == "full_attention" else "linear_attn"
+        names.update(
+            f"model.language_model.layers.{index}.{attention}.{projection}.weight"
+            for projection in projections
+        )
+    return frozenset(names)
 
 
 def validate_selected_tensor(info: TensorInfo, policy: QuantizationPolicy) -> None:

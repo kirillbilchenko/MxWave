@@ -17,6 +17,23 @@ schema labels so its recorded hashes remain valid. The public release baseline i
 [MxWave commit `0179e131`](https://github.com/kirillbilchenko/MxWave/tree/0179e131544f807ecdb6d04e7e914f181dd21c9f),
 and the payload checks in Sections 4–7 were repeated before publication.
 
+### Implementation revision after this frozen release
+
+Current `mxfp4-rne-v2` conversions correct E2M1 midpoint ties to even and the
+Qwen fallback norm multiplier to `abs(1 + weight)`. The norm correction does
+not affect calibrated H64; the rounding correction can change its packed
+weights and selected scales. This record's hashes and scores still refer to
+the pinned historical release above. Current code must not be used to claim
+a byte-identical replay of that release. No published payload was modified
+by these local source changes. The separate
+[corrected-control validation experiment](CORRECTED_CONTROLS_2026-10-03.md)
+records fresh evaluations of new local checkpoints, without changing this release.
+
+The KL contexts and precision-budget confirmation suffix reuse windows from
+the headline WikiText test evaluation. Earlier recipe probes also used that
+corpus. Those screens do not constitute independent final validation. Future
+runs should follow [the fresh evaluation protocol](QUANTIZATION_FIXES_AND_VALIDATION.md).
+
 ## Reproduced status
 
 The numerical procedure was replayed on the same DGX Spark with inference and
