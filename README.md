@@ -147,6 +147,30 @@ each length, KL was 0.037718/0.037700/0.036664 at 512/2k/8k; the paired
 8k-minus-512 interval [−0.009941, +0.007150] includes zero. These sparse
 checks do not establish general task quality or qualify production MTP.
 
+### Kolibri-1 experimental release
+
+The selected Kolibri-1 recipe uses softer routed-RMS scale selection for MXFP4
+experts and preserves the official FP8 backbone. Its 32 safetensors shards total
+**40.45 GiB**, with all **116,303 payloads** verified against the measured trial.
+The standalone checkpoint serves through stock vLLM 0.29.0 and
+`aleph-alpha-inference==1.0.0` on DGX Spark / GB10, using Marlin experts.
+
+| Model / decode graphs | Prompt PPL | Mean forward KL | Sampled SQNR | Behavior checks | Output tok/s, c1 | Aggregate tok/s, c4 |
+|---|---:|---:|---:|---:|---:|---:|
+| Official Kolibri-1 FP8 | 24.201922 | reference | — | 6/6 | 43.61 | 113.18 |
+| Softer RMS MXFP4 + FP8 backbone | 24.571060 | 0.055140 | not measured | 6/6 | 49.62 | 136.37 |
+
+These are the standalone stock-loader measurements on 48 frozen passages and
+26,488 scored tokens. PPL is 1.53% above the reference; the unchanged strict
+KL target of **0.030 remains missed**, so this release is experimental.
+Throughput uses the median of three runs with 512 input / 128 forced output
+tokens; the candidate run overlapped a CPU/network weight upload.
+
+The [release overview](docs/KOLIBRI1_RELEASE_2026-10-04.md) describes the recipe,
+source pins, serving command, evidence, and limits. Detailed experiment data and
+rejected-trial sources are preserved in a separate archive. Kolibri GGUF support
+requires a separate exporter and patched-runtime validation.
+
 ## Install
 
 ```bash
