@@ -10,14 +10,33 @@ small additional metadata header.
 ## Current status
 
 The exporter, independent GGUF reader check, and CUDA inference harness are
-implemented. The local suite passes 314 tests, lint, and strict type checks. A
+implemented. The local suite passes 322 tests, lint, and strict type checks. A
 synthetic Kolibri fixture loads and generates through native MXFP4 on Spark
 SM121. Its frozen-token likelihood equals the analytically expected `ln(320)`,
 and its full-vocabulary probability distribution is normalized.
 
-Full-model conversion and quality measurements are pending. The published
-vLLM checkpoint is experimental: its mean KL is 0.05514 against a target of
-0.03. Those results do not qualify the GGUF or its separate inference backend.
+Full-model conversion verified all 116,303 source payloads and 903 GGUF tensors.
+The output is 45,423,521,088 bytes, SHA-256
+`4e41cf583374a1ed22c4ec921e92a07f91bb4a54209a11a42396d7bd43ac6f81`.
+Fourteen tokenizer checks, including all rendered behavior prompts, match the
+frozen Hugging Face tokenizer exactly.
+
+The frozen full-model screen scored 26,488 tokens across 48 English, German,
+and code passages. Both runs passed all six behavior checks, including an
+approximately 7.8k-token German retrieval prompt. The CUDA image and model file
+were unchanged; the MMQ activation precision was the controlled difference.
+
+| Blackwell MMQ activation setting | Prompt PPL | Mean forward KL | Output tok/s, c1 |
+|---|---:|---:|---:|
+| Default, four-bit | 24.830798 | 0.104662 | 31.40 |
+| `GGML_CUDA_MMQ_PREC=q8` | 24.461075 | 0.061844 | 35.42 |
+
+The official FP8 reference PPL is 24.201922. The recommended eight-bit setting
+has a 1.07% PPL increase. The unchanged strict KL target of 0.030 is still
+missed, so this GGUF is experimental. Its results are separate from the native
+vLLM checkpoint's PPL 24.571060 and KL 0.055140. SQNR was not separately measured.
+Throughput is the median of three forced 128-output-token runs after a
+512-token prompt; the eight-bit screen overlapped CPU restoration downloads.
 
 ## Runtime
 
@@ -62,6 +81,12 @@ Concurrency-four throughput is not measured by this harness.
 GGUF receipt, runs the compiled harness, and applies the original frozen
 comparison against the official FP8 reference. The quality target remains
 unchanged. Completion of an evaluation is separate from passing that target.
+
+The measurement runner defaults to `--mmq-precision q8` and records that
+setting with the results. Serving on Blackwell also needs
+`GGML_CUDA_MMQ_PREC=q8`; the backend otherwise defaults to four-bit MMQ
+activations. The saved quality screen uses a 9,216-token context, BF16 KV cache,
+and Flash Attention. No claim is made for the full advertised source context.
 
 The Spark workflow keeps the selected checkpoint, calibration, evaluation
 data, and private experiment archive. After anonymous verification of the

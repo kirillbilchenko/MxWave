@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import time
 from pathlib import Path
@@ -26,6 +27,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--mmq-precision", choices=("auto", "q4", "q8"), default="q8")
     args = parser.parse_args()
     root = args.root.resolve()
     model = root / "gguf/Kolibri-1-MXFP4.gguf"
@@ -43,7 +45,7 @@ def main() -> None:
     for item in protocol["windows"] + protocol["behavior_cases"]:
         if _token_sha(item["token_ids"]) != item["token_ids_sha256"]:
             raise ValueError("Frozen protocol token IDs changed")
-    view = root / "gguf/qualification"
+    view = root / "gguf" / f"qualification-{args.mmq_precision}"
     (view / "measurements").mkdir(parents=True, exist_ok=True)
     for name, target in {
         "validation": root / "validation",
@@ -58,7 +60,13 @@ def main() -> None:
         raise FileExistsError("GGUF measurements already exist")
     started = time.monotonic()
     harness = root / "gguf/build/bin/kolibri-metrics"
-    subprocess.run([str(harness), str(model), str(protocol_path), str(output), "9216"], check=True)
+    environment = os.environ.copy()
+    environment["GGML_CUDA_MMQ_PREC"] = args.mmq_precision
+    subprocess.run(
+        [str(harness), str(model), str(protocol_path), str(output), "9216"],
+        check=True,
+        env=environment,
+    )
     report = json.loads(output.read_text())
     if report["vocabulary"] != 128000 or len(report["windows"]) != 48:
         raise ValueError("GGUF measurement dimensions do not match the frozen reference")
@@ -79,6 +87,7 @@ def main() -> None:
         gguf_sha256=conversion["output_sha256"],
         checkpoint_manifest_sha256=conversion["source_manifest_sha256"],
         runtime="patched llama.cpp CUDA SM121; native MXFP4 experts / BF16 backbone",
+        runtime_mmq_precision=args.mmq_precision,
         harness_binary_sha256=sha(harness),
         seconds=time.monotonic() - started,
     )
@@ -87,6 +96,7 @@ def main() -> None:
     quality = json.loads((view / "quality-comparison.json").read_text())
     quality["candidate"] = "softer RMS native MXFP4 GGUF; FP8 backbone dequantized to BF16"
     quality["gguf_sha256"] = conversion["output_sha256"]
+    quality["runtime_mmq_precision"] = args.mmq_precision
     (view / "quality-comparison.json").write_text(json.dumps(quality, indent=2) + "\n")
     print(
         json.dumps(
