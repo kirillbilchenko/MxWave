@@ -168,8 +168,22 @@ tokens; the candidate run overlapped a CPU/network weight upload.
 
 The [release overview](docs/KOLIBRI1_RELEASE_2026-10-04.md) describes the recipe,
 source pins, serving command, evidence, and limits. Detailed experiment data and
-rejected-trial sources are preserved in a separate archive. Kolibri GGUF support
-requires a separate exporter and patched-runtime validation.
+rejected-trial sources are preserved in a separate archive.
+
+The separate [Kolibri GGUF exporter](docs/KOLIBRI1_GGUF.md) losslessly repacks
+these experts and dequantizes the FP8 backbone to BF16, producing **42.30 GiB**.
+It needs the pinned Kolibri llama.cpp architecture port. On the same Spark
+SM121 and frozen evaluation tokens, its CUDA MMQ activation setting matters:
+
+| GGUF MMQ activation setting | Prompt PPL | Mean forward KL | Behavior checks | Output tok/s, c1 |
+|---|---:|---:|---:|---:|
+| Default, four-bit | 24.830798 | 0.104662 | 6/6 | 31.40 |
+| `GGML_CUDA_MMQ_PREC=q8` | 24.461075 | 0.061844 | 6/6 | 35.42 |
+
+The eight-bit setting is recommended. Its PPL increase is 1.07% over the FP8
+reference, but the strict KL target of 0.030 remains missed. Both formats are
+experimental. GGUF SQNR and concurrency-four throughput were not measured;
+the eight-bit screen overlapped CPU restoration downloads.
 
 ## Install
 
