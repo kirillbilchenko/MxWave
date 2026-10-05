@@ -34,6 +34,24 @@ GGUF compatibility reference:
   compatibility transforms behind MxWave's typed validation API; it does not
   incorporate qstream code.
 
+Kolibri GGUF compatibility and external runtime:
+
+- `mxwave/kolibri_gguf.py` independently implements the public Kolibri tensor
+  mapping and block-FP8 dequantization, reusing MxWave's lossless MXFP4 repacker.
+  GGUF metadata/tokenizer serialization delegates to the MIT-licensed
+  `ggml-org/llama.cpp` Python converter at
+  `edd6e2bbdad5930899a93db8fa73c3b61c7b9bcc`.
+- The experimental external Kolibri runtime patch is pinned to
+  `Eliasfpv28/Kolibri-1-Q3_K_S-GGUF` revision
+  `04f6e403e0db21f5ecb9d1c142f69204a43fe1e7`,
+  `runtime-source/kolibri1-runtime.patch`, SHA256
+  `2e629b80a55880dd8b1e40bc3bda51c1b9b7b38985439b47c3753a30eecd7cb7`.
+  Its written grant licenses new additions under Apache-2.0 and llama.cpp-derived
+  portions under MIT; `THIRD_PARTY_NOTICES.txt` and both supplied licenses must
+  accompany a redistributed runtime. The patch is an external build dependency,
+  not bundled MxWave code. Architecture reference: Apache-2.0 Aleph Alpha
+  inference commit `049a6a7bd2405b27d6d280d256bd3d585191c7ae`.
+
 ## Setup
 
 ```bash
