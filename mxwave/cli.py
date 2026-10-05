@@ -24,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
             "auto",
             "qwen3.8-27b-mlp",
             "qwen3.8-27b-compatible",
+            "kolibri1-routed-experts",
             "all-linear",
         ),
         default="auto",

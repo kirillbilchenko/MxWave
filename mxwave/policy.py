@@ -20,11 +20,13 @@ PolicyName = Literal[
     "auto",
     "qwen3.8-27b-mlp",
     "qwen3.8-27b-compatible",
+    "kolibri1-routed-experts",
     "all-linear",
 ]
 ResolvedPolicyName = Literal[
     "qwen3.8-27b-mlp",
     "qwen3.8-27b-compatible",
+    "kolibri1-routed-experts",
     "all-linear",
 ]
 
@@ -48,6 +50,16 @@ _QWEN_AUXILIARY_INPUT = re.compile(
     r"^model\.language_model\.layers\.\d+\.linear_attn\.(?:in_proj_a|in_proj_b)\.weight$"
 )
 _FLOAT_DTYPES = frozenset({"BF16", "F16", "F32"})
+_KOLIBRI_EXPERT = re.compile(
+    r"^model\.layers\.(?P<layer>\d+)\.mlp\.experts\.(?P<expert>\d+)\."
+    r"(?P<projection>gate_proj|up_proj|down_proj)\.weight$"
+)
+_KOLIBRI_IGNORE = re.compile(
+    r"^(?:(?:model\.embed_tokens|model\.norm|lm_head)|model\.layers\.\d+\."
+    r"(?:self_attn\.(?:q_proj|k_proj|v_proj|o_proj|q_norm|k_norm)|"
+    r"mlp\.(?:gate|shared_experts\.(?:gate_proj|up_proj|down_proj))|"
+    r"input_layernorm|post_attention_layernorm|post_attn_norm|post_ffn_norm))\.weight$"
+)
 
 
 @dataclass(frozen=True)
@@ -59,6 +71,8 @@ class QuantizationPolicy:
 
     def matches_name(self, name: str) -> bool:
         """Return whether ``name`` is a weight selected by this policy."""
+        if self.name == "kolibri1-routed-experts":
+            return _KOLIBRI_EXPERT.fullmatch(name) is not None
         if self.name == "qwen3.8-27b-mlp":
             return _QWEN_MLP.fullmatch(name) is not None
         if self.name == "qwen3.8-27b-compatible":
@@ -79,6 +93,8 @@ class QuantizationPolicy:
         unclassified, so the coverage check can reject an incomplete policy.
         """
         name = info.name
+        if self.name == "kolibri1-routed-experts":
+            return _KOLIBRI_IGNORE.fullmatch(name) is not None
         if not name.endswith(".weight"):
             return False
         if _GENERIC_EXCLUDE.search(name) or _ROUTER_EXCLUDE.search(name):
@@ -147,7 +163,35 @@ _POLICIES: dict[ResolvedPolicyName, QuantizationPolicy] = {
         name="all-linear",
         description="explicit experimental policy for eligible 2D linear weights",
     ),
+    "kolibri1-routed-experts": QuantizationPolicy(
+        name="kolibri1-routed-experts",
+        description="Kolibri 1 routed experts only; all other weights preserved",
+    ),
 }
+
+
+def _kolibri_dimensions(config: dict[str, object]) -> tuple[int, int, int, int]:
+    if config.get("model_type") != "kolibri1" or config.get("architectures") != [
+        "Kolibri1ForCausalLM"
+    ]:
+        raise ValueError("Kolibri policy requires Kolibri1ForCausalLM / kolibri1")
+    dimensions: list[int] = []
+    for key in ("num_hidden_layers", "num_experts", "hidden_size", "moe_intermediate_size"):
+        value = config.get(key)
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"Kolibri config has an invalid {key}")
+        dimensions.append(value)
+    layers, experts, hidden, intermediate = dimensions
+    if hidden % 128 or intermediate % 128:
+        raise ValueError("Kolibri expert dimensions must be divisible by 128 for Marlin")
+    layer_types = config.get("layer_types")
+    if (
+        not isinstance(layer_types, list)
+        or len(layer_types) != layers
+        or any(item not in ("sliding_attention", "full_attention") for item in layer_types)
+    ):
+        raise ValueError("Kolibri config has an invalid layer_types")
+    return layers, experts, hidden, intermediate
 
 
 def _is_qwen3_8_dense(config: dict[str, object]) -> bool:
@@ -175,6 +219,8 @@ def resolve_policy(model_dir: str | Path, requested: PolicyName) -> Quantization
         return _POLICIES["qwen3.8-27b-mlp"]
 
     policy = _POLICIES[requested]
+    if policy.name == "kolibri1-routed-experts":
+        _kolibri_dimensions(config)
     if policy.name.startswith("qwen3.8") and not _is_qwen3_8_dense(config):
         raise ValueError(f"Policy {policy.name!r} requires Qwen3_5ForConditionalGeneration")
     return policy
@@ -197,6 +243,14 @@ def expected_target_names(
     if policy.name == "all-linear":
         return None
     config = load_config_json(model_dir)
+    if policy.name == "kolibri1-routed-experts":
+        layers, experts, _hidden, _intermediate = _kolibri_dimensions(config)
+        return frozenset(
+            f"model.layers.{layer}.mlp.experts.{expert}.{projection}.weight"
+            for layer in range(layers)
+            for expert in range(experts)
+            for projection in ("gate_proj", "up_proj", "down_proj")
+        )
     text_config = config.get("text_config")
     if not isinstance(text_config, dict):
         raise TypeError("Qwen config is missing text_config")
@@ -249,3 +303,23 @@ def validate_selected_tensor(info: TensorInfo, policy: QuantizationPolicy) -> No
             f"Policy {policy.name!r} selected {info.name!r}; input dimension "
             f"{info.shape[-1]} is not divisible by 32"
         )
+
+
+def validate_policy_shapes(
+    model_dir: str | Path, policy: QuantizationPolicy, infos: list[TensorInfo]
+) -> None:
+    """Validate architecture-specific matrix shapes after exact target coverage."""
+    if policy.name != "kolibri1-routed-experts":
+        return
+    _layers, _experts, hidden, intermediate = _kolibri_dimensions(load_config_json(model_dir))
+    for info in infos:
+        match = _KOLIBRI_EXPERT.fullmatch(info.name)
+        if match is None:
+            continue
+        expected = (
+            (hidden, intermediate)
+            if match.group("projection") == "down_proj"
+            else (intermediate, hidden)
+        )
+        if info.shape != expected:
+            raise ValueError(f"Kolibri expert {info.name!r} has shape {info.shape}, expected {expected}")

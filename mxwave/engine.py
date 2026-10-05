@@ -40,6 +40,7 @@ from .policy import (
     expected_target_count,
     expected_target_names,
     resolve_policy,
+    validate_policy_shapes,
     validate_selected_tensor,
 )
 from .shard import (
@@ -137,6 +138,15 @@ class ModelPlan:
     def target_modules(self) -> list[str]:
         """Concrete module names selected for MXFP4."""
         return sorted(name.removesuffix(".weight") for name in self.target_names)
+
+    @property
+    def config_target_modules(self) -> list[str]:
+        """Return compact runtime selectors after validating exact source targets."""
+        if self.policy.name == "kolibri1-routed-experts":
+            return [
+                r"re:^model\.layers\.\d+\.mlp\.experts\.\d+\.(?:gate_proj|up_proj|down_proj)$"
+            ]
+        return self.target_modules
 
     @property
     def real_modules(self) -> list[str]:
@@ -311,6 +321,7 @@ def plan_model(cfg: QuantizeConfig) -> ModelPlan:
         )
 
     tensor_info = {item.info.name: item.info for item in planned}
+    validate_policy_shapes(model_dir, policy, list(tensor_info.values()))
     gamma_proxy_sources: list[tuple[str, str]] = []
     if cfg.method == "mse" and cfg.gamma_proxy and cfg.activation_stats is None:
         for target in sorted(item.info.name for item in planned if item.quantized):
@@ -347,7 +358,7 @@ def plan_model(cfg: QuantizeConfig) -> ModelPlan:
         source_data_bytes=source_data_bytes,
         projected_output_data_bytes=projected_output_data_bytes,
     )
-    gaps = verify_config_coverage(plan.target_modules, plan.ignored_modules, plan.real_modules)
+    gaps = verify_config_coverage(plan.config_target_modules, plan.ignored_modules, plan.real_modules)
     if gaps:
         raise ValueError(f"Policy leaves unclassified weighted modules: {gaps[:10]}")
     return plan
@@ -804,7 +815,14 @@ def _manifest(
             }
             if plan.gamma_proxy_sources
             else None,
-            "activation_quantization": "dynamic-mxfp4-group32",
+            "activation_quantization": (
+                "none" if plan.policy.name == "kolibri1-routed-experts"
+                else "dynamic-mxfp4-group32"
+            ),
+            "required_backends": (
+                ["linear=marlin", "moe=marlin"]
+                if plan.policy.name == "kolibri1-routed-experts" else ["linear=marlin"]
+            ),
             "rotation": "none",
             "shard_integrity": {
                 "algorithm": "sha256",
@@ -984,10 +1002,11 @@ def _quantize_model_locked(
         model_dir,
         output_dir,
         output_shards,
-        target_modules=plan.target_modules,
+        target_modules=plan.config_target_modules,
         ignored_modules=plan.ignored_modules,
         real_modules=plan.real_modules,
         manifest=manifest,
+        weight_only=plan.policy.name == "kolibri1-routed-experts",
     )
     gaps = verify_emitted_config(output_dir, plan.real_modules)
     if gaps:
