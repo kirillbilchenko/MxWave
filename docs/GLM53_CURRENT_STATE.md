@@ -1,17 +1,22 @@
 # GLM lossless experiment: current state and next steps
 
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
-**20 October 2026: completed work committed and backed up; calibration pilot prepared.**
-Commit `edc4c08` preserves the GLM implementation, tests, handoffs and experiment
-receipts. Its complete-history bundle is verified on **spark2**, including a
-successful bare-repository restore and Git object-integrity check.
+**20 October 2026, 12:19 UTC: authorized transfer complete; CT capture is starting.**
+The source archive and all 17 source/configuration hashes verify on both Sparks.
+CPU preflight passes with all 211 frozen runtime bindings per rank. Queue
+`1950880`, controller `1953173`, experiment `selector-calibration-capture-v1`.
+The controller is loading CT on private port **8018** after pausing original
+production; its watchdog and restoration path are active. No weights are trained
+or promoted. Production will be restored before CPU training on the Mac.
 
-The separate [selector calibration pilot](GLM53_SELECTOR_CALIBRATION.md) is ready:
-32 new training prompts, eight validation and eight sealed test prompts; only the
-1,048,576-weight BF16 selector projection may train. No earlier benchmark prompt
-or GSM8K test question is training data. **No capture or training has started.**
-Automatic approval review blocked copying the prepared source archive to both
-Spark hosts; explicit transfer approval is pending. Production remains unchanged.
+The [selector pilot](GLM53_SELECTOR_CALIBRATION.md) uses 32 new training prompts,
+eight validation and eight sealed test prompts; only the 1,048,576-weight BF16
+selector projection may train. Completed work is committed as `edc4c08` and
+backed up with verified Git restoration on **spark2**; pilot source is committed
+as `d945612`. **This is not a deployment switch.** The four user-specified
+[production replacement gates](GLM53_SELECTOR_CALIBRATION.md#production-replacement-gates)
+remain open: drafter recovery, production-equivalent tuning/capacity, stable
+C8/C16 comparisons, and long-context qualification beyond the 8k trials.
 This block supersedes historical live-work statements below.
 <!-- SELECTOR_CALIBRATION_LIVE_END -->
 

@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+from pathlib import Path
+
 import pytest
 import torch
+from safetensors.torch import save_file
 
 from integrations.glm53_mxfp4.selector_calibration import (
+    build_dataset,
     covered_loss,
     greedy_tokens,
     prefix_lengths,
@@ -58,3 +64,39 @@ def test_prefix_length_stops_after_first_mismatch() -> None:
     predicted = torch.tensor([[1, 0, 3, 4], [1, 2, 3, 4]])
     gold = torch.tensor([[1, 2, 3, 4], [1, 2, 3, 4]])
     assert prefix_lengths(predicted, gold).tolist() == [1, 4]
+
+
+@pytest.mark.parametrize("wrong_anchor", [False, True])
+def test_dataset_aligns_absolute_positions_and_excludes_tail(
+    tmp_path: Path, wrong_anchor: bool,
+) -> None:
+    folder = tmp_path / "ct-r0"
+    folder.mkdir()
+    case = {"id": "fixture", "split": "train", "domain": "code", "prompt_ids": [1, 2, 3]}
+    (tmp_path / "plan.json").write_text(json.dumps({"calibration_cases": [case]}))
+    (tmp_path / "ct-measurement.json").write_text(json.dumps({
+        "status": "complete", "cases": [{
+            "case": "fixture", "policy": "capture", "result": {"token_ids": [5] + [0] * 7},
+        }],
+    }))
+    for index, start in enumerate((4, 11)):
+        data = {
+            "ids": torch.arange(16).repeat(7, 1), "scores": torch.zeros(7, 16, 16),
+            "proposal": torch.zeros(7, dtype=torch.int64),
+            "sample_positions": torch.arange(start, start + 7),
+            "anchors": torch.tensor([99 if wrong_anchor else 5]),
+            "hidden": torch.ones(7, 4), "values": torch.zeros(7, 16),
+        }
+        path = folder / f"calibration-fixture-{index:04d}.safetensors"
+        save_file(data, str(path))
+        path.with_suffix(".json").write_text(json.dumps({
+            "payload_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "tensor_dtypes": {name: str(value.dtype) for name, value in data.items()},
+        }))
+    if wrong_anchor:
+        with pytest.raises(ValueError, match="Anchor/history mismatch"):
+            build_dataset(tmp_path)
+    else:
+        rows, coverage = build_dataset(tmp_path)
+        assert len(rows) == 1 and rows[0]["gold"].tolist() == [0] * 7
+        assert coverage == {"complete_blocks": 1, "incomplete_tail_frames": 1}

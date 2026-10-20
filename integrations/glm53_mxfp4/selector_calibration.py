@@ -12,6 +12,8 @@ import torch
 import torch.nn.functional as F
 from safetensors.torch import load_file, save_file
 
+from .selector_capture_analysis import analyze
+
 
 def read_frame(path: Path) -> dict[str, torch.Tensor]:
     """Verify retained bytes and restore original BF16 tensor representations."""
@@ -171,7 +173,9 @@ def train(root: Path, output: Path, steps: int = 100) -> dict[str, Any]:
     """Fit only the existing projection, select on validation, then open the test split once."""
     if output.exists():
         raise FileExistsError(output)
+    capture_review = analyze(root)
     output.mkdir(parents=True)
+    (output / "capture-review.json").write_text(json.dumps(capture_review, indent=2) + "\n")
     torch.set_num_threads(4)
     torch.manual_seed(42)
     weights = {
@@ -232,6 +236,14 @@ def train(root: Path, output: Path, steps: int = 100) -> dict[str, Any]:
     )
     report = {
         "schema": "mxwave-selector-calibration-pilot-v1", "seed": 42,
+        "capture_plan_sha256": hashlib.sha256((root / "plan.json").read_bytes()).hexdigest(),
+        "capture_manifest_sha256": hashlib.sha256(
+            (root / "evidence-manifest.json").read_bytes()
+        ).hexdigest(),
+        "trainer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "capture_review_sha256": hashlib.sha256(
+            (output / "capture-review.json").read_bytes()
+        ).hexdigest(),
         "trainable_parameters": original.numel(), "steps": steps,
         "learning_rate": 1e-5, "relative_update_norm_limit": 0.01,
         "source_projection_sha256": hashlib.sha256(

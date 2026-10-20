@@ -1,9 +1,12 @@
 # Bounded CT drafter calibration pilot
 
-Prepared 20 October 2026. **Capture and training have not started.** The original
-production service remains running. The automatic approval reviewer blocked the
-49,313-byte source archive transfer to `spark` and `spark2`; explicit approval of
-those destinations is pending. No data was transferred by the rejected command.
+Updated 20 October 2026, 12:19 UTC. **Authorized source transfer is complete and
+CPU preflight passes on both Sparks.** All 17 source/configuration hashes match;
+all 211 frozen bindings per rank remain unchanged. Queue `1950880`, controller
+`1953173` is starting CT on private port 8018, with original production paused
+under the bounded restoration controller. Training has not started. No candidate
+is promoted. The earlier automatic approval rejection was resolved by the user's
+explicit instruction to transfer and proceed.
 
 The previous paired diagnostic found an early CT proposal error despite both
 targets agreeing on the correct next token. All recorded drafter weights matched.
@@ -88,3 +91,35 @@ The new pilot is separate work after that checkpoint. Its source archive is
 `cfcf59d5f2f6083d4174def52d0f18cbbdfee370334e70adfb17ef71fc850daf`.
 It contains 17 source/configuration files plus their manifest, no model weights,
 credentials, or captured user conversations.
+
+## Production replacement gates
+
+The user explicitly reaffirmed all four outstanding requirements on 20 October.
+They are deployment gates, not claims satisfied by the selector pilot:
+
+1. **Drafter calibration:** validate any selected projection with native kernels
+   and separate live rollouts. Measure code/explanation acceptance and end-to-end
+   latency with unchanged target precision. A better offline prefix score alone
+   does not close the code gap.
+2. **CT serving configuration and capacity:** match production's prefix caching,
+   prefill budget (6,919), 32 sequence slots, long-context configuration and
+   relevant custom adapters. Measure a KV allocation that uses the freed memory,
+   actual resident requests and queueing under load; do not assume capacity scales
+   linearly with the KV budget. The earlier offered C8/C16 cases admitted at most
+   six resident requests. Keep settings and workload identical across comparison
+   arms when attributing performance to a model or compression change.
+3. **Repeatable concurrency results:** retain earlier failed controls and run
+   interleaved C8/C16 comparisons with clocks/thermal telemetry, matched prompts,
+   seeds, output policy, speculative configuration and cache state. Report actual
+   concurrency, queueing and repeat controls. Current failed-repeat gains remain
+   unconfirmed.
+4. **Long-context qualification:** the candidate trials used an 8,192-token limit;
+   production is configured for 500,000. Test actual increasing context lengths,
+   retrieval/quality, first-token latency, memory and concurrent-request capacity
+   up to the required serving range. Changing the configured limit alone is not
+   qualification. Preserve original production and its 500k configuration until
+   a candidate is qualified for the intended use.
+
+No quality threshold has been relaxed. The previously failed 1e-5 cross-model KL
+comparison remains failed; the practical quality evidence and any lossless claim
+must remain separate. No production replacement is authorized by a diagnostic pass.
