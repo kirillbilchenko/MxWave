@@ -1,23 +1,60 @@
 # GLM compression experiment handoff
 
 <!-- EXPERT_WIDE_V1_BEGIN -->
-**20 October 2026, 19:54 UTC: wider GPU component experiment prepared.**
-`drafter-expert-wide-v1` freezes 36 real-operand extensions at 8/16/32/64/128
-rows, both TP partitions and repeat/spread routing. Our existing padding is
-reused; no confidence scheduling or DeepInfer implementation is included.
-The installed stock fused MoE supplies actual routing-block choices and
-reference outputs. Require exact native eight-row reproduction, stock/packed
-identity, masked padding and shared-row equality through up/activation/down/sum.
-Twenty graph repeats per case precede twelve interleaved timing cycles at
-64/128 rows; retain all failures at the unchanged 2% drift limit.
-Plan SHA `4aa286a8ff69f409cc2353a00da13b1507726a76e3b1c8783e4c56ba468aadda`.
-Seven frozen executable sources plus the 36 fixtures. The component controller
-now reserves separate time for restoration: 900-second replay limit plus the
-existing 1,200-second restoration allowance, 2,100-second total watchdog bound.
-CPU preflight and source backup precede any pause. Production remains unchanged
-while preparation runs. Runtime support stays at 16 rows pending wider evidence;
-this synthetic layer-four check does not qualify full-model C8/C16 serving.
-Sealed test remains closed. Local work: `out/drafter-expert-wide-v1/`.
+**20 October 2026, 20:07:19 UTC: wider expert component check passes; production restored.**
+Our existing Marlin routing-padding fix passes all **36 fixtures** at
+8/16/32/64/128 target rows, across both TP partitions and repeat/spread expert
+routing. Independent NumPy review finds **54/100 native shared-prefix comparisons
+differ**, versus **0/100 with padding**. Both GEMMs, activation and weighted route
+sum are checked. All **2,880 four-stage graph-repeat checks** are exact;
+**96 native-reference checks** and **288 stock/packed comparisons** match exactly.
+The actual installed routing block stays eight, and the observed planner stays
+K=64/N=128/three blocks per SM. Both projections use quantum nine; appended
+routing slots remain masked and whole launch waves are verified.
+
+Timing is a separate gate: **27/32 controls pass**, with all five failures
+retained at the original 2% drift limit. Packed-scale component overhead among
+stable native-versus-padded pairs is:
+
+| Target rows | Routing stress | Stable pairs | Measured padding overhead |
+| --- | --- | ---: | ---: |
+| 64 (fixed-seven-draft C8 size) | Repeat | 4/4 | +3.05% to +4.08% |
+| 64 | Spread | 1/4 | +0.27% on the sole stable pair |
+| 128 (fixed-seven-draft C16 size) | Repeat | 4/4 | +0.07% to +8.02% |
+| 128 | Spread | 4/4 | +0.01% to +0.21% |
+
+The spread C8 row is not a general cost estimate: three packed controls fail.
+There are 96 clock/thermal samples: SM 2418–2515 MHz, 55–81 C, all recorded P0.
+This replay uses synthetic extensions of one real layer's operands; TP
+partitions run separately on one GPU. It proves the component result, not
+full-model C8/C16 invariance, a serving-speed improvement or serving overhead.
+The runtime limit remains **16 rows** until controlled full-model qualification.
+No DeepInfer implementation or confidence scheduler is included.
+
+The component run takes **533.67 seconds** and exits successfully. Original
+container/configuration identities, health 200 and **500,000 context** verify
+restored at 20:07:19 UTC; controller phase `complete_restored`, no error.
+The 900-second replay limit and separate 1,200-second restoration allowance
+were not exhausted. No experiment/training remains running; sealed test closed.
+
+All **78 evidence payloads** independently verify on Mac and Spark2.
+`evidence-v1.tar.gz`: 799,225,880 bytes, SHA
+`2ca5d95679e512b6b40e94fe4522c3bb6b7f946af21be118d8151fd112ab0829`.
+Frozen plan SHA `4aa286a8ff69f409cc2353a00da13b1507726a76e3b1c8783e4c56ba468aadda`;
+seven executable sources, 36 fixture payloads and four retained source frames.
+Independent review and summary: `out/drafter-expert-wide-v1/{review,summary}.json`.
+The seven-payload analysis archive independently verifies on both Sparks:
+`analysis-v1.tar.gz`, 13,946 bytes, SHA
+`04ed218cb75c62cde6f47fc858859401aca859e1c4a007e479c1e309bd248ac0`.
+Full pytest (one existing skip), ruff and strict mypy pass. Source checkpoint
+`911c9f5` is independently verified in Spark2's Git backup; result checkpoint follows.
+
+**Next:** keep the serving policy unchanged, and continue the independent
+fixed-width drafter work: freeze the full-run trainer/protocol, capture fresh
+features under the qualified C1 target policy, then train on the 4,000 prompts.
+C8/C16 full-model identity and serving-cost measurements remain a separate
+replacement gate. Do not spend the next cycle chasing the five noisy component
+timings or describe the 32-update pilot as a successful adapted drafter.
 <!-- EXPERT_WIDE_V1_END -->
 
 <!-- DEEPINFER_TRANSFER_BEGIN -->
@@ -31,8 +68,9 @@ The source audit and provenance remain historical records, not an active port.
 
 Continue our existing Marlin routing-padding fix and context-projection
 adaptation. Keep seven fixed draft tokens. The bounded feature loader now reproduces the retained 32-update pilot exactly.
-Next: validate our padding at C8/C16 widths, then capture fresh target features
-and run the full 4,000-prompt adaptation.
+The wider component check now also passes. Next: capture fresh qualified-policy
+target features and run the full 4,000-prompt adaptation; C8/C16 full-model
+serving qualification remains a separate gate.
 The old-policy pilot replay is a loader regression check, not new-policy
 training or a speed claim. Preserve the existing quality/performance gates;
 the sealed test stays closed. Production remains restored.

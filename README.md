@@ -1,5 +1,24 @@
 # MxWave
 
+**20 October 2026, 20:07 UTC:** our wider Marlin padding check passes all
+36 component fixtures through 128 rows: shared-prefix differences fall from
+54/100 native comparisons to 0/100 padded comparisons, with 2,880 exact graph
+repeats. Timing controls pass 27/32; stable overhead depends on routing and
+ranges from near zero to 8.02%. Full-model C8/C16 and serving cost remain
+unqualified. Production is restored; the active runtime limit stays at 16 rows.
+[Full evidence and limits](docs/GLM53_HANDOFF.md).
+
+| Component verify rows | Routing | Stable packed timing pairs | Padding overhead |
+| --- | --- | ---: | ---: |
+| 64 | Repeat | 4/4 | +3.05% to +4.08% |
+| 64 | Spread | 1/4 | +0.27% on the sole stable pair |
+| 128 | Repeat | 4/4 | +0.07% to +8.02% |
+| 128 | Spread | 4/4 | +0.01% to +0.21% |
+
+These are paired two-GEMM component timings with synthetic routing, not
+end-to-end serving results. Failed stability controls are excluded from the
+ranges above and retained in the evidence.
+
 The frozen eight-prompt drafter development rerun completes **20 October,
 19:23 UTC**: all **144 requests** have matching output tokens across
 original/adapted/original loads, and **8/8 reload timing controls pass**.
@@ -18,7 +37,7 @@ The separate confidence experiment was withdrawn at the user's request before
 any real-data training or serving integration. Work continues on our existing
 fixed-width drafter adaptation and Marlin padding. The bounded feature-loader
 replay reproduces all 32 pilot updates and four checkpoint files exactly;
-the full 4,000-prompt run and C8/C16 padding qualification remain outstanding.
+the full 4,000-prompt run and C8/C16 full-model qualification remain outstanding.
 
 **Expert reduction fix, 20 October 2026:** bounded routing padding makes shared
 rows bit-identical in the retained 440-versus-448 dispatch, through both expert

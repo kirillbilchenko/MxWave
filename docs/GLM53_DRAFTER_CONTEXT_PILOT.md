@@ -1,5 +1,15 @@
 # CT drafter: verified features and context-projection pilot
 
+**20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
+all 36 fixtures through 128 rows. Independent review finds 54/100 native
+shared-prefix comparisons differ, versus 0/100 after padding; all 2,880 graph
+repeats are exact. Timing controls pass 27/32, with five failures retained.
+Stable component overhead varies from near zero to 8.02% with routing, so this
+is not a serving-overhead qualification. Production is restored with 500,000
+context; the runtime limit stays at 16 rows. Fresh C1 features and full
+4,000-prompt drafter training remain next; the sealed test stays closed.
+See [the wider result and timing table](GLM53_HANDOFF.md).
+
 **20 October 2026, 19:23:01 UTC:** the eight-prompt, 144-request development
 comparison completes with identical output tokens across original/adapted/original
 loads. All within-load and original-reload token/counter controls pass, as do
@@ -16,9 +26,10 @@ confidence experiment and its trainer hook are removed. It was never enabled
 in serving and has no measured CT gain. The audit is retained as history.
 Continue our independently developed fixed-width drafter adaptation and Marlin
 padding. The bounded-loader replay now passes: all 32 update metrics and all
-four saved checkpoints match the original exactly. Wider GPU checks and fresh
-target-feature capture precede the full 4,000-prompt training run. Existing
-gates are unchanged; sealed evaluation remains closed.
+four saved checkpoints match the original exactly. Wider component GPU checks
+now also pass. Fresh target-feature capture precedes full 4,000-prompt training;
+C8/C16 full-model and serving-cost qualification remains a separate gate.
+Existing gates are unchanged; sealed evaluation remains closed.
 See [the current handoff](GLM53_HANDOFF.md).
 
 **Earlier, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
