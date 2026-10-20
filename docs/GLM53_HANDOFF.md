@@ -1,5 +1,48 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_EXPERT_REPLAY_BEGIN -->
+**20 October 2026, 17:27:12 UTC: direct expert replay complete; original production restored.**
+The first changed operation is reproduced using the original layer-4 gate/up
+weights and captured inputs/routing, with both TP partitions replayed separately
+on the same Spark GPU. **All 24 stock/raw-bridge/packed-bridge outputs are bitwise
+identical to their corresponding retained native outputs.** All **480 graph-repeat
+checks pass**. The position-46 negative control stays exact. At position 54,
+stock and compressed both reproduce the same one changed BF16 element on rank 0
+and two on rank 1. Scale bytes reconstruct exactly. GPU fixture work took
+**14.074 seconds**, peak CUDA allocation **1.354 GiB**; this is not a serving speed
+measurement. Independent NumPy review confirms all retained output comparisons.
+
+**Conclusion: scale compression does not cause this first divergence.** Shared
+input vectors, route weights and expert assignments are exact for all seven
+shared rows. The changed values belong to expert 252 on rank 0 and expert 284
+on rank 1. Source audit shows that the native Stream-K reduction partitions
+change with the 440→448 padded dispatch: one affected dot product changes its K
+split from 1536/2560 to 3712/384 elements; another changes from no split to
+2752/1344. This identifies a concrete reduction-order mechanism; a correction
+has not yet been tested. It does not establish invariance of later operations.
+
+Next bounded experiment: remove dispatch-dependent K splitting on this exact
+fixture (e.g. bounded padding that makes the tile count divisible by the launch
+grid), check stock/packed shared-row equality, then measure overhead. Only after
+that passes should the full-model verification and frozen drafter qualification
+be rerun. The adapted drafter remains **unqualified**; no promotion, new training
+or sealed-test access. Original service is healthy with its original identities
+and **500,000 context**; no diagnostic is running.
+
+Replay source `f8023a0` is committed and verified in the Spark2 backup. Plan SHA:
+`6610c01cdf60a330ce9763b6ca3711c656bbf43fa3cae9a6e04b341e80037962`.
+All **16 replay evidence payloads** are independently verified on Mac and Spark2.
+Archive: `drafter-expert-v1/evidence-v1.tar.gz`, **6,803,427 bytes**, SHA-256
+`dacf947a5183aef2b6ba03a81d41e7f7fa6be79a5dbd542ab7c504a0005f7b0a`.
+Local independent reviews: `out/drafter-expert-v1/review.json`,
+`routing-review.json`, `partition-audit.json`. The prior 230-payload component
+archive and failed V1 instrumentation attempt remain intact. All older dated
+checkpoints below are historical. Independent analysis (seven payloads) is also
+verified on both Sparks: `analysis-v1.tar.gz`, SHA-256
+`fd43516a62356c3b040f943517ae81c2a21dfb2beca15ef6a326f3a7369b8323`.
+Full pytest, ruff and strict mypy pass.
+<!-- DRAFTER_EXPERT_REPLAY_END -->
+
 <!-- DRAFTER_COMPONENTS_BEGIN -->
 **20 October 2026, 17:11:44 UTC: component V2 complete; original production restored.**
 Both drafter arms pass all before/capture/repeat/after output and counter controls.
