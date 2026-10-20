@@ -1,12 +1,12 @@
 # MxWave
 
 <!-- DRAFTER_TRAINING_PREFLIGHT -->
-**CT drafter progress, 20 October 2026:** the real training graph passes a
-context-only backward/update/reload check; all 56 draft tokens across eight
-retained native histories match. This establishes bounded compatibility, not
-training benefit or native numerical parity. A 32-training/8-validation feature
-capture is loading CT with automatic production restoration.
-[Details and limits](docs/GLM53_DRAFTER_TRAINING_PREFLIGHT.md).
+**CT drafter progress, 20 October 2026:** the bounded context-projection pilot
+selects step 24: validation draft prefix **code 4.25 → 4.375**, **chat 2.75 → 2.875**,
+explanation unchanged. The independent review reproduces the result; native
+export changes only FC and preserves the other 115 tensors/config exactly.
+Native serving benefit is unproved; a matched development run is prepared.
+[Evidence, limits and current status](docs/GLM53_DRAFTER_CONTEXT_PILOT.md).
 
 [![Hugging Face model](https://img.shields.io/badge/🤗%20Hugging%20Face-Qwen3.8--27B--MXFP4--MxWave-FFD21E)](https://huggingface.co/kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave)
 [![CI](https://github.com/kirillbilchenko/MxWave/actions/workflows/ci.yml/badge.svg)](https://github.com/kirillbilchenko/MxWave/actions/workflows/ci.yml)

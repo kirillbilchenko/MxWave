@@ -1,0 +1,69 @@
+{
+  "schema": "mxwave-drafter-context-pilot-v1",
+  "purpose": "Bounded CPU context-projection adaptation on verified CT features; no deployment or speed claim.",
+  "capture_plan_sha256": "2e3dfcf8f61eadbbb7ae4092fed661da986daec7ed1d88921f5d771156bd4c7f",
+  "target": "Fixed CT MXFP4 experts plus the previously tested native MXFP8 KDA conversion",
+  "source_drafter_sha256": "6cba1cff8ab4fcd657b89575f5db3debe1f5a39c78bda422953f553dc2357f8b",
+  "dense_checkpoint_sha256": "29a84776f54b4e24378e934adae6f1e869dc6fe4fea74396440e2fb764e2db82",
+  "specforge_revision": "03f3682ea852b73488d62dab4cd539033cc60e3e",
+  "trainable": ["fc.weight"],
+  "frozen": "All original drafter tensors, FP8 backbone codes/scales, selector, target embedding/head and target weights.",
+  "optimizer": {
+    "name": "AdamW",
+    "master_dtype": "float32",
+    "forward_weight_dtype": "bfloat16",
+    "peak_learning_rate": 0.00001,
+    "final_learning_rate": 0.000001,
+    "warmup_steps": 4,
+    "weight_decay": 0,
+    "gradient_clip_l2": 1,
+    "maximum_steps": 32,
+    "seed": 42
+  },
+  "data": {
+    "train_prompts": 32,
+    "validation_prompts": 8,
+    "test_prompts_opened": 0,
+    "training_order": "One seeded permutation of the 32 frozen training prompts, one prompt per step.",
+    "anchors_per_prompt": 4,
+    "anchor_sampling": "Deterministic per prompt ID, split and seed; evenly spread eligible anchors for validation, seeded uniform sample for training.",
+    "labels": "Verified CT response token IDs, never source-dataset answers.",
+    "natural_stop": "Only complete seven-label draft blocks before or ending at the first EOS are eligible.",
+    "eos_token_ids": [154820, 154827, 154829],
+    "short_response_policy": "Report and skip prompts with fewer than eight response tokens before/including EOS; no replacement.",
+    "mask_policy": "Each block sees only target context strictly before its anchor and its own eight query slots; no other block or future context.",
+    "query_policy": "True anchor token followed by seven mask-token embeddings.",
+    "required_before_training": "All captured hashes/controls and both ranks verified; source weights hashed; multi-anchor masks and isolated-block agreement checked."
+  },
+  "loss": {
+    "unary": "Full-vocabulary cross-entropy against each verified CT label.",
+    "selector": "Teacher-forced cross-entropy within strict unary top-16, only where the label is present; no label injection.",
+    "selector_weight": 1,
+    "position_weights": "Uniform across the seven draft positions.",
+    "normalization": "Mean unary CE plus mean covered selector CE."
+  },
+  "validation": {
+    "steps": [0, 8, 16, 24, 32],
+    "short_response_adjustment": "Also evaluate the last eligible training step if skipped short responses leave fewer than 32 steps.",
+    "weight_precision": "Evaluate the BF16-rounded exported context projection.",
+    "metrics": ["per-prompt mean greedy accepted-prefix length", "unary CE", "selector coverage", "per-position agreement"],
+    "aggregation": "Mean prompt scores within each domain.",
+    "selection": "Highest code mean prefix among checkpoints with strictly better code prefix than baseline, chat/explanation prefix ratios at least 0.98, and context-weight relative L2 at most 0.01; tie-break lower code unary CE, then earlier step.",
+    "insufficient_domain_policy": "No candidate if any validation domain has no eligible prompts.",
+    "baseline_repeat": "Exactly repeated baseline on fixed validation inputs before training.",
+    "offline_improvement_is_serving_speed": false
+  },
+  "export": {
+    "only_changed_tensor": "fc.weight",
+    "all_other_tensor_payloads": "Byte-identical to the original FP8 checkpoint.",
+    "config": "Byte-identical to original.",
+    "native_reload_and_live_acceptance_required": true,
+    "no_improving_candidate": "Preserve failure and do not promote or open sealed test."
+  },
+  "limits": [
+    "Small public short-prompt pilot; not a final quality or speed qualification.",
+    "Dense CPU training arithmetic differs from native FP8 Marlin and KV/head adapters.",
+    "The original sealed end-to-end success thresholds and failed target KL gate are unchanged.",
+    "The previous disposable MSE update is excluded."
+  ]
+}

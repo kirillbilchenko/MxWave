@@ -396,3 +396,14 @@ for real-fixture CPU forward/backward and matched-history replay. MxWave's
 autograd diagnostic, accepted-history validator and bounded capture preparation
 are independently authored. No SpecForge implementation is copied into the repo.
 See `docs/GLM53_DRAFTER_TRAINING_PREFLIGHT.md`.
+
+The bounded context-projection pilot imports the same pinned, unmodified model
+and its public mask builder. Its CT-label objective, frozen-block execution,
+checkpoint selection, NumPy feature audit and evidence-transfer helper are
+independently authored. No upstream implementation is copied into the repository.
+The batch-shape diagnostic and failed pre-training run remain retained.
+
+The CPU linear derivative override uses independently authored analytical matrix
+derivatives with FP32 accumulation while calling unchanged PyTorch BF16 forwards.
+The native exporter copies original serialized payloads and replaces only the
+selected BF16 context projection. Neither utility includes upstream model code.

@@ -1,11 +1,12 @@
 # CT drafter: training graph and bounded feature capture
 
-Updated **20 October 2026, 13:54 UTC**. CPU forward/backward and retained-history
-replay are complete. Both Sparks pass CPU launch/tokenizer validation for the
-40-prompt capture, with **211 frozen bindings per rank**.
-**The bounded capture has started and production is temporarily paused.**
-Controller phase is `starting_ct` (loading CT weights); wrapper PID 2637398,
-restoration watchdog PID 2637409. No captured result exists yet.
+Updated **20 October 2026, 14:18 UTC**. The bounded capture is complete and independently
+verified; original production was restored at **14:03:27 UTC** with 500k context.
+All 44 requests completed, both output/counter controls pass, and all 5,456
+payload hashes match. The accepted export passes a separate NumPy bit audit.
+The CPU context-projection pilot is complete with a selected development checkpoint; see the
+[capture result and current pilot](GLM53_DRAFTER_CONTEXT_PILOT.md).
+The graph and capture protocol below describe the completed preceding stages.
 
 The target remains **CT MXFP4 experts + native MXFP8 KDA**. Source CT with BF16
 KDA remains the lossless reference. There is no additional target quantization

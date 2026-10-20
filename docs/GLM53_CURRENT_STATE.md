@@ -1,11 +1,30 @@
 # GLM lossless experiment: current state and next steps
 
-**20 October 2026, 13:54 UTC:** the
-[training graph check](GLM53_DRAFTER_TRAINING_PREFLIGHT.md) passes; all 56 draft
-tokens across eight retained native histories match. Native arithmetic parity
-and training benefit remain unproved. Both Sparks pass CPU launch/tokenizer
-checks for a 32-training/8-validation feature capture. The bounded trial has
-started and production is temporarily paused, with automatic restoration.
+**20 October 2026, 14:31 UTC: context pilot complete; step 24 selected for native development testing.**
+The 32-update CPU run completes in **177.386 seconds**. On eight validation
+prompts, mean accepted draft prefix changes **code 4.25 → 4.375**,
+**chat 2.75 → 2.875**, **explanation 4.25 → 4.25** at step 24.
+Step 32 regresses on chat and is rejected. This is a small offline development
+improvement, **not a serving-speed gain or completed drafter qualification**.
+
+An independent review reproduces **1,120 token comparisons and 135 acceptance
+fields** and the same checkpoint selection. FP64 corrects the reported weight
+relative L2 to **0.000117160**; the unchanged 0.01 limit still passes. The native
+FP8 export changes only `fc.weight`; all other **115 tensor payloads** and the
+config remain byte-identical. The sealed test is unopened.
+
+Original production is restored and healthy at **500,000 context** (restoration
+14:03:27 UTC). A bounded original/candidate/original native comparison is prepared:
+eight development prompts, six repeats per load, fixed C1/256-token/seed-42 policy,
+clock/thermal telemetry and automatic original-production restoration. Native
+candidate loading has not started at this checkpoint.
+
+All **44 prior capture/control requests** and **5,456 payload hashes** verify;
+336,281,600 BF16 feature elements match in the independent two-rank NumPy audit.
+Capture evidence is backed up on Spark2. The stopped packed-block preflight,
+slow CPU run, derivative correction and prior failures remain retained.
+See [complete evidence and current continuation](GLM53_DRAFTER_CONTEXT_PILOT.md).
+Earlier live-state claims below are historical and superseded by this block.
 
 **Earlier 20 October 2026 CPU preparation complete:** frozen thresholds; exact full-file
 FP8/BF16/FP8 round trip; actual SpecForge class strictly loads all 81 dense

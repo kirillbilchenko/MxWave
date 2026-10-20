@@ -1,29 +1,31 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_TRAINING_PREFLIGHT_BEGIN -->
-**20 October 2026, 13:54 UTC: bounded feature capture started; production temporarily paused.**
-The actual drafter completes forward/backward and a disposable context-only
-optimizer/reload check in **36.884 seconds**. Original 81 parameter tensors
-remain byte-identical. The disposable step increases its diagnostic MSE and is
-**not a trained candidate**.
+**20 October 2026, 14:31 UTC: context pilot complete; step 24 selected for native development testing.**
+The 32-update CPU run completes in **177.386 seconds**. On eight validation
+prompts, mean accepted draft prefix changes **code 4.25 → 4.375**,
+**chat 2.75 → 2.875**, **explanation 4.25 → 4.25** at step 24.
+Step 32 regresses on chat and is rejected. This is a small offline development
+improvement, **not a serving-speed gain or completed drafter qualification**.
 
-At all eight retained native CT histories the dense implementation selects
-**56/56 identical draft tokens**. Hidden states differ by 2.32–2.82% relative L2,
-so this does not establish native numerical parity or general acceptance.
-Accepted-sequence checks exclude rejected suffixes and post-cap work.
+An independent review reproduces **1,120 token comparisons and 135 acceptance
+fields** and the same checkpoint selection. FP64 corrects the reported weight
+relative L2 to **0.000117160**; the unchanged 0.01 limit still passes. The native
+FP8 export changes only `fc.weight`; all other **115 tensor payloads** and the
+config remain byte-identical. The sealed test is unopened.
 
-Both Sparks pass CPU launch/tokenizer checks for **32 training + 8 validation
-prompts**, 128 outputs each, plus four before/after controls; all **211 bindings
-per rank** match. The sealed test is unopened. The controller is loading CT on
-private port 8019; original production is temporarily stopped; wrapper PID
-2637398, restoration watchdog PID 2637409. No capture result exists yet.
-The watchdog restores original production on completion/failure/deadline;
-no modified drafter is loaded. Ruff and strict mypy pass; **891 tests pass,
-one optional dependency skip**.
+Original production is restored and healthy at **500,000 context** (restoration
+14:03:27 UTC). A bounded original/candidate/original native comparison is prepared:
+eight development prompts, six repeats per load, fixed C1/256-token/seed-42 policy,
+clock/thermal telemetry and automatic original-production restoration. Native
+candidate loading has not started at this checkpoint.
 
-See [training preflight and capture contract](GLM53_DRAFTER_TRAINING_PREFLIGHT.md).
-This supersedes the earlier “no optimizer step / forward untested” checkpoint
-below; earlier results remain retained.
+All **44 prior capture/control requests** and **5,456 payload hashes** verify;
+336,281,600 BF16 feature elements match in the independent two-rank NumPy audit.
+Capture evidence is backed up on Spark2. The stopped packed-block preflight,
+slow CPU run, derivative correction and prior failures remain retained.
+See [complete evidence and current continuation](GLM53_DRAFTER_CONTEXT_PILOT.md).
+Earlier live-state claims below are historical and superseded by this block.
 <!-- DRAFTER_TRAINING_PREFLIGHT_END -->
 
 <!-- DRAFTER_CPU_PREFLIGHT_BEGIN -->
