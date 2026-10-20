@@ -1,5 +1,14 @@
 # GLM lossless experiment: current state and next steps
 
+**Native comparison live, 20 October 2026, 14:35 UTC:** CPU preflight passes for all three
+loads on both Sparks; all 211 bindings per rank match. Controller phase
+`starting_a1`: original production is temporarily paused and the original-drafter
+CT baseline is loading on private port 8020. Wrapper PID **2969601** and independent
+restoration watchdog PID **2969609** are live. The 40-minute experiment deadline
+is followed by automatic restoration of the original 500k-context production.
+No native candidate measurement exists yet. CPU work is committed as `f4e0b2f`
+and verified on Spark2, including all 47 pilot archive payloads/checkpoints.
+
 **20 October 2026, 14:31 UTC: context pilot complete; step 24 selected for native development testing.**
 The 32-update CPU run completes in **177.386 seconds**. On eight validation
 prompts, mean accepted draft prefix changes **code 4.25 → 4.375**,
@@ -13,8 +22,8 @@ relative L2 to **0.000117160**; the unchanged 0.01 limit still passes. The nativ
 FP8 export changes only `fc.weight`; all other **115 tensor payloads** and the
 config remain byte-identical. The sealed test is unopened.
 
-Original production is restored and healthy at **500,000 context** (restoration
-14:03:27 UTC). A bounded original/candidate/original native comparison is prepared:
+The earlier capture restored production at **14:03:27 UTC**. The new bounded
+original/candidate/original native comparison is now running:
 eight development prompts, six repeats per load, fixed C1/256-token/seed-42 policy,
 clock/thermal telemetry and automatic original-production restoration. Native
 candidate loading has not started at this checkpoint.

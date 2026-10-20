@@ -1,9 +1,18 @@
 # CT drafter: verified features and context-projection pilot
 
+**Native comparison live, 20 October 2026, 14:35 UTC:** CPU preflight passes for all three
+loads on both Sparks; all 211 bindings per rank match. Controller phase
+`starting_a1`: original production is temporarily paused and the original-drafter
+CT baseline is loading on private port 8020. Wrapper PID **2969601** and independent
+restoration watchdog PID **2969609** are live. The 40-minute experiment deadline
+is followed by automatic restoration of the original 500k-context production.
+No native candidate measurement exists yet. CPU work is committed as `f4e0b2f`
+and verified on Spark2, including all 47 pilot archive payloads/checkpoints.
+
 Updated **20 October 2026**. Feature capture is complete. Original production was
 restored at **14:03:27 UTC**, with its original container identities, configuration
 and **500,000-token context limit**. The bounded CPU pilot is complete. Step 24 is selected and exported for native
-development testing; it has not yet been loaded into serving.
+development testing; its native serving comparison is now loading the first baseline.
 
 The fixed target is **CT MXFP4 experts plus the previously tested native MXFP8
 KDA conversion**. That KDA conversion is lossy; original BF16-KDA CT remains the
@@ -42,7 +51,7 @@ payloads**, including FP8 codes and scales, plus the exact config bytes. Only
 `fc.weight` changes. Export SHA-256:
 `bf67cb8c2a02e3999269294b7d2b6fc63ce52ebd694fecbd8dac56f5971bdf47`.
 
-A bounded original/candidate/original development run is prepared on private port
+A bounded original/candidate/original development run is now live on private port
 8020: the same eight validation prompts, six shuffled repeat cycles per load,
 two excluded warmups, C1, 256 fixed outputs, seed 42, temperature zero and seven
 drafts. Both ranks must match all 88 retained effective drafter tensors except
@@ -199,6 +208,6 @@ PYTHONPATH=out/drafter-preflight-v1/audit-deps ../../.venv/bin/python \
 
 Output directories must be new; never overwrite a retained run.
 
-Source verification: Ruff and strict core mypy pass; **901 tests pass, one
+Source verification: Ruff and strict core mypy pass; **906 tests pass, one
 optional dependency skip**. The full native comparison still requires the actual
 serving-image preflight and successful runtime checks.
