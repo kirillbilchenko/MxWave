@@ -1,5 +1,33 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_EXPERT_PADDING_BEGIN -->
+**20 October 2026, 17:43 UTC: padding replay prepared; GPU result pending.**
+`drafter-expert-padding-v1` tests bounded routing padding on the retained
+440-versus-448 dispatch, with both real TP weight partitions and both expert
+projections. Native replay must first match the retained up/activation/down
+outputs; padded stock/packed results must match each other and be bit-identical
+on shared rows. Only then run graph-repeat and eight interleaved timing cycles,
+including SM clock, temperature and power telemetry. Two launch policies are
+retained: default occupancy and one block per SM. Timing controls retain the
+2% drift limit. No serving speed claim follows from component timings.
+
+CPU preflight passes all **1,728 checkpoint tensor records**, four frozen
+runtime/library hashes and source compilation. Full pytest, ruff and strict
+mypy pass. Plan SHA:
+`314ea9bc87e04430d8c88067dd824edb891ac02e3eb538534abf112cc5d587d3`.
+Production is still original/running at preparation; the bounded controller
+will pause only verified idle production and restore it after the replay, with
+an independent watchdog. This is not yet a tested fix. Full-model verification
+and frozen drafter qualification wait for the component result and overhead
+review. The adapted drafter stays **unqualified**, the sealed test stays
+**unopened**, and the full 4,000-prompt training run remains outstanding.
+
+Installed Marlin MoE Python source has no batch-invariance implementation;
+the modular base defaults to unsupported. The installed global invariant flag
+therefore does not establish coverage of this path. Earlier checkpoints below
+remain historical.
+<!-- DRAFTER_EXPERT_PADDING_END -->
+
 <!-- DRAFTER_EXPERT_REPLAY_BEGIN -->
 **20 October 2026, 17:27:12 UTC: direct expert replay complete; original production restored.**
 The first changed operation is reproduced using the original layer-4 gate/up

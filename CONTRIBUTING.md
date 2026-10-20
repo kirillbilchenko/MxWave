@@ -424,3 +424,8 @@ The replay calls installed vLLM repacking/GEMM APIs and MxWave's already license
 raw/packed bridge libraries on captured operands and the original checkpoint.
 Installed source is used only to verify token/route ordering and feature-layer
 index semantics; no additional third-party implementation is redistributed.
+
+The bounded expert-routing padding policy, Triton metadata copier and paired
+two-projection replay are independently authored. They use the audited launch
+geometry to call unchanged installed/previously licensed Marlin kernels. No
+additional upstream GEMM implementation is copied or adapted.
