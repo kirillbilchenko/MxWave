@@ -118,7 +118,8 @@ class VerificationCapture(ContextCapture):
         return result
 
 
-def install(worker: Any) -> dict[str, Any]:
+def install(worker: Any, capture_type: type[VerificationCapture] = VerificationCapture
+            ) -> dict[str, Any]:
     """Verify all effective drafter tensors and install a bounded passive trace."""
     import os
 
@@ -140,12 +141,15 @@ def install(worker: Any) -> dict[str, Any]:
     assert inventory == expected
     root = Path("/traces")
     write(root / f"draft-runtime-weights-r{rank}.json", inventory)
-    probe = VerificationCapture(runner, root, plan, rank)
+    probe = capture_type(runner, root, plan, rank)
     probe.attach()
     report = {
         "status": "installed", "rank": rank, "sources": sources,
         "runtime_weights_verified": True, "selected_cache_layers": list(probe.layers),
         "timing_claim": False, "observation": "Copies only; native forward and sampler retained",
     }
+    trace = getattr(probe, "component_trace", None)
+    if trace is not None:
+        report["components"] = trace.metadata()
     write(root / f"probe-installed-r{rank}.json", report)
     return report

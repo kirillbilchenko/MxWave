@@ -147,9 +147,9 @@ def compare_frames(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def review(root: Path, output: Path) -> dict[str, Any]:
+def review(root: Path, output: Path | None) -> dict[str, Any]:
     """Validate controls, restoration and hashes before locating the first changed decision."""
-    if output.exists():
+    if output is not None and output.exists():
         raise FileExistsError(output)
     manifest = json.loads((root / "evidence-manifest.json").read_bytes())
     for row in manifest["files"]:
@@ -256,7 +256,8 @@ def review(root: Path, output: Path) -> dict[str, Any]:
             "No causal attribution to a particular kernel from boundary tensors alone.",
         ],
     }
-    output.write_text(json.dumps(result, indent=2) + "\n")
+    if output is not None:
+        output.write_text(json.dumps(result, indent=2) + "\n")
     return result
 
 

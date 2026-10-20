@@ -413,3 +413,8 @@ NumPy trace reviewer and their tests are independently authored. They inspect in
 APIs and call the original runtime; they do not copy third-party kernel or model
 implementations. The raw runtime sources retained in ignored `out/` are read-only
 audit evidence, not redistributed implementation code.
+
+The subsequent eight-row component observer reuses MxWave's bounded graph-copy
+helper and wraps the installed attention, mHC and MoE interfaces. It and its
+experiment preparer/tests are independently authored; only source hashes and
+interface observations are used from vLLM, with no upstream implementation copied.

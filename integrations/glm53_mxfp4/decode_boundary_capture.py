@@ -7,7 +7,11 @@ from collections.abc import Callable
 from typing import Any
 
 import torch
-from decode_state_values import value_metrics
+
+if __package__:
+    from .decode_state_values import value_metrics
+else:
+    from decode_state_values import value_metrics
 
 MAX_CAPTURE_BYTES = 24 * 1024**2
 _INSTALLED = False
@@ -41,9 +45,12 @@ def boundary_metrics(current: torch.Tensor, reference: torch.Tensor) -> dict[str
 class BoundaryCapture:
     """Retain graph-written copies, rather than views of later-overwritten activations."""
 
-    def __init__(self, capturing: Callable[[], bool] | None = None) -> None:
+    def __init__(self, capturing: Callable[[], bool] | None = None, *,
+                 rows: int = 4, layers: tuple[int, ...] = (2, 3, 4),
+                 max_bytes: int = MAX_CAPTURE_BYTES) -> None:
         """Bound diagnostic allocation before any measured graph replay."""
         self.capturing = capturing or torch.cuda.is_current_stream_capturing
+        self.rows, self.layers, self.max_bytes = rows, layers, max_bytes
         self.active_layer: int | None = None
         self.events: list[dict[str, Any]] = []
         self.nbytes = 0
@@ -60,12 +67,13 @@ class BoundaryCapture:
         for path, tensor in tensor_leaves(value):
             if not tensor.numel():
                 continue
-            if tensor.untyped_storage().data_ptr() in self._topk_storages and tensor.shape[0] > 4:
-                tensor = tensor[:4]
+            if (tensor.untyped_storage().data_ptr() in self._topk_storages
+                    and tensor.shape[0] > self.rows):
+                tensor = tensor[:self.rows]
             leaves.append((path, tensor))
         size = sum(t.numel() * t.element_size() for _, t in leaves)
-        if self.nbytes + size > MAX_CAPTURE_BYTES:
-            raise MemoryError("Boundary diagnostic exceeds its 24 MiB capture budget")
+        if self.nbytes + size > self.max_bytes:
+            raise MemoryError(f"Boundary diagnostic exceeds its {self.max_bytes}-byte budget")
         if not leaves:
             return
         copies = [{"path": path, "shape": list(t.shape), "dtype": str(t.dtype),
@@ -85,16 +93,16 @@ class BoundaryCapture:
         self.methods.append((owner, name, previous, name in vars(owner)))
         setattr(owner, name, factory(previous))
 
-    def wrapper(self, prefix: str, *, first_four: bool = False,
+    def wrapper(self, prefix: str, *, first_four: bool = False, first_args: int | None = None,
                 layer: int | None = None, extra: Any = None) -> Callable[[Any], Any]:
-        """Record runtime inputs/results only during the one four-token graph capture."""
+        """Record runtime inputs/results only during the selected graph capture."""
         def decorate(original: Any) -> Any:
             @functools.wraps(original)
             def call(*args: Any, **kwargs: Any) -> Any:
                 previous = self.active_layer
                 if layer is not None:
                     positions = args[0] if args else kwargs.get("positions")
-                    if (not isinstance(positions, torch.Tensor) or positions.numel() != 4
+                    if (not isinstance(positions, torch.Tensor) or positions.numel() != self.rows
                             or not self.capturing()):
                         return original(*args, **kwargs)
                     self.active_layer = layer
@@ -104,13 +112,15 @@ class BoundaryCapture:
                 self.counts[prefix] = count + 1
                 name = prefix + f"#{count}"
                 selected = args[:4] if first_four else (args, kwargs)
+                if first_args is not None:
+                    selected = args[:first_args]
                 try:
                     self.record(name + "/input", "operand", selected)
                     output = original(*args, **kwargs)
                     self.record(name + "/output", "result", output)
                     buffer = getattr(extra, "topk_indices_buffer", None)
                     if isinstance(buffer, torch.Tensor):
-                        self.record(name + "/topk", "result", buffer[:4])
+                        self.record(name + "/topk", "result", buffer[:self.rows])
                     return output
                 finally:
                     if layer is not None:
@@ -119,17 +129,17 @@ class BoundaryCapture:
         return decorate
 
     def install(self, model: Any, ops: Any) -> None:
-        """Wrap layers 2–4 and their real operations without replacing their arithmetic."""
+        """Wrap selected layers and their real operations without replacing arithmetic."""
         layers = []
         for name, module in model.named_modules():
             index = getattr(module, "layer_idx", None)
-            if index not in (2, 3, 4) or not hasattr(module, "hc_fused_post_pre"):
+            if index not in self.layers or not hasattr(module, "hc_fused_post_pre"):
                 continue
             layers.append(index)
             self.replace(module, "forward", self.wrapper(name, layer=index))
             self.replace(module, "hc_fused_post_pre",
                          self.wrapper(name + ".hc_fused_post_pre", first_four=True))
-            self.replace(module, "hc_pre", self.wrapper(name + ".hc_pre", first_four=True))
+            self.replace(module, "hc_pre", self.wrapper(name + ".hc_pre", first_args=1))
             # Child module copies distinguish projections/indexing from whole attention.
             for path, child in module.self_attn.named_modules():
                 label = name + ".self_attn" + ("." + path if path else "")
@@ -145,8 +155,8 @@ class BoundaryCapture:
                     self.replace(experts, method, self.wrapper(name + ".mlp." + method))
                 self.replace(experts.router, "select_experts",
                              self.wrapper(name + ".mlp.router"))
-        if sorted(layers) != [2, 3, 4]:
-            raise ValueError("Require exactly GLM decoder layers 2, 3 and 4")
+        if sorted(layers) != sorted(self.layers):
+            raise ValueError(f"Require exactly GLM decoder layers {self.layers}")
 
         def decorate_gemm(original: Any) -> Any:
             @functools.wraps(original)
@@ -185,7 +195,8 @@ class BoundaryCapture:
         """Expose only bounded plain metadata and exact graph-copy layout."""
         lock_storages = {(t.untyped_storage().data_ptr(), t.untyped_storage().nbytes())
                          for t in self.locks}
-        return {"capture_bytes": self.nbytes, "maximum_capture_bytes": MAX_CAPTURE_BYTES,
+        return {"capture_bytes": self.nbytes, "maximum_capture_bytes": self.max_bytes,
+                "rows": self.rows, "layers": list(self.layers),
                 "python_wrappers_removed": not self.methods,
                 "stock_marlin_lock_storage_bytes": sum(size for _, size in lock_storages),
                 "stock_marlin_lock_storages": len(lock_storages),

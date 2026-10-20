@@ -1,5 +1,23 @@
 # GLM lossless experiment: current state and next steps
 
+<!-- DRAFTER_COMPONENTS_BEGIN -->
+**20 October 2026, 16:48 UTC: component trace and both-rank serving-image CPU preflight pass.**
+Production remains running at this checkpoint; paired GPU capture is next. The bounded observer
+covers attention projections/outputs, mHC, dense MLPs, expert routing and expert
+GEMMs in layers 0–4 of the native eight-row target graph. It retains graph-written
+copies only at start positions 46 and 54, with a 64 MiB graph-allocation limit.
+Python component wrappers are removed after capture. All prior tokens and
+speculative counters must reproduce in before/capture/repeat/after controls.
+
+The frozen plan is `drafter-components-v1` (private port 8023), SHA-256
+`afa5478d56f93f6c7035ead4a5fc3d0401088ea6154b2e47c8156a818ffd5fc2`.
+The existing 25-minute experiment cutoff and independent restoration watchdog
+are retained. No additional training, timing claim, promotion or sealed-test
+access is included. Ruff, strict core mypy and the full test suite pass locally.
+Both ranks validate all 211 frozen runtime bindings. Next: bounded paired capture, independent
+component comparison, then a direct test of the first differing operation.
+<!-- DRAFTER_COMPONENTS_END -->
+
 <!-- DRAFTER_VERIFICATION_BEGIN -->
 **20 October 2026, 15:59 UTC: V2 trace complete and independently verified; original production restored.**
 Both original/adapted arms pass before/capture/repeat/after output and counter
