@@ -1,45 +1,58 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_SPARSE_PREFILL_BEGIN -->
-**20 October 2026, 21:24 UTC: first long-prefill divergence localized to layer-3 sparse indexer.**
-The completed `drafter-prefill-boundary-v1` observes 159 operation boundaries
-and hashes 10,540,856,360 bytes per prefill/rank. Independent review of all
-12 capture pairs on both GPUs finds the first different observation at
-`language_model.model.layers.3.self_attn.indexer.indexer_op#0/output`.
-All preceding observed tensors and this operation's explicit inputs match.
-This is before the drafter; it does **not** prove matching hidden cache state,
-identify the internal kernel, or distinguish selected membership from order
-or unused slots. Do not describe it as a solved kernel cause.
+**20 October 2026, 21:37 UTC: native sparse-prefill top-k changes index order with identical scores and membership.**
+`drafter-sparse-prefill-v1` completes all six requests and restores original
+production: `complete_restored`, no error, health 200, original identities and
+**500,000 context**. Finalization also succeeds. No experiment is currently running.
+Independent CPU review verifies all **416 evidence payloads** on Mac; Spark2
+independently verifies the complete backup. All **12 capture-pair comparisons**
+across both TP ranks establish:
 
-All six requests complete, the repeat gate fails, and original production is
-restored (`complete_restored`, no error, health 200, 500,000 context).
-All **414 evidence payloads** independently verify on Mac and Spark2.
-Archive: 1,849,717,826 bytes, SHA
+- Layer-3 indexer explicit inputs and consumed MQA scoring operands match exactly.
+- All **1,972,098 consumed FP32 scores per pair** are bit-identical, with no
+  nonfinite consumed values. Unused score columns are excluded by the native bounds.
+- Native pool selection changes order in **1,921–1,922 rows**, first at zero-based
+  row **2,051**, while selected multiplicity is identical in every row.
+- Expanded token indices show the same order-only changes. Both representations
+  have zero duplicates, invalid negative indices or causal/extent violations.
+- All initial target-logit comparisons still differ. Later target features also
+  differ; this diagnostic does not establish that index ordering explains every
+  full-model divergence. Layer-5 first differences can precede row 2,051.
+
+**Conclusion:** order nondeterminism is established in the observed native
+prefill top-k component. A correction has **not** been applied or qualified.
+Next: canonicalize only the selected pool indices, preserve their exact
+multiset and invalid-slot masking, and measure GPU repeatability and overhead.
+Then rerun the long-prompt full-model controls without per-operation observation.
+If target drift remains, trace the next changed boundary. The observed GPU
+copies may alter scheduling; this is neither a serving-speed nor a cross-model
+quality pass. The unchanged repeat gate fails and full training stays gated.
+
+Review: `out/drafter-sparse-prefill-v1/review.json`, also retained at
+`benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/drafter-sparse-prefill-v1-review.json`.
+Archive: **2,262,129,801 bytes**, SHA
+`f0f8f18b6b6786da473d3ce4b5a4f4f9040e8da151e4a504d51a5449e0d51efd`.
+Plan SHA `c91a61c51d99b3c6e9640dac04257c75f5bf07a278515ed841bb2068b228c5f4`.
+Spark2: `full-model-v1/drafter-sparse-prefill-v1-retained-backup/`.
+The unchanged target/original drafter uses seven drafts, three short warmups,
+and the 3,973-token training prompt in native-before/four-captures/native-after
+requests. The passive layer-3 probe retains 177,233,572 bytes per rank using
+stream-ordered GPU copies, bounded to 512 MiB; no native arithmetic is replaced.
+
+Previous boundary trace remains retained: all 12 pairs first differ at layer-3
+indexer output with equal explicit inputs; 159 boundaries and 10,540,856,360
+hashed bytes per prefill/rank. All 414 payloads independently verify on both
+machines. Archive SHA
 `9c7635b0157e332a2525f0cf0b7d12f91a67ebe32939f931b8b37ae3236c47b5`.
-Plan SHA `951680952a525be24449b4bb862609f907a7685cefc4444006d427604629b8be`.
-Review: `out/drafter-prefill-boundary-v1/review.json`, also retained in benchmarks.
-Spark2 evidence: `full-model-v1/drafter-prefill-boundary-v1-retained-backup/`.
-Source checkpoint `f9f8f4d` is committed and verified in Spark2's Git backup;
-bundle SHA `a2ee93ef3c42a4332aa0a1724af1d730fa496c6e563f8c4e375c18a743c2cbf4`.
+Probe source checkpoint `fe1c618` is committed and verified in Spark2's Git
+backup; bundle SHA
+`63ced2bbdbd36f7991246edf2dfa857233025f4fd257deaf76fd6fc3b41fb4df`.
 
-**Follow-up active: both CPU preflights passed; controller/watchdog launched.** `drafter-sparse-prefill-v1`,
-private port 8032, frozen plan SHA
-`c91a61c51d99b3c6e9640dac04257c75f5bf07a278515ed841bb2068b228c5f4`.
-Production is temporarily paused; the controller restores the original service
-on exit. Same target, original drafter, seven drafts, three short warmups, and long
-native-before / four-captures / native-after requests. Retain layer-3 native
-indexer operands/output, gathered MQA score inputs, raw score buffers and
-native in-place top-k selections. Stream-ordered GPU copies are bounded to
-512 MiB/rank and transferred after prefill, avoiding per-operation CPU
-synchronization. Observation may still affect scheduling; no timing claim.
-Review must exclude unused score columns using the actual per-row bounds,
-then separate index order, selected multiplicity, duplicates and causality.
-No arithmetic replacement or new kernel is enabled. Local ruff, strict mypy
-and full pytest pass (one existing skip).
-
-Full 4,000/200 capture and training remain gated by the target repeat failure.
-The 32-update pilot remains speed-neutral and unqualified. Sealed test closed;
-no DeepInfer code or confidence scheduler is introduced.
+Full 4,000-training/200-validation capture and training have **not started**.
+The 32-update pilot remains speed-neutral and unqualified; no new speed gain.
+The sealed test remains closed. No DeepInfer code or confidence scheduler is
+introduced. Local ruff, strict mypy and full pytest pass (one existing skip).
 <!-- DRAFTER_SPARSE_PREFILL_END -->
 
 <!-- DRAFTER_FRESH_CAPTURE_BEGIN -->

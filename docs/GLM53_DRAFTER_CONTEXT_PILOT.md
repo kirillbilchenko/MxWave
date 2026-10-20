@@ -1,11 +1,13 @@
 # CT drafter: verified features and context-projection pilot
 
-**20 October 2026, 21:24 UTC:** all 12 independently reviewed capture pairs
-on both GPUs first diverge at layer 3's sparse-indexer output, with matching
-explicit inputs. Selected membership, ordering and hidden cache state are not
-yet separated. Production is restored with 500,000 context; all 414 trace
-payloads verify on Mac/Spark2. The focused score/index capture is now active;
-production is temporarily paused with automatic restoration. Full training remains gated; the sealed test is closed.
+**20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
+GPUs show identical sparse-prefill scoring inputs, consumed scores and selected
+tokens, but native top-k changes their order in 1,921–1,922 prompt rows. This
+component defect is established; an ordering fix and its full-model effect are
+not yet tested. The repeat gate still fails. Original production is restored
+with 500,000 context; all 416 evidence payloads verify on Mac/Spark2. No experiment
+is running. Full 4,000/200 capture and training remain gated; the old drafter
+pilot is speed-neutral and unqualified, and the sealed test remains closed.
 [Current evidence and restoration status](GLM53_HANDOFF.md).
 
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
