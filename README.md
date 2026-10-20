@@ -1,10 +1,13 @@
 # MxWave
 
-**20 October 2026, 20:49 UTC:** fresh drafter capture finds a longer-prompt
-self-repeat failure before full training starts. The 3,973-token prompt differs
-at output index 44 between two native controls. A focused repeat trace is active;
-no new speed or quality pass is claimed. The full-data trainer/export pipeline
-is prepared and tested, and the sealed test stays closed.
+**20 October 2026, 21:06 UTC:** independent review confirms target-prefill
+variation before the drafter on the 3,973-token training prompt. All 12 capture
+pairs across both GPUs differ by sampled layer 5 and at the first decision
+logits. Four captured responses nevertheless have identical text; the native
+repeat control fails. A focused operation trace through
+layers 0–5 is now active after both CPU preflights pass. Production is temporarily
+paused; the controller restores its original 500,000-context setup on exit.
+Full 4,000/200 capture/training remain gated; the sealed test stays closed.
 [Current evidence and restoration status](docs/GLM53_HANDOFF.md).
 
 **20 October 2026, 20:07 UTC:** our wider Marlin padding check passes all

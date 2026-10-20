@@ -1,35 +1,51 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_FRESH_CAPTURE_BEGIN -->
-**20 October 2026, 20:49 UTC: full training is gated by a newly observed long-prompt repeat failure.**
-Fresh capture V3 passes all 39 startup checks on both ranks, then completes six
-API requests/four captured prompts before the longest training prompt fails the
-unchanged repeat gate. The 3,973-token prefill is one forward, and decode uses
-8-row verification. Before versus captured text is identical, but counters differ;
-**the two uninstrumented controls diverge at zero-based output index 44** (84/128
-positions differ). This does not identify a kernel or establish training/quality
-regression. No training has occurred; the sealed test remains closed.
-The failed run restores original production at epoch 1792529167.916315
-(`failed_restored`, 500,000 context). Small review:
-`out/drafter-fresh-capture-smoke-v3/failure-review.json`.
-The frozen plan SHA is
+**20 October 2026, 21:06 UTC: repeated long-prompt target prefill differs before the drafter.**
+Full 4,000/200 capture and training remain gated; the sealed test is closed.
+`drafter-long-repeat-v1` completes all six long-prompt requests and restores
+original production with 500,000 context (`complete_restored`, no error).
+Independent Mac review validates all 440 evidence payloads, accepted histories
+and all 12 capture pairs across both TP ranks. Every pair has different target
+prefill features at the earliest sampled layer, layer 5, and different logits
+at all 128 shared decision positions. The initial input IDs, positions, seed
+and anchor agree. Layer-5 first differences vary by pair (rows 169, 170 or
+1,546); the exact operation is not yet localized.
+
+The four captured runs emit identical 128-token responses despite different
+features/logits. The uninstrumented before control diverges from those four
+and the after control at output index 80. Repeat gate fails; diagnostic
+completion is not training eligibility or a serving-speed/quality pass.
+Review: `out/drafter-long-repeat-v1/review.json`, also retained in benchmarks.
+Plan SHA `444b42c825545fc27bb7a27b90ddf2aa89db65034e1c1c466ecaac2b40c1ed75`.
+Archive: 1,855,265,597 bytes, SHA
+`d75c8ccc41df89630c33848e969405e0c9748943b24e4b61f285f467c5bf3ba6`.
+
+**Active diagnostic: both CPU preflights passed; controller/watchdog launched.**
+`full-model-v1/drafter-prefill-boundary-v1`, private port 8031, plan SHA
+`951680952a525be24449b4bb862609f907a7685cefc4444006d427604629b8be`.
+It hashes complete operands/results through layers 0–5 on the same 3,973-row
+prefill, retaining native before/after controls and four captures. It excludes
+scratch contents and unread routing tails. Production is temporarily paused; the existing watchdog/controller restores
+its original 500,000-context setup on exit. No target/drafter weights or kernel
+arithmetic changes. CPU copies synchronize execution and may alter overlap;
+a trace that becomes repeatable under observation cannot qualify the native
+runtime. Local ruff, strict mypy and full pytest pass (one existing skip).
+
+Earlier fresh capture V3 passes all 39 startup checks on both ranks, then
+fails the unchanged repeat gate after six requests/four captured prompts.
+The two native controls diverge at output index 44 (84/128 positions differ);
+before versus captured text agrees but counters differ. Production restores
+at epoch 1792529167.916315. No prompt is discarded to bypass this failure.
+Its archive finalizer initially failed its final live-health assertion because
+the follow-up diagnostic had already paused production. The failed log is
+retained; the retry after restoration succeeds. All 586 evidence payloads
+independently verify on Mac and Spark2; the 440-payload long-repeat archive
+also independently verifies on both. Spark2 retains each under
+`full-model-v1/<run-name>-retained-backup/`. Archive: 480,569,076 bytes, SHA
+`1c90c50af8095358fbbed55b54c1b79e19fcd42401c3058235eb577522615322`.
+Frozen V3 plan SHA
 `7fc8b9b7296fcf10996f2ae37ced4e0bc6452e20cb9b4598155a48cac4cc41e7`.
-
-**Active follow-up:** `full-model-v1/drafter-long-repeat-v1`, private port 8030,
-plan SHA `444b42c825545fc27bb7a27b90ddf2aa89db65034e1c1c466ecaac2b40c1ed75`.
-Both CPU checks pass and the controller/watchdog are running. The same original
-drafter, target policy, 4,096 prefill budget and 6 GiB KV remain fixed. Replay
-three preceding short prompts, then native before / four full feature-logit
-captures / native after on that one long prompt. Differences are retained rather
-than aborting the diagnostic. Completion is **not** a repeat pass or a training
-qualification. Production is temporarily paused for this follow-up and will
-restore on every exit. The first task after restoration is to finish retaining
-both runs before starting any further GPU experiment.
-
-V3's per-file finalizer copied rank-one payloads but failed its final live-health
-assertion because the follow-up had already paused production. This is an
-archive-finalization failure, not a failed restoration; retain the failed log
-and rerun finalization after the active diagnostic restores production.
 
 Retained attempts:
 - V1 failed CPU preflight because the boot assertion still required 2,048

@@ -1,13 +1,14 @@
 # GLM lossless experiment: current state and next steps
 
-**20 October 2026, 20:49 UTC:** full drafter training is gated by a new
-longer-prompt self-repeat failure. On the 3,973-token training prompt, native
-before/after outputs diverge at output index 44; captured versus first native
-text agrees, but speculative counters differ. V3 restored original production.
-A focused same-prompt feature/logit repeat trace is now active on private port
-8030 with automatic restoration; no model/drafter weights or thresholds change.
-Full 4,000/200 capture and training have not started; the sealed test is closed.
-See [current evidence and active controller](GLM53_HANDOFF.md).
+**20 October 2026, 21:06 UTC:** independent review confirms target-prefill
+variation before the drafter on the 3,973-token training prompt. All 12 capture
+pairs across both GPUs differ by sampled layer 5 and at the first decision
+logits. Four captured responses nevertheless have identical text; the native
+repeat control fails. A focused operation trace through
+layers 0–5 is now active after both CPU preflights pass. Production is temporarily
+paused; the controller restores its original 500,000-context setup on exit.
+Full 4,000/200 capture/training remain gated; the sealed test stays closed.
+[Current evidence and restoration status](GLM53_HANDOFF.md).
 
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
 all 36 fixtures through 128 rows. Independent review finds 54/100 native
