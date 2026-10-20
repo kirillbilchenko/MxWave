@@ -1,5 +1,20 @@
 # Drafter comparison after completed speed and GSM8K
 
+<!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
+**20 October 2026: completed work committed and backed up; calibration pilot prepared.**
+Commit `edc4c08` preserves the GLM implementation, tests, handoffs and experiment
+receipts. Its complete-history bundle is verified on **spark2**, including a
+successful bare-repository restore and Git object-integrity check.
+
+The separate [selector calibration pilot](GLM53_SELECTOR_CALIBRATION.md) is ready:
+32 new training prompts, eight validation and eight sealed test prompts; only the
+1,048,576-weight BF16 selector projection may train. No earlier benchmark prompt
+or GSM8K test question is training data. **No capture or training has started.**
+Automatic approval review blocked copying the prepared source archive to both
+Spark hosts; explicit transfer approval is pending. Production remains unchanged.
+This block supersedes historical live-work statements below.
+<!-- SELECTOR_CALIBRATION_LIVE_END -->
+
 <!-- DRAFTER_CONTEXT_LIVE_BEGIN -->
 **Paired target/drafter diagnostic complete and independently verified,
 20 October 2026. Original production restored at 11:53:12 UTC**, healthy on

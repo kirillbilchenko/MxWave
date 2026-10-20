@@ -1473,3 +1473,7 @@ platform-specific vLLM lifecycle/telemetry.
 Apache-2.0. This project is an independent clean-room implementation based on
 the public OCP MX specification and published quantization research. See
 `CONTRIBUTING.md` for the provenance policy.
+
+The [bounded CT drafter-calibration pilot](docs/GLM53_SELECTOR_CALIBRATION.md)
+is prepared after the paired diagnostic. No calibration speed or quality result
+is available yet. Completed GLM work is committed and backed up on spark2.

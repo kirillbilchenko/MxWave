@@ -1,0 +1,82 @@
+"""Collect separate calibration data with native-output repeat controls."""
+from __future__ import annotations
+import argparse
+import json
+import pathlib
+import re
+import sys
+import time
+import measure_serving as m
+ROOT = pathlib.Path(__file__).parent
+sys.path.insert(0, str(ROOT.parent / "full-c16admissionv1-src"))
+import full_model_control as c
+m.BASE = "http://127.0.0.1:8018"
+
+def idle():
+    for _ in range(2):
+        text = m.request("/metrics").decode()
+        values = [float(line.rsplit(" ", 1)[1]) for line in text.splitlines()
+                  if re.match(r"vllm:num_requests_(running|waiting)(\{| )", line)]
+        assert values and not any(values)
+        time.sleep(0.5)
+
+def marker(active, case):
+    idle()
+    program = ("import pathlib,sys;p=pathlib.Path(sys.argv[1]);"
+               "q=p.with_suffix('.incomplete');q.write_text(sys.argv[2]);q.replace(p)")
+    for rank in (0, 1):
+        c.run(rank, ["python3", "-S", "-c", program,
+                    str(ROOT / f"ct-r{rank}" / "probe-marker.json"),
+                    json.dumps({"active": active, "case": case})])
+
+def counters(text):
+    return {key: float(value) for line in text.splitlines()
+            if line.startswith("vllm:spec_decode_") and "_total" in line
+            for key, value in [line.rsplit(" ", 1)]}
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--arm", choices=["ct"], required=True)
+    parser.parse_args()
+    path = ROOT / "ct-measurement.json"
+    assert not path.exists()
+    plan = json.loads((ROOT / "plan.json").read_bytes())
+    report = {"status": "running", "cases": [], "timing_claim": False, "controls": []}
+    m.write(path, report)
+    try:
+        for case in plan["calibration_cases"]:
+            controlled = case["id"] in plan["control_cases"]
+            policies = ("before", "capture", "after") if controlled else ("capture",)
+            rows = []
+            for policy in policies:
+                marker(policy == "capture", case["id"])
+                before = counters(m.request("/metrics").decode())
+                result = m.stream(case["prompt_ids"], plan["output_tokens"])
+                idle()
+                after = counters(m.request("/metrics").decode())
+                row = {"case": case["id"], "split": case["split"], "policy": policy,
+                       "result": result, "counter_delta":
+                       {k: v - before.get(k, 0) for k, v in after.items()}}
+                rows.append(row)
+                report["cases"].append(row)
+                m.write(path, report)
+            if controlled:
+                output_equal = all(r["result"]["token_ids"] == rows[0]["result"]["token_ids"]
+                                   for r in rows)
+                counters_equal = all(r["counter_delta"] == rows[0]["counter_delta"] for r in rows)
+                report["controls"].append({"case": case["id"], "output_equal": output_equal,
+                                           "counters_equal": counters_equal})
+                assert output_equal and counters_equal, report["controls"][-1]
+            print(json.dumps({"case": case["id"], "complete": True,
+                              "requests": len(report["cases"])}), flush=True)
+        marker(False, "complete")
+        report.update(status="complete", summary={"requests": len(report["cases"]),
+                      "capture_cases": 48, "controls_passed": True, "timing_claim": False})
+        m.write(path, report)
+    except BaseException as exc:
+        report.update(status="failed", error=repr(exc))
+        m.write(path, report)
+        raise
+
+if __name__ == "__main__":
+    main()

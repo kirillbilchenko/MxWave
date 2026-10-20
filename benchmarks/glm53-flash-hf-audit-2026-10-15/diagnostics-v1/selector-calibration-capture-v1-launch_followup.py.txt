@@ -1,0 +1,49 @@
+"""Run preflight, the bounded diagnostic and evidence retention with explicit status."""
+
+from __future__ import annotations
+
+import json
+import os
+import pathlib
+import subprocess
+import time
+
+ROOT = pathlib.Path(__file__).parent
+
+
+def status(phase, **extra):
+    path = ROOT / "queue.json"
+    tmp = path.with_suffix(".incomplete")
+    tmp.write_text(json.dumps({"phase": phase, "pid": os.getpid(),
+                              "updated_epoch": time.time(), **extra}, indent=2) + "\n")
+    tmp.replace(path)
+
+
+def main():
+    deadline = time.monotonic() + 1200
+    previous = ROOT.parent / "drafter-context-v1" / "controller.json"
+    while True:
+        old = json.loads(previous.read_bytes())
+        if old["phase"] == "complete_restored" and not old["service_paused"]:
+            break
+        assert time.monotonic() < deadline, "Prior restoration did not finish"
+        status("waiting_for_original_restoration")
+        time.sleep(5)
+    for name in ("prepare", "control", "finalize"):
+        status(name)
+        with (ROOT / f"{name}-queue.log").open("xb") as log:
+            run = subprocess.run(
+                ["python3", "-S", "-B", "-u", str(ROOT / f"{name}.py")],
+                stdout=log, stderr=subprocess.STDOUT, check=False,
+            )
+        if run.returncode:
+            status("failed", step=name, returncode=run.returncode)
+            return
+    status("complete")
+    (ROOT / "postprocess-complete.json").write_text(
+        json.dumps({"status": "complete", "epoch": time.time()}) + "\n"
+    )
+
+
+if __name__ == "__main__":
+    main()

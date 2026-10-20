@@ -369,3 +369,9 @@ The drafter head and target-context probes are independently authored observers
 around installed vLLM/DFlash2 APIs. They pin source versions, preserve native graph
 outputs and retain tensors for an independently authored CPU analysis. No vLLM
 kernel or external training implementation is copied or adapted into the repo.
+
+The selector-calibration pilot uses independently authored PyTorch tensor algebra
+and a passive native-graph observer. It trains only the existing BF16 selector
+projection on separately authored prompts. The SpecForge documentation informs
+the objective and metric definitions; no SpecForge training code is copied or
+installed. Runtime compatibility remains a separate validation gate.
