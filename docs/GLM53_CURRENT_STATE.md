@@ -1,5 +1,35 @@
 # GLM lossless experiment: current state and next steps
 
+**20 October 2026 CPU preparation complete:** frozen thresholds; exact full-file
+FP8/BF16/FP8 round trip; actual SpecForge class strictly loads all 81 dense
+parameter tensors; 4,000/200/200 train/validation/sealed-test prompts and token
+IDs prepared. Production remains healthy at 500k context, checked 13:21:47 UTC.
+No GPU training or native forward parity has run. See
+[the preflight report](GLM53_DRAFTER_PREFLIGHT.md) for evidence and remaining work.
+
+**Variant clarification, 20 October 2026:** original lossless CT preserves MXFP4
+experts and BF16 KDA values. The later CT MXFP8 candidate additionally quantizes
+KDA from BF16 to MXFP8 at runtime; source files remain unchanged. The earlier
+[same-CT compression off/on test](GLM53_MXFP4_SERVING_V3.md) matches all 24 paired
+token sequences and measured speculation counters. Later CT-versus-ModelOpt
+feature differences do not isolate a compression effect. See the
+[handoff variant table](GLM53_HANDOFF.md) before interpreting drafter adaptation.
+
+Recommended next milestone: validate training/export/native reload for the
+existing drafter against the fixed, already-tested CT MXFP8 performance candidate.
+Keep original CT as the lossless reference. In the retained code case, BF16 KDA
+needed 56 rounds, CT MXFP8 54 and ModelOpt 47, so the additional KDA quantization
+did not introduce the whole acceptance gap. No new run or production switch is
+implied by this recommendation; the failed KL gate remains unchanged.
+
+**Active user direction, 20 October 2026:** make CT work with a properly adapted
+drafter. Continue the training/export compatibility audit and prepare a bounded
+adaptation run with representative data, a fresh held-out test and native serving
+validation. The failed selector-only pilot does not end this objective, and
+adaptation is not conditional on a prior concurrency win. No new run has launched
+at this update. See the [current handoff objective](GLM53_HANDOFF.md) for the
+work sequence and unchanged production replacement gates.
+
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
 **20 October 2026: selector-only calibration pilot complete; held-out gate failed.**
 All 52 API requests complete, and both before/capture/after controls repeat output

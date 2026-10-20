@@ -1474,6 +1474,13 @@ Apache-2.0. This project is an independent clean-room implementation based on
 the public OCP MX specification and published quantization research. See
 `CONTRIBUTING.md` for the provenance policy.
 
+The subsequent [CPU drafter preflight](docs/GLM53_DRAFTER_PREFLIGHT.md) freezes
+success thresholds, verifies a byte-identical FP8/BF16/FP8 checkpoint round trip,
+strictly loads all 81 dense parameter tensors into the pinned SpecForge DFlash2
+class, and prepares 4,000/200/200 train/validation/sealed-test prompts.
+Production stays running. No optimizer, native parity or new speed result is
+claimed; the earlier failed pilot below remains failed.
+
 The [bounded CT drafter-calibration pilot](docs/GLM53_SELECTOR_CALIBRATION.md)
 completes but **fails its held-out gate**. This is an offline projection-only fit
 with fixed captured states; it is not serving speed or target-model task accuracy.

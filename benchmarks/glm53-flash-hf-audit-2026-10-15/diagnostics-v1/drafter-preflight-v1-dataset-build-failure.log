@@ -1,0 +1,18 @@
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:239: IOError: sysctlbyname failed for 'hw.l1dcachesize'. Detail: [errno 1] Operation not permitted
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:239: IOError: sysctlbyname failed for 'hw.l2cachesize'. Detail: [errno 1] Operation not permitted
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:239: IOError: sysctlbyname failed for 'hw.l3cachesize'. Detail: [errno 1] Operation not permitted
+/Users/runner/work/crossbow/crossbow/arrow/cpp/src/arrow/util/cpu_info.cc:239: IOError: sysctlbyname failed for 'hw.optional.neon'. Detail: [errno 1] Operation not permitted
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/prepare_drafter_dataset.py", line 177, in <module>
+    main()
+    ~~~~^^
+  File "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/prepare_drafter_dataset.py", line 173, in main
+    print(json.dumps(prepare(args.sources, args.output, args.protocol), indent=2))
+                     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/prepare_drafter_dataset.py", line 128, in prepare
+    splits = allocate(candidates, QUOTAS)
+  File "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/prepare_drafter_dataset.py", line 69, in allocate
+    raise ValueError(f"Insufficient distinct prompts for {name}: {dict(counts[name])}")
+ValueError: Insufficient distinct prompts for train: {'code': 2400, 'chat': 800, 'explanation': 383}

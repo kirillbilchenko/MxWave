@@ -1,0 +1,53 @@
+{
+  "schema": "mxwave-drafter-tokenized-splits-v1",
+  "tokenizer_hashes": {
+    "tokenizer.json": "19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d",
+    "tokenizer_config.json": "98b1271574f41abf89427ae2dda030d94dc9478f0edc5a8bd240db213c6fd5fc",
+    "chat_template.jinja": "34d5ee66b12fa6446cdae131c352b8f68cd85369e0e6fda115583805fada3891",
+    "config.json": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198"
+  },
+  "manifest_sha256": "48fba2329f6e500b38ab0f212da14b882020862a8b402a77c72ac2aa4df85d8a",
+  "source_sha256": "ff8c2e29c5dcd0b21f3e48b49f72666bc04d4c02db7b9ad960bb814dc2ee50a2",
+  "files": [
+    {
+      "split": "train",
+      "path": "out/drafter-preflight-v1/dataset-v2b/tokenized-v2/train.jsonl",
+      "sha256": "1b98c709d058faf1f3692e635528f553a9a3fe55141139b068cd2f72a2d69633",
+      "count": 4000,
+      "input_tokens": 531412,
+      "min_input_tokens": 16,
+      "max_input_tokens": 3973
+    },
+    {
+      "split": "validation",
+      "path": "out/drafter-preflight-v1/dataset-v2b/tokenized-v2/validation.jsonl",
+      "sha256": "5ef9e2db81b60921c057480a4931c15ee04094a00b415b6ee3f245aca510b701",
+      "count": 200,
+      "input_tokens": 23839,
+      "min_input_tokens": 17,
+      "max_input_tokens": 2248
+    },
+    {
+      "split": "test",
+      "path": "out/drafter-preflight-v1/dataset-v2b/tokenized-v2/test.jsonl",
+      "sha256": "05d66a391b8ff8f1f367e95ff4c11bb51c8cb6dd6d89c2d0f7fa5cba3bedabdd",
+      "count": 200,
+      "input_tokens": 22371,
+      "min_input_tokens": 17,
+      "max_input_tokens": 1729
+    }
+  ],
+  "enable_thinking": false,
+  "add_generation_prompt": true,
+  "legacy_speed_token_sequences_checked": 3,
+  "legacy_speed_token_overlap": 0,
+  "cross_split_prompt_group_token_overlap": 0,
+  "prompt_content_displayed": false,
+  "features_per_token_bytes": 40960,
+  "train_feature_bytes_if_all_input_plus_512_output_tokens": 105652715520,
+  "limits": [
+    "Tokenization on Mac; replay equality with the installed serving tokenizer still to verify.",
+    "No CT continuations, target features, model outputs or training labels generated.",
+    "Feature storage estimate excludes indexes, logits, embeddings, tensor headers and validation data."
+  ]
+}

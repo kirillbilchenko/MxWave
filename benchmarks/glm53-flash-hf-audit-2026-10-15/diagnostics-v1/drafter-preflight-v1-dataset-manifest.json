@@ -1,0 +1,137 @@
+{
+  "schema": "mxwave-ct-drafter-prompts-v2",
+  "source_hashes": {
+    "opencoder-train-00000-of-00001.parquet": "e59784400ca4ba258a84c2bc04d88048cc7b6a26a6cd97692f287ba03a1a1fa7",
+    "dolly-databricks-dolly-15k.jsonl": "2df9083338b4abd6bceb5635764dab5d833b393b55759dffb0959b6fcbf794ec"
+  },
+  "source_downloads": [
+    {
+      "source": "OpenCoder-LLM/opc-sft-stage2",
+      "revision": "7d28f40d579edd7c24402d17d0c7639f991e6f8d",
+      "url": "https://huggingface.co/datasets/OpenCoder-LLM/opc-sft-stage2/resolve/7d28f40d579edd7c24402d17d0c7639f991e6f8d/README.md",
+      "path": "out/drafter-preflight-v1/audit-sources/opencoder-README.md",
+      "bytes": 4688,
+      "sha256": "4b5b95a34036558f86654db15a2931bcd1bba8a0c12a8c92edd615766dd3bdf6"
+    },
+    {
+      "source": "OpenCoder-LLM/opc-sft-stage2",
+      "revision": "7d28f40d579edd7c24402d17d0c7639f991e6f8d",
+      "url": "https://huggingface.co/datasets/OpenCoder-LLM/opc-sft-stage2/resolve/7d28f40d579edd7c24402d17d0c7639f991e6f8d/evol_instruct/train-00000-of-00001.parquet",
+      "path": "out/drafter-preflight-v1/audit-sources/opencoder-train-00000-of-00001.parquet",
+      "bytes": 136572932,
+      "sha256": "e59784400ca4ba258a84c2bc04d88048cc7b6a26a6cd97692f287ba03a1a1fa7"
+    },
+    {
+      "source": "databricks/databricks-dolly-15k",
+      "revision": "bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a",
+      "url": "https://huggingface.co/datasets/databricks/databricks-dolly-15k/resolve/bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a/README.md",
+      "path": "out/drafter-preflight-v1/audit-sources/dolly-README.md",
+      "bytes": 8199,
+      "sha256": "db06c60090a11b20e79d1933b2f316f781605f07761ff2ae2795d6523e3e960b"
+    },
+    {
+      "source": "databricks/databricks-dolly-15k",
+      "revision": "bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a",
+      "url": "https://huggingface.co/datasets/databricks/databricks-dolly-15k/resolve/bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a/databricks-dolly-15k.jsonl",
+      "path": "out/drafter-preflight-v1/audit-sources/dolly-databricks-dolly-15k.jsonl",
+      "bytes": 13085339,
+      "sha256": "2df9083338b4abd6bceb5635764dab5d833b393b55759dffb0959b6fcbf794ec"
+    }
+  ],
+  "protocol_sha256": "b71b5b53f0fa3fc3ba4d94dd030e3b45a0736231b32b647e9a4b2ea5f1e1d87b",
+  "builder_sha256": "0b1527d2b13fc515572008e0cf47eb182f06cb7a01df20f97a38a2a1c4845013",
+  "eligible_candidates": 119165,
+  "excluded": {
+    "preview_prefix": 858,
+    "character_bounds": 755,
+    "named_benchmark": 1,
+    "unused_dolly_category": 5415
+  },
+  "files": [
+    {
+      "split": "train",
+      "path": "out/drafter-preflight-v1/dataset-v2b/train.jsonl",
+      "sha256": "f897f39cadbf2d04c960265151781bc0e56215d2c8eb0c4b3f0725cde3baca8b",
+      "bytes": 3398028,
+      "count": 4000,
+      "domains": {
+        "code": 2400,
+        "explanation": 800,
+        "chat": 800
+      },
+      "source_categories": {
+        "evol_instruct": 2400,
+        "open_qa": 502,
+        "general_qa": 298,
+        "creative_writing": 151,
+        "summarization": 257,
+        "brainstorming": 392
+      },
+      "character_lengths": {
+        "min": 20,
+        "max": 11644
+      }
+    },
+    {
+      "split": "validation",
+      "path": "out/drafter-preflight-v1/dataset-v2b/validation.jsonl",
+      "sha256": "fe1041a07c26cad4caee9713801ef1aee973cc5ecb7b5e3171b6203e757bb5c5",
+      "bytes": 150477,
+      "count": 200,
+      "domains": {
+        "code": 120,
+        "explanation": 40,
+        "chat": 40
+      },
+      "source_categories": {
+        "evol_instruct": 120,
+        "open_qa": 25,
+        "general_qa": 15,
+        "brainstorming": 19,
+        "creative_writing": 8,
+        "summarization": 13
+      },
+      "character_lengths": {
+        "min": 20,
+        "max": 3246
+      }
+    },
+    {
+      "split": "test",
+      "path": "out/drafter-preflight-v1/dataset-v2b/test.jsonl",
+      "sha256": "4cf86830c6087b59ccc89dc7e86b48a4d7d4f399e4c7027751064abc5b065fbd",
+      "bytes": 158997,
+      "count": 200,
+      "domains": {
+        "code": 120,
+        "explanation": 40,
+        "chat": 40
+      },
+      "source_categories": {
+        "evol_instruct": 120,
+        "open_qa": 17,
+        "brainstorming": 25,
+        "general_qa": 23,
+        "summarization": 10,
+        "creative_writing": 5
+      },
+      "character_lengths": {
+        "min": 20,
+        "max": 4083
+      }
+    }
+  ],
+  "model_inference_performed": false,
+  "training_performed": false,
+  "test_content_displayed": false,
+  "source_answers_included": false,
+  "split_policy": "Seeded hash order, unique normalized instruction groups; test then validation then train.",
+  "limitations": [
+    "Public workload proxies, not private harness traffic; predominantly single-turn.",
+    "Dolly explanation bucket is general QA, not a verified technical-only benchmark.",
+    "Exact/simple-template grouping is not a proof against semantic paraphrase overlap.",
+    "Named benchmark and prior-pilot filters do not establish unknown pretraining-data independence.",
+    "Source prompt bytes frozen; tokenizer IDs and actual feature capture remain to be prepared.",
+    "Sealed means withheld from tuning; files are not encrypted and the builder processes them."
+  ]
+}

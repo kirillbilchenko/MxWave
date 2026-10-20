@@ -1,0 +1,849 @@
+{
+  "schema": "mxwave-drafter-specforge-compatibility-v1",
+  "specforge_revision": "03f3682ea852b73488d62dab4cd539033cc60e3e",
+  "torch_version": "2.14.0",
+  "transformers_version": "5.12.1",
+  "pinned_specforge_torch_requirement": "2.13.0",
+  "checkpoint_sha256": "29a84776f54b4e24378e934adae6f1e869dc6fe4fea74396440e2fb764e2db82",
+  "source_code_sha256": "3888449cb1a536fac726af00424e7b29bcc3a1b18769f6ea153540c537a085a3",
+  "source_hashes": {
+    "specforge/modeling/draft/dflash2.py": "819c6b3d8d6d8ffc31a843ed40d539ddf635f58b148a01c8c43d0bff1dd02b09",
+    "specforge/modeling/draft/dflash.py": "d951d627c15dc5062b40260a64b2d522a3ad0e220607ed683b79730abf117650",
+    "specforge/modeling/draft/dflash_kernels.py": "5ac1fab7c57551f70de92dab8446b900eb63501d9dc9d550157428ed026d21a2",
+    "specforge/training/model_loading.py": "38624f8cac65bc4514141b6b44c1d95118a12d9cbd9b526cb31bab3aea4d011c",
+    "specforge/export/to_hf.py": "4cd2f2e0239d896a54db221f42b2874fc8322b2387ce7e16641dc209f86d0d19",
+    "pyproject.toml": "4124e46c20780426f6f7ab18bd3535b7e46cfd6600e88b38453893bbde9367ad",
+    "LICENSE": "da25818d68a3da676fed16a019beadd6b12f5e4d59ade85840c23a6070240323"
+  },
+  "strict_load_pass": true,
+  "missing_keys": [],
+  "unexpected_keys": [],
+  "parameter_tensors": 81,
+  "parameters": 1171080448,
+  "context_projection_parameters": 83886080,
+  "layer_count": 5,
+  "target_layers": [
+    5,
+    14,
+    24,
+    33,
+    42
+  ],
+  "layer_types": [
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention",
+    "sliding_attention"
+  ],
+  "block_size": 8,
+  "keys_and_shapes": [
+    {
+      "checkpoint_key": "layers.0.self_attn.q_proj.weight",
+      "specforge_key": "layers.0.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.self_attn.k_proj.weight",
+      "specforge_key": "layers.0.self_attn.k_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.self_attn.v_proj.weight",
+      "specforge_key": "layers.0.self_attn.v_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.self_attn.o_proj.weight",
+      "specforge_key": "layers.0.self_attn.o_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.self_attn.q_norm.weight",
+      "specforge_key": "layers.0.self_attn.q_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.self_attn.k_norm.weight",
+      "specforge_key": "layers.0.self_attn.k_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.mlp.gate_proj.weight",
+      "specforge_key": "layers.0.mlp.gate_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.mlp.up_proj.weight",
+      "specforge_key": "layers.0.mlp.up_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.mlp.down_proj.weight",
+      "specforge_key": "layers.0.mlp.down_proj.weight",
+      "shape": [
+        4096,
+        12288
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.input_layernorm.weight",
+      "specforge_key": "layers.0.input_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.post_attention_layernorm.weight",
+      "specforge_key": "layers.0.post_attention_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.attention_conv.base_kernel",
+      "specforge_key": "layers.0.attention_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.attention_conv.kernel_projection.weight",
+      "specforge_key": "layers.0.attention_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.mlp_conv.base_kernel",
+      "specforge_key": "layers.0.mlp_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.0.mlp_conv.kernel_projection.weight",
+      "specforge_key": "layers.0.mlp_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.self_attn.q_proj.weight",
+      "specforge_key": "layers.1.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.self_attn.k_proj.weight",
+      "specforge_key": "layers.1.self_attn.k_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.self_attn.v_proj.weight",
+      "specforge_key": "layers.1.self_attn.v_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.self_attn.o_proj.weight",
+      "specforge_key": "layers.1.self_attn.o_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.self_attn.q_norm.weight",
+      "specforge_key": "layers.1.self_attn.q_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.self_attn.k_norm.weight",
+      "specforge_key": "layers.1.self_attn.k_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.mlp.gate_proj.weight",
+      "specforge_key": "layers.1.mlp.gate_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.mlp.up_proj.weight",
+      "specforge_key": "layers.1.mlp.up_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.mlp.down_proj.weight",
+      "specforge_key": "layers.1.mlp.down_proj.weight",
+      "shape": [
+        4096,
+        12288
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.input_layernorm.weight",
+      "specforge_key": "layers.1.input_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.post_attention_layernorm.weight",
+      "specforge_key": "layers.1.post_attention_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.attention_conv.base_kernel",
+      "specforge_key": "layers.1.attention_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.attention_conv.kernel_projection.weight",
+      "specforge_key": "layers.1.attention_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.mlp_conv.base_kernel",
+      "specforge_key": "layers.1.mlp_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.1.mlp_conv.kernel_projection.weight",
+      "specforge_key": "layers.1.mlp_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.self_attn.q_proj.weight",
+      "specforge_key": "layers.2.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.self_attn.k_proj.weight",
+      "specforge_key": "layers.2.self_attn.k_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.self_attn.v_proj.weight",
+      "specforge_key": "layers.2.self_attn.v_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.self_attn.o_proj.weight",
+      "specforge_key": "layers.2.self_attn.o_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.self_attn.q_norm.weight",
+      "specforge_key": "layers.2.self_attn.q_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.self_attn.k_norm.weight",
+      "specforge_key": "layers.2.self_attn.k_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.mlp.gate_proj.weight",
+      "specforge_key": "layers.2.mlp.gate_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.mlp.up_proj.weight",
+      "specforge_key": "layers.2.mlp.up_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.mlp.down_proj.weight",
+      "specforge_key": "layers.2.mlp.down_proj.weight",
+      "shape": [
+        4096,
+        12288
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.input_layernorm.weight",
+      "specforge_key": "layers.2.input_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.post_attention_layernorm.weight",
+      "specforge_key": "layers.2.post_attention_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.attention_conv.base_kernel",
+      "specforge_key": "layers.2.attention_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.attention_conv.kernel_projection.weight",
+      "specforge_key": "layers.2.attention_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.mlp_conv.base_kernel",
+      "specforge_key": "layers.2.mlp_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.2.mlp_conv.kernel_projection.weight",
+      "specforge_key": "layers.2.mlp_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.self_attn.q_proj.weight",
+      "specforge_key": "layers.3.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.self_attn.k_proj.weight",
+      "specforge_key": "layers.3.self_attn.k_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.self_attn.v_proj.weight",
+      "specforge_key": "layers.3.self_attn.v_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.self_attn.o_proj.weight",
+      "specforge_key": "layers.3.self_attn.o_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.self_attn.q_norm.weight",
+      "specforge_key": "layers.3.self_attn.q_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.self_attn.k_norm.weight",
+      "specforge_key": "layers.3.self_attn.k_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.mlp.gate_proj.weight",
+      "specforge_key": "layers.3.mlp.gate_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.mlp.up_proj.weight",
+      "specforge_key": "layers.3.mlp.up_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.mlp.down_proj.weight",
+      "specforge_key": "layers.3.mlp.down_proj.weight",
+      "shape": [
+        4096,
+        12288
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.input_layernorm.weight",
+      "specforge_key": "layers.3.input_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.post_attention_layernorm.weight",
+      "specforge_key": "layers.3.post_attention_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.attention_conv.base_kernel",
+      "specforge_key": "layers.3.attention_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.attention_conv.kernel_projection.weight",
+      "specforge_key": "layers.3.attention_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.mlp_conv.base_kernel",
+      "specforge_key": "layers.3.mlp_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.3.mlp_conv.kernel_projection.weight",
+      "specforge_key": "layers.3.mlp_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.self_attn.q_proj.weight",
+      "specforge_key": "layers.4.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.self_attn.k_proj.weight",
+      "specforge_key": "layers.4.self_attn.k_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.self_attn.v_proj.weight",
+      "specforge_key": "layers.4.self_attn.v_proj.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.self_attn.o_proj.weight",
+      "specforge_key": "layers.4.self_attn.o_proj.weight",
+      "shape": [
+        4096,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.self_attn.q_norm.weight",
+      "specforge_key": "layers.4.self_attn.q_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.self_attn.k_norm.weight",
+      "specforge_key": "layers.4.self_attn.k_norm.weight",
+      "shape": [
+        128
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.mlp.gate_proj.weight",
+      "specforge_key": "layers.4.mlp.gate_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.mlp.up_proj.weight",
+      "specforge_key": "layers.4.mlp.up_proj.weight",
+      "shape": [
+        12288,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.mlp.down_proj.weight",
+      "specforge_key": "layers.4.mlp.down_proj.weight",
+      "shape": [
+        4096,
+        12288
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.input_layernorm.weight",
+      "specforge_key": "layers.4.input_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.post_attention_layernorm.weight",
+      "specforge_key": "layers.4.post_attention_layernorm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.attention_conv.base_kernel",
+      "specforge_key": "layers.4.attention_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.attention_conv.kernel_projection.weight",
+      "specforge_key": "layers.4.attention_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.mlp_conv.base_kernel",
+      "specforge_key": "layers.4.mlp_conv.base_kernel",
+      "shape": [
+        2,
+        2,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "layers.4.mlp_conv.kernel_projection.weight",
+      "specforge_key": "layers.4.mlp_conv.kernel_projection.weight",
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "norm.weight",
+      "specforge_key": "norm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "fc.weight",
+      "specforge_key": "fc.weight",
+      "shape": [
+        4096,
+        20480
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": true
+    },
+    {
+      "checkpoint_key": "hidden_norm.weight",
+      "specforge_key": "hidden_norm.weight",
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "candidate_selector.predecessor_codebook",
+      "specforge_key": "candidate_selector.predecessor_codebook",
+      "shape": [
+        154880,
+        256
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "candidate_selector.successor_codebook",
+      "specforge_key": "candidate_selector.successor_codebook",
+      "shape": [
+        154880,
+        256
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    },
+    {
+      "checkpoint_key": "candidate_selector.hidden_projection.weight",
+      "specforge_key": "candidate_selector.hidden_projection.weight",
+      "shape": [
+        256,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "train_context_first": false
+    }
+  ],
+  "limits": [
+    "Architecture/strict CPU weight loading only; no forward, backward, optimizer or native GPU execution.",
+    "Package aggregate imports intentionally bypassed; full SpecForge CLI environment unvalidated.",
+    "Local Torch 2.14.0 differs from SpecForge's pinned 2.13.0 training requirement.",
+    "35 FP8 scale tensors live in the export sidecar/original checkpoint, not the dense training model.",
+    "Native FP8 Marlin weights/activation arithmetic and draft KV/head adapters require a serving parity check.",
+    "Target features, target head and embeddings must come from the fixed CT target; not owned by this drafter checkpoint.",
+    "Existing selector-only capture omits full context feature sequences required for context-projection training."
+  ]
+}

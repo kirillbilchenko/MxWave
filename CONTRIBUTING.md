@@ -375,3 +375,18 @@ and a passive native-graph observer. It trains only the existing BF16 selector
 projection on separately authored prompts. The SpecForge documentation informs
 the objective and metric definitions; no SpecForge training code is copied or
 installed. Runtime compatibility remains a separate validation gate.
+
+The subsequent CPU drafter preparation uses independently authored conversion,
+dataset-selection and verification utilities. A separate, unmodified SpecForge
+checkout at `03f3682ea852b73488d62dab4cd539033cc60e3e` is inspected and its DFlash2
+class imported for a strict CPU parameter-load audit. Its MIT license and
+per-file notices remain in that checkout; no upstream model/training
+implementation is vendored or adapted into MxWave. The pinned Transformers
+dependency is isolated under the ignored audit directory.
+
+The frozen public prompt corpus uses OpenCoder `opc-sft-stage2/evol_instruct`
+(MIT) and Databricks Dolly (CC BY-SA 3.0, including applicable Wikipedia
+attribution). Revision IDs, source hashes, original cards and split hashes are
+retained. Source answers are omitted and no dataset code is executed. These
+artifacts retain their source licenses, separately from MxWave's Apache-2.0 code.
+See `docs/GLM53_DRAFTER_PREFLIGHT.md`; no third-party model weights are checked in.

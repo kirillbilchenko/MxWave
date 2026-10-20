@@ -1,5 +1,28 @@
 # Drafter comparison after completed speed and GSM8K
 
+**20 October CPU preflight complete:** FP8/BF16/FP8 export is byte-identical;
+all 81 dense tensors strictly load in the pinned SpecForge DFlash2 class.
+Thresholds and 4,000/200/200 prompt splits are frozen. These checks remove
+serialization and parameter-mapping uncertainties; they do not demonstrate
+training/native arithmetic parity or a serving gain.
+[Full preparation report](GLM53_DRAFTER_PREFLIGHT.md).
+
+**Causal scope, clarified 20 October 2026:** the feature diagnostic below compares
+the later CT MXFP8 candidate with production's ModelOpt checkpoint. These are
+different quantized targets. Original lossless CT retains BF16 KDA; the later
+candidate adds lossy BF16-to-MXFP8 KDA conversion while preserving MXFP4 experts.
+The [earlier same-CT off/on test](GLM53_MXFP4_SERVING_V3.md) found all 24 paired
+token sequences and measured speculation counters identical. The later feature
+differences therefore do not establish that lossless compression caused an
+acceptance loss or necessitates drafter retraining. Keep target adaptation and
+compression correctness separate; the [handoff](GLM53_HANDOFF.md) records variants.
+
+**Continuation objective, 20 October 2026:** the user wants CT with a properly
+adapted drafter. The small pilot below failed; broader adaptation remains an
+active workstream. Start with the exact FP8 DFlash2 training/export compatibility
+audit, then fresh-data adaptation and native serving validation as recorded in
+the [handoff](GLM53_HANDOFF.md). No new training run has launched at this update.
+
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
 **20 October 2026: selector-only calibration pilot complete; held-out gate failed.**
 All 52 API requests complete, and both before/capture/after controls repeat output

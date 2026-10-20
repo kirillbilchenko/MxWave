@@ -1,5 +1,143 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_CPU_PREFLIGHT_BEGIN -->
+**20 October 2026: CPU preparation items 1–4 complete; production uninterrupted.**
+The success thresholds are frozen. The real FP8 drafter passes a full
+FP8 → BF16 → FP8 round trip with **zero different bytes across all 116 tensors**;
+the entire model/config files match the originals. Conversion and verification
+took **7.217 seconds** on the Mac with original block scales retained.
+The pinned SpecForge DFlash2 class strictly loads all **81 dense parameter
+tensors**, with zero missing/unexpected keys or shape mismatches.
+
+**4,000 training / 200 validation / 200 sealed-test prompts** are frozen and
+hashed, with no source answers included. Exact/template/token overlap checks pass.
+The exact CT tokenizer/template have been applied on CPU; all prompts fit an
+8k capture budget. These are public code/chat/QA proxies, not private harness
+traffic. Do not inspect the sealed test while tuning.
+
+Production was checked healthy at **13:21:47 UTC**, with its original identity
+and **500,000 context**. No GPU experiment, optimizer step or promotion occurred.
+Native forward/backward and serving parity remain untested. The next milestone
+is the training-forward/native parity and feature-capture contract, followed by
+a bounded GPU development/capture window. Full 4,000-prompt feature storage is
+about **98.40 GiB before auxiliary data**, so begin with a subset or stream it.
+MTP remains an unqualified separate experiment, not a ready fallback.
+
+Ruff and strict core mypy pass; **885 tests pass, one optional dependency skip**.
+The frozen prompt/token corpus and reviews are backed up on **spark2**, with
+archive and all six prompt/token file hashes independently verified there.
+
+See [CPU preflight, frozen thresholds, mapping and dataset provenance](GLM53_DRAFTER_PREFLIGHT.md).
+This checkpoint supersedes earlier statements that the round-trip/mapping/data
+work is still pending. Earlier pilot failures and all deployment gates remain.
+<!-- DRAFTER_CPU_PREFLIGHT_END -->
+
+<!-- CT_VARIANT_SCOPE_BEGIN -->
+**Scope clarification, 20 October 2026: lossless packing and target quantization
+are separate changes.**
+
+| Variant | Expert weights | KDA projection weights | Change relative to the source CT checkpoint |
+| --- | --- | --- | --- |
+| Source CT | MXFP4 | BF16 | Reference CT quantization |
+| Original lossless-compressed CT | Same MXFP4 | Same BF16 values | Reversible storage/runtime encoding; no added weight quantization |
+| Later CT MXFP8 candidate | Same MXFP4 | BF16 converted to MXFP8 | Additional lossy KDA quantization, plus retained lossless packing elsewhere |
+| Production ModelOpt | NVFP4 | MXFP8 | Different quantized checkpoint; not a compression-off CT control |
+
+The source checkpoint files were not rewritten. The later runtime candidate
+really does use MXFP8-rounded KDA weights, despite retaining MXFP4 experts.
+Calling both variants simply "CT" obscured this distinction.
+
+The earlier [same-checkpoint compression comparison](GLM53_MXFP4_SERVING_V3.md)
+already found **all 24 paired token sequences identical**, with matching measured
+speculation counters. There is no observed compression-induced acceptance loss
+in that fixture. This finite check does not establish universal bitwise model
+equivalence, but it must not be omitted when explaining the drafter work.
+
+The later paired-feature diagnostic compares **CT MXFP8 against ModelOpt**,
+not the same CT weights with compression off/on. Its feature differences and
+proposal miss therefore do not establish that lossless packing caused a mismatch,
+or that compression alone requires retraining. Adapting a drafter to a different
+quantized target remains a separate hypothesis. Preserve the explicit target
+variant in every adaptation protocol and comparison; do not silently make
+further quantization changes. The goal remains a working CT setup and a proper
+drafter, with measured evidence determining the necessary intervention.
+<!-- CT_VARIANT_SCOPE_END -->
+
+**Recommended continuation after the scope clarification:** retain the already
+tested CT MXFP8 variant as the performance candidate, and the original BF16-KDA
+CT as the lossless-compression reference. This is a recommendation for the next
+experiment, not a production promotion or relaxation of the failed KL gate.
+Keep the candidate's target weights, quantization, tokenizer and serving policy
+fixed during drafter adaptation.
+
+Reverting KDA precision is not an established fix for the code acceptance gap.
+The retained matched run needed **56 code verification rounds with CT BF16 KDA,
+54 with CT MXFP8 KDA, and 47 with ModelOpt**, for the same 256-token output budget.
+CT MXFP8 code throughput was 44.86 tok/s versus 39.24 for CT BF16 KDA and 49.09
+for ModelOpt. These are workload-specific results; they neither isolate KDA's
+effect at identical histories nor prove a general training benefit.
+
+The next concrete milestone is a small training/export/native-reload compatibility
+check for the existing drafter, followed by bounded CT-specific adaptation only
+once that path works. Reuse the completed compression-off/on evidence; do not
+repeat it merely to re-establish the already-observed matching tokens/counters.
+Evaluate a candidate drafter against the unchanged drafter on fresh CT rollouts
+before a wider serving sweep. No new run has started at this update.
+
+<!-- CT_DRAFTER_OBJECTIVE_BEGIN -->
+**Active objective, reaffirmed by the user on 20 October 2026:**
+> I want CT to work, and want to have a proper drafter.
+
+Continue toward a usable CT model with a drafter adapted to the CT target.
+The failed small selector-only pilot closes that patch, not this objective.
+Drafter adaptation is a required workstream; it is not conditional on first
+proving a concurrency gain. This direction supersedes the earlier recommendation
+to decide whether to pursue adaptation only after the serving-configuration test.
+
+Next work:
+
+1. Audit training and export compatibility for the exact five-layer FP8 DFlash2
+   checkpoint and custom vLLM runtime. Establish a trainable representation,
+   CT target-feature capture, parameter mapping and a native reload check before
+   committing to a larger run.
+2. Prepare a bounded adaptation protocol with representative code/chat data,
+   separate validation and a fresh sealed test set. The pilot's test split is
+   already open. Keep the CT target fixed while adapting the drafter; determine
+   the trainable scope from the audit rather than assuming another projection-only
+   fit or full-backbone training will recover the gap.
+3. Validate the exported drafter with native kernels and fresh live rollouts.
+   Measure acceptance by draft position, verification rounds, first-token latency
+   and end-to-end code/chat throughput. Offline ranking improvement alone is
+   insufficient. Compare against the unchanged drafter and matched production.
+4. Complete production tuning/capacity, repeatable C8/C16 measurements and actual
+   long-context qualification before replacing production.
+
+Immediate technical recommendation after reviewing the retained runtime and
+training documentation: establish a train/export/reload smoke test using the
+existing pretrained DFlash2 drafter. Then assess a limited context-projection
+adaptation on CT features, with selector adaptation if justified. This is a
+candidate intervention, not an established repair. The previous pilot changed
+only the output selector projection and left target-feature processing frozen.
+Training the context projection still requires gradients through the frozen
+draft backbone; the custom FP8 inference path is not yet a validated training
+path. Measure a few training batches and export/reload agreement before giving
+a full-run ETA or expanding the trainable scope.
+
+The upstream [drafter model card](https://huggingface.co/incoai/GLM-5.3-Flash-DFlash2)
+identifies the original GLM target; it does not establish training specifically
+for our production ModelOpt quantization. The measured acceptance difference
+supports target-feature adaptation without proving that all of the code-speed
+gap comes from it. [SpecForge's training documentation](https://sgl-project.github.io/SpecForge/basic_usage/training.html#dflash2)
+provides the DFlash2 training approach; compatibility with this custom runtime
+and checkpoint remains to be checked.
+
+Status at this update: this records the continuation objective and next work;
+no new adaptation run has been launched. The previous patch remains unapplied.
+Retain the failed pilot and earlier repeat controls. The MXFP8 target's failed
+1e-5 KL comparison is unchanged; adapting its drafter does not establish
+losslessness. Original production remains the service to restore between trials.
+<!-- CT_DRAFTER_OBJECTIVE_END -->
+
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
 **20 October 2026: selector-only calibration pilot complete; held-out gate failed.**
 All 52 API requests complete, and both before/capture/after controls repeat output
