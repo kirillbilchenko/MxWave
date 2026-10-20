@@ -17,9 +17,8 @@ from safetensors.torch import load_file
 from .drafter_fp8_roundtrip import digest
 
 
-def audit(checkout: Path, checkpoint: Path, output: Path) -> dict[str, Any]:
-    """Instantiate the upstream class on meta and strictly load all BF16 parameters."""
-    import transformers
+def load_model(checkout: Path, checkpoint: Path) -> tuple[Any, str]:
+    """Strictly load the pinned dense model and materialize its rotary buffers on CPU."""
     from transformers.models.qwen3.configuration_qwen3 import Qwen3Config
 
     revision = subprocess.check_output(
@@ -48,15 +47,35 @@ def audit(checkout: Path, checkpoint: Path, output: Path) -> dict[str, Any]:
     expected = {name: list(value.shape) for name, value in model.state_dict().items()}
     weights = load_file(str(checkpoint / "model.safetensors"), device="cpu")
     result = model.load_state_dict(weights, strict=True, assign=True)
+    assert not result.missing_keys and not result.unexpected_keys
+    # Nonpersistent RoPE buffers are not in state_dict and stay on meta after assign.
+    # Recreate only the parameter-free module using the upstream constructor.
+    model.rotary_emb = type(model.rotary_emb)(model.rotary_emb.config, device="cpu")
+    for name, value in model.named_buffers():
+        if value.is_meta:
+            raise ValueError(f"Unmaterialized buffer: {name}")
+    for name, value in model.state_dict().items():
+        if value.data_ptr() != weights[name].data_ptr():
+            raise ValueError(f"Strict assigned tensor differs from source: {name}")
+        if list(value.shape) != expected[name]:
+            raise ValueError(f"Unexpected shape: {name}")
+    return model, revision
+
+
+def audit(checkout: Path, checkpoint: Path, output: Path) -> dict[str, Any]:
+    """Instantiate the upstream class on meta and strictly load all BF16 parameters."""
+    import transformers
+
+    model, revision = load_model(checkout, checkpoint)
+    config = model.config
+    config_dict = config.to_dict()
     rows = []
     for name, value in model.state_dict().items():
         if value.is_meta or value.device.type != "cpu":
             raise ValueError(f"Unmaterialized or non-CPU tensor: {name}")
-        if value.data_ptr() != weights[name].data_ptr():
-            raise ValueError(f"Strict assigned tensor differs from source: {name}")
         rows.append({
             "checkpoint_key": name, "specforge_key": name,
-            "shape": expected[name], "dtype": str(value.dtype),
+            "shape": list(value.shape), "dtype": str(value.dtype),
             "train_context_first": name == "fc.weight",
         })
     source_paths = [
@@ -73,10 +92,10 @@ def audit(checkout: Path, checkpoint: Path, output: Path) -> dict[str, Any]:
         "checkpoint_sha256": digest(checkpoint / "model.safetensors"),
         "source_code_sha256": digest(Path(__file__)),
         "source_hashes": {name: digest(checkout / name) for name in source_paths},
-        "strict_load_pass": True, "missing_keys": list(result.missing_keys),
-        "unexpected_keys": list(result.unexpected_keys), "parameter_tensors": len(rows),
+        "strict_load_pass": True, "missing_keys": [],
+        "unexpected_keys": [], "parameter_tensors": len(rows),
         "parameters": sum(value.numel() for value in model.parameters()),
-        "context_projection_parameters": weights["fc.weight"].numel(),
+        "context_projection_parameters": model.fc.weight.numel(),
         "layer_count": config.num_hidden_layers,
         "target_layers": config_dict["dflash_config"]["target_layer_ids"],
         "layer_types": config_dict["layer_types"], "block_size": model.block_size,

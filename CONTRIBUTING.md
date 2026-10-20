@@ -390,3 +390,9 @@ attribution). Revision IDs, source hashes, original cards and split hashes are
 retained. Source answers are omitted and no dataset code is executed. These
 artifacts retain their source licenses, separately from MxWave's Apache-2.0 code.
 See `docs/GLM53_DRAFTER_PREFLIGHT.md`; no third-party model weights are checked in.
+
+The subsequent training preflight imports that same unmodified upstream class
+for real-fixture CPU forward/backward and matched-history replay. MxWave's
+autograd diagnostic, accepted-history validator and bounded capture preparation
+are independently authored. No SpecForge implementation is copied into the repo.
+See `docs/GLM53_DRAFTER_TRAINING_PREFLIGHT.md`.

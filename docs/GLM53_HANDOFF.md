@@ -1,5 +1,31 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_TRAINING_PREFLIGHT_BEGIN -->
+**20 October 2026, 13:54 UTC: bounded feature capture started; production temporarily paused.**
+The actual drafter completes forward/backward and a disposable context-only
+optimizer/reload check in **36.884 seconds**. Original 81 parameter tensors
+remain byte-identical. The disposable step increases its diagnostic MSE and is
+**not a trained candidate**.
+
+At all eight retained native CT histories the dense implementation selects
+**56/56 identical draft tokens**. Hidden states differ by 2.32–2.82% relative L2,
+so this does not establish native numerical parity or general acceptance.
+Accepted-sequence checks exclude rejected suffixes and post-cap work.
+
+Both Sparks pass CPU launch/tokenizer checks for **32 training + 8 validation
+prompts**, 128 outputs each, plus four before/after controls; all **211 bindings
+per rank** match. The sealed test is unopened. The controller is loading CT on
+private port 8019; original production is temporarily stopped; wrapper PID
+2637398, restoration watchdog PID 2637409. No capture result exists yet.
+The watchdog restores original production on completion/failure/deadline;
+no modified drafter is loaded. Ruff and strict mypy pass; **891 tests pass,
+one optional dependency skip**.
+
+See [training preflight and capture contract](GLM53_DRAFTER_TRAINING_PREFLIGHT.md).
+This supersedes the earlier “no optimizer step / forward untested” checkpoint
+below; earlier results remain retained.
+<!-- DRAFTER_TRAINING_PREFLIGHT_END -->
+
 <!-- DRAFTER_CPU_PREFLIGHT_BEGIN -->
 **20 October 2026: CPU preparation items 1–4 complete; production uninterrupted.**
 The success thresholds are frozen. The real FP8 drafter passes a full

@@ -1,6 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
-**20 October 2026 CPU preparation complete:** frozen thresholds; exact full-file
+**20 October 2026, 13:54 UTC:** the
+[training graph check](GLM53_DRAFTER_TRAINING_PREFLIGHT.md) passes; all 56 draft
+tokens across eight retained native histories match. Native arithmetic parity
+and training benefit remain unproved. Both Sparks pass CPU launch/tokenizer
+checks for a 32-training/8-validation feature capture. The bounded trial has
+started and production is temporarily paused, with automatic restoration.
+
+**Earlier 20 October 2026 CPU preparation complete:** frozen thresholds; exact full-file
 FP8/BF16/FP8 round trip; actual SpecForge class strictly loads all 81 dense
 parameter tensors; 4,000/200/200 train/validation/sealed-test prompts and token
 IDs prepared. Production remains healthy at 500k context, checked 13:21:47 UTC.

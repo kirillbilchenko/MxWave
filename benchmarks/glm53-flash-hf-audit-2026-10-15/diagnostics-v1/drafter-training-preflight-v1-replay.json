@@ -1,0 +1,431 @@
+{
+  "schema": "mxwave-drafter-native-dense-replay-v1",
+  "specforge_revision": "03f3682ea852b73488d62dab4cd539033cc60e3e",
+  "source_sha256": "97665c6cd1af8d00658867b1222a134046901f8e67ca2d0db4c9b2e03cc87467",
+  "sequence_builder_sha256": "f51e1c58d88925cc419ab43292527a306f1548908d8d09eebbf26c792eb92286",
+  "checkpoint_sha256": "29a84776f54b4e24378e934adae6f1e869dc6fe4fea74396440e2fb764e2db82",
+  "source_rows": {
+    "query-embeddings.bf16": {
+      "source_key": "model.language_model.embed_tokens.weight",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/source/model-00001-of-00120.safetensors",
+      "source_header_sha256": "9f25931a40ce1683894ab7f0c99231bdf58f5e7bdbf970293751cace7cfa74ff",
+      "rows": [
+        10056,
+        154856
+      ],
+      "shape": [
+        2,
+        4096
+      ],
+      "bytes": 16384,
+      "sha256": "a0c823b70d2b641dbd736cb81a13c3ad485826c488d14de5bef0eca6f488e390"
+    },
+    "target-head.bf16": {
+      "source_key": "lm_head.weight",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/source/model-00001-of-00120.safetensors",
+      "source_header_sha256": "9f25931a40ce1683894ab7f0c99231bdf58f5e7bdbf970293751cace7cfa74ff",
+      "rows": null,
+      "shape": [
+        154880,
+        4096
+      ],
+      "bytes": 1268776960,
+      "sha256": "aa21c427970f64edd82669db3a8fb46613084e8bc271a3728784a52eb3f25ab4"
+    },
+    "production": {
+      "container": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11 true",
+      "health_status": 200
+    },
+    "replay-embeddings.bf16": {
+      "rows": [
+        262,
+        284,
+        419,
+        729,
+        835,
+        10056,
+        13244,
+        20057,
+        154856
+      ],
+      "bytes": 73728,
+      "shape": [
+        9,
+        4096
+      ],
+      "sha256": "9ef30c48e742746b14e17893eec2f7fdae01f051fc07ec516efa42d0d6f24b64",
+      "source_key": "model.language_model.embed_tokens.weight",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/source/model-00001-of-00120.safetensors",
+      "source_header_sha256": "9f25931a40ce1683894ab7f0c99231bdf58f5e7bdbf970293751cace7cfa74ff"
+    }
+  },
+  "elapsed_seconds": 6.718428875086829,
+  "rows": [
+    {
+      "index": 0,
+      "fixture_sha256": "147e0ac3504882e381fb8c3a6f06617a88bf5bb65d09ae4294e4e42380dda612",
+      "context_tokens": 171,
+      "native_proposal": [
+        [
+          752,
+          23578,
+          279,
+          729,
+          1565,
+          382,
+          73022
+        ]
+      ],
+      "dense_proposal": [
+        [
+          752,
+          23578,
+          279,
+          729,
+          1565,
+          382,
+          73022
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26626,
+        "relative_l2": 0.026480970100241766,
+        "max_absolute": 0.240234375,
+        "cosine": 0.9996493271503561
+      },
+      "top16_set_overlap": [
+        15,
+        16,
+        16,
+        16,
+        16,
+        15,
+        15
+      ]
+    },
+    {
+      "index": 1,
+      "fixture_sha256": "0c527835cc47457fc2100ae6f277205cefa72afdaa03dabb6cbfe1e4554302da",
+      "context_tokens": 174,
+      "native_proposal": [
+        [
+          13020,
+          729,
+          15504,
+          382,
+          73022,
+          12663,
+          198
+        ]
+      ],
+      "dense_proposal": [
+        [
+          13020,
+          729,
+          15504,
+          382,
+          73022,
+          12663,
+          198
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26554,
+        "relative_l2": 0.023541790494294407,
+        "max_absolute": 0.1875,
+        "cosine": 0.999744962004542
+      },
+      "top16_set_overlap": [
+        16,
+        16,
+        16,
+        15,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "fixture_sha256": "69464ccb48b9682808e69a8a53e16392404792c5d36adba02448a4d57235244c",
+      "context_tokens": 175,
+      "native_proposal": [
+        [
+          15504,
+          382,
+          73022,
+          12663,
+          198,
+          750,
+          5461
+        ]
+      ],
+      "dense_proposal": [
+        [
+          15504,
+          382,
+          73022,
+          12663,
+          198,
+          750,
+          5461
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26678,
+        "relative_l2": 0.024837097843297854,
+        "max_absolute": 0.234375,
+        "cosine": 0.9996919601983747
+      },
+      "top16_set_overlap": [
+        16,
+        15,
+        15,
+        16,
+        15,
+        15,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "fixture_sha256": "434ef11ec7bd7a79ad26cc55567a8573a085bd0862d963fd1fa8a33e237cb39a",
+      "context_tokens": 182,
+      "native_proposal": [
+        [
+          38386,
+          50166,
+          11,
+          3241,
+          982,
+          262,
+          1102
+        ]
+      ],
+      "dense_proposal": [
+        [
+          38386,
+          50166,
+          11,
+          3241,
+          982,
+          262,
+          1102
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26524,
+        "relative_l2": 0.023538366603180833,
+        "max_absolute": 0.25,
+        "cosine": 0.9997235462861292
+      },
+      "top16_set_overlap": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        15,
+        15
+      ]
+    },
+    {
+      "index": 4,
+      "fixture_sha256": "1f7b0902a2b2ea76a0b567357cd22f59edfa26cd0ca87f703efbf45015a4dd5e",
+      "context_tokens": 190,
+      "native_proposal": [
+        [
+          4167,
+          262,
+          2790,
+          284,
+          220,
+          15,
+          198
+        ]
+      ],
+      "dense_proposal": [
+        [
+          4167,
+          262,
+          2790,
+          284,
+          220,
+          15,
+          198
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26471,
+        "relative_l2": 0.023175343610937323,
+        "max_absolute": 0.1796875,
+        "cosine": 0.9997354369945017
+      },
+      "top16_set_overlap": [
+        16,
+        16,
+        16,
+        15,
+        16,
+        15,
+        16
+      ]
+    },
+    {
+      "index": 5,
+      "fixture_sha256": "45a9f116facf94b29068861b9a5383359591418f53ac1308483064577d36b3fb",
+      "context_tokens": 198,
+      "native_proposal": [
+        [
+          1191,
+          284,
+          220,
+          15,
+          198,
+          262,
+          369
+        ]
+      ],
+      "dense_proposal": [
+        [
+          1191,
+          284,
+          220,
+          15,
+          198,
+          262,
+          369
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26516,
+        "relative_l2": 0.024577760209955852,
+        "max_absolute": 0.3125,
+        "cosine": 0.9997069499343427
+      },
+      "top16_set_overlap": [
+        16,
+        15,
+        15,
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 6,
+      "fixture_sha256": "c24685061e57b5d4bc10f03292b755e17486caedc691cad2d5d199c122043b4d",
+      "context_tokens": 206,
+      "native_proposal": [
+        [
+          11,
+          320,
+          13028,
+          11,
+          897,
+          8,
+          304
+        ]
+      ],
+      "dense_proposal": [
+        [
+          11,
+          320,
+          13028,
+          11,
+          897,
+          8,
+          304
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26782,
+        "relative_l2": 0.0281930544745939,
+        "max_absolute": 0.375,
+        "cosine": 0.9996025846984785
+      },
+      "top16_set_overlap": [
+        16,
+        16,
+        16,
+        15,
+        16,
+        14,
+        15
+      ]
+    },
+    {
+      "index": 7,
+      "fixture_sha256": "e7c7db000be778afe907a4d7fc3b3a662e711b05e637e8c94805b273cc939b10",
+      "context_tokens": 214,
+      "native_proposal": [
+        [
+          50166,
+          982,
+          286,
+          2790,
+          1421,
+          897,
+          198
+        ]
+      ],
+      "dense_proposal": [
+        [
+          50166,
+          982,
+          286,
+          2790,
+          1421,
+          897,
+          198
+        ]
+      ],
+      "matching_proposal_slots": 7,
+      "hidden_difference": {
+        "elements": 28672,
+        "different_elements": 26456,
+        "relative_l2": 0.026831623821104832,
+        "max_absolute": 0.28125,
+        "cosine": 0.9996400188147889
+      },
+      "top16_set_overlap": [
+        16,
+        15,
+        15,
+        16,
+        16,
+        15,
+        16
+      ]
+    }
+  ],
+  "sequence": {
+    "prompt_tokens": 171,
+    "response_tokens": 32,
+    "feature_rows": 202,
+    "rejected_rows_excluded": 13,
+    "post_cap_sampled_tokens_excluded": 12,
+    "post_cap_feature_rows_excluded": 12,
+    "frames": 8
+  },
+  "matching_slots": 56,
+  "total_slots": 56,
+  "whole_blocks_equal": 8,
+  "native_arithmetic_parity_established": false,
+  "scope": "Old observed diagnostic only; fixed real histories; no fitting or new held-out data."
+}

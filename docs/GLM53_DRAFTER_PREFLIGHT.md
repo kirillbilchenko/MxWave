@@ -1,5 +1,9 @@
 # CT drafter adaptation: CPU preparation
 
+**Continuation:** the [training graph and native-history replay](GLM53_DRAFTER_TRAINING_PREFLIGHT.md)
+now pass their bounded CPU checks. The checkpoint below describes the earlier
+preparation milestone; “no optimizer step / forward untested” is historical.
+
 **20 October 2026: requested CPU preparation is complete. No production pause,
 GPU inference, optimizer step or drafter promotion occurred.** Original production
 was checked healthy at **13:21:47 UTC**, retaining its original container identity

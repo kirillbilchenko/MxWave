@@ -1,0 +1,126 @@
+{
+  "schema": "mxwave-drafter-training-preflight-v1",
+  "status": "complete",
+  "production_changed": false,
+  "candidate_for_deployment": false,
+  "fixture_role": "Previously observed diagnostic; never training or held-out data.",
+  "source_sha256": "6a9134de172984c6850c13947a4572b9a971792d3f7a1072c754bce63f18b451",
+  "specforge_revision": "03f3682ea852b73488d62dab4cd539033cc60e3e",
+  "torch_version": "2.14.0",
+  "fixture_sha256": "147e0ac3504882e381fb8c3a6f06617a88bf5bb65d09ae4294e4e42380dda612",
+  "source_rows": {
+    "query-embeddings.bf16": {
+      "source_key": "model.language_model.embed_tokens.weight",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/source/model-00001-of-00120.safetensors",
+      "source_header_sha256": "9f25931a40ce1683894ab7f0c99231bdf58f5e7bdbf970293751cace7cfa74ff",
+      "rows": [
+        10056,
+        154856
+      ],
+      "shape": [
+        2,
+        4096
+      ],
+      "bytes": 16384,
+      "sha256": "a0c823b70d2b641dbd736cb81a13c3ad485826c488d14de5bef0eca6f488e390"
+    },
+    "target-head.bf16": {
+      "source_key": "lm_head.weight",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/source/model-00001-of-00120.safetensors",
+      "source_header_sha256": "9f25931a40ce1683894ab7f0c99231bdf58f5e7bdbf970293751cace7cfa74ff",
+      "rows": null,
+      "shape": [
+        154880,
+        4096
+      ],
+      "bytes": 1268776960,
+      "sha256": "aa21c427970f64edd82669db3a8fb46613084e8bc271a3728784a52eb3f25ab4"
+    },
+    "production": {
+      "container": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11 true",
+      "health_status": 200
+    }
+  },
+  "checkpoint_sha256": "29a84776f54b4e24378e934adae6f1e869dc6fe4fea74396440e2fb764e2db82",
+  "context_tokens": 171,
+  "query_tokens": 8,
+  "frozen_parameter_tensors": 81,
+  "stage": "complete",
+  "elapsed_seconds": 36.323342124931514,
+  "context_projection_vs_native": {
+    "elements": 700416,
+    "different_elements": 4399,
+    "relative_l2": 0.0002651116519700736,
+    "max_absolute": 32.0,
+    "cosine": 1.0007433891296387
+  },
+  "cpu_forward_bitwise_repeat": true,
+  "draft_hidden_vs_native": {
+    "elements": 28672,
+    "different_elements": 26626,
+    "relative_l2": 0.026481041684746742,
+    "max_absolute": 0.240234375,
+    "cosine": 0.9996554851531982
+  },
+  "cpu_proposal": [
+    [
+      752,
+      23578,
+      279,
+      729,
+      1565,
+      382,
+      73022
+    ]
+  ],
+  "native_proposal": [
+    [
+      752,
+      23578,
+      279,
+      729,
+      1565,
+      382,
+      73022
+    ]
+  ],
+  "proposal_equal": true,
+  "top16_set_overlap": [
+    15,
+    16,
+    16,
+    16,
+    16,
+    15,
+    15
+  ],
+  "diagnostic_mse_before": 0.0021754675544798374,
+  "gradient": {
+    "parameters": 83886080,
+    "dtype": "torch.float32",
+    "nonzero_elements": 83886079,
+    "l2": 0.04822377488017082,
+    "max_absolute": 0.00017070770263671875,
+    "all_finite": true
+  },
+  "optimizer": {
+    "name": "AdamW",
+    "learning_rate": 1e-05,
+    "weight_decay": 0,
+    "steps": 1,
+    "changed_bf16_elements": 1789159,
+    "relative_l2_bf16": 1.1524729416123591e-05
+  },
+  "diagnostic_mse_after": 0.002610598923638463,
+  "training_graph_check_pass": true,
+  "all_original_model_parameters_unchanged": true,
+  "updated_bf16_tensor_reload_exact": true,
+  "native_arithmetic_parity_established": false,
+  "limits": [
+    "One short observed diagnostic, not new training/validation/test data.",
+    "Dense CPU BF16 arithmetic differs from native FP8 Marlin and KV/head adapters.",
+    "MSE to native draft hidden states is only an autograd smoke objective.",
+    "The disposable fc update must never be promoted or scored on sealed data.",
+    "No actual training convergence, acceptance, speed or quality result."
+  ]
+}
