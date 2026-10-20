@@ -1,5 +1,9 @@
 # MxWave
 
+The frozen eight-prompt drafter development rerun launched **20 October 2026,
+18:43 UTC** with expert padding in both arms; results are pending in the
+[handoff](docs/GLM53_HANDOFF.md).
+
 **Expert reduction fix, 20 October 2026:** bounded routing padding makes shared
 rows bit-identical in the retained 440-versus-448 dispatch, through both expert
 projections and with stock/packed scales. The subsequent one-prompt full-model

@@ -439,3 +439,8 @@ The equal-policy development preparer and reviewer independently compose the
 existing MxWave A/B/A protocol, evidence verification and target padding hook.
 They reuse this repository's original experiment scaffolding, with no new
 third-party implementation copied or adapted.
+
+The wider expert fixture builder is independently authored. It reconstructs
+route assignments from retained metadata and appends deterministic synthetic
+rows while preserving the real causal prefix; it incorporates no third-party
+kernel implementation.

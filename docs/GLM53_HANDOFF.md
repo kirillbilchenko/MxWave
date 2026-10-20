@@ -1,7 +1,7 @@
 # GLM compression experiment handoff
 
 <!-- EXPERT_FIXED_DEVELOPMENT_BEGIN -->
-**20 October 2026: frozen multi-prompt development comparison prepared; CPU preflight next.**
+**20 October 2026, 18:43:35 UTC: frozen multi-prompt development comparison launched.**
 `expert-fixed-development-v1` reuses all eight development prompts (four code,
 two chat, two explanation), six seed-42 shuffled cycles and 256 generated tokens.
 Loads remain original → adapted step-24 pilot → original, 48 requests per load,
@@ -21,9 +21,39 @@ Plan SHA `62e8595165e064749d5afe196a73c8ffdb323f78063fdd88c7d4ae3a59e67b3c`;
 26 frozen source/plan payloads. Private port 8027; 40-minute experiment cutoff
 and independent original-production restoration watchdog. The preparation
 verifies all 250 preceding numerical-check evidence payloads and requires
-exact decision logits on both ranks. Local full pytest (one existing skip),
-ruff and strict mypy pass. Production remains running during CPU preparation.
-No GPU comparison has started.
+exact decision logits on both ranks. All six serving-image CPU preflights pass,
+each verifying 211 runtime bindings. Local full pytest (one existing skip),
+ruff and strict mypy pass. Launch source `42718f5` is committed and verified in
+the Spark2 backup. The bounded controller now owns the temporary production pause,
+three diagnostic loads and restoration. Launcher PID 724962. At **18:54 UTC**,
+the first original arm has completed 33/48 measured requests with all within-arm
+repeat checks passing. No cross-drafter or final speed result yet.
+
+**Parallel CPU audits (no serving change):** installed Marlin source
+`f0046031…` selects routing blocks of eight through 259 target rows for this
+288-expert, top-8 BF16 path; C8/C16 with seven drafts correspond to 64/128 rows.
+The audited occupancy/cache calculation predicts the same launch tile, and
+4,096 routing-count arithmetic checks give whole launch waves with nine-block
+padding. Actual GPU planner, shared-row equality and timing checks remain
+required before raising the current 16-row runtime limit.
+Local evidence: `out/expert-wide-audit-v1/review.json`.
+There are now **36 CPU-prepared wider fixtures**, 16,144,080 bytes, from both
+TP partitions and both original divergence arms at 8/16/32/64/128 rows.
+Original eight-row operands are preserved; appended rows either repeat the
+source or spread routes over additional experts. The seven-row shared prefix
+is independently checked. This is synthetic component stress, not C8/C16
+serving evidence; no wider GPU execution has occurred.
+Manifest: `out/expert-wide-audit-v1/fixtures/manifest.json`.
+
+The frozen training/validation token metadata contains 4,000/200 prompts,
+maximum lengths 3,973/2,248; none exceed the 8,064 input budget for 128 outputs.
+There are 52/2 prompts beyond the pilot's 1,024-token filter. Preserve them in
+the full run. One accepted-feature copy is approximately 41.53 GiB total, so
+full capture/export must be incremental and training must load bounded samples.
+Pilot updates averaged 3.194 seconds; multiplying by 4,000 gives 3.55 hours,
+**excluding capture, longer-context effects and validation**. This is a sizing
+extrapolation, not a completion estimate. The sealed token file was not opened.
+Local record: `out/expert-wide-audit-v1/full-training-scale-audit.json`.
 <!-- EXPERT_FIXED_DEVELOPMENT_END -->
 
 <!-- EXPERT_FIXED_VERIFICATION_BEGIN -->
