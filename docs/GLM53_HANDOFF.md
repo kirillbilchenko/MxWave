@@ -1,5 +1,38 @@
 # GLM compression experiment handoff
 
+<!-- LONG_DECODE_BEGIN -->
+**20 October 2026, 22:23 UTC: first-decode evidence independently verified; combined correction prepared.**
+The completed `drafter-long-decode-v1` archive verifies all **421 payloads** on
+Mac and Spark2. All six requests completed and original 500,000-context production
+was restored. In all 12 comparisons across both GPUs the first changed result is
+`layer3.native_decode_topk#0/output`: rows 8 / next_n 1 / k 512, with per-row pool
+bounds `[993,993,994,994,994,994,995,995]`. All **7,952 consumed scores** are
+bit-identical and finite. Unused columns differ and are excluded. Selected pool
+and expanded-token multisets match; only order differs, in all eight rows.
+The graph observers added copies, so this establishes the component defect,
+not full-model repeatability without observation.
+
+Archive: **2,048,667,852 bytes**, SHA
+`0e2530bdd1e6322c2b0af5dfe501b66f1cf88238e7ba4977af5462468e9fc193`.
+Spark2: `full-model-v1/drafter-long-decode-v1-retained-backup/`.
+Independent reviews are retained in `out/drafter-long-decode-v1/` and benchmarks.
+Source checkpoint `0656135` and bundle
+`3f4fb70c3b5804067b8aa5e444bca972c0fb90340c22795320b1c5b867f52593`
+are verified in Spark2's Git backup.
+
+**Next prepared run: `drafter-canonical-decode-v1`, private port 8035.**
+Frozen plan SHA `a5b4bb6335442edfd71e65148e9eab243f33e20214f69931cdcc3bbbd19e460f`,
+42 source files, six long requests, original drafter/fixed seven drafts/128 tokens.
+It keeps verified canonical prefill and sorts native selected decode indices
+only at rows 8 / next_n 1 / k 512; other shapes keep native behavior. GPU gates
+cover retained scores, mixed heavy padding, unused-column large-value/NaN poisoning,
+32 repeats and graph replays, plus six interleaved graph timing trials per fixture
+with clocks/thermals and the unchanged 2% repeat limit. Full-model operation
+observers are removed; passive feature/logit capture remains. Local ruff,
+strict mypy and pytest pass. CPU preflight/GPU execution are pending.
+Training remains gated, sealed test closed; no serving-speed or C8/C16 claim.
+<!-- LONG_DECODE_END -->
+
 <!-- CANONICAL_PREFILL_BEGIN -->
 **20 October 2026, 22:07 UTC: prefill correction independently verified; remaining failure starts at first decode.**
 `drafter-canonical-prefill-v1` completes all six requests and restores original

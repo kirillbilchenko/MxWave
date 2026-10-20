@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 
-from .analyze_sparse_prefill import selection_difference
+from .analyze_sparse_prefill import masked_score_difference, selection_difference
 from .audit_drafter_feature_export_numpy import arrays
 from .drafter_capture_pairing import file_digest
 from .review_drafter_components import active_value
@@ -55,7 +55,15 @@ def compare(first: dict[str, Any], second: dict[str, Any]) -> dict[str, Any]:
     scores = difference(left["/scores"], right["/scores"])
     bounds = difference(left["/seq_lens"], right["/seq_lens"])
     params = next(e["parameters"] for e in a["events"] if e["name"] == topk + "/input")
+    ends = left["/seq_lens"].reshape(-1)
+    if (params["next_n"] != 1 or ends.shape != (8,) or not bounds["exact"]
+            or not np.array_equal(ends, (positions + 1) // 4)):
+        raise ValueError("Require flattened next_n=1 and explicit per-row pooled sequence bounds")
+    consumed = masked_score_difference(left["/scores"], right["/scores"],
+                                        np.zeros(8, dtype=np.int32), ends)
     first_result = next((e for e in comparisons if e["category"] == "result" and not e["exact"]), None)
+    if first_result is not None and first_result["name"] == topk + "/output":
+        first_result["matching_consumed_inputs"] = bounds["exact"] and consumed["exact"]
     return {"complete_input_ids_and_positions_exact": True,
             "first_different_result": first_result, "observations": comparisons,
             "decode_topk": {"parameters": params, "raw_score_buffer": scores,
@@ -63,6 +71,8 @@ def compare(first: dict[str, Any], second: dict[str, Any]) -> dict[str, Any]:
                             "sequence_bound_values": [left["/seq_lens"].tolist(), right["/seq_lens"].tolist()],
                             "pool_selection": pools, "expanded_token_selection": tokens,
                             "unused_score_columns_may_be_present": True,
+                            "consumed_scores": consumed,
+                            "consumption_policy": "flattened next_n=1; [0, seq_lens[row])",
                             "all_consumed_scores_exact_implied_by_full_buffer": scores["exact"]}}
 
 
@@ -94,7 +104,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
               "training_eligible": False, "sealed_test_opened": False,
               "limits": ["Graph copies alter scheduling and are present in every request, including controls.",
                          "Matching explicit inputs do not establish matching hidden cache or kernel state.",
-                         "Only complete raw-score equality proves equality of all consumed scores here; unused columns may differ.",
+                         "Score comparison is limited to flattened next_n=1 and recorded per-row pooled bounds; unused columns are excluded.",
                          "No new arithmetic policy, serving-speed or full-model qualification claim."]}
     output.write_text(json.dumps(result, indent=2) + "\n")
     return result

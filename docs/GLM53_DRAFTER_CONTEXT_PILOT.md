@@ -1,12 +1,10 @@
 # CT drafter: verified features and context-projection pilot
 
-**20 October 2026, 22:07 UTC:** the canonical sparse-prefill correction now gives
-bit-identical prefill features, initial logits and first draft proposal in all
-12 comparisons across both GPUs. The remaining target drift starts in the first
-eight-row decode step, with identical inputs. Full repeatability still fails;
-training remains gated. Production is restored with 500,000 context and all
-413 evidence files verify on Mac/Spark2. The focused decode trace is now running after both CPU preflights passed;
-production is temporarily paused with automatic restoration. [Current evidence and run](GLM53_HANDOFF.md).
+**20 October 2026, 22:23 UTC:** all 421 first-decode trace payloads verify on Mac/Spark2.
+All 12 comparisons isolate native top-k order drift with identical 7,952 consumed
+scores and selected membership. Combined prefill/decode ordering correction is
+prepared for component and full-model GPU repeat checks; production is restored.
+Full training remains gated; sealed test closed. See [handoff](GLM53_HANDOFF.md).
 
 **20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
 GPUs show identical sparse-prefill scoring inputs, consumed scores and selected
