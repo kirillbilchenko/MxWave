@@ -1,23 +1,59 @@
 # GLM compression experiment handoff
 
 <!-- EXPERT_FIXED_VERIFICATION_BEGIN -->
-**20 October 2026: full-model numerical verification prepared; CPU preflight running.**
+**20 October 2026, 18:18:32 UTC: full-model numerical check passes; original production restored.**
 `expert-fixed-verification-v1` applies default-occupancy expert padding in both
 original/adapted drafter arms on the same CT target. It reuses the one development
 prompt, 32 generated tokens, fixed seven draft tokens and before/capture/repeat/
-after controls. Actual graph replay and target feature/logit copies remain enabled.
-No serving-speed claim or sealed-test access. The old native output/counter
-records are retained separately: changing reduction order can change rounding,
-so the active gate is self-repeat plus cross-drafter equality under one policy.
-Neither target nor drafter weights change. Above 16 target rows, expert execution
-remains native; C8/C16 coverage is still outstanding.
+after controls. Both arms pass all four controls; all **32 output token IDs are
+identical across drafters**. Independent NumPy review verifies **all 32
+full-vocabulary decision logits per rank bit-for-bit**, with maximum and mean
+KL **0** on both ranks. Captured inputs, logits and auxiliary/final features
+repeat exactly in all four arm/rank comparisons. The archive retains 88 frames:
+11 per capture × two captures × two arms × two ranks, including 80 observed
+full target-graph frames. Component captures at positions 46 and 54 are present
+in every arm/rank/repeat. Neither target nor drafter weights changed.
 
-This follows the exact component pass and retained overhead measurement below.
-Two timing controls remain failed at the unchanged 2% limit; they are not used
-to claim a settled overhead. Numerical verification can proceed without such a
-speed claim. Frozen multi-prompt drafter qualification waits for this result.
+**Limit:** the two drafters now propose identical inputs in every aligned frame
+with shared accepted history. This full-model run resolves the observed output
+divergence but does not itself stress differing future proposals. The earlier
+440/448 component replay supplies that specific stress case. Both arms have
+9 draft rounds, 63 proposed tokens and 22 accepted tokens; this short run shows
+no acceptance improvement. Broader development prompts remain necessary.
+Changing the common expert reduction order changes historical native outputs
+at indices 21–31 for `a1` and 28–31 for `b1`; all old records remain retained.
+This is not a claim of identity to the old native rounding policy.
+
+No serving-speed claim or sealed-test access. Above 16 target rows, expert
+execution remains native; C8/C16 coverage is still outstanding. The two V3
+component timing failures remain failed at the unchanged 2% limit. No settled
+end-to-end overhead or drafter qualification follows from this numerical pass.
 Plan SHA: `3277a210f280cd4c68e25bd3225f640de16e43359979284b7c8e0453ef7f19e1`.
-V3 restored original identities, health and 500,000 context at **17:59:57 UTC**.
+All four serving-image CPU preflights pass, verifying 211 runtime bindings per
+rank. Launch source `2bcc64b` is verified in the Spark2 backup. The original
+containers/configurations, health 200 and **500,000 context** are verified
+restored; no diagnostic or training is running. The run launched 18:03:38 UTC.
+All **250 evidence payloads** independently verify on Mac and Spark2. Archive:
+`expert-fixed-verification-v1/evidence-v1.tar.gz`, **633,231,767 bytes**, SHA:
+`4f858ed07d7ed21f771f7c9bb6916f82ad9e709fc46e09c9446f150f630ff0ef`.
+Independent review: `out/expert-fixed-verification-v1/review-v2.json` (adds
+explicit graph-frame and proposal-equality checks to the retained first review).
+The seven-payload independent analysis archive verifies on both Sparks:
+`analysis-v1.tar.gz`, 23,670 bytes, SHA
+`1b6d79241dec78bee1bf13e5aff5cf15d177b55ba2bcd6e659ba336bb82d25c8`.
+Full pytest (one existing skip), ruff and strict mypy pass.
+
+**Agreed next gates:** rerun the frozen
+multi-prompt development comparison with the same target reduction policy in
+both arms. Extend coverage beyond 16 target rows before claiming C8/C16
+independence: audit the actual routing block sizes and tile choices, then replay
+shared rows with varied dispatch sizes. Merely raising the row limit is not
+validation. Measure end-to-end padding cost separately at C1/C8/C16 with repeat
+controls and clock/thermal telemetry. The 4,000-prompt feature capture/training
+run remains outstanding; the current candidate is only the 32-update pilot.
+Keep the sealed test closed throughout development and training, then evaluate
+it once the candidate and runtime policy are frozen. One C1 prompt cannot
+establish drafter-independent outputs for every prompt or serving layout.
 <!-- EXPERT_FIXED_VERIFICATION_END -->
 
 <!-- DRAFTER_EXPERT_PADDING_BEGIN -->
@@ -52,7 +88,9 @@ noisy sample. V3 plan SHA:
 Source commits through `148cfc9` are verified in the Spark2 backup. V3 archive:
 23 payloads, 25,636,091 bytes, SHA
 `92a50ab8eda94dea786083e465f251925da2b4e5178ae97254a74a2a0b44081a`;
-all payloads independently verified on Mac; Spark2 copy pending.
+all payloads independently verified on Mac and Spark2. The five-payload
+independent analysis archive is verified on both Sparks:
+`83d43694ec29c2a6a5b2fdde855249f9f6f07d407fb7dd9df351f01f076ace90`.
 
 V1 failed before its numerical gate because the replay called an activation
 symbol absent from `vllm._custom_ops`. Installed MoE source uses

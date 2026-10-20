@@ -39,6 +39,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
     assert digest(root / "component-review.json") == plan["component_review_sha256"]
     case = plan["calibration_cases"][0]["id"]
     outputs, captures, repeat_controls, coverage = {}, {}, [], []
+    graph_controls, counters = [], {}
     for arm in plan["arms"]:
         measured = json.loads((root / f"{arm}-measurement.json").read_bytes())
         assert measured["status"] == "complete" and not measured["sealed_test_opened"]
@@ -49,6 +50,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
         assert all(r["result"]["token_ids"] == ids
                    and r["counter_delta"] == rows[0]["counter_delta"] for r in rows)
         outputs[arm] = ids
+        counters[arm] = rows[0]["counter_delta"]
         for rank in (0, 1):
             startup = json.loads((root / f"{arm}-r{rank}/trial-startup-r{rank}.json").read_bytes())
             policy = startup["expert_reduction"]
@@ -63,6 +65,23 @@ def review(root: Path, output: Path) -> dict[str, Any]:
             for capture in ("capture1", "capture2"):
                 records = frames(root, arm, case, capture, rank)
                 assert [t for f in records for t in f["sampled"]][:32] == ids
+                decode = [f for f in records if f["meta"]["target_num_draft_tokens"]]
+                assert decode and all(
+                    f["meta"]["target_graph_mode"] == "FULL"
+                    and f["meta"]["target_tokens"] == f["meta"]["target_padded_tokens"] == 8
+                    and f["meta"]["target_num_draft_tokens"] == 7
+                    for f in decode
+                )
+                positions = [
+                    int(f["x"]["target_positions"][0]) for f in decode
+                    if f["meta"]["components_retained"]
+                ]
+                assert positions == [46, 54]
+                graph_controls.append({
+                    "arm": arm, "rank": rank, "capture": capture,
+                    "full_target_graph_frames": len(decode),
+                    "component_capture_positions": positions,
+                })
                 captures[arm, rank, capture] = records
             a, b = (captures[arm, rank, c] for c in ("capture1", "capture2"))
             names = ["target_input_ids", "target_positions", "target_logits",
@@ -97,12 +116,18 @@ def review(root: Path, output: Path) -> dict[str, Any]:
             "rank": rank, "decisions_with_shared_history": decisions, "shared_frames": shared_frames,
             "max_kl": max(kl), "mean_kl": float(np.mean(kl)),
             "all_shared_decision_logits_exact": all(d["bitwise_equal"] for d in decisions),
+            "all_aligned_shared_history_frame_inputs_equal": all(
+                f["all_input_ids_equal"] and f["positions"][0] == f["positions"][1]
+                for f in shared_frames
+            ),
         })
     result = {
         "status": "verified", "payloads_verified": len(manifest["files"]),
         "source_sha256": digest(Path(__file__)), "plan_sha256": digest(root / "plan.json"),
         "cross_drafter_output_ids_exact": first is None, "first_different_output_index": first,
         "capture_repeat_controls": repeat_controls, "policy_capture_coverage": coverage,
+        "observed_graph_controls": graph_controls,
+        "cross_drafter_speculative_counters_equal": counters["a1"] == counters["b1"],
         "historical_native_output_changes": {
             arm: [i for i, (a, b) in enumerate(zip(ids, plan["historical_native_outputs"][arm],
                                                    strict=True)) if a != b]
@@ -114,6 +139,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
             "No serving speed claim; component timing failures remain retained.",
             "Decision comparisons stop after the first changed greedy token.",
             "Padding capture coverage and observed graph replay do not prove every batch size invariant.",
+            "If both drafters propose identical inputs, this run does not stress differing future proposals.",
         ],
     }
     output.write_text(json.dumps(result, indent=2) + "\n")

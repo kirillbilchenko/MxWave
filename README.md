@@ -2,8 +2,10 @@
 
 **Expert reduction fix, 20 October 2026:** bounded routing padding makes shared
 rows bit-identical in the retained 440-versus-448 dispatch, through both expert
-projections and with stock/packed scales. These are component results on Spark,
-with the two TP partitions replayed separately; full-model verification is next.
+projections and with stock/packed scales. The subsequent one-prompt full-model
+check passes: 32 output tokens and all 32 decision logits on both ranks are
+bit-identical across original/adapted drafters, measured KL 0. All eight request
+controls and four capture-repeat comparisons pass. Original production is restored.
 
 | Replay | Shared-row equality | Exact graph repeats | Timing stability controls |
 |---|---|---:|---:|
@@ -11,7 +13,11 @@ with the two TP partitions replayed separately; full-model verification is next.
 | V3, default occupancy, longer warm-up | Pass, both ranks | 640 | 14/16 pass |
 
 The two V3 timing failures remain failures at the unchanged 2% drift gate.
-No serving-speed or drafter qualification claim follows. See the current
+In the full-model check both drafters now propose identical inputs in aligned
+shared-history frames, so differing proposals still need broader development
+coverage. Both use nine draft rounds; no acceptance or serving-speed gain is
+established. C8/C16 coverage and full 4,000-prompt training remain outstanding.
+All 250 full-model evidence payloads verify on Mac/Spark2. See the current
 [handoff](docs/GLM53_HANDOFF.md); the sealed test remains closed.
 
 <!-- DRAFTER_TRAINING_PREFLIGHT -->

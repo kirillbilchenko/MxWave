@@ -1,12 +1,17 @@
 # GLM lossless experiment: current state and next steps
 
-**Latest, 20 October 2026:** bounded expert padding fixes the retained 440/448
-shared-row divergence on both TP partitions, with stock and compressed scales.
-V2/V3 independent tensor reviews pass; V3 timing controls pass 14/16, retaining
-two failures at the unchanged 2% limit. Full-model numerical verification is
-prepared and undergoing CPU preflight, with the same policy in both drafter
-arms. No full-model result or serving-speed claim yet; the adapted drafter
-remains unqualified and the sealed test closed. See the live
+**Latest, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
+production is restored with 500,000 context. On one development prompt, the
+original/adapted drafter arms have 32 identical output tokens and bit-identical
+full-vocabulary decision logits on both ranks: measured KL 0. All request and
+captured-feature repeat controls pass; 250 evidence payloads verify on Mac/Spark2.
+Both drafters now propose identical inputs in aligned shared-history frames and
+use nine draft rounds, so broader prompts must still test differing proposals.
+No acceptance or serving-speed gain is established. The component padding fix
+passes the original 440/448 stress case; V3 timing controls remain 14/16 with
+two failures retained at 2%. C8/C16 coverage and full 4,000-prompt training remain
+outstanding. The adapted drafter remains unqualified and the sealed test closed.
+See the current
 [handoff checkpoint](GLM53_HANDOFF.md). Older dated checkpoints below are historical.
 
 <!-- DRAFTER_EXPERT_REPLAY_BEGIN -->
