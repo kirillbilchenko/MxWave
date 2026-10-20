@@ -1,5 +1,11 @@
 # CT drafter: verified features and context-projection pilot
 
+**20 October 2026, 21:50 UTC:** the canonical sparse-prefill fix experiment is running
+after both CPU preflights passed. GPU component checks gate the full-model
+long-prompt repeat. Production is temporarily paused with automatic restoration;
+no numerical or speed pass is claimed. Full training remains gated and the
+sealed test remains closed. [Current run](GLM53_HANDOFF.md).
+
 **20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
 GPUs show identical sparse-prefill scoring inputs, consumed scores and selected
 tokens, but native top-k changes their order in 1,921–1,922 prompt rows. This

@@ -140,7 +140,9 @@ def compare_runs(first: dict[str, Any], second: dict[str, Any], prompt_length: i
     }
 
 
-def review(root: Path, output: Path) -> dict[str, Any]:
+def review(
+    root: Path, output: Path, *, expected_revision: str = "drafter-long-repeat-v1",
+) -> dict[str, Any]:
     """Review restored evidence without promoting a failed repeat or opening sealed data."""
     if output.exists():
         raise FileExistsError(output)
@@ -155,7 +157,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
         raise ValueError("The complete diagnostic must restore production first")
     plan = json.loads((root / "plan.json").read_bytes())
     measured = json.loads((root / "ct-measurement.json").read_bytes())
-    if plan["revision"] != "drafter-long-repeat-v1" or measured["status"] != "complete":
+    if plan["revision"] != expected_revision or measured["status"] != "complete":
         raise ValueError("Unexpected or incomplete diagnostic")
     case = plan["calibration_cases"][0]
     captures = [r for r in measured["cases"] if r["policy"].startswith("capture")]

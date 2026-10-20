@@ -1,5 +1,31 @@
 # GLM compression experiment handoff
 
+<!-- CANONICAL_PREFILL_BEGIN -->
+**20 October 2026, 21:50 UTC: canonical sparse-prefill experiment launched.**
+Both CPU preflights pass. `drafter-canonical-prefill-v1` uses private port 8033,
+controller/run launcher PID 2219842, and the existing restoration watchdog.
+Original production is temporarily paused; automatic restoration retains the
+original containers and 500,000 context. Frozen plan SHA
+`8f80040d8a94fc4b89bda62fbedc747a2e2b20d426b582ca9f3ae2d7fdd49521`.
+
+The own wrapper calls native prefill top-k unchanged and sorts its selected
+int32 pool indices in ascending order. It preserves multiplicity and all -1
+padding; native expansion and existing stable compaction still handle masks.
+Scope is k512 and at most 4,096 prefill rows; decode selection is unchanged.
+Both GPUs must pass replay of retained scores at 8/16/64/128/3,973 rows, mixed
+heavy padding, exact token-set/causality checks, 32 repeats and 32 graph replays
+per fixture. Timing uses six interleaved trials at 16/128/3,973 rows with
+clock/thermal telemetry and the unchanged 2% repeat-control gate. These are
+component measurements, not serving-overhead qualification.
+
+Only after component checks pass: three short warmups and the same long
+native-before/four-captures/native-after requests, 128 output tokens each,
+original drafter and seven drafts. Full decision logits remain retained;
+there is no per-operation full-model observation. Full training remains gated,
+sealed test closed, old pilot speed-neutral. No fix outcome is claimed yet.
+Local ruff, strict mypy and full pytest pass (one existing skip).
+<!-- CANONICAL_PREFILL_END -->
+
 <!-- DRAFTER_SPARSE_PREFILL_BEGIN -->
 **20 October 2026, 21:37 UTC: native sparse-prefill top-k changes index order with identical scores and membership.**
 `drafter-sparse-prefill-v1` completes all six requests and restores original
@@ -3065,7 +3091,7 @@ Matching output IDs alone does not qualify the model.
 Do not repeat unchanged decoder occupancy, N8, split-K or naive-overlap tests:
 they already failed their gates. V7's18,432 exact component events qualify only
 the square output matrix at16; the input reference-repeat control fails the
-unchanged2% timing limit. No blanket/global threshold or9–15-row interpolation.
+unchanged 2% timing limit. No blanket/global threshold or9–15-row interpolation.
 
 ## Storage, authorization and local checks
 
