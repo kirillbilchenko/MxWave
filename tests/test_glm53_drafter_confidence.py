@@ -88,6 +88,7 @@ def test_pilot_observer_preserves_proposals_loss_and_context_gradient() -> None:
 
     torch.manual_seed(42)
     pilot = Pilot.__new__(Pilot)
+    pilot.feature_store = None
     pilot.fp32_derivatives = False
     pilot.head = torch.randn(16, 4)
     pilot.model = SimpleNamespace(candidate_selector=Selector())

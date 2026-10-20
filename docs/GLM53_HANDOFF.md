@@ -67,6 +67,17 @@ is independently checked. This is synthetic component stress, not C8/C16
 serving evidence; no wider GPU execution has occurred.
 Manifest: `out/expert-wide-audit-v1/fixtures/manifest.json`.
 
+**19:14 UTC:** the final original control is measuring after startup. The new
+opt-in bounded feature loader passes CPU tests for exact payloads, one-sample
+cache eviction, changed-file rejection and live-autograd input preservation.
+Full pytest (one existing skip), ruff and strict mypy pass. Old pilot protocols
+retain their original loading behavior; the full-run protocol must explicitly
+enable `bounded_feature_loading`. A real pilot replay under the new loader is
+still required before full training. Confidence/source-audit commit `2c8e5df`
+is independently verified in Spark2's Git backup. The 18-payload licensed source
+audit archive verifies on both Sparks, SHA
+`c71b930617c2cabfd4fe634247642cd59e8b2de1cf547913e04c9e76ff57954c`.
+
 The frozen training/validation token metadata contains 4,000/200 prompts,
 maximum lengths 3,973/2,248; none exceed the 8,064 input budget for 128 outputs.
 There are 52/2 prompts beyond the pilot's 1,024-token filter. Preserve them in

@@ -21,6 +21,7 @@ from .audit_drafter_specforge import load_model
 from .cpu_drafter_linear import install as install_cpu_derivatives
 from .cpu_drafter_linear import linear as cpu_linear
 from .drafter_confidence import ConfidenceObserver
+from .drafter_feature_store import VerifiedFeatureStore
 from .drafter_forward_preflight import tensor_digest
 from .drafter_fp8_roundtrip import digest
 
@@ -126,15 +127,21 @@ class Pilot:
             "specforge.modeling.draft.dflash_mask",
         ).create_dflash_sdpa_mask
         self.samples: list[dict[str, Any]] = []
+        self.feature_store = (
+            VerifiedFeatureStore(dataset) if protocol.get("bounded_feature_loading", False) else None
+        )
         self.skipped = []
         for row in manifest["rows"]:
             if row["split"] not in ("train", "validation"):
                 raise ValueError("Test data is forbidden in this pilot")
             path = dataset / row["path"]
-            if digest(path) != row["sha256"]:
-                raise ValueError(f"Dataset file changed: {row['id']}")
-            tensors = load_file(str(path))
-            ids = tensors["input_ids"].tolist()
+            if self.feature_store is None:
+                if digest(path) != row["sha256"]:
+                    raise ValueError(f"Dataset file changed: {row['id']}")
+                tensors = load_file(str(path))
+                ids = tensors["input_ids"].tolist()
+            else:
+                ids = self.feature_store.input_ids(row["path"], row["sha256"]).tolist()
             anchors = anchors_for(
                 ids, row["prompt_tokens"], protocol["data"]["eos_token_ids"],
                 seed_key=f"42:{row['split']}:{row['id']}",
@@ -144,7 +151,10 @@ class Pilot:
                 self.skipped.append({"id": row["id"], "split": row["split"],
                                      "domain": row["domain"], "reason": "short_natural_response"})
                 continue
-            self.samples.append({**row, "tensors": tensors, "anchors": anchors})
+            sample = {**row, "anchors": anchors}
+            if self.feature_store is None:
+                sample["tensors"] = tensors
+            self.samples.append(sample)
         self.master = self.model.fc.weight.detach().float().clone().requires_grad_(True)
         self.original_hashes = {n: tensor_digest(p) for n, p in self.model.named_parameters()}
         self.inputs = {
@@ -154,6 +164,12 @@ class Pilot:
                                   "anchors": s["anchors"]} for s in self.samples],
             "skipped": self.skipped,
         }
+
+    def features(self, sample: dict[str, Any]) -> dict[str, torch.Tensor]:
+        """Load one verified sample when the new protocol explicitly enables bounded residency."""
+        if self.feature_store is None:
+            return sample["tensors"]
+        return self.feature_store.get(sample["path"], sample["sha256"])
 
     def forward(self, sample: dict[str, Any], anchors: list[int] | None = None) -> torch.Tensor:
         """Execute one proposal block per forward to retain the verified C1 shape policy."""
@@ -165,7 +181,7 @@ class Pilot:
     ) -> torch.Tensor:
         """Build checked masks; multi-block execution is retained only for diagnostics."""
         anchors = sample["anchors"] if anchors is None else anchors
-        data = sample["tensors"]
+        data = self.features(sample)
         end = max(anchors)
         context = data["target_features"][:end].unsqueeze(0)
         anchor_tensor = torch.tensor([anchors], dtype=torch.long)
@@ -206,7 +222,7 @@ class Pilot:
         """Compute full-vocabulary and strict-covered-selector CE against verified CT tokens."""
         hidden = self.forward(sample)
         anchors = torch.tensor(sample["anchors"])
-        ids = sample["tensors"]["input_ids"]
+        ids = self.features(sample)["input_ids"]
         positions = anchors[:, None] + torch.arange(1, 8)[None, :]
         labels = ids[positions]
         predecessors = ids[positions - 1]

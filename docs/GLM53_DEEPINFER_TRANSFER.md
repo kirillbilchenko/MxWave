@@ -57,6 +57,14 @@ token, then censor later positions; otherwise the head would learn from target
 continuations conditioned on a different history. Stochastic acceptance needs
 actual verifier acceptance probabilities and a separate validation protocol.
 
+The full-run data path also has an opt-in `bounded_feature_loading` policy.
+`drafter_feature_store.py` verifies file hashes and loads one feature sample
+at a time; anchor selection reads only token IDs. Cache eviction leaves tensors
+owned by an active autograd graph alive until backward completes. CPU tests
+cover exact values, eviction, changed-file rejection and backward correctness.
+The old pilot protocol stays unchanged; a real pilot replay under the bounded
+policy remains required before the 4,000-prompt run.
+
 `confidence_verification.py` is a CPU oracle, not an installed scheduler:
 
 - Choose the total query budget using confidence at least two decisions old.
@@ -70,6 +78,12 @@ actual verifier acceptance probabilities and a separate validation protocol.
   assumed savings from removing logical rows that still use the same graph.
 - All emitted draft tokens still require target verification. Confidence is
   an efficiency estimate, never permission to skip correctness checks.
+
+Runtime request-ID remapping, confidence-age tracking, EOS/budget constraints,
+native head export/reload and device-only scheduling remain integration work.
+The CPU oracle rejects impossible budgets rather than inventing a serving
+fallback. DFlash2 features also differ from DeepInfer's pre-normalization
+features, so its trained confidence weights cannot be reused.
 
 CPU tests check censored labels, gradient isolation, validation freezing,
 checkpoint reload identity, invalid inputs, historical-budget enforcement and
