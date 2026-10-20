@@ -1,5 +1,20 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_VERIFICATION_BEGIN -->
+**20 October 2026, 15:26 UTC: first-divergence diagnostic prepared; production remains running.**
+The next bounded run uses one development code prompt (`opencoder-evol-15654`),
+32 output tokens, original and adapted drafters, and before/capture/repeated-
+capture/after controls: eight requests plus warmups. Both arms must reproduce
+their prior uninstrumented output prefixes and exact speculative counters.
+The passive probe retains full pre/post-sampler logits, the five target feature
+boundaries, inputs/positions and selected KDA pre-forward cache slots (layers 0
+and 4). It changes no model weights or sampled outputs. CPU image preflight is
+running; no GPU experiment has started yet. Private port 8021; 25-minute
+experiment cutoff and independent original 500k-production restoration.
+Plan SHA-256: `f4c11f2ac24e96d416b3e9d5c6b25858b8cd96b3f169e472cb715cb5a3b3ac04`.
+No timing claim, training step, promotion or sealed-test access is part of this run.
+<!-- DRAFTER_VERIFICATION_END -->
+
 <!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->
 **20 October 2026, 15:14 UTC: all 144 native requests complete; original production restored.**
 The original/candidate/original comparison completes 48 requests per load, with
