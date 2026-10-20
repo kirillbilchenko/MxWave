@@ -1,24 +1,58 @@
 # GLM compression experiment handoff
 
+<!-- EXPERT_FIXED_VERIFICATION_BEGIN -->
+**20 October 2026: full-model numerical verification prepared; CPU preflight running.**
+`expert-fixed-verification-v1` applies default-occupancy expert padding in both
+original/adapted drafter arms on the same CT target. It reuses the one development
+prompt, 32 generated tokens, fixed seven draft tokens and before/capture/repeat/
+after controls. Actual graph replay and target feature/logit copies remain enabled.
+No serving-speed claim or sealed-test access. The old native output/counter
+records are retained separately: changing reduction order can change rounding,
+so the active gate is self-repeat plus cross-drafter equality under one policy.
+Neither target nor drafter weights change. Above 16 target rows, expert execution
+remains native; C8/C16 coverage is still outstanding.
+
+This follows the exact component pass and retained overhead measurement below.
+Two timing controls remain failed at the unchanged 2% limit; they are not used
+to claim a settled overhead. Numerical verification can proceed without such a
+speed claim. Frozen multi-prompt drafter qualification waits for this result.
+Plan SHA: `3277a210f280cd4c68e25bd3225f640de16e43359979284b7c8e0453ef7f19e1`.
+V3 restored original identities, health and 500,000 context at **17:59:57 UTC**.
+<!-- EXPERT_FIXED_VERIFICATION_END -->
+
 <!-- DRAFTER_EXPERT_PADDING_BEGIN -->
-**20 October 2026: V2 padding numerical gate passes; longer overhead check prepared.**
+**20 October 2026: V2/V3 padding numerical gates pass; overhead remains partly qualified.**
 `drafter-expert-padding-v2` completes the exact 440-versus-448 fixture for both
 real TP partitions. Both default-occupancy and one-block-per-SM padding make
 all seven shared rows bit-identical through up, activation, down and route
 summation. Stock and packed scales match under each policy. Native replay
 matches retained up/activation/down outputs; all 960 graph-repeat assertions
 pass. GPU fixture duration is 64.416 seconds, peak allocation 1.901 GiB.
-Independent archived NumPy review is pending original-service restoration.
+Independent archived NumPy review confirms all comparisons: 48 native-output
+matches and 96 stock/packed matches. All 25 evidence payloads verify on Mac and
+Spark2. Archive SHA:
+`5a0e7c939cdb9181aaaf3c0f151abc3f321c7ef25cfdea310e553c92532321b2`.
 
 The observed component overhead is a few percent, but **14/32** paired timing
 controls exceed the unchanged 2% first/last-half drift limit. Do not claim a
 settled overhead or serving speed. `drafter-expert-padding-v3` therefore retains
 native and default-occupancy padding, adds 30 seconds warm-up per fixture and
 16 interleaved cycles of 200 replays, plus SM/memory clocks and thermals.
-Default occupancy is chosen to preserve the native launch configuration,
-not by selecting the fastest noisy sample. V3 CPU preflight passes; plan SHA:
+V3 completes in **322.796 seconds**, again with exact shared rows and **640**
+exact graph repeats. Independent NumPy review passes 48 native-output and 64
+stock/packed comparisons. **14/16** timing comparisons meet the 2% drift limit:
+all eight stock comparisons pass; two packed comparisons fail at **2.266%**
+and **2.180%** drift. Passing paired component overheads range **1.14–2.84%**
+for stock and **0.54–3.51%** for packed. These are component results, not serving
+slowdowns; no blanket stable-overhead claim. SM clocks span 2457–2515 MHz,
+temperature 61–74 C, all recorded power states P0. Memory clocks report N/A.
+Default occupancy preserves the native launch configuration, not the fastest
+noisy sample. V3 plan SHA:
 `6a4e8d5040da614c1a739085d932d057dd0d01446d0ca0d4ed5c161936922e5d`.
-Both source commits `28b1a17` / `566f5cf` are verified in the Spark2 backup.
+Source commits through `148cfc9` are verified in the Spark2 backup. V3 archive:
+23 payloads, 25,636,091 bytes, SHA
+`92a50ab8eda94dea786083e465f251925da2b4e5178ae97254a74a2a0b44081a`;
+all payloads independently verified on Mac; Spark2 copy pending.
 
 V1 failed before its numerical gate because the replay called an activation
 symbol absent from `vllm._custom_ops`. Installed MoE source uses
@@ -27,11 +61,10 @@ failure, with original service verified restored. A separate
 GPU-free API import could not load the CUDA extension and is also retained;
 it supplies no numerical evidence. The installed original-container API check
 then passes with zero allocated CUDA bytes and no CUDA context initialized.
-V3 waits for V2 restoration and original-service health before pausing verified
-idle production, with the same independent restoration watchdog.
-The fix is component-proven only. Full-model verification
-and frozen drafter qualification wait for the component result and overhead
-review. The adapted drafter stays **unqualified**, the sealed test stays
+All three component attempts restore original production through the independent
+watchdog/controller. V1's 18-payload failure archive verifies on Mac/Spark2:
+`70f83f453d388cbfcdb0cfd1f691190a4aa4c17fcca1805772a532cd93dac176`.
+The fix is component-proven only. The adapted drafter stays **unqualified**, the sealed test stays
 **unopened**, and the full 4,000-prompt training run remains outstanding.
 
 Installed Marlin MoE Python source has no batch-invariance implementation;

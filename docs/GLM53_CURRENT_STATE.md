@@ -1,5 +1,14 @@
 # GLM lossless experiment: current state and next steps
 
+**Latest, 20 October 2026:** bounded expert padding fixes the retained 440/448
+shared-row divergence on both TP partitions, with stock and compressed scales.
+V2/V3 independent tensor reviews pass; V3 timing controls pass 14/16, retaining
+two failures at the unchanged 2% limit. Full-model numerical verification is
+prepared and undergoing CPU preflight, with the same policy in both drafter
+arms. No full-model result or serving-speed claim yet; the adapted drafter
+remains unqualified and the sealed test closed. See the live
+[handoff checkpoint](GLM53_HANDOFF.md). Older dated checkpoints below are historical.
+
 <!-- DRAFTER_EXPERT_REPLAY_BEGIN -->
 **20 October 2026, 17:27:12 UTC: direct expert replay complete; original production restored.**
 The first changed operation is reproduced using the original layer-4 gate/up

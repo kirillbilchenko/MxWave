@@ -429,3 +429,8 @@ The bounded expert-routing padding policy, Triton metadata copier and paired
 two-projection replay are independently authored. They use the audited launch
 geometry to call unchanged installed/previously licensed Marlin kernels. No
 additional upstream GEMM implementation is copied or adapted.
+
+The equal-policy full-model expert wrapper, verification preparer and independent
+NumPy reviewer are also independently authored. They compose the tested metadata
+padding with unchanged installed and previously licensed MxWave dispatch paths;
+no external kernel/model implementation is copied.

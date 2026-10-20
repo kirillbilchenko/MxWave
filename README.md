@@ -1,7 +1,21 @@
 # MxWave
 
+**Expert reduction fix, 20 October 2026:** bounded routing padding makes shared
+rows bit-identical in the retained 440-versus-448 dispatch, through both expert
+projections and with stock/packed scales. These are component results on Spark,
+with the two TP partitions replayed separately; full-model verification is next.
+
+| Replay | Shared-row equality | Exact graph repeats | Timing stability controls |
+|---|---|---:|---:|
+| V2, two padding policies | Pass, both ranks | 960 | 18/32 pass |
+| V3, default occupancy, longer warm-up | Pass, both ranks | 640 | 14/16 pass |
+
+The two V3 timing failures remain failures at the unchanged 2% drift gate.
+No serving-speed or drafter qualification claim follows. See the current
+[handoff](docs/GLM53_HANDOFF.md); the sealed test remains closed.
+
 <!-- DRAFTER_TRAINING_PREFLIGHT -->
-**CT drafter progress, 20 October 2026:** the bounded context-projection pilot
+**Earlier CT drafter checkpoint, 20 October 2026:** the bounded context-projection pilot
 selects step 24: validation draft prefix **code 4.25 → 4.375**, **chat 2.75 → 2.875**,
 explanation unchanged. The independent review reproduces the result; native
 export changes only FC and preserves the other 115 tensors/config exactly.
