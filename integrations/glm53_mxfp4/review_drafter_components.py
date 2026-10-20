@@ -79,7 +79,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
     assert all(row["inputs_logits_features_exact"] for row in result["capture_repeats"])
     plan = json.loads((root / "plan.json").read_bytes())
     case = plan["calibration_cases"][0]["id"]
-    assert plan["revision"] == "drafter-components-v1"
+    assert plan["revision"] == "drafter-components-v2"
     retained = {}
     repeats = []
     for arm in plan["arms"]:

@@ -1,0 +1,371 @@
+{
+  "gpu_worker_sha256": "b2e580d74e7259ff2cbc82dabf38a43409ea5584d143880436583d9fc1ceedf1",
+  "speculative_config": {
+    "method": "dflash",
+    "model": "/draft",
+    "num_speculative_tokens": 7,
+    "kv_cache_dtype": "auto",
+    "num_speculative_tokens_per_batch_size": [
+      [
+        1,
+        1,
+        7
+      ],
+      [
+        2,
+        2,
+        5
+      ],
+      [
+        3,
+        16,
+        3
+      ]
+    ],
+    "rejection_sample_method": "standard"
+  },
+  "revision": "drafter-components-v2",
+  "purpose": "Find the first changed early target operation under native eight-row replay.",
+  "arms": [
+    "a1",
+    "b1"
+  ],
+  "modes": {
+    "a1": "ct_mxfp8",
+    "b1": "ct_mxfp8"
+  },
+  "trials": 1,
+  "profile_arms": [],
+  "profile_output_tokens": 64,
+  "outage_seconds": 1500,
+  "repeat_control_limit": 0.02,
+  "notes": [
+    "V1 failed before requests: token count alone selected two different eight-token graphs.",
+    "V2 selects FULL, one request, eight uniform tokens, no LoRA; actual replay identity checked.",
+    "Same development prompt, native target/draft arithmetic and original/adapted arms as V2.",
+    "Only graph-written independent copies added; Python component wrappers removed after capture.",
+    "Capture attention, mHC, dense MLPs and expert routing/GEMMs in layers 0 through 4.",
+    "At most 64 MiB of retained graph copies; store components only at start positions 46 and 54.",
+    "Before/capture/repeat/after outputs AND counters must reproduce the frozen V2 result.",
+    "No new raw recurrent-cache copies; V2 separately retained selected state equality.",
+    "One actual eight-row target graph, each selected layer once, four expert GEMMs required.",
+    "No timing, training, promotion, sealed-test or relaxed-quality claim.",
+    "25-minute experiment cutoff and independent restoration watchdog retained."
+  ],
+  "kv_cache_memory_bytes": 6442450944,
+  "private_port": 8024,
+  "client_deadline_seconds": 300,
+  "requests": 4,
+  "max_frames_per_case": 40,
+  "probe_vllm_sources": {
+    "model_executor/layers/linear.py": "fc4e96ba5e36895513b801b99e746e2b07959d402e36d56aae7d8ad3f124cfe7",
+    "model_executor/layers/logits_processor.py": "7112cdda465ae3c9d996bcf6c7c3d46f21c23934f0c4d0ecbd527ed699e971b6",
+    "model_executor/models/qwen3_dflash2.py": "c141daa4b2059c0098224ac36471c2197b7052c100bef0a4dbc2ca79b627053f",
+    "v1/worker/gpu/spec_decode/dflash2/speculator.py": "66aa43b74abfdaa9aa09e00e6511fab273e7c8a1c5da6c0d06e1daa07216ffd5",
+    "v1/worker/gpu/spec_decode/dflash/speculator.py": "bd7f4c63d1196cb53bee0a81339aa5651e36938fc38b73c4ce89d978e0176a87",
+    "v1/worker/gpu/spec_decode/dflash/cudagraph.py": "556acfbce5ef2310a738d254d0029f2976846fa51f37332d1fb07a140b8ac017",
+    "v1/worker/gpu/cudagraph_utils.py": "c183937e6eb5b9c28c79d98fb4c64f562e7649d5f6d65743e6640b2f378ecf9f",
+    "model_executor/models/qwen3_dflash.py": "89c0d80c60d1fcde839a088e0a997a233e656d1e296c5505b5f2631478ddbfa5",
+    "v1/worker/gpu/model_runner.py": "f84255d75435e84f44972d3fd25e53447f9d4d2edd8bff4f8c19dfb793448415",
+    "v1/worker/gpu/spec_decode/rejection_sampler.py": "308d4171f892f27231655289ceb03cd4566533c7d26b8f98bd62ef0a34f986f0",
+    "v1/worker/gpu/model_states/mamba_hybrid.py": "e47cdb2959d4ecb33aec242ce98a80c914999e287a1a63564302b99ed6cdc575",
+    "models/glm5next/nvidia/model.py": "76a91b1938dd4e72fd66153d69e04685e9bbe92a6d2aa2ef955aadac75193694",
+    "models/glm5next/nvidia/kda.py": "a0ceff81bd196afa57dfcd5bb49582687029438d1e42c88a6720dbd1a7f6966f",
+    "model_executor/layers/fused_moe/layer.py": "688711dd909e107c1712b81038cb1ed055fc4ecc9dce89bb4beef2d30f0541c5",
+    "model_executor/layers/fused_moe/runner/moe_runner.py": "a19ecf2417c80b93c0fe5594e74528f686665847732196f9b29ef967b38110b0",
+    "model_executor/layers/fused_moe/routed_experts.py": "b35557b83c103710272025821b9fcabb37b6db481ca3087a9f2abf823ebbb9df",
+    "model_executor/layers/fused_moe/router/fused_moe_router.py": "f182f30712983f61815f8df947af597277d660cd2891066fcb13789d55f7353e"
+  },
+  "output_tokens": 32,
+  "full_logits_frames": 40,
+  "target_feature_layers": [
+    5,
+    14,
+    24,
+    33,
+    42
+  ],
+  "calibration_cases": [
+    {
+      "id": "opencoder-evol-15654",
+      "split": "validation",
+      "domain": "code",
+      "messages": [
+        {
+          "content": "Formulate a regular expression pattern to accurately identify date strings adhering to the specific format of MM/DD/YYYY.",
+          "role": "user"
+        }
+      ],
+      "prompt_sha256": "db3736829ee77c4455c670f0a93b9d059f20a0dfe03ae1bf87769e13d506a438",
+      "token_ids_sha256": "5ec425525f1998fa41bf9076e478ee358274f62540a3f7f7d529bb992827e350",
+      "prompt_ids": [
+        154822,
+        154824,
+        154826,
+        25062,
+        287,
+        29905,
+        371,
+        25,
+        7487,
+        154827,
+        1838,
+        6334,
+        264,
+        5792,
+        7493,
+        5383,
+        311,
+        29149,
+        10537,
+        2400,
+        9066,
+        34777,
+        287,
+        311,
+        279,
+        3151,
+        3561,
+        315,
+        21613,
+        81290,
+        80465,
+        13,
+        154828,
+        154841
+      ]
+    }
+  ],
+  "control_cases": [],
+  "frozen_dataset_hashes": {
+    "train_prompts": "f897f39cadbf2d04c960265151781bc0e56215d2c8eb0c4b3f0725cde3baca8b",
+    "train_tokens": "1b98c709d058faf1f3692e635528f553a9a3fe55141139b068cd2f72a2d69633",
+    "validation_prompts": "fe1041a07c26cad4caee9713801ef1aee973cc5ecb7b5e3171b6203e757bb5c5",
+    "validation_tokens": "5ef9e2db81b60921c057480a4931c15ee04094a00b415b6ee3f245aca510b701"
+  },
+  "tokenizer_hashes": {
+    "tokenizer.json": "19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d",
+    "tokenizer_config.json": "98b1271574f41abf89427ae2dda030d94dc9478f0edc5a8bd240db213c6fd5fc",
+    "chat_template.jinja": "34d5ee66b12fa6446cdae131c352b8f68cd85369e0e6fda115583805fada3891",
+    "config.json": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198"
+  },
+  "prompt_limit": 1024,
+  "quotas": {
+    "train": {
+      "code": 20,
+      "chat": 6,
+      "explanation": 6
+    },
+    "validation": {
+      "code": 4,
+      "chat": 2,
+      "explanation": 2
+    }
+  },
+  "source_sha256": "d89f4f7326299a003b8c2119660b76d0bbb28ad3add0db36d33544d3bdf55d65",
+  "variants": {
+    "a1": "original",
+    "b1": "candidate"
+  },
+  "warmup_case": {
+    "id": "opencoder-evol-4134",
+    "split": "train",
+    "domain": "code",
+    "messages": [
+      {
+        "content": "Taking into consideration the disparity in the number of office assistants and the variation in the mean salaries between the New Jersey and Utah offices of a large company, could you evaluate the overall mean salary paid to all the office assistants across both locations?",
+        "role": "user"
+      }
+    ],
+    "prompt_sha256": "5fa05ea21e89a537f2486c9aa252aae6a9c12dcd7579f5e2e1f5ddf4b88f369d",
+    "token_ids_sha256": "9ddb6d780230a4f6829f024ef9c2e223eefc1468c7617d82a63c94f622c064e8",
+    "prompt_ids": [
+      154822,
+      154824,
+      154826,
+      25062,
+      287,
+      29905,
+      371,
+      25,
+      7487,
+      154827,
+      49775,
+      1119,
+      17853,
+      279,
+      65369,
+      304,
+      279,
+      1372,
+      315,
+      5163,
+      56139,
+      323,
+      279,
+      22929,
+      304,
+      279,
+      3076,
+      36247,
+      1948,
+      279,
+      1532,
+      15837,
+      323,
+      22331,
+      19090,
+      315,
+      264,
+      3460,
+      2813,
+      11,
+      1410,
+      498,
+      15430,
+      279,
+      8083,
+      3076,
+      16093,
+      7171,
+      311,
+      678,
+      279,
+      5163,
+      56139,
+      3941,
+      2176,
+      10463,
+      30,
+      154828,
+      154841
+    ]
+  },
+  "drafter_files": {
+    "original": {
+      "model.safetensors": "6cba1cff8ab4fcd657b89575f5db3debe1f5a39c78bda422953f553dc2357f8b",
+      "config.json": "15bc842939ff7ca3ccc5aad36d25fff854da05a60086a4f55672d804fc6dbe7b"
+    },
+    "candidate": {
+      "model.safetensors": "bf67cb8c2a02e3999269294b7d2b6fc63ce52ebd694fecbd8dac56f5971bdf47",
+      "config.json": "15bc842939ff7ca3ccc5aad36d25fff854da05a60086a4f55672d804fc6dbe7b"
+    }
+  },
+  "context_payloads": {
+    "original": "fb52144f417a54b0b8ee483368fd70ffd8200bb2f60a17829238aea6b6a462c4",
+    "candidate": "b0179d634262ec882ac548ca61918b60a109a053587b875ab429466f9e07b259"
+  },
+  "selected_step": 24,
+  "export_review_sha256": "5c0a831ac8d6cc824dc9b1875cef0a0c27f8610fdacfada417b80ede6b8078a0",
+  "state_capture_layers": [],
+  "max_state_bytes_per_frame": 134217728,
+  "expected_outputs": {
+    "a1": [
+      785,
+      1196,
+      6801,
+      264,
+      5792,
+      7493,
+      5383,
+      311,
+      2432,
+      2400,
+      9066,
+      304,
+      21613,
+      81290,
+      80465,
+      3561,
+      13,
+      6771,
+      752,
+      1744,
+      911,
+      419,
+      15504,
+      382,
+      3862,
+      525,
+      2155,
+      5866,
+      315,
+      7304,
+      2090,
+      311
+    ],
+    "b1": [
+      785,
+      1196,
+      6801,
+      264,
+      5792,
+      7493,
+      5383,
+      311,
+      2432,
+      2400,
+      9066,
+      304,
+      21613,
+      81290,
+      80465,
+      3561,
+      13,
+      6771,
+      752,
+      1744,
+      911,
+      1128,
+      3643,
+      264,
+      1661,
+      4226,
+      1588,
+      382,
+      3862,
+      525,
+      1378,
+      5866
+    ]
+  },
+  "component_layers": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "component_start_positions": [
+    46,
+    54
+  ],
+  "max_component_graph_bytes": 67108864,
+  "expected_counter_deltas": {
+    "a1": {
+      "vllm:spec_decode_num_drafts_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 8.0,
+      "vllm:spec_decode_num_draft_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 56.0,
+      "vllm:spec_decode_num_accepted_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 23.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"0\"}": 7.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"1\"}": 5.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"2\"}": 3.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"3\"}": 2.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"4\"}": 2.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"5\"}": 2.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"6\"}": 2.0
+    },
+    "b1": {
+      "vllm:spec_decode_num_drafts_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 8.0,
+      "vllm:spec_decode_num_draft_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 56.0,
+      "vllm:spec_decode_num_accepted_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 23.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"0\"}": 6.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"1\"}": 6.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"2\"}": 3.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"3\"}": 2.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"4\"}": 2.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"5\"}": 2.0,
+      "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"glm-5.3-flash\",position=\"6\"}": 2.0
+    }
+  },
+  "parent_plan_sha256": "965dc634a26117c72eebec46571a9763a97967b7140c52796ff23f346245128d"
+}

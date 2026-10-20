@@ -41,13 +41,15 @@ def prepare(template: Path, audit: Path, output: Path) -> dict[str, Any]:
         assert all(row["counter_delta"] == rows[0]["counter_delta"] for row in rows)
         counters[arm] = rows[0]["counter_delta"]
     plan.update(
-        revision="drafter-components-v1", private_port=8023,
+        revision="drafter-components-v2", private_port=8024,
         purpose="Find the first changed early target operation under native eight-row replay.",
         state_capture_layers=[], component_layers=[0, 1, 2, 3, 4],
         component_start_positions=[46, 54], max_component_graph_bytes=64 * 1024**2,
         expected_counter_deltas=counters, source_sha256=digest(Path(__file__)),
         parent_plan_sha256=digest(template / "plan.json"),
         notes=[
+            "V1 failed before requests: token count alone selected two different eight-token graphs.",
+            "V2 selects FULL, one request, eight uniform tokens, no LoRA; actual replay identity checked.",
             "Same development prompt, native target/draft arithmetic and original/adapted arms as V2.",
             "Only graph-written independent copies added; Python component wrappers removed after capture.",
             "Capture attention, mHC, dense MLPs and expert routing/GEMMs in layers 0 through 4.",
@@ -70,8 +72,8 @@ def prepare(template: Path, audit: Path, output: Path) -> dict[str, Any]:
     (output / "plan.json").write_text(json.dumps(plan, indent=2) + "\n")
     for name in ("prepare.py", "control.py"):
         path = output / name
-        text = path.read_text().replace("8022", "8023").replace("29695", "29696")
-        path.write_text(text.replace("mxwave-drafter-verification-v2", "mxwave-drafter-components-v1"))
+        text = path.read_text().replace("8022", "8024").replace("29695", "29697")
+        path.write_text(text.replace("mxwave-drafter-verification-v2", "mxwave-drafter-components-v2"))
     path = output / "trial_plugin.py"
     text = path.read_text()
     anchor = "        drafter_head_probe.arm_capture(worker)\n"
@@ -86,13 +88,14 @@ def prepare(template: Path, audit: Path, output: Path) -> dict[str, Any]:
     anchor = "        assert callable(drafter_component_probe.install)\n"
     assert text.count(anchor) == 1
     path.write_text(text.replace(anchor, anchor + (
+        "        print(json.dumps(drafter_component_probe.validate_graph_candidates()))\n"
         "        from vllm.model_executor.layers.fused_moe.runner.moe_runner import MoERunner\n"
         "        from vllm.model_executor.layers.fused_moe.routed_experts import RoutedExperts\n"
         "        assert callable(MoERunner._apply_quant_method)\n"
         "        assert callable(MoERunner._maybe_reduce_final_output)\n"
         "        assert callable(RoutedExperts.forward_modular)\n"
     )))
-    text = MEASURE.replace("8022", "8023")
+    text = MEASURE.replace("8022", "8024")
     anchor = '                assert row["counter_delta"]==prior["counter_delta"]\n'
     assert text.count(anchor) == 1
     text = text.replace(anchor, anchor + (

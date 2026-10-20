@@ -1,23 +1,35 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_COMPONENTS_BEGIN -->
-**20 October 2026, 16:45 UTC: paired component capture launched after both-rank CPU preflight.**
-The controller has paused production and is loading the original-drafter arm.
-Launch PID 4002532 uses source checkpoint `76b625b` and the independent watchdog.
-The bounded observer
-covers attention projections/outputs, mHC, dense MLPs, expert routing and expert
-GEMMs in layers 0–4 of the native eight-row target graph. It retains graph-written
-copies only at start positions 46 and 54, with a 64 MiB graph-allocation limit.
-Python component wrappers are removed after capture. All prior tokens and
-speculative counters must reproduce in before/capture/repeat/after controls.
+**20 October 2026, 16:54 UTC: component V1 failed before requests; original production restored.**
+The new observer incorrectly selected by eight total tokens alone. The installed
+dynamic speculation policy captures two such graphs: one request × eight tokens
+and two requests × four tokens. Its strict post-capture guard rejected this
+ambiguity. All seven native graphs had captured; no requests or evidence frames
+ran. This is an instrumentation failure, not a new model-quality result.
+The controller restored original identities/configurations, health 200 and
+500,000 context; the finalizer independently verified service health and identity.
 
-The frozen plan is `drafter-components-v1` (private port 8023), SHA-256
-`afa5478d56f93f6c7035ead4a5fc3d0401088ea6154b2e47c8156a818ffd5fc2`.
-The existing 25-minute experiment cutoff and independent restoration watchdog
-are retained. No additional training, timing claim, promotion or sealed-test
-access is included. Ruff, strict core mypy and the full test suite pass locally.
-Both ranks validate all 211 frozen runtime bindings. Next: bounded paired capture, independent
-component comparison, then a direct test of the first differing operation.
+V1 is retained unchanged: 46 payloads, 141,897-byte archive, SHA-256
+`e581e07ce1492880cf0cc390a5987acbfe785973d2dcd16b22c1564f563c3f7e`.
+Mac and Spark2 independently verify every payload. Source before the failed load is
+`76b625b`; reviewer and active-status checkpoint `843c8be` are backed up on Spark2.
+
+V2 selects the complete native descriptor (FULL, one request, eight uniform
+verification tokens, no LoRA) and verifies that same descriptor on actual replay.
+Its CPU preflight invokes the installed graph-candidate builder and requires seven
+graphs, two eight-token layouts, and exactly one matching descriptor. Local tests
+cover rejecting the other layout, excluding warmups and restoring wrappers on
+failure. Serving-image preflight now passes on both arms and both ranks,
+including the actual seven-descriptor check and all 211 frozen runtime bindings.
+
+The observer covers attention, mHC, dense MLPs, expert routing and GEMMs in layers
+0–4, with a 64 MiB graph-copy bound and retained positions 46/54. Before/capture/
+repeat/after tokens AND counters must match the frozen prior result. V2 plan SHA:
+`6f7dd0a40a968002c9f07972a96507d8b6533635b6ffcebdec7d0575fd8ce159`;
+private port 8024. The 25-minute experiment cutoff and restoration watchdog remain.
+No training, timing claim, promotion or sealed-test access. Next: paired trace,
+independent comparison, then a direct control of the first differing operation.
 <!-- DRAFTER_COMPONENTS_END -->
 
 <!-- DRAFTER_VERIFICATION_BEGIN -->

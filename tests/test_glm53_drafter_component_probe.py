@@ -65,6 +65,9 @@ def test_capture_failure_removes_all_instance_wrappers(monkeypatch: pytest.Monke
             self.replace(owner, "forward", lambda f: lambda: "wrapped")
 
     class Manager:
+        def _build_forward_fn_factory(self):
+            return None
+
         def capture(self, model):
             assert owner.forward() == "wrapped"
             raise RuntimeError("capture failed")
@@ -74,3 +77,41 @@ def test_capture_failure_removes_all_instance_wrappers(monkeypatch: pytest.Monke
     with pytest.raises(RuntimeError, match="capture failed"):
         Manager().capture(None)
     assert owner.forward is original
+
+
+def descriptor(requests: int, uniform: int = 8) -> SimpleNamespace:
+    return SimpleNamespace(cg_mode="FULL", num_tokens=8, num_reqs=requests,
+                           uniform_token_count=uniform, num_active_loras=0)
+
+
+def test_dynamic_draft_graphs_with_same_token_count_do_not_mix() -> None:
+    trace = probe.ComponentTrace()
+    observed = []
+
+    def build():
+        def factory(desc, warmup):
+            return lambda mode: observed.append(trace.selected_forward)
+        return factory
+
+    factory = trace.forward_factory(build)()
+    for desc in (descriptor(2, 4), descriptor(1), descriptor(2, 4)):
+        for warmup in (True, False):
+            factory(desc, warmup)(None)
+            assert not trace.selected_forward
+    assert observed == [False, False, False, True, False, False]
+
+
+def test_selected_scope_restored_after_failed_forward() -> None:
+    trace = probe.ComponentTrace()
+
+    def build():
+        def factory(desc, warmup):
+            def forward(mode):
+                assert trace.selected_forward
+                raise RuntimeError("native forward failed")
+            return forward
+        return factory
+
+    with pytest.raises(RuntimeError, match="native forward failed"):
+        trace.forward_factory(build)()(descriptor(1), False)(None)
+    assert not trace.selected_forward
