@@ -1,0 +1,215 @@
+"""Independently recompute serving metrics for the frozen three-mode experiment."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import re
+import statistics
+from pathlib import Path
+
+
+def close(left, right):
+    assert math.isclose(left, right, rel_tol=1e-10, abs_tol=1e-10), (left, right)
+
+
+def counters(text):
+    result = {}
+    for line in text.splitlines():
+        if not line.startswith("vllm:spec_decode_"):
+            continue
+        label, value = line.rsplit(" ", 1)
+        name = label.split("{", 1)[0]
+        if name.endswith("_total"):
+            result[name] = result.get(name, 0) + float(value)
+    return result
+
+
+def speculation(before, after):
+    a, b = counters(before), counters(after)
+    diff = {k: v - a.get(k, 0) for k, v in b.items()}
+    draft = diff.get("vllm:spec_decode_num_draft_tokens_total", 0)
+    accepted = diff.get("vllm:spec_decode_num_accepted_tokens_total", 0)
+    calls = diff.get("vllm:spec_decode_num_drafts_total", 0)
+    return {
+        "counters": diff,
+        "accepted_fraction": accepted / draft if draft else None,
+        "accepted_per_call": accepted / calls if calls else None,
+        "drafted_per_call": draft / calls if calls else None,
+    }
+
+
+def summarize(rows):
+    requests = [r for g in rows for r in g["requests"]]
+    return {
+        "trials": len(rows), "requests": len(requests),
+        "median_tps": statistics.median(g["tps"] for g in rows),
+        "mean_ttft_ms": statistics.mean(r["ttft_ms"] for r in requests),
+        "mean_tpot_ms": statistics.mean(r["tpot_ms"] for r in requests),
+        "mean_latency_ms": statistics.mean(r["latency_ms"] for r in requests),
+        "max_running": max((g["max_running"] for g in rows), default=0),
+        "max_waiting": max((g["max_waiting"] for g in rows), default=0),
+    }
+
+
+def analyze(root, partial=False):
+    sources = {}
+
+    def read(name):
+        raw = (root / name).read_bytes()
+        sources[name] = hashlib.sha256(raw).hexdigest()
+        return json.loads(raw)
+
+    plan = read("plan.json")
+    plan_hash = sources["plan.json"]
+    modes = list(dict.fromkeys(plan["modes"].values()))
+    rows = {}
+    blocks = {}
+    for arm in plan["arms"]:
+        path = root / f"{arm}-measurement.json"
+        if partial and (not path.exists() or json.loads(path.read_bytes())["status"] != "complete"):
+            continue
+        data = read(path.name)
+        assert data["status"] == "complete" and data["plan_sha256"] == plan_hash
+        assert data["mode"] == plan["modes"][arm]
+        assert len(data["trials"]) == len(plan["cases"]) * plan["trials"]
+        rows[arm] = {}
+        for case in plan["cases"]:
+            groups = [g for g in data["trials"] if g["case"] == case["name"]]
+            assert len(groups) == plan["trials"]
+            converted = []
+            for group in groups:
+                assert group["batch"] == len(group["requests"]) == case["batch"]
+                assert group["output_tokens"] == case["batch"] * case["output_tokens"]
+                tps = group["output_tokens"] / group["wall_seconds"]
+                close(tps, group["output_tokens_per_second"])
+                requests = []
+                for request, prompt in zip(group["requests"], case["prompts"], strict=True):
+                    n = case["output_tokens"]
+                    assert len(request["token_ids"]) == request["usage"]["completion_tokens"] == n
+                    assert request["usage"]["prompt_tokens"] == len(prompt)
+                    arrivals = [a["seconds"] for a in request["arrivals"]]
+                    assert arrivals == sorted(arrivals)
+                    assert sum(a["tokens"] for a in request["arrivals"]) == n
+                    latency = (request["end_ns"] - request["start_ns"]) / 1e9
+                    tpot = (arrivals[-1] - arrivals[0]) / (n - 1)
+                    close(latency, request["latency_seconds"])
+                    close(tpot, request["tpot_seconds"])
+                    close(arrivals[0], request["ttft_seconds"])
+                    requests.append({
+                        "ttft_ms": arrivals[0] * 1000, "tpot_ms": tpot * 1000,
+                        "latency_ms": latency * 1000, "token_ids": request["token_ids"],
+                    })
+                peaks = {"running": 0, "waiting": 0}
+                for sample in group["queue_samples"]:
+                    for line in sample.get("metrics", []):
+                        match = re.match(r"vllm:num_requests_(running|waiting)(?:\{| )", line)
+                        if match:
+                            kind = match.group(1)
+                            peaks[kind] = max(peaks[kind], float(line.rsplit(" ", 1)[1]))
+                converted.append({
+                    "arm": arm, "trial": group["trial"], "tps": tps, "requests": requests,
+                    "max_running": peaks["running"], "max_waiting": peaks["waiting"],
+                    "queue_sample_errors": sum("error" in s for s in group["queue_samples"]),
+                    "speculation_window": speculation(group["metrics_before"], group["metrics_after"]),
+                })
+            rows[arm][case["name"]] = converted
+            measured = next(s for s in data["summary"] if s["case"] == case["name"])
+            computed = summarize(converted)
+            close(computed["median_tps"], measured["median_output_tokens_per_second"])
+            close(computed["mean_ttft_ms"], measured["mean_ttft_seconds"] * 1000)
+            close(computed["mean_tpot_ms"], measured["mean_tpot_seconds"] * 1000)
+        startup = read(f"{arm}-startup.json")
+        assert len(startup) == 2
+        for item in startup:
+            trial = item["trial"]
+            assert item["status"] == "complete" and trial["shared_head"] and trial["shared_embedding"]
+            assert trial["kv_cache_memory_bytes"] == plan["kv_cache_memory_bytes"]
+            if data["mode"] == "ct_mxfp8":
+                native = trial["native_mxfp8_kda"]
+                assert native["status"] == "complete" and len(native["layers"]) == 68
+                assert native["all_68_rounding_hashes_match_quality_run"]
+                assert native["original_BF16_parameters_alive"] == 0
+                assert all(l["basis_bits_exact"] for l in native["layers"])
+                assert all(c["relative_L2"] <= 0.01 for l in native["layers"] for c in l["checks"])
+        blocks[arm] = {
+            "mode": data["mode"], "cases": {n: summarize(v) for n, v in rows[arm].items()},
+            "sanity": data["sanity"],
+            "speculation_including_warmup": speculation(data["metrics_before"], data["metrics_after"]),
+            "cuda_allocated_bytes_by_rank": [s["trial"]["cuda_allocated_bytes"] for s in startup],
+            "graphs_by_rank": [s["trial"]["physical_graph_token_counts"] for s in startup],
+        }
+    result = {
+        "status": "partial" if partial else "complete", "blocks": blocks, "cases": {},
+        "full_model_KL_qualified": False, "GSM8K_measured": False,
+        "source_sha256": sources,
+        "limitations": [
+            "Six trials per mode are nested within three model loads, not six independent loads.",
+            "Fixed output budgets and two realistic prompt proxies are not a broad user harness.",
+            "C8/C16 are offered concurrency; inspect queue/running counters for actual residency.",
+            "Speculation metric windows may lag engine counters; retain load totals as a cross-check.",
+            "Normalized TPOT averages speculative bursts, not individual token delivery intervals.",
+            "Different output tokens/acceptance are expected; API changes cannot isolate kernel gains.",
+            "The completed rounding study failed the unchanged 1e-5 KL gate. This is a speed experiment.",
+            "Production-format model here uses common experimental settings, not fully tuned production.",
+        ],
+    }
+    for case in plan["cases"]:
+        name = case["name"]
+        out = {"batch": case["batch"], "modes": {}, "repeat_controls": {}, "comparisons": {}}
+        for mode in modes:
+            arms = [a for a in rows if plan["modes"][a] == mode]
+            if not arms:
+                continue
+            values = [g for a in arms for g in rows[a][name]]
+            out["modes"][mode] = summarize(values)
+            medians = [summarize(rows[a][name])["median_tps"] for a in arms]
+            spread = (max(medians) - min(medians)) / statistics.mean(medians)
+            out["repeat_controls"][mode] = {
+                "arms": arms, "block_median_tps": medians, "relative_spread": spread,
+                "limit": plan["repeat_control_limit"],
+                "passed": len(arms) == 3 and spread <= plan["repeat_control_limit"],
+                "complete": len(arms) == 3,
+            }
+            tokens = [[r["token_ids"] for r in g["requests"]] for g in values]
+            out["modes"][mode]["all_self_repeat_tokens_equal"] = all(t == tokens[0] for t in tokens)
+            out["modes"][mode]["trials_raw"] = [
+                {k: v for k, v in g.items() if k != "requests"} for g in values
+            ]
+        for base in ("ct_bf16", "modelopt"):
+            if base not in out["modes"] or "ct_mxfp8" not in out["modes"]:
+                continue
+            a, b = out["modes"][base], out["modes"]["ct_mxfp8"]
+            out["comparisons"][f"ct_mxfp8_vs_{base}"] = {
+                "median_tps_change_percent": 100 * (b["median_tps"] / a["median_tps"] - 1),
+                "mean_ttft_change_ms": b["mean_ttft_ms"] - a["mean_ttft_ms"],
+                "mean_tpot_change_percent": 100 * (b["mean_tpot_ms"] / a["mean_tpot_ms"] - 1),
+                "both_repeat_controls_pass": all(
+                    out["repeat_controls"][m]["passed"] for m in (base, "ct_mxfp8")
+                ),
+            }
+        result["cases"][name] = out
+    state = read("controller.json")
+    if not partial:
+        assert state["phase"] == "complete_restored" and not state["service_paused"]
+        assert state["restoration"]["originals_running"]
+        assert any(m["max_model_len"] == 500000 for m in state["restoration"]["models"]["data"])
+    result["restoration"] = state.get("restoration")
+    result["telemetry"] = state.get("resources")
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--partial", action="store_true")
+    args = parser.parse_args()
+    report = analyze(args.root, args.partial)
+    args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+    print(json.dumps({
+        "status": report["status"], "blocks": list(report["blocks"]),
+        "comparisons": {k: v["comparisons"] for k, v in report["cases"].items()},
+    }, indent=2))

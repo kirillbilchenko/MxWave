@@ -1,0 +1,111 @@
+{
+  "checked_epoch": 1792389641.0051525,
+  "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-fp32inputmodelv1/results/control-warmed-model.json",
+  "snapshot_sha256": "3fb865d3ec3a9db2586c184d484a14d151a46319442d0605d67f05bb35f5f1b5",
+  "snapshot_bytes": 11163085,
+  "status": "running",
+  "phase": "ordinary_mixed_profile_retained",
+  "timing_groups": 36,
+  "summaries": [
+    {
+      "case": "c1-long",
+      "trials": 6,
+      "median_tps": 12.602060332185516,
+      "median_TTFT_seconds": 1.1573828904947732
+    },
+    {
+      "case": "c1-short",
+      "trials": 6,
+      "median_tps": 14.855635156139655,
+      "median_TTFT_seconds": 0.39090010049403645
+    },
+    {
+      "case": "c16-long",
+      "trials": 6,
+      "median_tps": 37.15818225484926,
+      "median_TTFT_seconds": 11.153408779748133
+    },
+    {
+      "case": "c16-short",
+      "trials": 6,
+      "median_tps": 80.6426176718177,
+      "median_TTFT_seconds": 2.0792305469949497
+    },
+    {
+      "case": "c8-long",
+      "trials": 6,
+      "median_tps": 31.861713132597853,
+      "median_TTFT_seconds": 6.4482551532564685
+    },
+    {
+      "case": "c8-short",
+      "trials": 6,
+      "median_tps": 61.33831205094452,
+      "median_TTFT_seconds": 1.1632411907339701
+    }
+  ],
+  "self_comparisons": [
+    {
+      "reference": "control-c1-r0",
+      "candidate": "control-c1-r1",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "actual_model_grouping_equal": true,
+      "passed": true
+    },
+    {
+      "reference": "control-c1-r0",
+      "candidate": "control-c1-r2",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "actual_model_grouping_equal": true,
+      "passed": true
+    },
+    {
+      "reference": "control-c8-r0",
+      "candidate": "control-c8-r1",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "actual_model_grouping_equal": true,
+      "passed": true
+    },
+    {
+      "reference": "control-c8-r0",
+      "candidate": "control-c8-r2",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "actual_model_grouping_equal": true,
+      "passed": true
+    },
+    {
+      "reference": "control-c16-r0",
+      "candidate": "control-c16-r1",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "actual_model_grouping_equal": true,
+      "passed": true
+    },
+    {
+      "reference": "control-c16-r0",
+      "candidate": "control-c16-r2",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "actual_model_grouping_equal": true,
+      "passed": true
+    }
+  ],
+  "candidate_compared": false,
+  "preliminary_only": true
+}

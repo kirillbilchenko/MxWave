@@ -1,0 +1,188 @@
+{
+  "status": "passed",
+  "CPU_only": true,
+  "quality_qualified": false,
+  "native_report_sha256": "e2c236cc26066db73c34b7ef8e0b47886e12ff160ff56ac9d152ea6a51a3e2a5",
+  "engine_core_sha256": "86b8f3b3826504549ef8bea2e7fbf7553728339803abcb3e7d051d146963ff9c",
+  "scheduler_sha256": "4c38a32c7405eb95eb9dd3b3d04cbfe5d0cb4ebc0b18efbaa4adc68c7a9bca5a",
+  "cases": [
+    {
+      "mode": "zero",
+      "status": "passed",
+      "waiting_ids": [
+        "0"
+      ],
+      "native_added_ids": [
+        "0"
+      ],
+      "window_ms": 0.0,
+      "events": [
+        {
+          "window_ms": 0.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 256,
+          "final_requests": 1,
+          "final_prompt_tokens": 256,
+          "additional_messages": 0,
+          "elapsed_seconds": 3.5199918784201145e-06,
+          "end_reason": "deadline",
+          "deadline_extended": false
+        }
+      ]
+    },
+    {
+      "mode": "collect",
+      "status": "passed",
+      "waiting_ids": [
+        "0",
+        "1",
+        "2"
+      ],
+      "native_added_ids": [
+        "0",
+        "1",
+        "2"
+      ],
+      "window_ms": 10.0,
+      "events": [
+        {
+          "window_ms": 10.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 256,
+          "final_requests": 3,
+          "final_prompt_tokens": 768,
+          "additional_messages": 2,
+          "elapsed_seconds": 0.010219311981927603,
+          "end_reason": "deadline",
+          "deadline_extended": false
+        }
+      ]
+    },
+    {
+      "mode": "decode",
+      "status": "passed",
+      "waiting_ids": [
+        "0"
+      ],
+      "native_added_ids": [
+        "0"
+      ],
+      "window_ms": 10.0,
+      "events": []
+    },
+    {
+      "mode": "full_tokens",
+      "status": "passed",
+      "waiting_ids": [
+        "0"
+      ],
+      "native_added_ids": [
+        "0"
+      ],
+      "window_ms": 10.0,
+      "events": [
+        {
+          "window_ms": 10.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 2048,
+          "final_requests": 1,
+          "final_prompt_tokens": 2048,
+          "additional_messages": 0,
+          "elapsed_seconds": 3.4080003388226032e-06,
+          "end_reason": "token_budget_full",
+          "deadline_extended": false
+        }
+      ]
+    },
+    {
+      "mode": "full_requests",
+      "status": "passed",
+      "waiting_ids": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "native_added_ids": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "window_ms": 10.0,
+      "events": [
+        {
+          "window_ms": 10.0,
+          "initial_requests": 8,
+          "initial_prompt_tokens": 2048,
+          "final_requests": 8,
+          "final_prompt_tokens": 2048,
+          "additional_messages": 0,
+          "elapsed_seconds": 4.6559725888073444e-06,
+          "end_reason": "request_budget_full",
+          "deadline_extended": false
+        }
+      ]
+    },
+    {
+      "mode": "abort",
+      "status": "passed",
+      "waiting_ids": [],
+      "native_added_ids": [
+        "0"
+      ],
+      "window_ms": 10.0,
+      "events": [
+        {
+          "window_ms": 10.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 256,
+          "final_requests": null,
+          "final_prompt_tokens": null,
+          "additional_messages": 1,
+          "elapsed_seconds": 0.00020596798276528716,
+          "end_reason": "control_or_abort",
+          "deadline_extended": false
+        }
+      ]
+    },
+    {
+      "mode": "wakeup",
+      "status": "passed",
+      "waiting_ids": [
+        "0"
+      ],
+      "native_added_ids": [
+        "0"
+      ],
+      "window_ms": 10.0,
+      "events": [
+        {
+          "window_ms": 10.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 256,
+          "final_requests": 1,
+          "final_prompt_tokens": 256,
+          "additional_messages": 1,
+          "elapsed_seconds": 3.510399255901575e-05,
+          "end_reason": "control_or_abort",
+          "deadline_extended": false
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Real native input drain/message handler; scheduler and request-construction stand-ins.",
+    "No CUDA or model allocation, full scheduler execution, or serving-speed claim."
+  ],
+  "archive_sha256": "8e0bb635b34ffeefb10e0289e355d0f89eb07ed38049a710da352e785bbaecf6",
+  "locally_verified_payloads": 11
+}

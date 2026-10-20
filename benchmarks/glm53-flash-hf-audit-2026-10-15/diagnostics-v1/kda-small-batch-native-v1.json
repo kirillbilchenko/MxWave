@@ -1,0 +1,864 @@
+{
+  "status": "passed",
+  "cases": [
+    {
+      "name": "kda-input-l0-r0",
+      "logical_shape": [
+        12576,
+        4096
+      ],
+      "gpu_decode_bits_exact": true,
+      "raw_bytes": 103022592,
+      "packed_bytes": 73394904,
+      "scratch_bytes": 103284736,
+      "measurements": [
+        {
+          "tokens": 1,
+          "fused_eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011729639663826674,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011729639663826674,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011729639663826674,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011729639663826674,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.6536959707736969,
+            "zipserv_ms": 0.5666880011558533,
+            "speedup": 1.1676830804315816
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.667279988527298,
+            "zipserv_ms": 1.4416319727897644,
+            "speedup": 0.4720485984923627
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.6599040031433105,
+            "zipserv_ms": 0.5651199817657471,
+            "speedup": 1.1885188999044127
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.660256028175354,
+            "zipserv_ms": 1.468832015991211,
+            "speedup": 0.45064709250846463
+          }
+        },
+        {
+          "tokens": 2,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.5235840082168579,
+            "zipserv_ms": 0.5598399937152863,
+            "speedup": 0.9178252526423539
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.4875839948654175,
+            "zipserv_ms": 1.3640159964561462,
+            "speedup": 0.36020423795023704
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.559391975402832,
+            "zipserv_ms": 0.5686079859733582,
+            "speedup": 0.9265078094834094
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.547648012638092,
+            "zipserv_ms": 1.3990720510482788,
+            "speedup": 0.38886618953153607
+          }
+        },
+        {
+          "tokens": 3,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.42815999686717987,
+            "zipserv_ms": 0.41444799304008484,
+            "speedup": 1.0307769083377136
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.4241759926080704,
+            "zipserv_ms": 1.2119680047035217,
+            "speedup": 0.3497875763549717
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.42985600233078003,
+            "zipserv_ms": 0.4415999948978424,
+            "speedup": 0.9716040153730132
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.4285440146923065,
+            "zipserv_ms": 1.2222720384597778,
+            "speedup": 0.35144416790463334
+          }
+        },
+        {
+          "tokens": 4,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.42371200025081635,
+            "zipserv_ms": 0.41121600568294525,
+            "speedup": 1.0318068200017898
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.42238400876522064,
+            "zipserv_ms": 1.2066879868507385,
+            "speedup": 0.3497838834687216
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.43004798889160156,
+            "zipserv_ms": 0.43904000520706177,
+            "speedup": 0.9771984565109023
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.428384006023407,
+            "zipserv_ms": 1.2182400226593018,
+            "speedup": 0.35118753181627493
+          }
+        },
+        {
+          "tokens": 7,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.5704160034656525,
+            "zipserv_ms": 0.606607973575592,
+            "speedup": 0.9410072551519573
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.5780960023403168,
+            "zipserv_ms": 1.4785280227661133,
+            "speedup": 0.3914466148001541
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.5784639716148376,
+            "zipserv_ms": 0.6530879735946655,
+            "speedup": 0.8891036064910091
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.5764480233192444,
+            "zipserv_ms": 1.5014400482177734,
+            "speedup": 0.3903931202878719
+          }
+        },
+        {
+          "tokens": 8,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.5679520070552826,
+            "zipserv_ms": 0.616815984249115,
+            "speedup": 0.9368328970332017
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.5724159777164459,
+            "zipserv_ms": 1.4688000082969666,
+            "speedup": 0.3882252338808363
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.5891839861869812,
+            "zipserv_ms": 0.6769279837608337,
+            "speedup": 0.870984966474278
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.5864319801330566,
+            "zipserv_ms": 1.4926079511642456,
+            "speedup": 0.38497609834193064
+          }
+        }
+      ]
+    },
+    {
+      "name": "kda-output-l0-r0",
+      "logical_shape": [
+        4096,
+        4096
+      ],
+      "gpu_decode_bits_exact": true,
+      "raw_bytes": 33554432,
+      "packed_bytes": 23809768,
+      "scratch_bytes": 33554432,
+      "measurements": [
+        {
+          "tokens": 1,
+          "fused_eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 3.6243520298739895e-05,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 3.6243520298739895e-05,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 3.6243520298739895e-05,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 3.6243520298739895e-05,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.1940160021185875,
+            "zipserv_ms": 0.1443839967250824,
+            "speedup": 1.3391903842601514
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.1929600015282631,
+            "zipserv_ms": 0.38278400897979736,
+            "speedup": 0.5038350356380487
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.1980160027742386,
+            "zipserv_ms": 0.16950400173664093,
+            "speedup": 1.164621504936036
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.1977279931306839,
+            "zipserv_ms": 0.3944000005722046,
+            "speedup": 0.5011753068846381
+          }
+        },
+        {
+          "tokens": 2,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.13780799508094788,
+            "zipserv_ms": 0.1623999997973442,
+            "speedup": 0.8959815711965204
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.14857599884271622,
+            "zipserv_ms": 0.35891200602054596,
+            "speedup": 0.4136765078964054
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.1419840008020401,
+            "zipserv_ms": 0.18809600174427032,
+            "speedup": 0.7519064611864885
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.15296000242233276,
+            "zipserv_ms": 0.3758080005645752,
+            "speedup": 0.4147901831269281
+          }
+        },
+        {
+          "tokens": 3,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.138544000685215,
+            "zipserv_ms": 0.16198399662971497,
+            "speedup": 0.8843338270994415
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.1515200063586235,
+            "zipserv_ms": 0.36049599945545197,
+            "speedup": 0.41166379970604106
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.14508800208568573,
+            "zipserv_ms": 0.1878719925880432,
+            "speedup": 0.7638140232295634
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.1504639983177185,
+            "zipserv_ms": 0.3683199882507324,
+            "speedup": 0.4120224176813529
+          }
+        },
+        {
+          "tokens": 4,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.145456001162529,
+            "zipserv_ms": 0.16312000155448914,
+            "speedup": 0.9024031045425338
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.16254399716854095,
+            "zipserv_ms": 0.3630240112543106,
+            "speedup": 0.44397416857881467
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.14483200013637543,
+            "zipserv_ms": 0.18704000115394592,
+            "speedup": 0.7579969779978748
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.1488959938287735,
+            "zipserv_ms": 0.3709760010242462,
+            "speedup": 0.40136287365673007
+          }
+        },
+        {
+          "tokens": 7,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.1451840028166771,
+            "zipserv_ms": 0.15467200428247452,
+            "speedup": 0.940622672024798
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.1491839960217476,
+            "zipserv_ms": 0.3644479960203171,
+            "speedup": 0.4159157745057734
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.14921599626541138,
+            "zipserv_ms": 0.18828800320625305,
+            "speedup": 0.7557625586110913
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.14953599870204926,
+            "zipserv_ms": 0.37727999687194824,
+            "speedup": 0.3960169308123642
+          }
+        },
+        {
+          "tokens": 8,
+          "fused_eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fused_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "fallback_graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fused": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_fallback": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "basis": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_fused_vs_dense": {
+            "dense_ms": 0.1422239989042282,
+            "zipserv_ms": 0.1608320027589798,
+            "speedup": 0.8919600737091583
+          },
+          "graph_fallback_vs_dense": {
+            "dense_ms": 0.1475519984960556,
+            "zipserv_ms": 0.36207999289035797,
+            "speedup": 0.409175929281545
+          },
+          "eager_fused_vs_dense": {
+            "dense_ms": 0.14876799285411835,
+            "zipserv_ms": 0.17856000363826752,
+            "speedup": 0.8291739987177538
+          },
+          "eager_fallback_vs_dense": {
+            "dense_ms": 0.14854399859905243,
+            "zipserv_ms": 0.3734079897403717,
+            "speedup": 0.3978061602332991
+          }
+        }
+      ]
+    }
+  ],
+  "split_k": 1,
+  "tokens": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    8
+  ],
+  "gates": {
+    "decoded_weight_bits_exact": true,
+    "maximum_relative_l2": 0.001,
+    "fallback_output_bits_exact": true,
+    "replay_allocation_growth_bytes": 0
+  },
+  "code_sha256": {
+    "diagnose_bf16_small_batch.py": "264b6a47c767c4b923279add239f2c0f2c41dca6d9ae87824b74b157cb6fd7cd",
+    "bf16_prefetch.py": "95bd2b044e8585b5cc7827aeaaca8df99300dc66ef482b52eca39f9c2eabbd9d",
+    "prepare_bf16_attention.py": "6575222a0b43bffae2e9bc83b1c83f7b97d51970f7b68993f46c6634c21481d5",
+    "diagnose_bf16_kda.py": "2e2d3af8a62c4bdc73b6dc11aa7df6f8c965463ceb6ad164124425f34f398b6b"
+  },
+  "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+  "prepared_sha256": "9511784249f49a84633d74fb1104429970c6b954d686fa26af3111c91ef3afce",
+  "limits": [
+    "Existing layer-0/rank-0 KDA source projections; no adapter policy change.",
+    "Random and basis activations; not captured model activations.",
+    "All three representations coexist only for this component comparison.",
+    "Graph/event component times are not request-level throughput.",
+    "TP collectives, other layers and whole-model quality remain separate gates."
+  ],
+  "passed": true,
+  "seconds": 6.8786418850068,
+  "cuda_peak_bytes": 348248064,
+  "source_report_sha256": "392e7461b167dc451db80b8965f33651b347ec0cbf71c0f98f9de956f62bc8ac",
+  "guard": {
+    "phase": "complete_idle",
+    "attempts": 1,
+    "production_stopped": false,
+    "interrupted_attempts": 0
+  }
+}

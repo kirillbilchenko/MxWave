@@ -1,0 +1,76 @@
+"""Freeze the prospective actual-operand comparison before any measured native run."""
+from __future__ import annotations
+import ast
+import hashlib
+import json
+import pathlib
+import shutil
+import tarfile
+import time
+
+base = pathlib.Path(__file__).parent
+src = base / 'actual-source'
+assert not src.exists()
+src.mkdir()
+prepared = json.loads(pathlib.Path('/private/tmp/mxwave-prefill-budget-v3/prepared.json').read_bytes())
+plan = {
+    'revision': 'nativeactualv3', 'frozen_epoch': time.time(), 'rank': 1,
+    'model': 'INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound',
+    'source_revision': '35d1b0d5cb4a0db075fd2749c897e970dc15bfa5',
+    'layer': 23, 'experts': 288, 'topk': 8, 'hidden': 4096, 'intermediate_per_rank': 1024,
+    'tokens': [1, 8, 16, 256], 'activation': 'silu', 'swiglu_limit': 10.0,
+    'operand_source': 'prefillbudgetv3 stock eager calls after all model measurements',
+    'reference': 'qualified current Marlin dispatcher with exact aligned scale compression',
+    'candidate': 'FlashInfer SM12x MXFP8 activation / MXFP4 weight routed expert block',
+    'flashinfer_commit': 'f64b4ba8762ded12a4f4b9a2092974c9a395e7ca',
+    'weight_bits_changed': False,
+    'native_FC1_projection_order': ['up_proj','gate_proj'],
+    'current_FC1_projection_order': ['gate_proj','up_proj'],
+    'weight_and_scale_rows_permuted_together': True,
+    'candidate_scale_policy': 'same exact aligned-nibble codec; reconstruct reusable raw scales inside each measured invocation; preserve raw fallback if unsupported',
+    'timed_scope': ['scale reconstruction', 'routing from actual top-k IDs and weights',
+                    'activation quantization', 'FC1', 'clamped SILU and multiply',
+                    'activation requantization', 'FC2', 'expert reduction'],
+    'excluded_scope': ['router logits and top-k selection', 'TP all-reduce',
+                       'shared expert', 'other model layers', 'one-time loading and JIT'],
+    'current_replay_must_bitwise_match_captured_output': True,
+    'self_repeat_runs_per_arm': 20, 'retain_every_repeat_output': True,
+    'trials_per_arm': 16, 'replays_per_trial': 40, 'trial_order': 'alternating AB/BA',
+    'control_max_half_median_drift_fraction': .02,
+    'layer_time_reduction_required_fraction': .15,
+    'required_performance_shapes': [8, 16],
+    'numerics': 'report component error and repeat noise; no conversion from component error to full-model KL',
+    'full_model_KL_limit': 1e-5, 'full_model_absolute_mean_NLL_limit': 1e-4,
+    'component_result_alone_does_not_authorize_promotion': True,
+    'memory': 'report both persistent layouts and all reusable/graph scratch; simultaneous benchmark allocations are not deployment memory',
+    'CUDA_limit_GiB': 7, 'container_memory_GiB': 12, 'container_timeout_seconds': 900,
+    'outage_deadline_seconds': 2400, 'independent_original_service_restoration_watchdog': True,
+    'telemetry': 'SM/memory clocks, temperature, power and pstate before/after every arm trial',
+    'profiles': 'one retained CUDA graph replay per arm for each declared shape',
+    'baseline_bindings': prepared['bindings'],
+}
+(src/'plan.json').write_text(json.dumps(plan,indent=2)+'\n')
+for name in ['benchmark_native_experts.py','run_native_actual.py','verify_native_actual.py',
+             'check_actual_verifier.py','actual-verifier-CPU-check.json','check_actual_layout.py','actual-layout-CPU-check.json']:
+    p=base/name
+    if p.suffix=='.py': ast.parse(p.read_text())
+    shutil.copyfile(p,src/name)
+shutil.copytree(base/'upstream-flashinfer',src/'upstream-flashinfer',ignore=shutil.ignore_patterns('__pycache__'))
+original=json.loads((base/'component/source-manifest.json').read_bytes())
+original={r['path']:r['sha256']for r in original if r['path'].startswith('upstream-flashinfer/')}
+actual={str(p.relative_to(src)):hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted((src/'upstream-flashinfer').rglob('*')) if p.is_file()}
+assert actual==original,'Dependency copies changed since the executed compatibility probe'
+manifest={str(p.relative_to(src)):hashlib.sha256(p.read_bytes()).hexdigest()
+          for p in sorted(src.rglob('*'))if p.is_file()}
+(src/'source-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+archive=base/'actual-source.tar.gz'
+with tarfile.open(archive,'w:gz') as tf:
+    for p in sorted(src.rglob('*')):
+        if p.is_file():tf.add(p,arcname=str(p.relative_to(src)),recursive=False)
+freeze=dict(source_files=len(manifest),upstream_files=len(actual),
+            source_manifest_sha256=hashlib.sha256((src/'source-manifest.json').read_bytes()).hexdigest(),
+            archive_bytes=archive.stat().st_size,archive_sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),
+            plan_sha256=hashlib.sha256((src/'plan.json').read_bytes()).hexdigest())
+(base/'actual-source-freeze.json').write_text(json.dumps(freeze,indent=2)+'\n')
+print(json.dumps(freeze))

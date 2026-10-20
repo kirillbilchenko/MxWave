@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "control_reused_from": "mtppilotv2",
+  "target_operation_sources_unchanged": true,
+  "verified_payloads": 338,
+  "source_files": 173,
+  "controller_phase": "failed_restored",
+  "original_identities_restored": true,
+  "original_health": 200,
+  "quality_qualified": false,
+  "measurement_completed": false,
+  "retained_error": "RuntimeError('Dispatch comparison client failed; retain partial report and logs')",
+  "control_timed_requests": 10,
+  "control_timed_tokens": 640,
+  "control_workloads": [
+    {
+      "prompt_tokens": 256,
+      "median_tps": 16.76803457536886
+    },
+    {
+      "prompt_tokens": 2048,
+      "median_tps": 13.961098748705416
+    }
+  ],
+  "control_repeat": {
+    "reference": "control-a",
+    "candidate": "control-b",
+    "decode_steps": 48,
+    "expected_decode_steps": 48,
+    "all_generated_ids_match": true,
+    "mean_decode_kl": 1.1901962e-05,
+    "mean_decode_nll_difference": 2.29481e-05,
+    "passed": false
+  },
+  "archive_sha256": "90428f9bc31f8e83f35253ec9948afc07352675b6e933ee01403076c10e985e6",
+  "archive_bytes": 46478415,
+  "cross_host_review_bytes_equal": true,
+  "restoration_finished_utc": "2026-10-18T05:50:54.062142+00:00",
+  "native_mtp_model_loading_completed": true,
+  "mtp_timed_trials": 0,
+  "mtp_inference_tested": false,
+  "failure_stage": "untimed draft loader report before source-byte checks or warmup",
+  "failure_cause": "Report wrongly required one BF16 NoPE padding event; this checkpoint has zero rope rows.",
+  "checkpoint_geometry": {
+    "q_rank": 1536,
+    "kv_rank": 512,
+    "rope_rows": 0,
+    "hidden_size": 4096,
+    "fused_weight_shape": [
+      2048,
+      4096
+    ]
+  },
+  "source_config_sha256": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198",
+  "cpu_loader_v3_scope_correction": "The 64-rope-row projection is an artificial fixture; actual checkpoint requires no padding.",
+  "next_validation": "Check declared checkpoint geometry and all source bits, including zero-rope geometry, before any next GPU launch.",
+  "evidence_local": "/private/tmp/mxwave-mtp-retry-v1"
+}

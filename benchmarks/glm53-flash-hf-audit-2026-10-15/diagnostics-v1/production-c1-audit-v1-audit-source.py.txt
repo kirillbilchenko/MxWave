@@ -1,0 +1,24 @@
+import pathlib,json,hashlib,struct,resource,time,os
+resource.setrlimit(resource.RLIMIT_AS,(256*1024**2,256*1024**2))
+resource.setrlimit(resource.RLIMIT_CPU,(120,120))
+os.nice(10)
+r=pathlib.Path('/home/kirya/local-spark/models/glm-5.3-flash/derived/glm-quant-mix/lossless8')
+index=json.loads((r/'model.safetensors.index.json').read_bytes())['weight_map']
+expected={'model.language_model.embed_tokens.weight:0': 'c21eff0e5e9082aa49ef691a6a16c02ba9d3acf0b05086a734850ff3ef9034a6', 'lm_head.weight:0': '39d08c9cb373c189c4e6faa2061f45d90923549c7dac53db35c73ab20ac3bb00', 'model.language_model.embed_tokens.weight:1': '9cbe8f6742566eadb02dd778cde6235ebce6b035a421298f1c230efd3bd022ea', 'lm_head.weight:1': 'b4ee0f3ed236614ba6daa491f93bfbc5684022a954fa9b0e71eb8f0afee89877'}
+out={'status':'running','started_epoch':time.time(),'source':'existing ModelOpt vocabulary','read_only':True,'tensors':[]}
+for key in ['lm_head.weight','model.language_model.embed_tokens.weight']:
+ p=r/index[key]
+ with p.open('rb') as f:
+  n=struct.unpack('<Q',f.read(8))[0];assert n<64*1024**2
+  header=json.loads(f.read(n));t=header[key]
+  assert t['dtype']=='BF16' and t['shape']==[154880,4096],(key,t)
+  start,end=t['data_offsets'];size=end-start;assert size==154880*4096*2 and 8+n+end<=p.stat().st_size
+  hashes=[]
+  for rank in (0,1):
+   f.seek(8+n+start+rank*size//2);remaining=size//2;h=hashlib.sha256()
+   while remaining:
+    b=f.read(min(1024**2,remaining));assert b;h.update(b);remaining-=len(b)
+   digest=h.hexdigest();hashes.append({'rank':rank,'sha256':digest,'matches_CT_source':digest==expected[key+':'+str(rank)]})
+  out['tensors'].append({'key':key,'shard':p.name,'dtype':t['dtype'],'shape':t['shape'],'bytes':size,'ranks':hashes})
+out.update(status='complete',finished_epoch=time.time(),maximum_RSS_KiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+print(json.dumps(out))

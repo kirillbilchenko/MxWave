@@ -1,0 +1,98 @@
+"""Join verified numerical, timing, admission, resource and trace evidence without selection."""
+from __future__ import annotations
+import hashlib,json,math,pathlib,statistics,time
+BASE=pathlib.Path(__file__).parent
+
+def sha(p):
+    with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+    names=['cross-host-verification.json','compact-review.json','admission-latency-review.json',
+           'fresh-profile-review.json','resource-review.json','jit-window-review.json']
+    proof,review,latency,profiles,resource,jit=[json.loads((BASE/name).read_bytes()) for name in names]
+    residual=json.loads((BASE/'remaining-latency-review-v2.json').read_bytes())
+    assert residual['status']=='complete' and residual['archive_sha256']==proof['archive_sha256']
+    names.append('remaining-latency-review-v2.json')
+    assert proof['status']=='passed' and proof['measurement_complete']
+    assert review['timed_groups']==latency['timed_groups']==72
+    assert review['timed_requests']==latency['timed_requests']==792
+    assert proof['worker_profiles']==len(profiles['profiles'])==16
+    assert len(review['numerical_comparisons'])==94
+    prior_numerical=json.loads((BASE/'paired-numerical-progress.json').read_bytes())
+    assert sha(BASE/'evidence/results/quality-model-review.json')==prior_numerical['report_sha256']
+    for old,new in zip(prior_numerical['numerical_comparisons'],review['numerical_comparisons'],strict=True):
+        assert old['reference']==new['reference'] and old['candidate']==new['candidate']
+        assert old['passed']==new['passed']
+        for key in ('mean_decode_kl','mean_decode_nll_difference'):
+            assert math.isclose(old[key],new[key],rel_tol=1e-10,abs_tol=1e-12)
+    cases=[]
+    for count in (1,16):
+        rows=[r for r in review['numerical_comparisons'] if f'-c{count}-' in r['reference']]
+        cross=[r for r in rows if r['reference'].split('-')[0]!=r['candidate'].split('-')[0]]
+        same=[r for r in rows if r not in cross]
+        cases.append({'concurrency':count,'comparisons':len(rows),'cross_arm_comparisons':len(cross),
+            'cross_arm_KL_min':min(r['mean_decode_kl'] for r in cross),
+            'cross_arm_KL_max':max(r['mean_decode_kl'] for r in cross),
+            'cross_arm_mean_NLL_min':min(r['mean_decode_nll_difference'] for r in cross),
+            'cross_arm_mean_NLL_max':max(r['mean_decode_nll_difference'] for r in cross),
+            'all_within_arm_and_cross_window_repeats_KL_NLL_zero':all(r['mean_decode_kl']==0 and r['mean_decode_nll_difference']==0 for r in same),
+            'all_within_arm_and_cross_window_rows_bitwise_equal':all(sum(r['bitwise_equal_full_vocabulary_rows'].values())==64 for r in same),
+            'all_groupings_match':all(r['actual_model_grouping_equal'] for r in rows),
+            'numerical_gate_passed':all(r['passed'] for r in rows)})
+    profile_summaries=[]
+    for p in profiles['profiles']:
+        prefill=[f for f in p['forwards'] if f['has_prefill']]
+        decode=[f for f in p['forwards'] if not f['has_prefill'] and f['physical_rows']==16]
+        profile_summaries.append({'arm':p['arm'],'rank':p['rank'],'window_ms':p['window_ms'],'kind':p['kind'],
+            'prefill_forwards':len(prefill),'prefill_rows':[f['actual_rows'] for f in prefill],
+            'prefill_requests':[f['requests'] for f in prefill],
+            'prefill_reconstruction_calls':sum(f['groups'].get('bf16_weight_decode',{}).get('calls',0) for f in prefill),
+            'prefill_reconstruction_sum_ms':sum(f['groups'].get('bf16_weight_decode',{}).get('duration_sum_us',0) for f in prefill)/1000,
+            'prefill_kernel_span_sum_ms':sum(f['first_to_last_kernel_span_us'] for f in prefill)/1000,
+            'full_size_decode_forwards':len(decode),'full_size_decode_graph_launches':sum(f['graph_launches'] for f in decode),
+            'median_full_size_decode_kernel_span_ms':statistics.median(f['first_to_last_kernel_span_us'] for f in decode)/1000,
+            'profile_file_sha256':p['sha256']})
+    comparisons=[]
+    for window in (3,10):
+        for case in ('c1-short','c16-short'):
+            stock,compressed=[next(r for r in latency['summaries'] if (r['arm'],r['case'],r['window_ms'])==(arm,case,window)) for arm in ('control','candidate')]
+            comparisons.append({'case':case,'window_ms':window,'trials_per_arm':stock['trials'],
+                'stock_TPS':stock['median_tps'],'compressed_TPS':compressed['median_tps'],
+                'TPS_change_percent':100*(compressed['median_tps']/stock['median_tps']-1),
+                'stock_TTFT_seconds':stock['median_ttft_seconds'],'compressed_TTFT_seconds':compressed['median_ttft_seconds'],
+                'TTFT_gap_ms':1000*(compressed['median_ttft_seconds']-stock['median_ttft_seconds']),
+                'TTFT_change_percent':100*(compressed['median_ttft_seconds']/stock['median_ttft_seconds']-1)})
+    for previous in sorted(BASE.glob('preliminary-*.json')):
+        d=json.loads(previous.read_bytes())
+        for r in d['summaries']:
+            final=next(t for t in latency['summaries'] if all(t[k]==r[k] for k in ('arm','case','window_ms')))
+            assert final['median_tps']==r['median_TPS'] and final['median_ttft_seconds']==r['median_TTFT_seconds']
+    for previous in sorted(BASE.glob('profile-progress-*.json')):
+        for row in json.loads(previous.read_bytes())['profiles']:
+            final=next(p for p in profile_summaries if p['kind']=='ordinary' and all(p[k]==row[k] for k in ('arm','rank','window_ms')))
+            for key in ('prefill_forwards','prefill_rows','prefill_requests','full_size_decode_forwards'):
+                assert final[key]==row[key],(key,final[key],row[key])
+    out={'status':'complete','created_epoch':time.time(),'source_sha256':sha(pathlib.Path(__file__)),
+        'inputs_sha256':{name:sha(BASE/name) for name in names},'archive_sha256':proof['archive_sha256'],
+        'numerical':cases,'timing_comparisons':comparisons,'admission_summaries':latency['summaries'],
+        'policy_comparisons':review['policy_comparisons'],'policy_checks':review['policy_checks'],
+        'policy_gate_passed':review['policy_gate_passed'],'all_timed_generated_ids_match':proof['all_timed_generated_ids_match'],
+        'timed_token_sequence_pairs':proof['timed_token_sequence_pairs'],
+        'historical_compression_speed_gate_by_window':review['compression_speed_gate_by_window'],
+        'CUDA_saving_GiB_TP2':review['combined_cuda_saving_bytes']/1024**3,
+        'candidate_extra_RSS_MiB_TP2':{k:-v['VmRSS']/1024**2 for k,v in resource['control_minus_candidate']['process_memory_bytes'].items()},
+        'telemetry_by_arm_and_window':{a:resource['arms'][a]['timing_boundary_telemetry_by_case'] for a in ('control','candidate')},
+        'no_recognized_JIT_event_overlaps_timing':jit['no_recognized_JIT_event_overlaps_timed_envelopes'],
+        'profile_summaries':profile_summaries,'preliminary_summaries_reconciled_to_verified_archive':True,
+        'supplementary_C16_request_metrics':residual['supplementary_all_request_metrics'],
+        'admission_collection_limit':residual['admission_limit'],
+        'frozen_headline_TTFT_metric_unchanged':True,
+        'all_original_failures_preserved':True,'configuration_promoted':False,'further_compression_experiments_planned':False,
+        'limits':['Short C1/C16 were measured; other concurrency and prompt lengths are not requalified.',
+            'Profiles are separate from ordinary timing and kernel sums are not API latency.',
+            'A policy-gate pass does not by itself establish that the compressed-versus-stock TTFT gap is small.',
+            'Model loads have fixed stock-then-compressed order.','Finite numerical qualification is not universal bitwise equivalence.']}
+    with(BASE/'final-findings.json').open('x') as f:json.dump(out,f,indent=2)
+    print(json.dumps({k:out[k] for k in ('status','numerical','timing_comparisons','policy_gate_passed','policy_checks','CUDA_saving_GiB_TP2')}))
+
+if __name__=='__main__':main()

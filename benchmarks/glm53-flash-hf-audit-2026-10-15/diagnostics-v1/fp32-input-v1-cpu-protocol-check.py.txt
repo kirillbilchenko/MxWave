@@ -1,0 +1,21 @@
+"""Reject corrupt fallback bytes and invented equality before any GPU integration run."""
+import copy,hashlib,importlib.util,json,pathlib,sys,tempfile
+b=pathlib.Path(__file__).parent;sys.path.insert(0,str(b/'overlay/src'))
+spec=importlib.util.spec_from_file_location('review',b/'verify.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+with tempfile.TemporaryDirectory(prefix='fp32-input-review-') as directory:
+ r=pathlib.Path(directory);data=b'\x80\x3f'*(17*12576);h=hashlib.sha256(data).hexdigest()
+ for name in ('actual','qualified'):(r/(name+'.bf16')).write_bytes(data)
+ records={name:{'path':name+'.bf16','bytes':len(data),'shape':[17,12576],'sha256':h} for name in ('actual','qualified')}
+ prior={'checks':[{'tokens':n,'activation':a,'split':2,'artifacts':{'candidate':{'sha256':h}}} for n,a in ((1,'787'),(8,'787'),(8,'797'))]}
+ case={'name':'kda-input-l0-r0','known':[{'tokens':1,'activation':'787','parent_sha256':h,'output_sha256':h,'graph_output_sha256':h}],'fallback':[{'tokens':17,**records,'graph_output_sha256':h}],'compiled':[],'compiled_chain':None,'stream_stress':{'parent_sha256':[h,h],'output_sha256':[h,h]}}
+ v.verify_case(r,case,prior)
+ (r/'actual.bf16').write_bytes(b'\0\0'+data[2:])
+ try:v.verify_case(r,case,prior)
+ except AssertionError:corruption=True
+ else:raise AssertionError('corrupt fallback accepted')
+ records['actual']['sha256']=hashlib.sha256((r/'actual.bf16').read_bytes()).hexdigest()
+ try:v.verify_case(r,case,prior)
+ except AssertionError:unequal=True
+ else:raise AssertionError('unequal native fallback accepted')
+result={'status':'passed','raw_fallback_recomputation_passed':True,'corrupt_payload_rejected':corruption,'invented_equality_rejected':unequal,'verifier_sha256':hashlib.sha256((b/'verify.py').read_bytes()).hexdigest(),'script_sha256':hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()}
+(b/'cpu-protocol-check.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

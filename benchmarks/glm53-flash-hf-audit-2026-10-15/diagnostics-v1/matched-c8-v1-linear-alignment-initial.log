@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/private/tmp/mxwave-matched-c8-v1/analyze_linear_alignment.py", line 165, in <module>
+    main()
+    ~~~~^^
+  File "/private/tmp/mxwave-matched-c8-v1/analyze_linear_alignment.py", line 100, in main
+    traces[key] = extract(meta, hashes)
+                  ~~~~~~~^^^^^^^^^^^^^^
+  File "/private/tmp/mxwave-matched-c8-v1/analyze_linear_alignment.py", line 82, in extract
+    assert all(a['ts'] + a['dur'] <= b['ts'] + 0.1
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               for a, b in zip(ops, ops[1:]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

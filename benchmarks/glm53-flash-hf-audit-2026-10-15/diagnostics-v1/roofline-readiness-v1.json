@@ -1,0 +1,181 @@
+{
+  "status": "roofline_not_yet_measured",
+  "service_interrupted": false,
+  "operation_timing_source": {
+    "file": "cohort-dispatch-model-v2-review.json",
+    "sha256": "feede417f0e7721e0cf260ead4b419d09a153812aa2b095f807b6fcac11d7185",
+    "scope": "Earlier one-resident-candidate graph/eager comparison; three profiled M4 forwards/rank, not the full GSM8K workload."
+  },
+  "operation_timings": {
+    "graph-qualified-r0": {
+      "shape": [
+        4,
+        0,
+        4
+      ],
+      "samples": 3,
+      "median_gpu_forward_ms": 78.825731,
+      "kernel_sum_ms_by_operation": {
+        "attention": 0.38070400000000004,
+        "bf16_compressed_linear": 23.946827999999996,
+        "bf16_dense_linear": 9.469314,
+        "communication": 1.797088,
+        "embedding_lookup": 0.009248,
+        "generic_marlin_linear": 4.4451849999999995,
+        "mhc": 1.6872959999999997,
+        "other": 3.044033000000002,
+        "other_gemm": 1.007617,
+        "recurrent": 1.7209920000000005,
+        "routed_expert_gemm": 32.05710400000002,
+        "routing_activation": 0.7269760000000003,
+        "stable_expert_order": 0.40096
+      },
+      "median_uncovered_all_streams_ms": 1.7397728632812504,
+      "source_trace_sha256": "7ff8ea0258ddd1b85ed7493f558bdbfdb2ea4932aeffe55843c22fd3b551da70"
+    },
+    "graph-qualified-r1": {
+      "shape": [
+        4,
+        0,
+        4
+      ],
+      "samples": 3,
+      "median_gpu_forward_ms": 78.71296799999999,
+      "kernel_sum_ms_by_operation": {
+        "attention": 0.37142400000000003,
+        "bf16_compressed_linear": 21.609312999999997,
+        "bf16_dense_linear": 8.921760999999998,
+        "communication": 6.053472999999999,
+        "embedding_lookup": 0.008416,
+        "generic_marlin_linear": 4.205536,
+        "mhc": 1.5235199999999998,
+        "other": 2.7708800000000067,
+        "other_gemm": 0.7896000000000002,
+        "recurrent": 1.6162559999999997,
+        "routed_expert_gemm": 31.679492,
+        "routing_activation": 0.6299840000000001,
+        "stable_expert_order": 0.435424
+      },
+      "median_uncovered_all_streams_ms": 1.6595175605468684,
+      "source_trace_sha256": "35fec5f4d4a629d6adb757fcb0a57cef8b16842fd39c0719c436ae993b941ecd"
+    }
+  },
+  "counter_availability": {
+    "status": "offline_metric_definitions_inspected",
+    "tool": "Nsight Compute 2025.3.1",
+    "chip": "gb20b",
+    "query": [
+      "--query-metrics",
+      "--chips",
+      "gb20b",
+      "--query-metrics-mode",
+      "all"
+    ],
+    "runtime_collection_attempted": false,
+    "service_interrupted": false,
+    "definition_file_sha256": "2b52134bdbeb9774347699096f5c234262f232bbf75f8e247604387a7a810c9b",
+    "definition_file_bytes": 93373481,
+    "defined_metrics": 143203,
+    "requested_metric_defined": {
+      "dram__bytes_read.sum": false,
+      "dram__bytes_write.sum": false,
+      "dram__bytes.sum": false,
+      "dram__throughput.avg.pct_of_peak_sustained_elapsed": false,
+      "gpu__time_duration.sum": true,
+      "lts__t_bytes.sum": true,
+      "lts__t_sectors_op_read.sum": true,
+      "lts__t_sectors_op_write.sum": true,
+      "lts__t_sector_hit_rate.pct": true,
+      "sm__throughput.avg.pct_of_peak_sustained_elapsed": true,
+      "sm__pipe_tensor_cycles_active.avg.pct_of_peak_sustained_elapsed": true,
+      "smsp__inst_executed.sum": true,
+      "smsp__warps_active.avg.pct_of_peak_sustained_active": true
+    },
+    "additional_relevant_metric_names": [
+      "lts__t_sectors_aperture_device_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_dot_alu_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_dot_cas_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_atom_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_membar_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_membar_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_membar_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_membar_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_membar_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_read_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_read_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_read_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_read_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_read_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_red_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_write_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_write_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_write_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_write_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_device_op_write_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_dot_alu_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_dot_cas_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_atom_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_membar_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_membar_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_membar_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_membar_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_membar_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_read_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_read_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_read_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_read_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_read_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_red_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_write_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_write_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_write_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_write_evict_normal_lookup_miss.sum",
+      "lts__t_sectors_aperture_peer_op_write_lookup_miss.sum",
+      "lts__t_sectors_aperture_sysmem_evict_first_lookup_miss.sum",
+      "lts__t_sectors_aperture_sysmem_evict_last_lookup_miss.sum",
+      "lts__t_sectors_aperture_sysmem_evict_normal_demote_lookup_miss.sum",
+      "lts__t_sectors_aperture_sysmem_evict_normal_lookup_miss.sum"
+    ],
+    "limits": [
+      "Offline chip definitions are not successful on-device counter collection.",
+      "No dram__ metrics in this installed definition; L2 request traffic is not measured LPDDR traffic.",
+      "Host on-device metric query reported a driver Unknown Error while the service stayed running; this does not establish a hardware limitation."
+    ]
+  },
+  "missing": [
+    "Per-operation L2 byte counters on actual serving shapes and routing.",
+    "Sustained memory and actual kernel arithmetic ceilings on both Sparks.",
+    "FLOPs or MMA instruction geometry per representative kernel, with codec integer work separate.",
+    "Critical-path/communication attribution, including peer waiting and actual collective payloads.",
+    "Paired raw/compressed counter windows with matching geometry, cache regime and graph mode."
+  ],
+  "limits": [
+    "Times are sums of kernel durations and may overlap; they are not an additive wall-time partition.",
+    "Do not sum rank times; TP2 step latency follows dependencies across both ranks.",
+    "Memory-capacity saving is not measured byte-traffic saving.",
+    "L2 requests or miss sectors are not direct LPDDR byte traffic.",
+    "Offline metric availability is not an on-device counter collection.",
+    "No roofline efficiency percentage or device-peak inference TPS can yet be asserted."
+  ],
+  "official_references": {
+    "spark_hardware": "https://docs.nvidia.com/dgx/dgx-spark/hardware.html",
+    "roofline_method": "https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline-charts"
+  }
+}

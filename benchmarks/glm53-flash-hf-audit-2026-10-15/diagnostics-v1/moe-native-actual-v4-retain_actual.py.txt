@@ -1,0 +1,54 @@
+"""Download and independently verify the exact retained component archive on Mac."""
+from __future__ import annotations
+import hashlib
+import json
+import math
+import pathlib
+import shlex
+import subprocess
+import sys
+import tarfile
+
+base=pathlib.Path(__file__).parent
+root='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+ssh=['ssh','-o','BatchMode=yes','spark']
+receipt=json.loads(subprocess.check_output([*ssh,shlex.join(['cat',root+'/moe-native-actual-v4-evidence-check.json'])],timeout=30))
+assert receipt['status']=='complete'and receipt['verified_after_pack']and receipt['restored_health']==200
+(base/'actual-spark-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+archive=base/'actual-evidence.tar.gz'
+with archive.open('xb')as f:subprocess.run([*ssh,shlex.join(['cat',receipt['archive']])],stdout=f,check=True,timeout=180)
+with archive.open('rb')as f:assert hashlib.file_digest(f,'sha256').hexdigest()==receipt['archive_sha256']
+dest=base/'actual-evidence';dest.mkdir()
+with tarfile.open(archive)as tf:
+    members=tf.getmembers();assert sum(m.size for m in members)<512*1024**2
+    assert len({m.name for m in members})==len(members)
+    assert all(m.isfile()and not pathlib.PurePosixPath(m.name).is_absolute()and '..'not in pathlib.PurePosixPath(m.name).parts for m in members)
+    tf.extractall(dest,filter='data')
+for row in json.loads((dest/'evidence-inventory.json').read_bytes())['files']:
+    p=dest/row['path'];assert p.stat().st_size==row['bytes']
+    with p.open('rb')as f:assert hashlib.file_digest(f,'sha256').hexdigest()==row['sha256']
+freeze=json.loads((base/'actual-source-freeze.json').read_bytes())
+assert hashlib.sha256((dest/'source-manifest.json').read_bytes()).hexdigest()==freeze['source_manifest_sha256']
+out=base/'actual-mac-independent-review.json'
+subprocess.run([sys.executable,'-B',str(dest/'source/verify_native_actual.py'),
+    '--root',str(dest/'rank1'),'--operands',str(dest/'operands'),'--output',str(out)],check=True,timeout=180)
+spark=json.loads((dest/'spark-independent-review.json').read_bytes());mac=json.loads(out.read_bytes());maximum=[0.0]
+def compare(a,b):
+    assert type(a)==type(b)
+    if isinstance(a,dict):
+        assert a.keys()==b.keys()
+        for key in a:compare(a[key],b[key])
+    elif isinstance(a,list):
+        assert len(a)==len(b)
+        for x,y in zip(a,b,strict=True):compare(x,y)
+    elif isinstance(a,float):
+        assert math.isclose(a,b,rel_tol=1e-10,abs_tol=1e-12),(a,b)
+        maximum[0]=max(maximum[0],abs(a-b))
+    else:assert a==b
+compare(spark,mac)
+proof=dict(status='passed',archive_sha256=receipt['archive_sha256'],payloads=receipt['payloads'],
+    all_decisions_identical=True,maximum_float64_difference=maximum[0],
+    evidence_complete=mac['evidence_complete'],high_concurrency_layer_time_gate_passed=mac['high_concurrency_layer_time_gate_passed'],
+    full_model_KL_qualified=False,full_model_memory_qualified=False,production_promotion=False)
+(base/'actual-cross-host-verification.json').write_text(json.dumps(proof,indent=2)+'\n')
+print(json.dumps(proof))

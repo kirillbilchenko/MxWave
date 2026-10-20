@@ -1,0 +1,865 @@
+{
+  "status": "complete",
+  "analysis_version": 2,
+  "experiment_type": "practical_repeat_diagnostic",
+  "qualification_attempted": false,
+  "quality_qualified": false,
+  "prior_experiment": "stablequalityv1",
+  "prior_strict_verdict_preserved": true,
+  "rounds_per_arm": 5,
+  "tasks_per_round": 34,
+  "plan_sha256": "a4d9501c36634eec41a538177538b5ae67bf29717f731b776bf9022dfda44dca",
+  "quality_protocol_sha256": "183608ad7e4dc9ebd0046f34997f2d0f76fa041dbb42027946c0eadcf7d03f60",
+  "allocated_cuda_bytes_after_inference": {
+    "control": 188834497536,
+    "candidate": 178776583680
+  },
+  "limits": [
+    "All five rounds are retained; no best round is selected.",
+    "Tasks and sampler seed are unchanged; temporal repetitions are not independent samples.",
+    "No throughput, new perplexity, numerical-floor or release qualification claim.",
+    "Baseline pass losses would demonstrate task instability, not prove harmless adapter drift.",
+    "The earlier strict failure cannot be converted into a pass by this diagnostic."
+  ],
+  "independent_verification": {
+    "status": "passed",
+    "verifier_sha256": "7a420bd354cf0bf0addf110c820eb51d9ee83838bf0ad6ece992c4d211121bfd",
+    "archives": [
+      {
+        "status": "complete",
+        "rank": 0,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/behavior-repeat-evidence-v1-rank0.tar.gz",
+        "bytes": 2754020,
+        "sha256": "1b343b841c98524103a49eef52d48d3a970912ef158f092a48d774c53624e8c8",
+        "files": 171,
+        "finished_epoch": 1792238205.9598923
+      },
+      {
+        "status": "complete",
+        "rank": 1,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/behavior-repeat-evidence-v1-rank1.tar.gz",
+        "bytes": 2405272,
+        "sha256": "934777bd9772854394ce9efc7bc375b3cee077de4f0a46f8e6a413d08b6f2b79",
+        "files": 126,
+        "finished_epoch": 1792238206.451802
+      }
+    ],
+    "payloads_verified": 297,
+    "source_groups_checked_in_cpu_audit_order": 672,
+    "source_files_checked_per_rank": 116,
+    "task_grades_recomputed": 340,
+    "raw_api_final_text_recomputed": true,
+    "original_service_restored_and_identities_match": true,
+    "analysis_compatibility_repair": {
+      "status": "recovered",
+      "analysis_version": 2,
+      "analysis_sha256": "ef9f09e8818e83d7e089c931e1296b2bf2983992f968883607e290105ab4de10",
+      "review_sha256": "e4e5669d1cd6fd4daf213cc5b01ef166e75c36e6e978af941009cc96ef72ea18",
+      "measurement_reruns": 0,
+      "frozen_source_modified": false,
+      "reason": "Frozen scorer predates inference_completed; recovery derives it from each raw API response",
+      "finished_epoch": 1792238211.2802114
+    },
+    "recovery_supplement": {
+      "status": "complete",
+      "files": 3,
+      "bytes": 17175,
+      "sha256": "f4c32eb7a7b3d5541ed29a57c16d28a7ece05714bfd8854933147fa0726ad089",
+      "original_archives_sha256": [
+        "1b343b841c98524103a49eef52d48d3a970912ef158f092a48d774c53624e8c8",
+        "934777bd9772854394ce9efc7bc375b3cee077de4f0a46f8e6a413d08b6f2b79"
+      ],
+      "reason": "CPU repair finalized after the first raw-data archive snapshot; originals remain immutable",
+      "measurement_reruns": 0,
+      "created_epoch": 1792238784.2778044
+    },
+    "code_receipts": "Source hashes/AST and isolated sandbox receipts checked; not reexecuted on Mac",
+    "frozen_review_sha256": "e4e5669d1cd6fd4daf213cc5b01ef166e75c36e6e978af941009cc96ef72ea18",
+    "temporal_repetitions_not_independent_new_questions": true
+  },
+  "independent_round_summary": {
+    "control": {
+      "strict_passes": [
+        30,
+        30,
+        31,
+        29,
+        32
+      ],
+      "total_strict_passes": 152,
+      "variable_pass_cases": [
+        "gsm8k_0361",
+        "gsm8k_0978",
+        "gsm8k_1133",
+        "slugify"
+      ],
+      "mean_strict_passes": 30.4
+    },
+    "candidate": {
+      "strict_passes": [
+        31,
+        29,
+        30,
+        30,
+        30
+      ],
+      "total_strict_passes": 150,
+      "variable_pass_cases": [
+        "gsm8k_0361",
+        "gsm8k_0978",
+        "gsm8k_1133",
+        "slugify"
+      ],
+      "mean_strict_passes": 30
+    },
+    "reference_always_pass_candidate_any_failure": []
+  },
+  "arms": {
+    "control": {
+      "strict_passes_by_round": [
+        30,
+        30,
+        31,
+        29,
+        32
+      ],
+      "completed_inference_by_round": [
+        34,
+        34,
+        34,
+        34,
+        34
+      ],
+      "per_case": [
+        {
+          "name": "constraints",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0062",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 5,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0176",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0248",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0335",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0361",
+          "kind": "math",
+          "strict_passes": 3,
+          "distinct_answer_hashes": 4,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0365",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0374",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0379",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0517",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0574",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 4,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0675",
+          "kind": "math",
+          "strict_passes": 0,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0812",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 4,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0896",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0978",
+          "kind": "math",
+          "strict_passes": 4,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0992",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1050",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1068",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1072",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1086",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1126",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1133",
+          "kind": "math",
+          "strict_passes": 1,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1136",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1153",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1202",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "json",
+          "kind": "json",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "json_types",
+          "kind": "json",
+          "strict_passes": 0,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "code",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": 5
+        },
+        {
+          "name": "retrieval_120",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "retrieval_400",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "slugify",
+          "kind": "code",
+          "strict_passes": 4,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": 5
+        },
+        {
+          "name": "tool_berlin",
+          "kind": "tool",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "tool_boston",
+          "kind": "tool",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "unicode_copy",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        }
+      ],
+      "within_arm_pairs": [
+        {
+          "round_a": 0,
+          "round_b": 1,
+          "a_pass_b_fail": [
+            "slugify"
+          ],
+          "b_pass_a_fail": [
+            "gsm8k_0361"
+          ],
+          "different_answer_count": 12
+        },
+        {
+          "round_a": 0,
+          "round_b": 2,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_0361"
+          ],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 0,
+          "round_b": 3,
+          "a_pass_b_fail": [
+            "gsm8k_0978"
+          ],
+          "b_pass_a_fail": [],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 0,
+          "round_b": 4,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_0361",
+            "gsm8k_1133"
+          ],
+          "different_answer_count": 15
+        },
+        {
+          "round_a": 1,
+          "round_b": 2,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "slugify"
+          ],
+          "different_answer_count": 10
+        },
+        {
+          "round_a": 1,
+          "round_b": 3,
+          "a_pass_b_fail": [
+            "gsm8k_0361",
+            "gsm8k_0978"
+          ],
+          "b_pass_a_fail": [
+            "slugify"
+          ],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 1,
+          "round_b": 4,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_1133",
+            "slugify"
+          ],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 2,
+          "round_b": 3,
+          "a_pass_b_fail": [
+            "gsm8k_0361",
+            "gsm8k_0978"
+          ],
+          "b_pass_a_fail": [],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 2,
+          "round_b": 4,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_1133"
+          ],
+          "different_answer_count": 15
+        },
+        {
+          "round_a": 3,
+          "round_b": 4,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_0361",
+            "gsm8k_0978",
+            "gsm8k_1133"
+          ],
+          "different_answer_count": 12
+        }
+      ],
+      "math_passes_by_round": [
+        21,
+        22,
+        22,
+        20,
+        23
+      ],
+      "math_total_passes": 108,
+      "functional_code_total_passes": 10,
+      "tool_total_passes": 10
+    },
+    "candidate": {
+      "strict_passes_by_round": [
+        31,
+        29,
+        30,
+        30,
+        30
+      ],
+      "completed_inference_by_round": [
+        34,
+        34,
+        34,
+        34,
+        34
+      ],
+      "per_case": [
+        {
+          "name": "constraints",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0062",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 5,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0176",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0248",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0335",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0361",
+          "kind": "math",
+          "strict_passes": 2,
+          "distinct_answer_hashes": 4,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0365",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0374",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0379",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0517",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0574",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0675",
+          "kind": "math",
+          "strict_passes": 0,
+          "distinct_answer_hashes": 4,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0812",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0896",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0978",
+          "kind": "math",
+          "strict_passes": 4,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_0992",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1050",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1068",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1072",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1086",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1126",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1133",
+          "kind": "math",
+          "strict_passes": 2,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1136",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1153",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "gsm8k_1202",
+          "kind": "math",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 3,
+          "code_functional_passes": null
+        },
+        {
+          "name": "json",
+          "kind": "json",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "json_types",
+          "kind": "json",
+          "strict_passes": 0,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "code",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": 5
+        },
+        {
+          "name": "retrieval_120",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "retrieval_400",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "slugify",
+          "kind": "code",
+          "strict_passes": 2,
+          "distinct_answer_hashes": 2,
+          "code_functional_passes": 5
+        },
+        {
+          "name": "tool_berlin",
+          "kind": "tool",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "tool_boston",
+          "kind": "tool",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        },
+        {
+          "name": "unicode_copy",
+          "kind": "exact",
+          "strict_passes": 5,
+          "distinct_answer_hashes": 1,
+          "code_functional_passes": null
+        }
+      ],
+      "within_arm_pairs": [
+        {
+          "round_a": 0,
+          "round_b": 1,
+          "a_pass_b_fail": [
+            "gsm8k_0361",
+            "gsm8k_1133",
+            "slugify"
+          ],
+          "b_pass_a_fail": [
+            "gsm8k_0978"
+          ],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 0,
+          "round_b": 2,
+          "a_pass_b_fail": [
+            "gsm8k_0361",
+            "slugify"
+          ],
+          "b_pass_a_fail": [
+            "gsm8k_0978"
+          ],
+          "different_answer_count": 9
+        },
+        {
+          "round_a": 0,
+          "round_b": 3,
+          "a_pass_b_fail": [
+            "gsm8k_1133",
+            "slugify"
+          ],
+          "b_pass_a_fail": [
+            "gsm8k_0978"
+          ],
+          "different_answer_count": 10
+        },
+        {
+          "round_a": 0,
+          "round_b": 4,
+          "a_pass_b_fail": [
+            "gsm8k_0361",
+            "gsm8k_1133"
+          ],
+          "b_pass_a_fail": [
+            "gsm8k_0978"
+          ],
+          "different_answer_count": 14
+        },
+        {
+          "round_a": 1,
+          "round_b": 2,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_1133"
+          ],
+          "different_answer_count": 10
+        },
+        {
+          "round_a": 1,
+          "round_b": 3,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "gsm8k_0361"
+          ],
+          "different_answer_count": 11
+        },
+        {
+          "round_a": 1,
+          "round_b": 4,
+          "a_pass_b_fail": [],
+          "b_pass_a_fail": [
+            "slugify"
+          ],
+          "different_answer_count": 11
+        },
+        {
+          "round_a": 2,
+          "round_b": 3,
+          "a_pass_b_fail": [
+            "gsm8k_1133"
+          ],
+          "b_pass_a_fail": [
+            "gsm8k_0361"
+          ],
+          "different_answer_count": 10
+        },
+        {
+          "round_a": 2,
+          "round_b": 4,
+          "a_pass_b_fail": [
+            "gsm8k_1133"
+          ],
+          "b_pass_a_fail": [
+            "slugify"
+          ],
+          "different_answer_count": 13
+        },
+        {
+          "round_a": 3,
+          "round_b": 4,
+          "a_pass_b_fail": [
+            "gsm8k_0361"
+          ],
+          "b_pass_a_fail": [
+            "slugify"
+          ],
+          "different_answer_count": 13
+        }
+      ],
+      "math_passes_by_round": [
+        22,
+        21,
+        22,
+        22,
+        21
+      ],
+      "math_total_passes": 108,
+      "functional_code_total_passes": 10,
+      "tool_total_passes": 10
+    }
+  },
+  "private_evidence_review_sha256": "5d7a60a8792bda5973de28e6e4bf594dbacb7c7acc42d50fa0c65ac3823ed3f4"
+}

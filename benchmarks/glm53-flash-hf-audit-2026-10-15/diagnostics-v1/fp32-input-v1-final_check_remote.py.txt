@@ -1,0 +1,13 @@
+import hashlib,json,pathlib,sys,time
+r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-input-v1-src'));import full_model_control as c
+s=json.loads((r/'fp32-input-v1-controller.json').read_bytes());launch=json.loads((r/'fp32-input-v1-launch.json').read_bytes());prepared=json.loads((r/'fp32-input-v1-prepared.json').read_bytes());proof=json.loads((r/'fp32-input-v1-evidence-check.json').read_bytes())
+assert s['phase']=='complete' and not s['service_paused'] and proof['status']=='complete'
+originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+assert c.health(8000) and all(x['State']['Running'] for x in originals) and [c.identity(x) for x in originals]==prepared['originals']
+for pid in (s['pid'],s['watchdog_pid'],launch['collector_pid']):
+ p=pathlib.Path('/proc')/str(pid)/'stat';assert not p.exists() or p.read_text().rsplit(')',1)[1].split()[0]=='Z'
+for rank in (0,1):
+ info=c.inspect(rank,f'mxwave-glm53-full-fp32inputv1-raw-r{rank}')
+ assert not info['State']['Running'] and info['State']['ExitCode']==0 and not info['State']['OOMKilled']
+result={'status':'passed','health':200,'original_identities_and_configurations_exact':True,'controller_collector_watchdog_terminal':True,'GPU_jobs_stopped_exit_zero_no_OOM':True,'archive_sha256':proof['archive_sha256'],'checked_epoch':time.time()}
+c.write(r/'fp32-input-v1-final-service-check.json',result);print(json.dumps(result))

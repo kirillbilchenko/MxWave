@@ -1,0 +1,91 @@
+"""Recompute wrapper invariants and raw fallback equality against two immutable parent archives."""
+import argparse,hashlib,json,pathlib,sys,tarfile
+PRECISION='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+SPEED='55dde1aedfa17bdf97cb607a51d318edb7c3ae0202ab3081335657cb8aa360cc'
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def selected_archive(path,digest,names):
+ assert sha(path)==digest
+ out={}
+ with tarfile.open(path,'r|gz') as tf:
+  for m in tf:
+   if m.name in names:
+    assert m.isfile() and m.name not in out and m.size<16*1024**2
+    out[m.name]=tf.extractfile(m).read()
+ assert set(out)==set(names)
+ bound={x['path']:x for x in json.loads(out['inventory.json'])['files']}
+ for name,data in out.items():
+  if name in ('inventory.json','spark-independent-review.json'):continue
+  assert len(data)==bound[name]['bytes'] and hashlib.sha256(data).hexdigest()==bound[name]['sha256']
+ assert json.loads(out['spark-independent-review.json'])['diagnostic_complete']
+ return out
+
+def words(root,item):
+ rel=pathlib.PurePosixPath(item['path']);assert len(rel.parts)==1 and not rel.is_absolute()
+ data=(root/rel).read_bytes();assert len(data)==item['bytes']==item['shape'][0]*item['shape'][1]*2 and hashlib.sha256(data).hexdigest()==item['sha256']
+ return data
+
+def verify_case(root,case,previous):
+ is_input='-input-' in case['name']
+ for row in case['known']:
+  old=next(x for x in previous['checks'] if x['tokens']==row['tokens'] and x['activation']==row['activation'] and x['split']==2)
+  digest=old['artifacts']['candidate' if is_input else 'original']['sha256']
+  assert row['parent_sha256']==row['output_sha256']==row['graph_output_sha256']==digest
+ for row in case['fallback']:
+  assert row['actual']['shape']==row['qualified']['shape']==[row['tokens'],12576]
+  assert words(root,row['actual'])==words(root,row['qualified'])
+  assert row['graph_output_sha256']==row['actual']['sha256']
+ for row in case['compiled']:
+  old=next(x for x in previous['checks'] if x['tokens']==row['tokens'] and x['activation']=='787' and x['split']==2)
+  assert row['parent_sha256']==row['output_sha256']==row['graph_output_sha256']==old['artifacts']['candidate']['sha256']
+ if is_input:
+  expected=[next(x['artifacts']['candidate']['sha256'] for x in previous['checks'] if x['tokens']==8 and x['activation']==a and x['split']==2) for a in ('787','797')]
+  stress=case['stream_stress'];assert stress['output_sha256']==stress['parent_sha256']==expected
+  if case['compiled_chain'] is not None:
+   wanted=[expected[0],next(x['qualified']['sha256'] for x in case['fallback'] if x['tokens']==17),expected[1]]
+   chain=case['compiled_chain'];assert chain['expected_output_sha256']==chain['output_sha256']==chain['graph_output_sha256']==wanted
+
+def main():
+ p=argparse.ArgumentParser();p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--precision-archive',type=pathlib.Path,required=True);p.add_argument('--speed-archive',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);a=p.parse_args();r=a.root
+ inv=json.loads((r/'inventory.json').read_bytes())['files'];assert len({x['path'] for x in inv})==len(inv)
+ for x in inv:
+  rel=pathlib.PurePosixPath(x['path']);assert not rel.is_absolute() and '..' not in rel.parts
+  f=r/rel;assert not f.is_symlink() and f.stat().st_size==x['bytes'] and sha(f)==x['sha256'],x['path']
+ precision=selected_archive(a.precision_archive,PRECISION,{'inventory.json','plan.json','spark-independent-review.json','rank0-precision-report.json','rank1-precision-report.json'})
+ speed=selected_archive(a.speed_archive,SPEED,{'inventory.json','prepared.json','plan.json','spark-independent-review.json'})
+ plan=json.loads((r/'plan.json').read_bytes());prepared=json.loads((r/'prepared.json').read_bytes());oldprepared=json.loads(speed['prepared.json']);oldplan=json.loads(precision['plan.json'])
+ assert plan['parent_archive_sha256']==SPEED and plan['precision_archive_sha256']==PRECISION
+ assert plan['selected_cases']==oldplan['selected_cases'] and plan['native_build_path']==oldplan['native_build_path'] and plan['native_build_sha256']==oldplan['native_build_sha256']
+ assert plan['parent_source_sha256']==oldprepared['bindings'][0]['code']==oldprepared['bindings'][1]['code']
+ actual={str(f.relative_to(r/'source')):sha(f) for f in (r/'source').rglob('*') if f.is_file() and f.suffix in ('.py','.toml')}
+ assert actual==prepared['bindings'][0]['code']==prepared['bindings'][1]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']} and len(actual)==plan['expected_source_files']==227
+ sys.path.insert(0,str(r/'source'));from fp32_input_probe import protocol,assess
+ assert plan['protocol']==prepared['protocol']==protocol()
+ state=json.loads((r/'controller.json').read_bytes());post=json.loads((r/'post-restoration-check.json').read_bytes())
+ assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+ assert post['health']==200 and post['originals']==prepared['originals']==oldprepared['originals'] and post['controller_terminal'] and post['watchdog_terminal']
+ assert state['restoration']['status']=='complete' and state['restoration']['health']==200 and state['preflight']['prepared_sha256']==sha(r/'prepared.json')
+ checks=[]
+ for entry in state['runs']:
+  rank=entry['rank'];assert entry['stage']=='integration';path=r/f'rank{rank}-integration-report.json'
+  if not path.exists():checks.append({'rank':rank,'diagnostic_complete':False,'error':'report absent'});continue
+  report=json.loads(path.read_bytes());assert report==json.loads((r/f'rank{rank}/integration.json').read_bytes())
+  assert report['source_sha256']==actual['benchmark_fp32_input.py'] and report['protocol']==protocol()
+  assert report['plan_sha256']==sha(r/'plan.json') and report['native_build_sha256']==plan['native_build_sha256']
+  assert report['qualified_library_sha256']==prepared['bindings'][rank]['libraries']['libmxwave_kda_zipserv.so']
+  assert report['FP32_library_sha256']==protocol()['routing']['library_sha256']
+  previous_data=precision[f'rank{rank}-precision-report.json'];previous=json.loads(previous_data)
+  assert report['parent_report_sha256']==plan['parent_report_sha256'][str(rank)]==hashlib.sha256(previous_data).hexdigest()
+  assert (r/f'parent-rank{rank}.json').read_bytes()==previous_data
+  if report['status']!='complete':checks.append({'rank':rank,'diagnostic_complete':False,'error':report.get('error')});continue
+  selected=[c for c in plan['selected_cases'] if c['rank']==rank];assert len(selected)==len(report['cases'])==6
+  for case,wanted in zip(report['cases'],selected,strict=True):
+   assert case['name']==wanted['name'] and case['artifact_sha256']==wanted['artifact_sha256']
+   verify_case(r/f'rank{rank}',case,next(c for c in previous['cases'] if c['name']==case['name']))
+  result=assess(report);assert result==report['assessment']==entry['independent_assessment']
+  checks.append({'rank':rank,'exit_code':entry['exit_code'],'OOMKilled':entry['OOMKilled'],**result,'CUDA_peak_bytes':report['CUDA_peak_bytes']})
+ unchanged=state.get('source_after')==prepared['bindings'] and state.get('input_bindings_after')==prepared['input_bindings']
+ complete=len(checks)==2 and {x['rank'] for x in checks}=={0,1} and unchanged and all(x['diagnostic_complete'] and not x.get('exit_code') and not x.get('OOMKilled') for x in checks)
+ out={'status':'complete','diagnostic_complete':complete,'payloads':len(inv),'source_files':len(actual),'processes':checks,'source_and_fixture_bindings_unchanged':unchanged,'original_service_restored':True,'integration_invariants_passed_on_both_GPUs':complete and all(c['integration_invariants_passed'] for c in checks),'parent_exact_word_screen_passed':False,'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False,'automatic_promotion_allowed':False}
+ a.output.write_text(json.dumps(out,indent=2,allow_nan=False)+'\n');print(json.dumps({k:v for k,v in out.items() if k!='processes'}))
+if __name__=='__main__':main()

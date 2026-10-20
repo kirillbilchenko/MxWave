@@ -1,0 +1,33 @@
+"""Launch the already-authorized frozen model pair once, with an owned bounded awake lease."""
+from __future__ import annotations
+import hashlib,json,pathlib,shlex,subprocess,time
+
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+SSH=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark']
+
+def main():
+    preparation=json.loads((BASE/'preparation.json').read_bytes())
+    assert preparation['status']=='passed' and preparation['source_files']==229
+    assert json.loads((BASE/'storage-relocation-v3.json').read_bytes())['status']=='complete'
+    assert not (BASE/'awake-lease.json').exists() and not (BASE/'launch.json').exists()
+    prepared=subprocess.check_output([*SSH,shlex.join(['cat',ROOT+'/fp32-input-model-v1-prepared.json'])],timeout=40)
+    assert hashlib.sha256(prepared).hexdigest()==preparation['prepared_sha256']
+    (BASE/'prepared.json').write_bytes(prepared)
+    awake=subprocess.Popen(['/usr/bin/caffeinate','-i','-t','10800'],stdin=subprocess.DEVNULL,
+                           stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
+    identity=subprocess.check_output(['ps','-p',str(awake.pid),'-o','pid=,lstart=,command='],text=True).strip()
+    assert identity.endswith('/usr/bin/caffeinate -i -t 10800')
+    (BASE/'awake-lease.json').write_text(json.dumps({'pid':awake.pid,'identity':identity,
+                                                 'started_epoch':time.time(),'ttl_seconds':10800},indent=2)+'\n')
+    result=subprocess.run([*SSH,shlex.join(['python3','-S',ROOT+'/launch-fp32-input-model-v1.py'])],
+                          capture_output=True,check=False,timeout=120)
+    (BASE/'launch.log').write_bytes(result.stdout+result.stderr)
+    if result.returncode:
+        raise RuntimeError('Model launcher failed; retain log and inspect the exact remote receipt before any retry')
+    launch=json.loads(result.stdout)
+    assert launch['source_files']==229 and launch['input_FP32_split2_candidate_only']
+    (BASE/'launch.json').write_text(json.dumps(launch,indent=2)+'\n')
+    print(json.dumps(launch))
+
+if __name__=='__main__':main()

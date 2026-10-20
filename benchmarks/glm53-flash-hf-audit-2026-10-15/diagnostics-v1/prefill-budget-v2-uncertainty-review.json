@@ -1,0 +1,114 @@
+{
+  "status": "complete",
+  "source_sha256": "b5875fd86cb61ccb9aac0cac50146ad5455b358216ca3e18efa2bd703e0efd50",
+  "final_findings_sha256": "183b26f679065c43e4e230cab83f035e350aab0460f505d47796aab4a43b1a9f",
+  "same_arm_pairing": "Same repeat index; balanced/interleaved budget order and fixed prompts.",
+  "results": [
+    {
+      "arm": "control",
+      "case": "c1-short",
+      "trials_per_condition": 6,
+      "mean_baseline_seconds": 0.38958815834484994,
+      "mean_new_seconds": 0.3864766720022696,
+      "mean_difference_seconds": -0.0031114863425803683,
+      "percentile_95_interval_seconds": [
+        -0.01086937845684588,
+        0.0058333372774844365
+      ],
+      "paired_trial_differences_seconds": [
+        -0.015273746917955577,
+        -0.008024344919249415,
+        0.015185424941591918,
+        0.006629160954616964,
+        -0.006434968090616167,
+        -0.010750444023869932
+      ],
+      "resamples": 20000,
+      "seed": 2080
+    },
+    {
+      "arm": "control",
+      "case": "c16-short",
+      "trials_per_condition": 12,
+      "mean_baseline_seconds": 1.8003236370435236,
+      "mean_new_seconds": 1.8422962347837408,
+      "mean_difference_seconds": 0.041972597740217076,
+      "percentile_95_interval_seconds": [
+        0.006480138364925855,
+        0.0784511958258463
+      ],
+      "paired_trial_differences_seconds": [
+        0.13393416444887407,
+        -0.039234630872670095,
+        -0.010160370336961932,
+        0.0009384374061482958,
+        -0.06115885545295896,
+        0.0616083526838338,
+        0.03175700040446827,
+        0.07595820831193123,
+        0.16871000493847532,
+        0.009621020792110357,
+        0.057538560788088944,
+        0.07415927977126557
+      ],
+      "resamples": 20000,
+      "seed": 2080
+    },
+    {
+      "arm": "candidate",
+      "case": "c1-short",
+      "trials_per_condition": 6,
+      "mean_baseline_seconds": 0.42402735602809116,
+      "mean_new_seconds": 0.42209906563706073,
+      "mean_difference_seconds": -0.001928290391030411,
+      "percentile_95_interval_seconds": [
+        -0.006113596706806372,
+        0.0027353823728238544
+      ],
+      "paired_trial_differences_seconds": [
+        -0.009844620013609529,
+        -0.005648198188282549,
+        -0.0009817940881475806,
+        0.008008026867173612,
+        -0.002353395917452872,
+        -0.0007497610058635473
+      ],
+      "resamples": 20000,
+      "seed": 2080
+    },
+    {
+      "arm": "candidate",
+      "case": "c16-short",
+      "trials_per_condition": 12,
+      "mean_baseline_seconds": 1.883896301612064,
+      "mean_new_seconds": 1.8701985810391004,
+      "mean_difference_seconds": -0.01369772057296359,
+      "percentile_95_interval_seconds": [
+        -0.04633714137986923,
+        0.014359191943155242
+      ],
+      "paired_trial_differences_seconds": [
+        -0.022747812610759865,
+        0.009721041620650794,
+        0.010888502387388144,
+        0.03809041962813353,
+        -0.04302134683530312,
+        -0.13651322934310883,
+        -0.09268422485911287,
+        0.041207373069482855,
+        -0.04430516377760796,
+        0.0385450502144522,
+        0.0358275972539559,
+        0.0006191463762661442
+      ],
+      "resamples": 20000,
+      "seed": 2080
+    }
+  ],
+  "prospective_gates_changed": false,
+  "limits": [
+    "Descriptive paired bootstrap of trial means; small sample and serial dependence remain.",
+    "No significance-based trial selection or additional experiment.",
+    "Stock and compressed model loads are separated in time; no paired cross-arm causal interval is asserted."
+  ]
+}

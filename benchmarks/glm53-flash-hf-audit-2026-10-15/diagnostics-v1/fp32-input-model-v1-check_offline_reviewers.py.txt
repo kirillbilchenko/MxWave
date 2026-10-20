@@ -1,0 +1,87 @@
+"""Validate new offline helpers against retained data and adversarial small cases."""
+from __future__ import annotations
+import contextlib
+import hashlib
+import importlib.util
+import io
+import json
+import pathlib
+import sys
+import tempfile
+
+BASE = pathlib.Path(__file__).parent
+PARENT = pathlib.Path('/private/tmp/mxwave-warmed-model-v1')
+sys.path.insert(0, str(PARENT / 'evidence/source'))
+
+
+def module(name):
+    spec = importlib.util.spec_from_file_location(name, BASE / f'{name}.py')
+    value = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(value)
+    return value
+
+
+def main():
+    latency = module('analyze_latency')
+    pairs = {('control', 'c1-short', 0, 0): [1, 2, 3],
+             ('candidate', 'c1-short', 0, 0): [1, 2, 3]}
+    assert latency.compare_token_sequences(pairs)['all_timed_outputs_equal']
+    pairs['candidate', 'c1-short', 0, 0] = [1, 4, 3]
+    result = latency.compare_token_sequences(pairs)
+    assert result['paired_output_sequences_equal'] == 0
+    assert result['paired_output_sequence_mismatches'][0]['first_different_token_ordinal'] == 2
+    pairs['candidate', 'c1-short', 0, 0] = [1, 2]
+    assert latency.compare_token_sequences(pairs)['paired_output_sequence_mismatches'][0]['first_different_token_ordinal'] == 3
+    del pairs['candidate', 'c1-short', 0, 0]
+    try:
+        latency.compare_token_sequences(pairs)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('Missing paired output was accepted')
+    profiles = module('analyze_profiles')
+    assert profiles.group('BF16TripleBitmap_MM_FP32_Kernel') == 'bf16_compressed_linear'
+    assert profiles.group('MxWaveReduceFP32') == 'bf16_compressed_reduction'
+    assert profiles.union([(1, 3), (2, 4), (6, 7), (2, 2.5)]) == 4
+    windows = module('analyze_historical_prefill_windows')
+    assert windows.union([(1, 3), (2, 4), (6, 7), (2, 2.5)]) == 4
+    assert windows.memory({'args': {'shared memory': 100, 'occupancy': {'allocatedSharedMemPerBlock': 256}}}) == (256, 'allocated')
+    assert windows.memory({'args': {'shared memory': 100}}) == (100, 'requested_only')
+    with tempfile.TemporaryDirectory(prefix='offline-reviewer-check-', dir=BASE) as tmp:
+        root = pathlib.Path(tmp)
+        for name in ['evidence', 'cross-host-verification.json', 'mac-independent-review.json']:
+            (root / name).symlink_to(PARENT / name)
+        latency.ROOT, latency.EVIDENCE = root, PARENT / 'evidence'
+        profiles.BASE, profiles.ROOT = root, PARENT / 'evidence'
+        with contextlib.redirect_stdout(io.StringIO()):
+            latency.main()
+            profiles.main()
+        new = json.loads((root / 'latency-review-v1.json').read_bytes())
+        old = json.loads((PARENT / 'latency-review-v1.json').read_bytes())
+        for key in ['summaries', 'trials', 'request_details', 'verified_inputs', 'parent_archive_sha256']:
+            assert new[key] == old[key], key
+        assert new['paired_output_sequences_equal'] == 300
+        assert new['paired_output_sequence_mismatches'] == []
+        new = json.loads((root / 'fresh-profile-review.json').read_bytes())
+        old = json.loads((PARENT / 'fresh-profile-review.json').read_bytes())
+        for key in ['summary', 'profiles', 'classifier_sha256', 'parent_archive_sha256']:
+            assert new[key] == old[key], key
+    paths = [BASE / (n + '.py') for n in ['analyze_latency', 'analyze_profiles',
+             'analyze_resources', 'analyze_jit_windows', 'analyze_historical_prefill_windows']]
+    for path in paths:
+        compile(path.read_text(), str(path), 'exec')
+    report = {'status': 'passed', 'GPU_experiment_run': False,
+              'historical_latency_exactly_reproduced': {'trials': 72, 'requests': 600, 'paired_sequences': 300},
+              'historical_profiles_exactly_reproduced': 12,
+              'mismatch_and_missing_pair_checks_passed': True,
+              'FP32_and_reducer_classification_passed': True,
+              'nested_interval_union_and_allocated_memory_precedence_passed': True,
+              'sources': {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}}
+    with (BASE / 'offline-reviewer-CPU-check.json').open('x') as stream:
+        json.dump(report, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    main()

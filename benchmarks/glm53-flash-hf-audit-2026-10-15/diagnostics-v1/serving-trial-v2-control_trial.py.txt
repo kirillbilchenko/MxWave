@@ -1,0 +1,215 @@
+"""Run the authorized paired comparison and retain the candidate only after success."""
+from __future__ import annotations
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+import pathlib
+import signal
+import subprocess
+import sys
+import time
+
+ROOT=pathlib.Path(__file__).parent
+sys.path.insert(0,str(ROOT.parent/'full-c16admissionv1-src'))
+import full_model_control as c
+STATE=ROOT/'controller.json'
+
+
+def save(state,phase=None):
+    if phase is not None:state['phase']=phase
+    state['updated_epoch']=time.time();c.write(STATE,state)
+
+
+def process_identity(pid):
+    try:return pathlib.Path(f'/proc/{pid}/stat').read_text().split(') ',1)[1].split()[19]
+    except FileNotFoundError:return None
+
+
+def stop_client(state):
+    entry=state.get('client')
+    if entry and process_identity(entry['pid'])==entry['start_ticks']:
+        try:os.killpg(entry['pid'],signal.SIGTERM)
+        except ProcessLookupError:pass
+
+
+def restore():
+    with(ROOT/'handover.lock').open('a')as lock:
+        fcntl.flock(lock,fcntl.LOCK_EX)
+        state=json.loads(STATE.read_bytes())
+        if state.get('handover_committed'):return
+        prepared=json.loads((ROOT/'prepared.json').read_bytes())
+        stop_client(state);save(state,'restoring_original')
+        for arm,entries in prepared['launches'].items():
+            for entry in entries:
+                rank,name=entry['rank'],entry['name']
+                found=c.run(rank,['docker','ps','-q','--filter',f'name=^/{name}$']).strip()
+                if found:c.run(rank,['docker','stop','--timeout','15',name],timeout=60)
+        result=c.restore('servetrialv2',STATE)
+        state.update(service_paused=False,restoration=result);save(state,'failed_restored')
+
+
+def watchdog(parent,start_ticks):
+    c.write(ROOT/'watchdog.json',dict(pid=os.getpid(),parent=parent,start_ticks=start_ticks,ready=True))
+    while True:
+        state=json.loads(STATE.read_bytes())
+        if state['phase']in('complete_live','failed_restored','preparation_failed'):return
+        alive=process_identity(parent)==start_ticks
+        expired=time.time()>state.get('outage_deadline_epoch',float('inf'))
+        if state.get('service_paused')and(not alive or expired):
+            if alive:os.kill(parent,signal.SIGTERM)
+            restore();return
+        if not alive:return
+        time.sleep(5)
+
+
+def resource_snapshot(entries):
+    result=[]
+    script=r'''
+import json,pathlib,subprocess,sys,time
+d=json.loads(subprocess.check_output(['docker','inspect',sys.argv[1]]))[0]
+pid=d['State']['Pid'];line=pathlib.Path(f'/proc/{pid}/cgroup').read_text().strip().splitlines()
+relative=next(x.split('::',1)[1]for x in line if x.startswith('0::'))
+root=pathlib.Path('/sys/fs/cgroup')/relative.lstrip('/')
+values={name:(root/name).read_text().strip()for name in('memory.current','memory.peak','memory.max')if(root/name).exists()}
+proc=subprocess.run(['nvidia-smi','--query-gpu=clocks.sm,temperature.gpu,power.draw,pstate','--format=csv,noheader,nounits'],capture_output=True,text=True)
+print(json.dumps(dict(epoch=time.time(),container_id=d['Id'],running=d['State']['Running'],
+    cgroup_bytes=values,GPU_boundary_telemetry=proc.stdout.strip(),telemetry_returncode=proc.returncode)))
+'''
+    for rank,name in entries:result.append(dict(rank=rank,**json.loads(c.run(rank,['python3','-S','-c',script,name]))))
+    return result
+
+
+def measure(state,arm,entries):
+    state['resources'][arm]={'before':resource_snapshot(entries)}
+    with(ROOT/(arm+'-client.log')).open('xb')as out:
+        child=subprocess.Popen(['python3','-S','-B','-u',str(ROOT/'measure_serving.py'),'--arm',arm],
+            stdin=subprocess.DEVNULL,stdout=out,stderr=subprocess.STDOUT,start_new_session=True)
+    state['client']=dict(pid=child.pid,start_ticks=process_identity(child.pid),arm=arm)
+    save(state,'measuring_'+arm)
+    deadline=time.monotonic()+1200
+    while child.poll()is None:
+        if time.time()>state.get('outage_deadline_epoch',float('inf'))or time.monotonic()>deadline:
+            stop_client(state);raise TimeoutError('Trial measurement deadline')
+        time.sleep(3)
+    assert child.returncode==0,(arm,'measurement failed',child.returncode)
+    report=json.loads((ROOT/(arm+'-measurement.json')).read_bytes())
+    assert report['status']=='complete'and len(report['trials'])==18
+    state['measurements'][arm]=dict(summary=report['summary'],report_sha256=hashlib.sha256((ROOT/(arm+'-measurement.json')).read_bytes()).hexdigest())
+    state['resources'][arm]['after']=resource_snapshot(entries)
+    state.pop('client',None);save(state)
+
+
+def retain_logs(arm,entries):
+    for rank,name in entries:
+        process=subprocess.run((['docker','logs',name]if rank==0 else[*c.SSH,__import__('shlex').join(['docker','logs',name])]),capture_output=True,timeout=30)
+        (ROOT/f'{arm}-r{rank}.log').write_bytes(process.stdout+b'\n'+process.stderr)
+
+
+def control():
+    assert not STATE.exists()
+    prepared=json.loads((ROOT/'prepared.json').read_bytes())
+    assert prepared['status']=='passed'
+    assert hashlib.sha256((ROOT/'plan.json').read_bytes()).hexdigest()==prepared['plan_sha256']
+    frozen=json.loads((ROOT/'source-manifest.json').read_bytes())
+    for n,d in frozen.items():assert hashlib.sha256((ROOT/n).read_bytes()).hexdigest()==d
+    state=dict(phase='prepared',pid=os.getpid(),started_epoch=time.time(),originals=prepared['originals'],
+        service_paused=False,handover_committed=False,measurements={},resources={},containers={})
+    save(state)
+    def terminated(signum,frame):raise RuntimeError(f'Trial interrupted by signal {signum}')
+    signal.signal(signal.SIGTERM,terminated);signal.signal(signal.SIGINT,terminated)
+    with(ROOT/'watchdog.log').open('xb')as out:
+        watcher=subprocess.Popen(['python3','-S','-B','-u',str(pathlib.Path(__file__)),
+            '--watch',str(os.getpid()),process_identity(os.getpid())],stdin=subprocess.DEVNULL,
+            stdout=out,stderr=subprocess.STDOUT,start_new_session=True)
+    state['watchdog_pid']=watcher.pid;save(state)
+    try:
+        deadline=time.monotonic()+30
+        while not(ROOT/'watchdog.json').exists():
+            assert watcher.poll()is None and time.monotonic()<deadline
+            time.sleep(.2)
+        originals=[c.inspect(rank,c.ORIGINAL_IDS[rank])for rank in(0,1)]
+        assert[c.identity(o)for o in originals]==prepared['originals']
+        assert all(o['State']['Running']for o in originals)and c.health(8000)
+        # Observe a quiet server twice before submitting the owned baseline workload.
+        import re,urllib.request
+        for _ in range(2):
+            with urllib.request.urlopen('http://127.0.0.1:8000/metrics',timeout=10)as response:
+                metrics=response.read().decode()
+            activity=[float(line.rsplit(' ',1)[1])for line in metrics.splitlines()
+                if re.match(r'vllm:num_requests_(running|waiting)(\{| )',line)]
+            assert activity and not any(activity),'Current service is busy; preserve it'
+            time.sleep(3)
+        # The failed v1 attempt completed this unchanged-production reference.
+        previous=ROOT.parent/'serving-trial-v1'
+        prior=json.loads((previous/'controller.json').read_bytes())
+        assert prior['phase']=='failed_restored'and not prior['service_paused']
+        raw=(previous/'production-measurement.json').read_bytes()
+        reference=json.loads(raw)
+        assert reference['status']=='complete'and len(reference['trials'])==18
+        assert reference['plan_sha256']==prepared['plan_sha256']
+        assert hashlib.sha256(raw).hexdigest()==prior['measurements']['production']['report_sha256']
+        (ROOT/'production-measurement.json').open('xb').write(raw)
+        state['measurements']['production']=prior['measurements']['production']
+        state['resources']['production']=prior['resources']['production']
+        state['reference_reused_from']=dict(directory=str(previous),
+            controller_sha256=hashlib.sha256((previous/'controller.json').read_bytes()).hexdigest())
+        save(state,'production_reference_retained')
+        # Mark restoration responsibility before stopping either original rank.
+        state.update(service_paused=True,outage_deadline_epoch=time.time()+3600);save(state,'stopping_original')
+        for rank in(0,1):c.run(rank,['docker','stop','--timeout','30',c.ORIGINAL_IDS[rank]],timeout=90)
+        for arm in('current','candidate'):
+            launches=prepared['launches'][arm];state['containers'][arm]=[];save(state,'starting_'+arm)
+            for rank in(1,0):
+                entry=launches[rank];container=c.run(rank,entry['argv'],timeout=120).strip()
+                state['containers'][arm].append(dict(rank=rank,name=entry['name'],id=container));save(state)
+            deadline=time.monotonic()+1500
+            while not c.health(8000):
+                for entry in launches:
+                    assert c.inspect(entry['rank'],entry['name'])['State']['Running'],(arm,entry['rank'],'exited during startup')
+                assert time.monotonic()<deadline,(arm,'startup deadline')
+                time.sleep(5)
+            # Read the two startup proofs before any measured client requests.
+            startup=[]
+            for rank in(0,1):
+                report=c.remote_json(rank,ROOT/f'{arm}-r{rank}'/f'trial-startup-r{rank}.json')
+                assert report['status']=='complete'and report['trial']['shared_head']and report['trial']['shared_embedding']
+                startup.append(report)
+            c.write(ROOT/(arm+'-startup.json'),startup)
+            entries=[(e['rank'],e['name'])for e in launches]
+            measure(state,arm,entries);retain_logs(arm,entries)
+            after=[c.preflight(rank,ROOT.parent/'full-c16admissionv1-src')for rank in(0,1)]
+            assert after==prepared['bindings']
+            if arm=='current':
+                for rank,name in entries:c.run(rank,['docker','stop','--timeout','30',name],timeout=90)
+        with(ROOT/'handover.lock').open('a')as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX)
+            assert c.health(8000)
+            assert[c.identity(c.inspect(rank,c.ORIGINAL_IDS[rank]))for rank in(0,1)]==prepared['originals']
+            assert all(not c.inspect(rank,c.ORIGINAL_IDS[rank])['State']['Running']for rank in(0,1))
+            state.update(handover_committed=True,service_paused=False,active_arm='candidate',finished_epoch=time.time())
+            save(state,'complete_live')
+        print(json.dumps(dict(status='complete_live',endpoint='http://127.0.0.1:8000',model='glm-5.3-flash')))
+    except BaseException as exc:
+        state['error']=repr(exc);save(state,'failed')
+        for arm,entries in prepared['launches'].items():
+            try:retain_logs(arm,[(e['rank'],e['name'])for e in entries])
+            except Exception:pass
+        if state['service_paused']:restore()
+        else:save(state,'preparation_failed')
+        raise
+
+
+def rollback():
+    state=json.loads(STATE.read_bytes())
+    assert state['phase']=='complete_live'
+    state.update(handover_committed=False,service_paused=True);save(state,'rollback_requested')
+    restore()
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser();parser.add_argument('--watch',nargs=2);parser.add_argument('--rollback',action='store_true');args=parser.parse_args()
+    if args.watch:watchdog(int(args.watch[0]),args.watch[1])
+    elif args.rollback:rollback()
+    else:control()

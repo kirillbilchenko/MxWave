@@ -1,0 +1,42 @@
+"""Reclaim only the fully verified redundant unpacked precision evidence on the head."""
+import hashlib,json,pathlib,shutil,subprocess,sys,tarfile,time
+R=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+sys.path.insert(0,str(R/'fp32-split-v1-src'))
+import full_model_control as c
+SHA='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+a=R/'evidence-fp32-split-v1.tar.gz';root=R/'evidence-fp32-split-v1'
+receipt=R/'fp32-speed-v1-disk-recovery.json';assert not receipt.exists()
+assert root.is_dir() and not root.is_symlink() and sha(a)==SHA
+assert c.run(1,['python3','-S','-c','import hashlib,sys;print(hashlib.file_digest(open(sys.argv[1],"rb"),"sha256").hexdigest())',str(a)]).strip()==SHA
+state=json.loads((R/'fp32-split-v1-controller.json').read_bytes())
+assert state['phase']=='complete' and not state['service_paused']
+for pid in (state['pid'],state['watchdog_pid'],4114882):
+ p=pathlib.Path('/proc')/str(pid)/'stat'
+ assert not p.exists() or p.read_text().rsplit(')',1)[1].split()[0]=='Z'
+originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+prepared=json.loads((R/'fp32-split-v1-prepared.json').read_bytes())
+assert c.health(8000) and all(x['State']['Running'] for x in originals)
+assert [c.identity(x) for x in originals]==prepared['originals']
+paths=list(root.rglob('*'));assert all(not p.is_symlink() for p in paths)
+files={str(p.relative_to(root)):p for p in paths if p.is_file()}
+digests={};sizes={}
+with tarfile.open(a) as tf:
+ members=tf.getmembers()
+ assert all(m.isfile() and not pathlib.PurePosixPath(m.name).is_absolute() and '..' not in pathlib.PurePosixPath(m.name).parts for m in members)
+ assert len({m.name for m in members})==len(members) and set(files)=={m.name for m in members}
+ for m in members:
+  f=tf.extractfile(m);assert f is not None
+  value=hashlib.file_digest(f,'sha256').hexdigest()
+  assert files[m.name].stat().st_size==m.size and sha(files[m.name])==value
+  digests[m.name]=value;sizes[m.name]=m.size
+before=shutil.disk_usage(R).free
+# Recheck each owned duplicate immediately before unlinking; never recursively remove a tree.
+for name,p in files.items():
+ assert p.is_file() and not p.is_symlink() and sha(p)==digests[name]
+ p.unlink()
+for p in sorted((p for p in paths if p.is_dir()),key=lambda p:len(p.parts),reverse=True):p.rmdir()
+root.rmdir()
+result={'status':'passed','removed_tree':str(root),'removed_files':len(files),'removed_bytes':sum(sizes.values()),'retained_head_archive':str(a),'retained_worker_archive':str(a),'archive_sha256':SHA,'all_removed_files_matched_archive':True,'Mac_copy_previously_verified':True,'free_bytes_before':before,'free_bytes_after':shutil.disk_usage(R).free,'original_health':200,'finished_epoch':time.time()}
+c.write(receipt,result);print(json.dumps(result))

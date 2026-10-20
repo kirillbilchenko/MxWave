@@ -1,0 +1,36 @@
+"""Retain paired-trial uncertainty without changing any prospective experiment gate."""
+import hashlib,json,pathlib,statistics
+import numpy as np
+BASE=pathlib.Path(__file__).parent
+
+def bootstrap(a,b,seed=4096):
+ a=np.asarray(a,dtype=np.float64);b=np.asarray(b,dtype=np.float64)
+ assert a.shape==b.shape and a.ndim==1 and len(a)>=6
+ draw=np.random.default_rng(seed).integers(0,len(a),size=(20000,len(a)))
+ differences=(b-a)[draw].mean(axis=1)
+ return {'mean_difference_seconds':float(np.mean(b-a)),
+  'percentile_95_interval_seconds':[float(x)for x in np.quantile(differences,[.025,.975])],
+  'paired_trial_differences_seconds':(b-a).tolist(),'resamples':20000,'seed':seed}
+
+def main():
+ findings=json.loads((BASE/'final-findings.json').read_bytes());assert findings['status']=='complete'
+ results=[]
+ for arm in ('control','candidate'):
+  for case in ('c1-short','c16-short'):
+   rows=[r for r in findings['all_timing_trials']if r['arm']==arm and r['case']==case]
+   lookup={(r['budget_tokens'],r['repeat']):r for r in rows};repeats=sorted({r['repeat']for r in rows})
+   before=[lookup[2048,i]['mean_TTFT_seconds']for i in repeats]
+   after=[lookup[4096,i]['mean_TTFT_seconds']for i in repeats]
+   result=bootstrap(before,after)
+   results.append({'arm':arm,'case':case,'trials_per_condition':len(repeats),
+    'mean_baseline_seconds':statistics.mean(before),'mean_new_seconds':statistics.mean(after),**result})
+ assert bootstrap([1.]*12,[1.125]*12)['percentile_95_interval_seconds']==[.125,.125]
+ out={'status':'complete','source_sha256':hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+  'final_findings_sha256':hashlib.sha256((BASE/'final-findings.json').read_bytes()).hexdigest(),
+  'same_arm_pairing':'Same repeat index; balanced/interleaved budget order and fixed prompts.',
+  'results':results,'prospective_gates_changed':False,
+  'limits':['Descriptive paired bootstrap of trial means; small sample and serial dependence remain.',
+   'No significance-based trial selection or additional experiment.',
+   'Stock and compressed model loads are separated in time; no paired cross-arm causal interval is asserted.']}
+ (BASE/'uncertainty-review.json').open('x').write(json.dumps(out,indent=2)+'\n');print(json.dumps(out))
+if __name__=='__main__':main()

@@ -1,0 +1,109 @@
+"""Independently recompute C1 timings and finite output agreement from raw streams."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import pathlib
+import statistics
+
+
+def close(left, right):
+    assert math.isclose(left, right, rel_tol=1e-12, abs_tol=1e-12), (left, right)
+
+
+def metrics(text):
+    result = {}
+    for line in text.splitlines():
+        if not line or line.startswith('#'):
+            continue
+        name, value = line.rsplit(' ', 1)
+        if 'spec_decode' in name:
+            result[name] = float(value)
+    return result
+
+
+def analyze(root):
+    plan = json.loads((root / 'plan.json').read_bytes())
+    result = dict(status='complete', arms={}, comparisons={}, output_agreement={},
+                  full_speculative_stack_KL_measured=False, source_sha256={})
+    outputs = {}
+    for arm in plan['arms']:
+        path = root / (arm + '-measurement.json')
+        data = json.loads(path.read_bytes())
+        assert data['status'] == 'complete'
+        assert len(data['trials']) == len(plan['cases']) * plan['trials']
+        rows = []
+        outputs[arm] = {}
+        for length in (256, 2048):
+            groups = [g for g in data['trials'] if g['prompt_tokens'] == length]
+            assert len(groups) == plan['trials']
+            values = []
+            for group in groups:
+                assert group['batch'] == 1 and len(group['requests']) == 1
+                request = group['requests'][0]
+                assert len(request['token_ids']) == plan['output_tokens'] == group['output_tokens']
+                assert request['usage']['completion_tokens'] == plan['output_tokens']
+                assert request['usage']['prompt_tokens'] == length
+                assert sum(a['tokens'] for a in request['arrivals']) == plan['output_tokens']
+                arrivals = [a['seconds'] for a in request['arrivals']]
+                assert arrivals == sorted(arrivals)
+                latency = (request['end_ns'] - request['start_ns']) / 1e9
+                tpot = (arrivals[-1] - arrivals[0]) / (plan['output_tokens'] - 1)
+                throughput = plan['output_tokens'] / group['wall_seconds']
+                close(latency, request['latency_seconds'])
+                close(tpot, request['tpot_seconds'])
+                close(arrivals[0], request['ttft_seconds'])
+                close(throughput, group['output_tokens_per_second'])
+                values.append(dict(trial=group['trial'], tps=throughput, ttft_ms=arrivals[0]*1000,
+                                   tpot_ms=tpot*1000, latency_ms=latency*1000))
+                outputs[arm][(length, group['trial'])] = request['token_ids']
+            rows.append(dict(prompt_tokens=length, trials=len(values), raw=values,
+                             median_tps=statistics.median(v['tps'] for v in values),
+                             min_tps=min(v['tps'] for v in values),
+                             max_tps=max(v['tps'] for v in values),
+                             mean_ttft_ms=statistics.mean(v['ttft_ms'] for v in values),
+                             median_ttft_ms=statistics.median(v['ttft_ms'] for v in values),
+                             mean_tpot_ms=statistics.mean(v['tpot_ms'] for v in values),
+                             median_tpot_ms=statistics.median(v['tpot_ms'] for v in values)))
+        before, after = metrics(data['metrics_before']), metrics(data['metrics_after'])
+        result['arms'][arm] = dict(rows=rows, speculation_delta={
+            key: value - before.get(key, 0) for key, value in after.items()},
+            timing_finished_epoch=data['timing_finished_epoch'],
+            profile_request_tokens=data['profile_request']['requests'][0]['token_ids'],
+            profile_separate_from_timing=True)
+        result['source_sha256'][path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    for left, right, label in [('current', 'candidate', 'replacement'),
+                               ('ct_stock', 'candidate', 'compression'),
+                               ('current', 'ct_stock', 'checkpoint')]:
+        rows = []
+        for a, b in zip(result['arms'][left]['rows'], result['arms'][right]['rows'], strict=True):
+            assert a['prompt_tokens'] == b['prompt_tokens']
+            rows.append(dict(prompt_tokens=a['prompt_tokens'],
+                             tps_change_percent=100*(b['median_tps']/a['median_tps']-1),
+                             ttft_change_ms=b['mean_ttft_ms']-a['mean_ttft_ms'],
+                             tpot_change_ms=b['mean_tpot_ms']-a['mean_tpot_ms']))
+        result['comparisons'][label] = dict(reference=left, candidate=right, rows=rows)
+        assert outputs[left].keys() == outputs[right].keys()
+        agreements = [outputs[left][key] == outputs[right][key] for key in outputs[left]]
+        result['output_agreement'][label] = dict(equal=sum(agreements), total=len(agreements))
+    result['limitations'] = [
+        'One model load per arm, seven trials per prompt length; no interleaved model loads.',
+        'Repeated diagnostic prose is favorable to speculation and does not represent all workloads.',
+        'Finite greedy output agreement does not establish universal equivalence or KL.',
+        'Post-first-token time is normalized across token bursts, not individual-token latency.',
+        'Profiled request timing is excluded from all speed summaries.',
+    ]
+    return result
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', required=True, type=pathlib.Path)
+    parser.add_argument('--output', required=True, type=pathlib.Path)
+    args = parser.parse_args()
+    result = analyze(args.root)
+    args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
+    print(json.dumps(dict(status=result['status'], comparisons=result['comparisons'],
+                         output_agreement=result['output_agreement'])))

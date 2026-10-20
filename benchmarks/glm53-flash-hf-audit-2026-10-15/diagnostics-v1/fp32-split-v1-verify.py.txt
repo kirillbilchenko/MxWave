@@ -1,0 +1,73 @@
+"""Rehash all component evidence and recompute numerical gates from retained BF16 words."""
+from __future__ import annotations
+import argparse,hashlib,json,pathlib,sys
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def read_words(root,item):
+ rel=pathlib.PurePosixPath(item['path']);assert len(rel.parts)==1 and not rel.is_absolute()
+ data=(root/rel).read_bytes();assert len(data)==item['bytes']==2*item['shape'][0]*item['shape'][1]
+ assert hashlib.sha256(data).hexdigest()==item['sha256'];return data
+
+def verify_row(root,row,logical_rows):
+ from fp32_split_probe import bf16_metrics
+ data={name:read_words(root,item) for name,item in row['artifacts'].items()}
+ assert set(data)=={'activation','stock','original','rebuilt','candidate','legacy'}
+ for name,item in row['artifacts'].items():
+  assert item['shape']==[row['tokens'],4096 if name=='activation' else logical_rows]
+ exact=row['tokens'] in (4,8) or row['activation']=='basis'
+ assert bf16_metrics(data['candidate'],data['stock'],exact=exact)==row['stock_comparison']
+ assert bf16_metrics(data['legacy'],data['stock'],exact=exact)==row['legacy_stock_comparison']
+ assert bf16_metrics(data['original'],data['stock'],exact=exact)==row['original_stock_comparison']
+ assert bf16_metrics(data['candidate'],data['original'],exact=False)==row['parent_comparison']
+ assert (data['rebuilt']==data['original'])==row['rebuilt_matches_original']
+
+def main():
+ p=argparse.ArgumentParser();p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);a=p.parse_args();r=a.root
+ inv=json.loads((r/'inventory.json').read_bytes())['files'];assert len({x['path'] for x in inv})==len(inv)
+ for x in inv:
+  rel=pathlib.PurePosixPath(x['path']);assert not rel.is_absolute() and '..' not in rel.parts
+  f=r/rel;assert not f.is_symlink() and f.stat().st_size==x['bytes'] and sha(f)==x['sha256'],x['path']
+ prepared=json.loads((r/'prepared.json').read_bytes());plan=json.loads((r/'plan.json').read_bytes())
+ actual={str(f.relative_to(r/'source')):sha(f) for f in (r/'source').rglob('*') if f.is_file() and f.suffix in ('.py','.toml')}
+ assert actual==prepared['bindings'][0]['code']==prepared['bindings'][1]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']}
+ assert len(actual)==plan['expected_source_files']==217
+ sys.path.insert(0,str(r/'source'));from fp32_split_probe import protocol,assess
+ assert prepared['protocol']==plan['protocol']==protocol()
+ native=r/'native-inputs/fp32-split-v1-native/build/native-build.json';assert sha(native)==plan['native_build_sha256']
+ build=json.loads(native.read_bytes());assert build['builder_sha256']==actual['build_bf16_fp32_split.py']
+ for arm in build['arms']:
+  assert sha(native.parent/arm['library'])==arm['library_sha256']
+  for name,value in arm['source_sha256'].items():assert sha(native.parent/arm['arm']/name)==value
+ source=json.loads((r/'native-inputs/fp32-split-v1-fixtures/original-prepared.json').read_bytes())
+ selected=[c for c in source['cases'] if c['name'].startswith('kda-')]
+ for c in selected:c['artifact_path']='/audit/fp32-split-v1-fixtures/'+c['name']+'.safetensors'
+ assert selected==plan['selected_cases']
+ for c in selected:assert sha(r/'native-inputs/fp32-split-v1-fixtures'/(c['name']+'.safetensors'))==c['artifact_sha256']
+ state=json.loads((r/'controller.json').read_bytes());post=json.loads((r/'post-restoration-check.json').read_bytes())
+ assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+ assert post['health']==200 and post['originals']==prepared['originals'] and post['controller_terminal'] and post['watchdog_terminal']
+ assert state['restoration']['status']=='complete' and state['restoration']['health']==200
+ assert state['preflight']['prepared_sha256']==sha(r/'prepared.json')
+ checks=[]
+ for entry in state['runs']:
+  rank=entry['rank'];assert entry['stage']=='precision';path=r/f'rank{rank}-precision-report.json'
+  if not path.exists():checks.append({'rank':rank,'diagnostic_complete':False,'error':'report absent'});continue
+  report=json.loads(path.read_bytes());assert report==json.loads((r/f'rank{rank}/precision.json').read_bytes())
+  assert report['source_sha256']==actual['benchmark_fp32_split.py'] and report['protocol']==protocol()
+  assert report['plan_sha256']==sha(r/'plan.json') and report['native_build_sha256']==plan['native_build_sha256']
+  assert report['qualified_library_sha256']==prepared['bindings'][rank]['libraries']['libmxwave_kda_zipserv.so']
+  if report['status']!='complete':checks.append({'rank':rank,'diagnostic_complete':False,'error':report.get('error')});continue
+  cases=[c for c in selected if c['rank']==rank];assert len(cases)==len(report['cases'])==6
+  for case,wanted in zip(report['cases'],cases,strict=True):
+   assert case['name']==wanted['name'] and case['artifact_sha256']==wanted['artifact_sha256'] and case['source_weight_sha256']==wanted['logical_weight_sha256']
+   for row in case['checks']:verify_row(r/f'rank{rank}',row,wanted['logical_shape'][0])
+  result=assess(report);assert result==report['assessment']==entry['independent_assessment']
+  checks.append({'rank':rank,'exit_code':entry['exit_code'],'OOMKilled':entry['OOMKilled'],**result,'CUDA_peak_bytes':report['CUDA_peak_bytes']})
+ unchanged=state.get('source_after')==prepared['bindings'] and state.get('input_bindings_after')==prepared['input_bindings']
+ complete=len(checks)==2 and {x['rank'] for x in checks}=={0,1} and unchanged and all(x['diagnostic_complete'] and not x.get('exit_code') and not x.get('OOMKilled') for x in checks)
+ passed={str(s):complete and all(c['splits'][str(s)]['passed'] for c in checks) for s in protocol()['splits']}
+ out={'status':'complete','diagnostic_complete':complete,'payloads':len(inv),'source_files':len(actual),'processes':checks,'source_and_fixture_bindings_unchanged':unchanged,'original_service_restored':True,'splits_passed_on_both_GPUs':passed,'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False,'automatic_promotion_allowed':False}
+ a.output.write_text(json.dumps(out,indent=2,allow_nan=False)+'\n');print(json.dumps({k:v for k,v in out.items() if k!='processes'}))
+if __name__=='__main__':main()

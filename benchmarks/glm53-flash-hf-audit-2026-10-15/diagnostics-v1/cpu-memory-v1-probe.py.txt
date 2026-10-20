@@ -1,0 +1,102 @@
+"""Bounded, disposable-process glibc trim probe; never attach to a model process."""
+
+from __future__ import annotations
+
+import ctypes
+import hashlib
+import json
+import os
+import pathlib
+import resource
+import sys
+import time
+
+
+def memory() -> dict[str, int]:
+    """Read this probe's CPU process counters without touching CUDA."""
+    wanted = {'VmRSS', 'VmHWM', 'RssAnon', 'RssFile', 'RssShmem'}
+    values = {}
+    for line in pathlib.Path('/proc/self/status').read_text().splitlines():
+        key, _, value = line.partition(':')
+        if key in wanted:
+            values[key] = int(value.split()[0]) * 1024
+    return values
+
+
+def main() -> None:
+    """Verify reclaim and live allocation integrity in an isolated 64-MiB heap."""
+    if sys.platform != 'linux':
+        raise RuntimeError('The probe only supports the target Linux/glibc host')
+    resource.setrlimit(resource.RLIMIT_AS, (384 * 1024**2, 384 * 1024**2))
+    os.nice(19)
+    libc = ctypes.CDLL(None)
+    libc.gnu_get_libc_version.argtypes = []
+    libc.gnu_get_libc_version.restype = ctypes.c_char_p
+    libc.malloc.argtypes = [ctypes.c_size_t]
+    libc.malloc.restype = ctypes.c_void_p
+    libc.free.argtypes = [ctypes.c_void_p]
+    libc.free.restype = None
+    libc.malloc_trim.argtypes = [ctypes.c_size_t]
+    libc.malloc_trim.restype = ctypes.c_int
+    libc.memset.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_size_t]
+    libc.memset.restype = ctypes.c_void_p
+    blocks, guards = [], []
+    report = {'status': 'running', 'pid': os.getpid(),
+              'source_sha256': hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+              'glibc': libc.gnu_get_libc_version().decode(),
+              'GPU_used': False, 'model_process_attached': False,
+              'payload_bytes': 1024 * 65536, 'guard_bytes': 1024 * 256,
+              'before': memory(),
+              'interface_source': 'https://man7.org/linux/man-pages/man3/malloc_trim.3.html'}
+    try:
+        for index in range(1024):
+            pointer = libc.malloc(65536)
+            if not pointer:
+                raise MemoryError('Bounded payload allocation failed')
+            blocks.append(pointer)
+            libc.memset(pointer, index % 251, 65536)
+            pointer = libc.malloc(256)
+            if not pointer:
+                raise MemoryError('Bounded guard allocation failed')
+            guards.append(pointer)
+            libc.memset(pointer, (index + 17) % 251, 256)
+        report['all_live'] = memory()
+        for pointer in blocks:
+            libc.free(pointer)
+        blocks.clear()
+        report['after_payload_free'] = memory()
+        started = time.monotonic()
+        report['trim_returned'] = libc.malloc_trim(0)
+        report['trim_seconds'] = time.monotonic() - started
+        report['after_trim'] = memory()
+        assert report['trim_returned'] in (0, 1)
+        digest = hashlib.sha256()
+        for index, pointer in enumerate(guards):
+            data = ctypes.string_at(pointer, 256)
+            assert data == bytes([(index + 17) % 251]) * 256
+            digest.update(data)
+        report['live_guard_sha256'] = digest.hexdigest()
+        report['live_guard_bytes_exact'] = True
+        report['released_process_RSS_bytes'] = (
+            report['after_payload_free']['VmRSS'] - report['after_trim']['VmRSS'])
+        report['released_process_Anon_bytes'] = (
+            report['after_payload_free']['RssAnon'] - report['after_trim']['RssAnon'])
+        report['status'] = 'complete'
+        report['model_CPU_saving_demonstrated'] = False
+        report['limits'] = [
+            'A synthetic process proves the interface and live-buffer integrity, not reclaimable model bytes.',
+            'The model experiment remains unchanged. Any future startup-only trim must run in both arms.',
+            'Record before/after CPU memory, unchanged CUDA pointers/allocations, numerical gates and API latency.',
+            'Trimming can make later allocations fault pages again; run once before warmup, never per decode.',
+            'RSS, container memory and CUDA allocations overlap on Spark and cannot be summed.',
+        ]
+        print(json.dumps(report, allow_nan=False))
+    finally:
+        for pointer in blocks:
+            libc.free(pointer)
+        for pointer in guards:
+            libc.free(pointer)
+
+
+if __name__ == '__main__':
+    main()

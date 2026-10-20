@@ -1,0 +1,261 @@
+"""Publish the final measured admission outcome without rewriting historical failures."""
+from __future__ import annotations
+import json,pathlib
+from datetime import datetime,timezone
+BASE=pathlib.Path(__file__).parent
+WORK=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+LINK='../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/'
+
+def main():
+    f=json.loads((BASE/'final-findings.json').read_bytes())
+    proof=json.loads((BASE/'cross-host-verification.json').read_bytes())
+    service=json.loads((BASE/'final-service-check.json').read_bytes())
+    cleanup=json.loads((BASE/'terminal-cleanup.json').read_bytes())
+    audit=json.loads((BASE/'fp32-kl-audit.json').read_bytes())
+    assert f['status']=='complete' and service['health']==200 and cleanup['status']=='released'
+    stamp=datetime.now(timezone.utc).strftime('%d October %Y, %H:%M UTC')
+    numerics=all(row['numerical_gate_passed'] for row in f['numerical'])
+    policy='passes' if f['policy_gate_passed'] else 'fails'
+    ntext='All 94 numerical comparisons pass' if numerics else 'Some numerical comparisons fail'
+    lookup={(r['case'],r['window_ms']):r for r in f['timing_comparisons']}
+    c16=lookup['c16-short',10];c1=lookup['c1-short',10]
+    all_requests={r['arm']:r for r in f['supplementary_C16_request_metrics'] if r['window_ms']==10}
+    mean_gap=1000*(all_requests['candidate']['all_request_mean_TTFT_s']-all_requests['control']['all_request_mean_TTFT_s'])
+    pooled_gap=1000*(all_requests['candidate']['pooled_request_median_TTFT_s']-all_requests['control']['pooled_request_median_TTFT_s'])
+    c16policy=next(p for p in f['policy_comparisons'] if (p['arm'],p['case'])==('candidate','c16-short'))
+    c1policy=next(p for p in f['policy_comparisons'] if (p['arm'],p['case'])==('candidate','c1-short'))
+    table='| Short workload / window | Stock tok/s | Compressed tok/s | Throughput change | Median TTFT, stock -> compressed | TTFT gap |\n|---|---:|---:|---:|---:|---:|\n'
+    for row in f['timing_comparisons']:
+        table+=f"| {row['case']} / {row['window_ms']} ms | {row['stock_TPS']:.3f} | {row['compressed_TPS']:.3f} | {row['TPS_change_percent']:+.2f}% | {row['stock_TTFT_seconds']:.3f} -> {row['compressed_TTFT_seconds']:.3f} s | {row['TTFT_gap_ms']:+.1f} ms |\n"
+    quality='| Matched concurrency | Cross-arm mean decode KL range | Numerical decision | Within-arm/window repeats bitwise equal |\n|---|---:|---|---|\n'
+    for row in f['numerical']:
+        quality+=f"| C{row['concurrency']} | {row['cross_arm_KL_min']:.9g} to {row['cross_arm_KL_max']:.9g} | {'Pass' if row['numerical_gate_passed'] else 'Fail'} | {row['all_within_arm_and_cross_window_rows_bitwise_equal']} |\n"
+    profiles='| Arm / window / rank | Prefill-containing forwards | Prefill row counts | Reconstruction calls / kernel sum | Full-size decode graph launches |\n|---|---:|---|---:|---:|\n'
+    for row in f['profile_summaries']:
+        if row['kind']!='ordinary':continue
+        profiles+=f"| {row['arm']} / {row['window_ms']} ms / {row['rank']} | {row['prefill_forwards']} | {row['prefill_rows']} | {row['prefill_reconstruction_calls']} / {row['prefill_reconstruction_sum_ms']:.2f} ms | {row['full_size_decode_graph_launches']} |\n"
+    cohorts='\n'.join(f"- {r['arm']}, {r['window_ms']} ms: first cohorts {r['first_cohorts']}; first 2,048-token budget filled in {r['first_budget_filled_trials']}/{r['trials']} trials." for r in f['admission_summaries'] if r['case']=='c16-short')
+    checks='\n'.join(f"- `{name}`: {'pass' if passed else 'fail'}." for name,passed in f['policy_checks'].items())
+    overview=f'''**Completed and independently verified, {stamp}.** The 10 ms admission
+policy **{policy} its prospective gate**. Compressed short-C16 median TTFT at
+10 ms is **{c16['compressed_TTFT_seconds']:.3f} s**, versus stock
+**{c16['stock_TTFT_seconds']:.3f} s**: a **{c16['TTFT_gap_ms']:+.1f} ms** gap.
+The hoped-for gap of tens of milliseconds is not achieved under the frozen headline metric;
+**the original short-C16 TTFT criterion remains unmet**. This headline is the
+median of twelve trial medians. Supplementary statistics over all 192 requests
+per arm at 10 ms give a **{mean_gap:+.1f} ms mean** gap and **{pooled_gap:+.1f} ms pooled
+median** gap. These describe the same complete data; they do not replace the
+frozen headline metric or its decision.
+Within the compressed arm, moving 3 -> 10 ms changes C16 TTFT by
+**{100*(c16policy['TTFT_ratio']-1):+.2f}%** and throughput by
+**{100*(c16policy['TPS_ratio']-1):+.2f}%**. The C1 window delay is
+**{1000*c1policy['TTFT_increase_seconds']:+.1f} ms**.
+
+{ntext} at the unchanged KL <=1e-5 / absolute mean NLL <=1e-4 limits.
+Timed output pairs match: **{proof['all_timed_generated_ids_match']}** across
+all **{proof['timed_token_sequence_pairs']}** retained comparisons. CUDA allocation
+saving is **{f['CUDA_saving_GiB_TP2']:.6f} GiB across TP2**. These measurements
+cover short C1/C16, not every prompt length or concurrency.
+
+'''
+    report='# Final short-C16 admission experiment\n\n'+overview+table+f'''
+Each arm uses twelve short-C16 and six short-C1 repeats per window, all with
+256 prompt / 64 output tokens. The 72 groups contain 792 requests and 50,688
+output tokens. Policy order is balanced within each workload; the two fresh
+model loads have fixed stock-then-compressed order. All trials are included.
+No clock correction or outlier removal is applied.
+
+{quality}
+Quality includes 20 captures and all 94 same-concurrency arm/window/repeat/profile
+comparisons. Actual worker grouping is checked. C16 quality captures use matched controlled
+cohorts; ordinary timing uses native admission without pause/resume, full logprobs
+or profiling. Native mHC and deterministic sparse/expert ordering remain in both
+arms. Finite numerical qualification does not establish universal bitwise
+equivalence; PPL, task accuracy and SQNR are not remeasured.
+
+The policy gate requires at least 5% compressed C16 TTFT improvement, no more
+than 5% stock C16 TTFT regression, at least 98% throughput retention and at most
+15 ms added C1 TTFT, with quality and timed-output checks passing:
+
+{checks}
+
+The historical compression >=5% throughput / <=5% TTFT gates are retained
+separately: **{f['historical_compression_speed_gate_by_window']}**. User scope
+accepts measured concurrency parity and ends further compression-kernel tuning.
+A policy-gate pass alone does not establish that all serving latency is solved;
+the actual compressed-versus-stock gaps are in the table.
+
+Observed first admissions across all twelve C16 timing trials:
+
+{cohorts}
+
+{profiles}
+These are separate ordinary profile samples, one/window/arm on both GPUs.
+They are not simultaneous traces of all twelve timing trials. The verifier
+independently checks every recorded model forward, exact16 graph replay, 68
+qualified fused KDA calls and zero reconstruction in covered full-size decode
+ranges. Prefill may still contain a small final chunk: ongoing decode consumes
+part of the shared 2,048-token budget. Kernel sums are not API wall time or
+measured memory bandwidth. No recognized compilation event overlaps timing:
+**{f['no_recognized_JIT_event_overlaps_timing']}**.
+
+At 10 ms, both ordinary profiles have the same prefill row counts
+**2048 / 2048 / 23**. Each compressed prefill forward reconstructs 68 matrices,
+costing **35.39-37.37 ms of kernel sum per rank per forward**; the three-forward
+total is **108.56 ms on rank 0 / 109.49 ms on rank 1**. Covered full-size decode
+continues to use graphs and fused kernels without reconstruction. This locates
+a real prefill cost, without attributing the whole API gap to kernel sums.
+
+The admission implementation stops collecting as soon as the 2,048-token budget
+is full: eight 256-token prompts. Thus 10 ms is an upper wait bound and does not
+guarantee collection of all sixteen requests. At 10 ms, stock fills that first
+budget in 11/12 trials and compression in 10/12. Even filled-first-budget trials
+have different later first-token arrival groups. The eighth/ninth arrival pair
+sets each C16 trial median, making the median of trial medians sensitive to this
+boundary. Across all requests, stock/compressed means are
+**{all_requests['control']['all_request_mean_TTFT_s']:.6f} / {all_requests['candidate']['all_request_mean_TTFT_s']:.6f} s**;
+pooled medians are **{all_requests['control']['pooled_request_median_TTFT_s']:.6f} /
+{all_requests['candidate']['pooled_request_median_TTFT_s']:.6f} s**. All twelve trials
+remain in the frozen result. This is supplementary diagnosis, not proof that a
+specific later scheduling change removes the gap. The
+[remaining-latency review]({LINK}c16-admission-v1-remaining-latency-review-v2.json)
+retains every trial, middle arrival, profile stage and source binding.
+
+Both arms retain graphs 1/2/4/8/16, 4 GiB KV per rank, 16 sequences, the
+2,048-token budget and identical 34-variant startup warmup/heap trim. The 207
+qualified warmed exact16 parent sources are unchanged; four additions implement
+the admission experiment. The failed input-FP32 variant is excluded. No kernel
+implementation, model weights, speculative decoding or transport configuration
+is changed. Local validation passes **796 tests / one GPU skip, Ruff and strict
+core mypy**; the CPU protocol simulation rejects injected grouping, numerical
+and compilation failures. Six trace fixtures reject wrong kernels/geometry,
+missing rank/output or absent graph replay. No additional GPU experiment ran.
+
+The measured CUDA saving is retained separately from CPU RSS. CPU process
+counters overlap CUDA allocations on Spark and must not be added; post-profile
+RSS is not evidence of a durable CPU-memory saving. Per-window clock/thermal
+observations and all trial/request data are retained in the final findings.
+
+The user's FP32 KL follow-up was investigated using retained evidence, without
+another GPU experiment. The audit rehashes **{audit['checked_files']} files** and
+reproduces the exact native source adaptations. The qualified fused kernel
+already accumulates in FP32; the failed variant changes split-K from one to two,
+stores two FP32 partial sums and combines them before the BF16 output conversion.
+This avoids BF16 partial-store loss but still changes accumulation grouping.
+Producer/reducer strides agree in the inspected source. No small reducer bug
+or first differing model layer is established by this audit.
+
+In the retained C16 case, 26/48 decode rows have higher KL with the FP32 variant;
+one row accounts for 54.49% of its total KL. All rows remain included. The tested
+recovery is the complete qualified route used in this admission experiment:
+it preserves compression and restores the earlier passing numerical result.
+Switching only physical row count 16 would need fresh qualification because
+earlier smaller admitted batches can affect later state. Exact stock agreement
+would require matching its GEMM arithmetic or using its GEMM on reconstructed
+weights, with the associated latency/memory tradeoff. The
+[retained KL audit]({LINK}c16-admission-v1-fp32-kl-audit.json) records all per-row
+values and source hashes; neither runtime nor numerical thresholds were changed.
+
+Spark and Mac independently verify **{proof['payloads']} payloads / 211 source
+bindings / 16 worker traces**, with identical decisions and maximum float64
+difference **{proof['maximum_float64_difference']:.6g}**. All prior failures,
+including the input-FP32 C16 failure, remain preserved. Original service identities
+and configuration are restored, health 200; controller, collector and watchdog
+are terminal and the owned awake lease is released. No configuration is promoted.
+This completes the user's last compression experiment. No further compression
+experiment or kernel tuning is planned; MTP is a separate later phase.
+
+The initial evidence collector could hardlink completed result payloads but was
+denied hardlinks to container-owned profiler files. Its failed receipt and log
+remain in the archive. A separately recorded recovery collector verified the
+partial evidence and copied head traces; it changed neither the 211 experiment
+sources nor the verifier, measurements or gates. Six CPU recovery checks pass.
+This required no new GPU measurement. See the
+[archival recovery plan]({LINK}c16-admission-v1-collection-recovery-plan.json).
+
+Evidence: [final findings]({LINK}c16-admission-v1-final-findings.json),
+[cross-host proof]({LINK}c16-admission-v1-cross-host-verification.json),
+[final retention manifest]({LINK}c16-admission-v1-final-retention.json), and
+[frozen preparation]({LINK}c16-admission-v1-preparation-retention.json).
+Local archive: `/private/tmp/mxwave-c16-admission-v1/evidence.tar.gz`.
+Remote: `ROOT/evidence-c16-admission-v1.tar.gz`, where
+`ROOT=/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.
+Archive SHA256: `{proof['archive_sha256']}` ({proof['archive_bytes']:,} bytes).
+Frozen source archive SHA256:
+`0ad0d869d7a8ac2810fa59ffc1715eeeedc24e5361f882816f957dd7f2ad4bcd`.
+Plan SHA256: `b85013c785af0cd230f4739bb2faf527e495018f390dd4464b30e6a68716c9a4`.
+'''
+    for name in ('GLM53_HANDOFF.md','GLM53_CURRENT_STATE.md','GLM53_C16_ADMISSION.md'):
+        raw=(WORK/'docs'/name).read_bytes()
+        with(BASE/('pre-final-'+name+'.txt')).open('xb') as stream:stream.write(raw)
+    (WORK/'docs/GLM53_C16_ADMISSION.md').write_text(report)
+    prefix=overview+'''The qualified warmed exact16 route remains the compression candidate; the
+input-FP32 variant remains rejected. Original service is restored healthy and
+all experiment/retention jobs are finished. No configuration is promoted.
+The user-requested final compression experiment is complete; further compression
+kernel/throughput tuning stops. MTP has not started.
+
+See the [full admission result](GLM53_C16_ADMISSION.md) for every timing cell,
+policy decision, trace counts, quality limits and evidence hashes. Sources are
+frozen at 211 files with all 207 parent files unchanged. The earlier draft
+admission modules are now completed, validated and measured.
+
+Completed FP32 payloads relocated before this run remain verified on the worker
+under `ROOT/retained-c16-admission-v1/<original-directory>/<relative-path>`.
+Canonical archives, model inputs and sources were preserved. The storage receipt
+is retained in the preparation manifest; do not redo cleanup. New head results
+use hardlinks; profiler traces use copies after a preserved hardlink-permission
+failure and successful archival recovery. Local working evidence is
+`/private/tmp/mxwave-c16-admission-v1`; both hosts retain the final archive.
+
+Older checkpoint statements below are historical and superseded where they
+describe paused/running work or an unlaunched admission follow-up.
+
+'''
+    for name in ('GLM53_HANDOFF.md','GLM53_CURRENT_STATE.md'):
+        before=(BASE/('pre-admission-'+name+'.txt')).read_text()
+        heading,tail=before.split('\n\n',1)
+        (WORK/'docs'/name).write_text(heading+'\n\n'+prefix+tail)
+    short=f'''**Final C16 admission result, {stamp}: complete.** The 10 ms policy
+{policy} its prospective gate. Short-C16 TTFT is stock {c16['stock_TTFT_seconds']:.3f} s /
+compressed {c16['compressed_TTFT_seconds']:.3f} s (gap {c16['TTFT_gap_ms']:+.1f} ms).
+This improves admission latency but leaves the C16 compression TTFT penalty unresolved.
+{ntext}; CUDA saving is {f['CUDA_saving_GiB_TP2']:.6f} GiB across TP2.
+Original GLM is restored healthy; no configuration is promoted. This concludes
+compression experiments per user scope. See the [verified admission result](GLM53_C16_ADMISSION.md).
+Older entries below are historical checkpoints.
+
+'''
+    for name in ('GLM53_PREFILL_ADMISSION.md','GLM53_SPEED_OPTIONS.md','GLM53_LOSSLESS_RUNTIME_HANDOFF.md','GLM53_FP32_INPUT_MODEL.md','GLM53_BF16_KERNEL_DIAGNOSTIC.md'):
+        path=WORK/'docs'/name;heading,tail=path.read_text().split('\n\n',1);path.write_text(heading+'\n\n'+short+tail)
+    path=WORK/'README.md';old=path.read_text()
+    active='''stops per user scope. The final **3 versus 10 ms admission experiment is running**
+on the qualified fallback, with a C1 delay control. Its result is pending;
+see the [live admission handoff](docs/GLM53_C16_ADMISSION.md). MTP has not started.'''
+    assert active in old
+    old=old.replace(active,'stops per user scope. The final admission experiment is complete; see the\n[verified result](docs/GLM53_C16_ADMISSION.md). MTP has not started.')
+    marker='**Input-only FP32 follow-up, 19 October: completed, C16 numerical gate fails.**'
+    assert old.count(marker)==1
+    readme=f'''**Final C16 admission comparison, 19 October: independently verified.**
+The 10 ms policy {policy} its prospective gate. {ntext}; all
+{proof['timed_token_sequence_pairs']} timed output pairs match: {proof['all_timed_generated_ids_match']}.
+The qualified warmed exact16 kernels are unchanged; input-FP32 is excluded.
+
+{table}
+Twelve C16 and six C1 trials/window/arm, 256 prompt / 64 output tokens. CUDA
+saving stays {f['CUDA_saving_GiB_TP2']:.6f} GiB across TP2. The actual C16 gap at
+10 ms is {c16['TTFT_gap_ms']:+.1f} ms; this does not qualify every concurrency or prompt length.
+The frozen median-of-trial-medians criterion remains unmet. Supplementary all-request
+statistics give a {mean_gap:+.1f} ms mean / {pooled_gap:+.1f} ms pooled median gap over all
+192 requests per arm; these do not replace the frozen metric or its decision.
+Historical compression speed gates remain retained. PPL, task accuracy and SQNR
+are not remeasured. Both hosts verify {proof['payloads']} payloads / 211 sources /
+16 traces; original GLM is restored healthy. No configuration is promoted.
+This completes compression experiments per user scope. See the
+[full result, traces and limits](docs/GLM53_C16_ADMISSION.md).
+
+'''
+    path.write_text(old.replace(marker,readme+marker))
+    print(json.dumps({'status':'written','timestamp':stamp,'numerics_pass':numerics,'policy_gate_pass':f['policy_gate_passed'],'C16_gap_ms_at_10ms':c16['TTFT_gap_ms']}))
+
+if __name__=='__main__':main()

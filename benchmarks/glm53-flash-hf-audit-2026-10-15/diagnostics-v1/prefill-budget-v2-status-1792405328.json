@@ -1,0 +1,186 @@
+{
+  "epoch": 1792405328.7914217,
+  "phase": "complete",
+  "service_paused": false,
+  "error": null,
+  "arms": [
+    {
+      "arm": "control",
+      "status": "complete",
+      "phase": "complete",
+      "error": null,
+      "quality_complete": 10,
+      "timing_complete": 36,
+      "profiles_complete": 2,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "startup_passed": true,
+      "cuda_allocated_TP2": 188887819264,
+      "ordinary_profile_prefill_rows": [
+        {
+          "budget_tokens": 2048,
+          "rows": [
+            2048,
+            520,
+            1546
+          ]
+        },
+        {
+          "budget_tokens": 2080,
+          "rows": [
+            2080,
+            232,
+            1801
+          ]
+        }
+      ],
+      "timing_cells": [
+        {
+          "case": "c1-short",
+          "budget": 2048,
+          "trials": 6,
+          "median_TPS": 14.862884878702541,
+          "median_TTFT": 0.3923022819799371,
+          "mean_request_TTFT": 0.38958815834484994
+        },
+        {
+          "case": "c1-short",
+          "budget": 2080,
+          "trials": 6,
+          "median_TPS": 14.87747813396056,
+          "median_TTFT": 0.38410011847736314,
+          "mean_request_TTFT": 0.3864766720022696
+        },
+        {
+          "case": "c16-short",
+          "budget": 2048,
+          "trials": 12,
+          "median_TPS": 80.94264743768784,
+          "median_TTFT": 1.6685267807624768,
+          "mean_request_TTFT": 1.8003236370435236
+        },
+        {
+          "case": "c16-short",
+          "budget": 2080,
+          "trials": 12,
+          "median_TPS": 80.7877783737968,
+          "median_TTFT": 1.3837659020209685,
+          "mean_request_TTFT": 1.8422962347837408
+        }
+      ]
+    },
+    {
+      "arm": "candidate",
+      "status": "complete",
+      "phase": "complete",
+      "error": null,
+      "quality_complete": 10,
+      "timing_complete": 36,
+      "profiles_complete": 2,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "startup_passed": true,
+      "cuda_allocated_TP2": 178829905408,
+      "ordinary_profile_prefill_rows": [
+        {
+          "budget_tokens": 2048,
+          "rows": [
+            2048,
+            2048,
+            23
+          ]
+        },
+        {
+          "budget_tokens": 2080,
+          "rows": [
+            2080,
+            488,
+            1546
+          ]
+        }
+      ],
+      "timing_cells": [
+        {
+          "case": "c1-short",
+          "budget": 2048,
+          "trials": 6,
+          "median_TPS": 16.736411280028342,
+          "median_TTFT": 0.4232537336065434,
+          "mean_request_TTFT": 0.42402735602809116
+        },
+        {
+          "case": "c1-short",
+          "budget": 2080,
+          "trials": 6,
+          "median_TPS": 16.73783985461275,
+          "median_TTFT": 0.41666647396050394,
+          "mean_request_TTFT": 0.42209906563706073
+        },
+        {
+          "case": "c16-short",
+          "budget": 2048,
+          "trials": 12,
+          "median_TPS": 84.29725120382494,
+          "median_TTFT": 1.8185599879943766,
+          "mean_request_TTFT": 1.883896301612064
+        },
+        {
+          "case": "c16-short",
+          "budget": 2080,
+          "trials": 12,
+          "median_TPS": 84.82093549040293,
+          "median_TTFT": 1.430269820499234,
+          "mean_request_TTFT": 1.8701985810391004
+        }
+      ]
+    }
+  ],
+  "watchdog_pid": 2947535,
+  "collection": {
+    "status": "complete",
+    "started_epoch": 1792401802.6799247,
+    "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/evidence-prefill-budget-v2.tar.gz",
+    "archive_sha256": "7b2f77dfc3105536f19fa46c5a5bb508a878ef74cb7c9abfe3c1943eaaf6541f",
+    "archive_bytes": 461945864,
+    "payloads": 1601,
+    "copy_owned_traces_and_link_results": true,
+    "source_files": 216,
+    "restored_health": 200,
+    "measurements_complete": true,
+    "quality_qualified": false,
+    "verified_after_pack": true,
+    "finished_epoch": 1792404985.5333765
+  }
+}

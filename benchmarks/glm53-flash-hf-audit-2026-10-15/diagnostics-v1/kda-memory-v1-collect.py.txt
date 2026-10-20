@@ -1,0 +1,89 @@
+"""Retain both GPU components only after their original-service restoration is verified."""
+from __future__ import annotations
+import hashlib,json,os,pathlib,shlex,shutil,subprocess,sys,tarfile,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='kda-memory-v1';REV='kdamemoryv1';sys.path.insert(0,str(ROOT/(DIR+'-src-v2')))
+import full_model_control as c
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def alive(pid):
+ p=pathlib.Path('/proc')/str(pid)/'stat'
+ try:return p.read_text().rsplit(')',1)[1].split()[0]!='Z'
+ except FileNotFoundError:return False
+
+def main():
+ check=ROOT/(DIR+'-evidence-check.json');assert not check.exists()
+ statepath=ROOT/(DIR+'-controller.json');started=time.time()
+ c.write(check,{'status':'waiting','started_epoch':started,'pid':os.getpid()})
+ try:
+  deadline=time.monotonic()+7500
+  while time.monotonic()<deadline:
+   if statepath.exists():
+    state=json.loads(statepath.read_bytes())
+    if state['phase'] in ('complete','failed_restored') and not alive(state['pid']) and not alive(state['watchdog_pid']):break
+    if state['phase']=='preparation_failed':raise RuntimeError('Controller preparation failed; inspect retained operational files')
+   time.sleep(2)
+  else:raise TimeoutError('Component collector deadline')
+  prepared=json.loads((ROOT/(DIR+'-prepared-v2.json')).read_bytes())
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+  identities=[c.identity(x) for x in originals]
+  assert c.health(8000) and all(x['State']['Running'] for x in originals) and identities==prepared['originals']
+  evidence=ROOT/('evidence-'+DIR);evidence.mkdir()
+  post={'status':'passed','health':200,'originals':identities,'controller_terminal':not alive(state['pid']),'watchdog_terminal':not alive(state['watchdog_pid']),'checked_epoch':time.time()}
+  c.write(evidence/'post-restoration-check.json',post)
+  for source,name in [
+   (statepath,'controller.json'),(ROOT/(DIR+'-prepared-v2.json'),'prepared.json'),
+   (ROOT/(DIR+'-preparation-v3.json'),'preparation.json'),(ROOT/(DIR+'-preparation-v2.json'),'preparation-v2.json'),(ROOT/(DIR+'-prepared.json'),'prepared-v1.json'),(ROOT/(DIR+'-preparation.json'),'preparation-v1-failed.json'),(ROOT/(DIR+'-launch.json'),'launch.json'),
+   (ROOT/('restoration-'+REV+'.json'),'restoration.json'),(ROOT/('watchdog-'+REV+'.json'),'watchdog.json'),
+   (ROOT/(DIR+'-controller.log'),'controller.log'),(ROOT/(DIR+'-source-v2.tar.gz'),'source-overlay.tar.gz'),
+   (ROOT/'warmed-model-v1-cross-host-verification.json','parent-cross-host-verification.json'),
+   (ROOT/(DIR+'-overlay-v2')/'plan.json','plan.json'),(ROOT/(DIR+'-overlay-v2')/'local-checks.json','local-checks.json'),(ROOT/(DIR+'-counter-parser-check.json'),'counter-parser-check.json'),
+   (ROOT/('prepare-'+DIR+'.py'),'prepare.py'),(ROOT/('prepare-'+DIR+'-v3.py'),'prepare-v3.py'),(ROOT/('complete-'+DIR+'-preparation-v2.py'),'prepare-v2.py'),(ROOT/('launch-'+DIR+'.py'),'launch.py'),
+   (ROOT/('verify-'+DIR+'.py'),'verify.py'),(pathlib.Path(__file__),'collect.py')]:shutil.copyfile(source,evidence/name)
+  source_dir=evidence/'source';source_dir.mkdir()
+  for relative,digest in prepared['bindings'][0]['code'].items():
+   p=ROOT/(DIR+'-src-v2')/relative;assert sha(p)==digest
+   dest=source_dir/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,dest)
+  pack=r'''import pathlib,sys,tarfile
+root=pathlib.Path(sys.argv[1]);files=[p for p in sorted(root.rglob('*')) if p.is_file()]
+assert all(not p.is_symlink() and p.resolve().is_relative_to(root.resolve()) for p in files)
+assert sum(p.stat().st_size for p in files)<512*1024**2
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tf:
+ for p in files:tf.add(p,arcname=str(p.relative_to(root)),recursive=False)
+'''
+  for rank in (0,1):
+   for stage in ('timing','profile'):
+    for suffix in ('report.json','container.log'):
+     p=ROOT/DIR/f'rank{rank}-{stage}-{suffix}'
+     if p.exists():shutil.copyfile(p,evidence/p.name)
+   archive=ROOT/DIR/f'rank{rank}-payloads.tar.gz'
+   argv=['python3','-S','-c',pack,str(ROOT/DIR/f'rank{rank}')]
+   if rank:argv=[*c.SSH,shlex.join(argv)]
+   with archive.open('xb') as f:subprocess.run(argv,stdout=f,check=True,timeout=120)
+   target=evidence/f'rank{rank}';target.mkdir()
+   with tarfile.open(archive) as tf:
+    seen=set();total=0
+    for m in tf.getmembers():
+     p=pathlib.PurePosixPath(m.name);assert m.isfile() and not p.is_absolute() and '..' not in p.parts and m.name not in seen
+     seen.add(m.name);total+=m.size
+    assert total<512*1024**2;tf.extractall(target,filter='data')
+  files=[{'path':str(p.relative_to(evidence)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in sorted(evidence.rglob('*')) if p.is_file()]
+  c.write(evidence/'inventory.json',{'files':files})
+  output=evidence/'spark-independent-review.json'
+  subprocess.run(['python3','-S',str(evidence/'verify.py'),'--root',str(evidence),'--output',str(output)],check=True,timeout=120)
+  archive=ROOT/('evidence-'+DIR+'.tar.gz')
+  with tarfile.open(archive,'x:gz') as tf:
+   for p in sorted(evidence.rglob('*')):
+    if p.is_file():tf.add(p,arcname=str(p.relative_to(evidence)),recursive=False)
+  with tarfile.open(archive) as tf:
+   for row in files:
+    member=tf.extractfile(row['path']);assert member is not None and hashlib.file_digest(member,'sha256').hexdigest()==row['sha256']
+  review=json.loads(output.read_bytes())
+  result={'status':'complete','archive':str(archive),'archive_sha256':sha(archive),'archive_bytes':archive.stat().st_size,'payloads':len(files),'source_files':review['source_files'],'diagnostic_complete':review['diagnostic_complete'],'restored_health':200,'verified_after_pack':True,'finished_epoch':time.time()}
+  c.write(check,result)
+  current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes());current.update(active_experiment=None,service_paused=False,original_health=200,latest_kda_memory_diagnostic=result,updated_epoch=time.time());c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',current)
+  print(json.dumps(result))
+ except BaseException as exc:
+  c.write(check,{'status':'failed','error':repr(exc),'updated_epoch':time.time()});raise
+if __name__=='__main__':main()

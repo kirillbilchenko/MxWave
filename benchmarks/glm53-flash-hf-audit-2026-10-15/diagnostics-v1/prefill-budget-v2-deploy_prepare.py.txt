@@ -1,0 +1,45 @@
+"""Stage the frozen CPU preflight once without starting a GPU model controller."""
+from __future__ import annotations
+import hashlib,io,json,pathlib,shlex,subprocess,tarfile,time
+
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+SSH=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark']
+
+def main():
+    freeze=json.loads((BASE/'source-freeze.json').read_bytes())
+    for n,h in freeze['operations_sha256'].items():assert hashlib.sha256((BASE/n).read_bytes()).hexdigest()==h
+    mapping={BASE/'source-only.tar.gz':'prefill-budget-v2-source-only.tar.gz',
+             BASE/'overlay/parent-proof.json':'prefill-budget-v2-parent-proof.json',
+             BASE/'simulate.py':'prefill-budget-v2-cpu-simulation.py'}
+    for n in ('prepare','collect','verify','launch'):mapping[BASE/(n+'.py')]=n+'-prefill-budget-v2.py'
+    for n in ('local-checks','cpu-protocol-check','mechanism-CPU-check'):
+        mapping[BASE/(n+'.json')]='prefill-budget-v2-'+n+'.json'
+    data=io.BytesIO()
+    with tarfile.open(fileobj=data,mode='w:gz') as tf:
+        for source,name in mapping.items():tf.add(source,arcname=name,recursive=False)
+    payload=data.getvalue();expected={n:hashlib.sha256(p.read_bytes()).hexdigest() for p,n in mapping.items()}
+    script='''import hashlib,io,json,pathlib,sys,tarfile
+r=pathlib.Path(sys.argv[1]);expected=json.loads(sys.argv[2]);data=sys.stdin.buffer.read()
+assert hashlib.sha256(data).hexdigest()==sys.argv[3]
+with tarfile.open(fileobj=io.BytesIO(data)) as tf:
+ members=tf.getmembers();assert len(members)==len(expected) and {m.name for m in members}==set(expected)
+ assert all(m.isfile() and pathlib.Path(m.name).name==m.name and not (r/m.name).exists() for m in members)
+ for m in members:
+  bits=tf.extractfile(m).read();assert hashlib.sha256(bits).hexdigest()==expected[m.name]
+  (r/m.name).open('xb').write(bits)
+print('staged')
+'''
+    subprocess.run([*SSH,shlex.join(['python3','-S','-c',script,ROOT,json.dumps(expected),hashlib.sha256(payload).hexdigest()])],input=payload,check=True,timeout=60)
+    receipt={'staged_epoch':time.time(),'files':expected,'GPU_controller_launched':False}
+    (BASE/'deployment.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    with (BASE/'preparation.log').open('xb') as out:
+        done=subprocess.run([*SSH,shlex.join(['python3','-S','-u',ROOT+'/prepare-prefill-budget-v2.py',freeze['source_archive_sha256']])],stdout=out,stderr=subprocess.STDOUT)
+    for remote,local in [('prefill-budget-v2-preparation.json','preparation.json'),
+                         ('prefill-budget-v2-prepared.json','prepared.json')]:
+        bits=subprocess.check_output([*SSH,shlex.join(['cat',ROOT+'/'+remote])],timeout=45)
+        (BASE/local).write_bytes(bits)
+    print('CPU preparation exit',done.returncode)
+    raise SystemExit(done.returncode)
+
+if __name__=='__main__':main()

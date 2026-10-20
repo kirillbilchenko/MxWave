@@ -1,0 +1,83 @@
+"""Compare retained reference quality metadata across the before/after startup runs."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+NEW = BASE / 'live/reference-quality-complete'
+PARENT = Path('/private/tmp/mxwave-matched-row16-v1/evidence')
+sys.path.insert(0, str(PARENT / 'source'))
+from measure_matched_row16 import model_signature
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    old_inventory = {r['path']:r for r in json.loads((PARENT/'evidence-inventory.json').read_bytes())['files']}
+    receipt = json.loads((NEW/'snapshot-receipt.json').read_bytes())
+    new_inventory = {r['path']:r for r in receipt['files']}
+    for name, row in new_inventory.items():
+        assert sha(NEW/name) == row['sha256'] and (NEW/name).stat().st_size == row['bytes']
+    old_proof = json.loads((PARENT.parent/'cross-host-verification.json').read_bytes())
+    assert old_proof['status']=='passed' and old_proof['measurement_complete']
+    assert old_proof['archive_sha256']=='15feabeb92479432ba548f85137da090b6a7ab5c6f25dacf8f3472559ac4c0d2'
+    for rel in ('results/control-matched-row16.json','results/matched-row16-plan.json',
+                'source/measure_matched_row16.py','source/c8_forward_trace.py'):
+        assert sha(PARENT/rel)==old_inventory[rel]['sha256']
+    old_plan=json.loads((PARENT/'results/matched-row16-plan.json').read_bytes())
+    new_plan=json.loads((NEW/'warmed-model-plan.json').read_bytes())
+    assert old_plan['source_protocol_sha256']==new_plan['source_protocol_sha256']
+    before=json.loads((PARENT/'results/control-matched-row16.json').read_bytes())
+    after=json.loads((NEW/'control-warmed-model.json').read_bytes())
+    old_groups={g['label']:g for g in before['quality']}
+    selected=[g for g in after['quality']if not g['profiled']]
+    assert len(selected)==9 and all(g['status']=='complete' for g in selected)
+    results=[]
+    for group in selected:
+        name=group['label'];filename=name+'-decode-quality.json'
+        assert sha(PARENT/'results'/filename)==old_inventory['results/'+filename]['sha256']
+        left=json.loads((PARENT/'results'/filename).read_bytes())
+        right=json.loads((NEW/filename).read_bytes())
+        assert left['status']==right['status']=='complete'
+        assert len(left['contexts'])==len(right['contexts'])==16
+        rows=[]
+        for a,b in zip(left['contexts'],right['contexts'],strict=True):
+            assert a['index']==b['index']
+            prompt_equal=a['prompt_sha256']==b['prompt_sha256']
+            tokens_equal=a['token_ids']==b['token_ids']
+            for c,d in zip(a['steps'],b['steps'],strict=True):
+                assert c['position']==d['position'] and c['kind']==d['kind']
+                assert old_inventory['results/'+c['file']]['sha256']==c['sha256']
+                rows.append({'context':a['index'],'position':c['position'],'kind':c['kind'],
+                             'same_prompt':prompt_equal,'same_generated_ids':tokens_equal,
+                             'same_conditioning':c['conditioning_token_ids']==d['conditioning_token_ids'],
+                             'full_vocabulary_payload_hash_equal':c['sha256']==d['sha256']})
+        assert len(rows)==64
+        signatures=[model_signature(old_groups[name],rank)==model_signature(group,rank) for rank in (0,1)]
+        results.append({'label':name,'matching_worker_grouping':signatures,
+                        'rows':len(rows),'matching_payload_hashes':sum(x['full_vocabulary_payload_hash_equal'] for x in rows),
+                        'mismatches':[x for x in rows if not all(x[k]for k in ('same_prompt','same_generated_ids','same_conditioning','full_vocabulary_payload_hash_equal'))]})
+    out={'status':'preliminary_metadata_comparison_complete','source_sha256':sha(Path(__file__)),
+         'old_archive_sha256':old_proof['archive_sha256'],
+         'new_snapshot_receipt_sha256':sha(NEW/'snapshot-receipt.json'),
+         'new_model_result_sha256':new_inventory['control-warmed-model.json']['sha256'],
+         'groups':results,'full_vocabulary_rows':sum(x['rows']for x in results),
+         'matching_payload_hashes':sum(x['matching_payload_hashes']for x in results),
+         'all_worker_groupings_match':all(all(x['matching_worker_grouping'])for x in results),
+         'all_prompts_conditioning_outputs_and_hashes_match':not any(x['mismatches']for x in results),
+         'new_raw_payloads_independently_verified':False,'new_final_archive_verification_pending':True,
+         'new_GPU_experiment':False,'ordinary_timing_interrupted':False,
+         'limits':['New payload hashes are emitted by the unchanged qualified collector; independent verification of every new raw payload remains pending.',
+                   'This compares the fixed reference contexts across model loads; no universal numerical or serving-speed claim follows.']}
+    target=BASE/'reference-startup-comparison-preliminary.json'
+    with target.open('x')as stream:json.dump(out,stream,indent=2);stream.write('\n')
+    print(json.dumps({k:v for k,v in out.items()if k!='groups'}))
+
+
+if __name__=='__main__':main()

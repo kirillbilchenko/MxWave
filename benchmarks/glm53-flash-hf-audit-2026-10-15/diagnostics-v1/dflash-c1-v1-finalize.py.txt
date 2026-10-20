@@ -1,0 +1,101 @@
+"""Check exact service restoration, then freeze this completed experiment's evidence."""
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import pathlib
+import sys
+import tarfile
+import time
+import urllib.error
+import urllib.request
+
+ROOT = pathlib.Path(__file__).parent
+sys.path.insert(0, str(ROOT.parent / 'full-c16admissionv1-src'))
+import full_model_control as c
+
+
+def main():
+    deadline = time.monotonic() + 1200
+    while True:
+        state = json.loads((ROOT / 'controller.json').read_bytes())
+        if state['phase'] == 'complete_restored':
+            break
+        assert state['phase'] not in ('failed_restored', 'preparation_failed'), state.get('error')
+        assert time.monotonic() < deadline
+        time.sleep(5)
+    prepared = json.loads((ROOT / 'prepared.json').read_bytes())
+    live = [c.inspect(rank, prepared['live'][rank]['id']) for rank in (0, 1)]
+    assert [c.identity(x) for x in live] == prepared['live']
+    assert all(x['State']['Running'] for x in live) and c.health(8000)
+    original = [c.inspect(rank, c.ORIGINAL_IDS[rank]) for rank in (0, 1)]
+    assert [c.identity(x) for x in original] == prepared['originals']
+    assert not any(x['State']['Running'] for x in original)
+    diagnostic = []
+    for arm, entries in prepared['launches'].items():
+        for entry in entries:
+            running = c.inspect(entry['rank'], entry['name'])['State']['Running']
+            assert not running
+            diagnostic.append(dict(arm=arm, rank=entry['rank'], name=entry['name'], stopped=True))
+    spec = importlib.util.spec_from_file_location('client', ROOT / 'measure_serving.py')
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+    client.BASE = 'http://127.0.0.1:8000'
+    models = json.loads(client.request('/v1/models'))
+    assert any(row['id'] == 'glm-5.3-flash' for row in models['data'])
+    try:
+        urllib.request.urlopen(client.BASE + '/v1/models', timeout=10)
+        raise AssertionError('Unauthenticated request unexpectedly succeeded')
+    except urllib.error.HTTPError as error:
+        assert error.code == 401
+    chat = json.loads(client.request('/v1/chat/completions', dict(
+        model='glm-5.3-flash', messages=[dict(role='user', content='Reply with only the digit: what is 2 + 2?')],
+        temperature=0, seed=42, max_tokens=16, chat_template_kwargs={'enable_thinking': False})))
+    assert chat['choices'][0]['message']['content'].strip().strip('.!') == '4'
+    c.write(ROOT / 'final-service-check.json', dict(
+        status='passed', epoch=time.time(), health_200=True, authenticated_models_200=True,
+        unauthenticated_models_401=True, chat_sanity=chat, live=[c.identity(x) for x in live],
+        originals=[c.identity(x) for x in original], originals_stopped=True,
+        diagnostic_containers=diagnostic, configured_max_context=8192,
+        endpoint=client.BASE, long_context_qualified=False))
+    # Controllers should be terminal by the time the restored service has answered.
+    for _ in range(12):
+        active = {}
+        for name in ('pid', 'watchdog_pid'):
+            path = pathlib.Path(f'/proc/{state[name]}/stat')
+            if path.exists():
+                fields = path.read_text().split(') ', 1)[1].split()
+                if fields[0] != 'Z':
+                    active[name] = state[name]
+        if not active:
+            break
+        time.sleep(1)
+    assert not active, active
+    c.write(ROOT / 'final-process-check.json', dict(status='passed', epoch=time.time(),
+        controller_terminal=True, watchdog_terminal=True, health_200=c.health(8000)))
+    files = sorted(p for p in ROOT.iterdir() if p.is_file() and p.suffix in ('.py', '.json', '.log')
+                   and p.name not in ('finalize.log', 'evidence-manifest.json', 'archive-receipt.json'))
+    for arm in ('current', 'ct_stock', 'candidate'):
+        for rank in (0, 1):
+            files.extend(sorted(p for p in (ROOT / f'{arm}-r{rank}').iterdir() if p.is_file()))
+    secret = pathlib.Path('/home/kirya/local-spark/runtime/secrets/llm_api_key').read_bytes().strip()
+    manifest = {}
+    for path in files:
+        data = path.read_bytes()
+        assert secret and secret not in data, path.name
+        manifest[str(path.relative_to(ROOT))] = dict(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+    c.write(ROOT / 'evidence-manifest.json', manifest)
+    archive = ROOT / 'evidence-v1.tar.gz'
+    assert not archive.exists()
+    with tarfile.open(archive, 'w:gz') as output:
+        for path in [*files, ROOT / 'evidence-manifest.json']:
+            output.add(path, arcname=str(path.relative_to(ROOT)))
+    receipt = dict(status='complete', archive=str(archive), bytes=archive.stat().st_size,
+                   sha256=hashlib.sha256(archive.read_bytes()).hexdigest(), payloads=len(manifest))
+    c.write(ROOT / 'archive-receipt.json', receipt)
+    print(json.dumps(receipt))
+
+
+if __name__ == '__main__':
+    main()

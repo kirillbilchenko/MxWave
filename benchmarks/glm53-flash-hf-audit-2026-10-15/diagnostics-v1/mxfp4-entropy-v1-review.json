@@ -1,0 +1,69 @@
+{
+  "status": "complete",
+  "input_sha256": "03239a1cfc97690b6cb1a8d5dd5a60801049f96667ca9ae5f355e97c50a1b915",
+  "source_metadata": {
+    "config.json": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198",
+    "model.safetensors.index.json": "6d1364a27eef78675390422b1b5230601817fb7460ce816951b2cd515934c85d"
+  },
+  "screen_code_sha256": "e4b74e55c7fac74179514c55e03196297a9d669ad637b239dbcbf539aeb382b1",
+  "analysis_sha256": "96bd1d4afd18194284e9f32e66f623e674aa10a3d0e07a528b8173ac2ba003f7",
+  "cases": 54,
+  "sample_bytes": 3538944,
+  "groups": {
+    "codes": {
+      "cases": 27,
+      "sample_bytes": 1769472,
+      "sampled_tensor_bytes": 113246208,
+      "weighted_entropy_bits": 3.9151986903181526,
+      "minimum_entropy_bits": 3.889002101945167,
+      "maximum_entropy_bits": 3.9349703955706548,
+      "layouts": [
+        {
+          "lanes": 1,
+          "retained_bytes": 1740282,
+          "saving_fraction": 0.01649644639756942,
+          "raw_fallback_tiles": 0,
+          "tiles": 864
+        },
+        {
+          "lanes": 32,
+          "retained_bytes": 1774764,
+          "saving_fraction": -0.00299072265625,
+          "raw_fallback_tiles": 864,
+          "tiles": 864
+        }
+      ]
+    },
+    "scales": {
+      "cases": 27,
+      "sample_bytes": 1769472,
+      "sampled_tensor_bytes": 7077888,
+      "weighted_entropy_bits": 0.5787832758725858,
+      "minimum_entropy_bits": 0.39655160662167793,
+      "maximum_entropy_bits": 0.7741990474749884,
+      "layouts": [
+        {
+          "lanes": 1,
+          "retained_bytes": 149307,
+          "saving_fraction": 0.9156205919053819,
+          "raw_fallback_tiles": 0,
+          "tiles": 864
+        },
+        {
+          "lanes": 32,
+          "retained_bytes": 298687,
+          "saving_fraction": 0.8311999285662616,
+          "raw_fallback_tiles": 0,
+          "tiles": 864
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Stratified sample, not all experts or a checkpoint-size projection.",
+    "Contiguous checkpoint windows, not the runtime Marlin tile layout.",
+    "Per-tensor sample codebooks; GPU LUT, allocation alignment and decoder scratch excluded.",
+    "One- and 32-stream rANS sizes do not predict GPU decode speed or serving throughput.",
+    "Zero-order symbol entropy is not a bound on codecs exploiting longer correlations."
+  ]
+}

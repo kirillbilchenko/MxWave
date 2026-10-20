@@ -1,0 +1,388 @@
+{
+  "status": "complete",
+  "prototype_wired_into_adapter": false,
+  "correctness_passed": true,
+  "performance_qualified": false,
+  "unchanged_native_library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "source_sha256": {
+    "benchmark_kda_direct_dispatch.py": "7dcaba5698f7a407320ddfb865ebcb28781d7ffb256ecab7d5e03ad2c879b52c",
+    "kda_direct_dispatch.py": "4923a93a4881740b57127ca854a153e41fd8bb21fcfc72120d97413cc928e5d7",
+    "kda_runtime.py": "a3ddf07e196c7a13f6fcc3798fc54e4d311275283436ad103abab00126a93449",
+    "prepare_bf16_attention.py": "6575222a0b43bffae2e9bc83b1c83f7b97d51970f7b68993f46c6634c21481d5"
+  },
+  "attempts": [
+    {
+      "stage": "initial",
+      "correctness_cases": 24,
+      "correctness_passed": true,
+      "performance_gate_passed": true,
+      "cuda_peak_allocated_bytes": 384593920,
+      "m4": [
+        {
+          "fixture": "kda-input-l0-r0",
+          "ratios_by_order": [
+            {
+              "host_enqueue_us": 0.5446191319751993,
+              "gpu_event_us": 0.943259596367143
+            },
+            {
+              "host_enqueue_us": 0.5485102970965564,
+              "gpu_event_us": 0.9436471027061452
+            }
+          ],
+          "graph_medians_us": {
+            "reference": 431.8239986896515,
+            "direct": 433.0720007419586
+          },
+          "inductor_bits_exact": true
+        },
+        {
+          "fixture": "kda-output-l0-r0",
+          "ratios_by_order": [
+            {
+              "host_enqueue_us": 0.487864077669903,
+              "gpu_event_us": 0.8555601219363805
+            },
+            {
+              "host_enqueue_us": 0.4924821296524526,
+              "gpu_event_us": 0.8551775366744228
+            }
+          ],
+          "graph_medians_us": {
+            "reference": 142.38400012254715,
+            "direct": 142.59199798107147
+          },
+          "inductor_bits_exact": true
+        }
+      ]
+    },
+    {
+      "stage": "confirm",
+      "correctness_cases": 24,
+      "correctness_passed": true,
+      "performance_gate_passed": false,
+      "cuda_peak_allocated_bytes": 384593920,
+      "m4": [
+        {
+          "fixture": "kda-input-l0-r0",
+          "ratios_by_order": [
+            {
+              "host_enqueue_us": 0.5345890794932168,
+              "gpu_event_us": 0.9973004075741115
+            },
+            {
+              "host_enqueue_us": 0.5374050915587317,
+              "gpu_event_us": 0.942172967085014
+            }
+          ],
+          "graph_medians_us": {
+            "reference": 603.1679809093475,
+            "direct": 606.4800024032593
+          },
+          "inductor_bits_exact": true
+        },
+        {
+          "fixture": "kda-output-l0-r0",
+          "ratios_by_order": [
+            {
+              "host_enqueue_us": 0.481998092513114,
+              "gpu_event_us": 0.8498135232052936
+            },
+            {
+              "host_enqueue_us": 0.4844727973038036,
+              "gpu_event_us": 0.8455754771989299
+            }
+          ],
+          "graph_medians_us": {
+            "reference": 175.4079982638359,
+            "direct": 183.04000049829483
+          },
+          "inductor_bits_exact": true
+        }
+      ]
+    }
+  ],
+  "graph_diagnostic": {
+    "diagnostic_only": true,
+    "device": {
+      "name": "NVIDIA GB10",
+      "major": 12,
+      "minor": 1,
+      "L2_cache_size": 25165824,
+      "clock_rate": 2418000,
+      "memory_clock_rate": 8533000
+    },
+    "source_sha256": {
+      "profile_kda_dispatch_graph.py": "c3c64c97a3927521070651131a8cc22410422efb3f38300a10ccf6d5479924d7",
+      "kda_direct_dispatch.py": "4923a93a4881740b57127ca854a153e41fd8bb21fcfc72120d97413cc928e5d7",
+      "kda_runtime.py": "a3ddf07e196c7a13f6fcc3798fc54e4d311275283436ad103abab00126a93449"
+    },
+    "cases": [
+      {
+        "fixture": "kda-input-l0-r0",
+        "output_bits_exact": true,
+        "timing_blocks": [
+          {
+            "order": [
+              "reference_a",
+              "reference_b",
+              "direct"
+            ],
+            "clocks_before": {
+              "sm_mhz": 2411,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 45,
+              "pstate": 0
+            },
+            "clocks_after": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 46,
+              "pstate": 0
+            },
+            "medians_us": {
+              "reference_a": 602.1600067615509,
+              "reference_b": 598.5920131206512,
+              "direct": 601.1039912700653
+            },
+            "null_reference_b_a_ratio": 0.9940746751680031,
+            "direct_reference_a_ratio": 0.998246287565385
+          },
+          {
+            "order": [
+              "direct",
+              "reference_b",
+              "reference_a"
+            ],
+            "clocks_before": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 46,
+              "pstate": 0
+            },
+            "clocks_after": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 46,
+              "pstate": 0
+            },
+            "medians_us": {
+              "reference_a": 596.0319936275482,
+              "reference_b": 611.952006816864,
+              "direct": 610.7039749622345
+            },
+            "null_reference_b_a_ratio": 1.0267099977174448,
+            "direct_reference_a_ratio": 1.0246160969403508
+          }
+        ],
+        "all_9_gpu_activity_signatures_identical": true,
+        "activity_signature": [
+          {
+            "category": "kernel",
+            "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)",
+            "grid": [
+              32,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "registers": 16,
+            "shared_memory": 0
+          },
+          {
+            "category": "kernel",
+            "name": "memcpy32_post",
+            "grid": [
+              32,
+              1,
+              1
+            ],
+            "block": [
+              256,
+              1,
+              1
+            ],
+            "registers": 16,
+            "shared_memory": 0
+          },
+          {
+            "category": "kernel",
+            "name": "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)",
+            "grid": [
+              1,
+              197,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "registers": 68,
+            "shared_memory": 25120
+          },
+          {
+            "category": "kernel",
+            "name": "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1} const&)::{lambda(int)#1})",
+            "grid": [
+              99,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "registers": 18,
+            "shared_memory": 0
+          }
+        ],
+        "trace": {
+          "file": "kda-input-l0-r0-trace.json.gz",
+          "sha256": "361ad46ab52a7741cedb8f167b4e75f59def2f4fc5968aec4f3602834bdc19f4"
+        },
+        "graph_dumps": {
+          "reference_a": {
+            "debug_unavailable": "FileNotFoundError(2, 'No such file or directory')"
+          },
+          "reference_b": {
+            "debug_unavailable": "FileNotFoundError(2, 'No such file or directory')"
+          },
+          "direct": {
+            "debug_unavailable": "FileNotFoundError(2, 'No such file or directory')"
+          }
+        }
+      },
+      {
+        "fixture": "kda-output-l0-r0",
+        "output_bits_exact": true,
+        "timing_blocks": [
+          {
+            "order": [
+              "reference_a",
+              "reference_b",
+              "direct"
+            ],
+            "clocks_before": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 45,
+              "pstate": 0
+            },
+            "clocks_after": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 45,
+              "pstate": 0
+            },
+            "medians_us": {
+              "reference_a": 258.7520033121109,
+              "reference_b": 257.26400315761566,
+              "direct": 258.59199464321136
+            },
+            "null_reference_b_a_ratio": 0.994249319288553,
+            "direct_reference_a_ratio": 0.9993816137967962
+          },
+          {
+            "order": [
+              "direct",
+              "reference_b",
+              "reference_a"
+            ],
+            "clocks_before": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 45,
+              "pstate": 0
+            },
+            "clocks_after": {
+              "sm_mhz": 2470,
+              "memory_mhz": "Not Supported",
+              "temperature_c": 45,
+              "pstate": 0
+            },
+            "medians_us": {
+              "reference_a": 252.6240050792694,
+              "reference_b": 254.68799471855164,
+              "direct": 258.33599269390106
+            },
+            "null_reference_b_a_ratio": 1.008170203930678,
+            "direct_reference_a_ratio": 1.0226106288388521
+          }
+        ],
+        "all_9_gpu_activity_signatures_identical": true,
+        "activity_signature": [
+          {
+            "category": "kernel",
+            "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)",
+            "grid": [
+              32,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "registers": 16,
+            "shared_memory": 0
+          },
+          {
+            "category": "gpu_memcpy",
+            "name": "Memcpy DtoD (Device -> Device)",
+            "grid": null,
+            "block": null,
+            "registers": null,
+            "shared_memory": null
+          },
+          {
+            "category": "kernel",
+            "name": "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)",
+            "grid": [
+              1,
+              64,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "registers": 68,
+            "shared_memory": 16160
+          }
+        ],
+        "trace": {
+          "file": "kda-output-l0-r0-trace.json.gz",
+          "sha256": "26aaf4db6313ff9540e4c0f5bbe967cd24db5766e5b0076385e7d68e0c8b78b6"
+        },
+        "graph_dumps": {
+          "reference_a": {
+            "debug_unavailable": "FileNotFoundError(2, 'No such file or directory')"
+          },
+          "reference_b": {
+            "debug_unavailable": "FileNotFoundError(2, 'No such file or directory')"
+          },
+          "direct": {
+            "debug_unavailable": "FileNotFoundError(2, 'No such file or directory')"
+          }
+        }
+      }
+    ]
+  },
+  "limits": [
+    "V1 performance qualification remains failed; the diagnostic does not supersede it.",
+    "The same GPU activity signatures do not prove equality of all non-kernel CUDA graph nodes.",
+    "CUDA graph DOT export was unavailable; clock snapshots do not explain per-kernel variation.",
+    "No whole-model speed or quality result exists for the direct wrapper.",
+    "Production GLM remained running and idle in these component measurements."
+  ],
+  "private_controller_sha256": "9f355d1d8405d4a30aae7b111e87b4f7fb2a658a89b479e55f2ae2109f779981",
+  "graph_trace_archive_sha256": "eeaa71c41a36ce91cdc76fc4cf9256e28d159505534def5a42454bcf5de0c1b2"
+}

@@ -1,0 +1,77 @@
+"""Independently verify the archive, frozen bindings and all numerical comparisons."""
+from __future__ import annotations
+import hashlib,json,subprocess,sys,tarfile
+from pathlib import Path
+ROOT=Path(__file__).parent
+
+def digest(path):
+    value=hashlib.sha256()
+    with path.open('rb')as stream:
+        for data in iter(lambda:stream.read(8*1024**2),b''):value.update(data)
+    return value.hexdigest()
+
+def main():
+    receipt=json.loads((ROOT/'archive-receipt.json').read_bytes())
+    archive=ROOT/'repeat-evidence.tar.gz'
+    assert archive.stat().st_size==receipt['bytes']and digest(archive)==receipt['sha256']
+    print('Archive hash verified',flush=True)
+    evidence=ROOT/'evidence';evidence.mkdir(exist_ok=False)
+    with tarfile.open(archive)as source:source.extractall(evidence,filter='data')
+    manifest=json.loads((evidence/'evidence-manifest.json').read_bytes());cache={}
+    for name,row in manifest.items():
+        p=evidence/name;stat=p.stat();assert stat.st_size==row['bytes'],name
+        key=(stat.st_dev,stat.st_ino,stat.st_size,stat.st_mtime_ns)
+        if key not in cache:cache[key]=digest(p)
+        assert cache[key]==row['sha256'],name
+    assert len(manifest)==receipt['payloads']
+    print('All payloads verified: '+str(len(manifest)),flush=True)
+    frozen=json.loads((evidence/'source-manifest.json').read_bytes())
+    for name,sha in frozen.items():assert digest(evidence/name)==sha,name
+    prepared=json.loads((evidence/'prepared.json').read_bytes())
+    assert prepared['bindings'][0]==prepared['bindings'][1]
+    for name,sha in prepared['bindings'][0].items():assert digest(evidence/'source'/name)==sha
+    report=json.loads((evidence/'stock-measurement.json').read_bytes())
+    assert report['status']=='complete'and len(report['records'])==12
+    assert report['plan_sha256']==prepared['plan_sha256']==digest(evidence/'plan.json')
+    assert report['client_sha256']==digest(evidence/'measure_repeat.py')
+    for row in report['records']:
+        if row['capture']:
+            assert len(row['capture'])==2
+            for item in row['capture']:
+                assert item['batches'] and len(item['batches']) <= 32
+                assert any(e['label']=='target-logits/output'for e in item['events'])
+                assert item['bytes']<=256*1024**2 and not item['CPU_sync_during_forward']
+    final=json.loads((evidence/'final-check.json').read_bytes())
+    assert final['controller_phase']=='complete_restored'and final['health_200']
+    assert final['live']==prepared['live']and final['originals']==prepared['originals']
+    assert all(not item['state']['Running']for item in final['experiments'])
+    assert final['authenticated_models_status']==200 and final['unauthenticated_models_status']==401
+    original_bytes=(evidence/'repeat-review.json').read_bytes()
+    original=json.loads(original_bytes)
+    subprocess.run([sys.executable,str(evidence/'analyze_inputs.py'),str(evidence)],
+        check=True,stdout=subprocess.DEVNULL)
+    computed=json.loads((evidence/'repeat-review.json').read_bytes())
+    (ROOT/'mac-repeat-review.json').write_bytes((evidence/'repeat-review.json').read_bytes())
+    (evidence/'repeat-review.json').write_bytes(original_bytes)
+    differences=[]
+    def compare(a,b,path=''):
+        if isinstance(a,dict):
+            assert a.keys()==b.keys(),path
+            for key in a:compare(a[key],b[key],path+'/'+key)
+        elif isinstance(a,list):
+            assert len(a)==len(b),path
+            for i,(x,y)in enumerate(zip(a,b)):compare(x,y,path+'/'+str(i))
+        elif isinstance(a,(float,int))and not isinstance(a,bool):
+            differences.append(abs(a-b));assert abs(a-b)<=2e-12,(path,a,b)
+        else:assert a==b,(path,a,b)
+    compare(original,computed)
+    result=dict(payloads_verified=len(manifest),unique_payload_inodes=len(cache),
+        archive_sha256=receipt['sha256'],archive_bytes=receipt['bytes'],
+        raw_comparison_numeric_fields=len(differences),maximum_numeric_difference=max(differences),
+        all_categorical_fields_match=True,frozen_source_bindings_verified=True,
+        client_plan_bindings_verified=True,all_12_capture_rank_reports_verified=True,
+        service_restored=True,controller_phase=final['controller_phase'])
+    (ROOT/'mac-archive-review.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps(result),flush=True)
+
+if __name__=='__main__':main()

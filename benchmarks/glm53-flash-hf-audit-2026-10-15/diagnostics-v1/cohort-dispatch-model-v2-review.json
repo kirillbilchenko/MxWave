@@ -1,0 +1,1672 @@
+{
+  "status": "complete",
+  "numerical_gate_passed": false,
+  "previous_strict_failures_preserved": true,
+  "same_resident_v9_model": true,
+  "model_loads": 1,
+  "source_groups_checked_in_audit_order": 336,
+  "full_float32_rows_reconstructed_from_raw_api": 384,
+  "quality_comparisons": {
+    "qualified_repeat": {
+      "mean_decode_kl": 7.769463205184935e-06,
+      "mean_decode_nll_difference": 3.133154983723721e-05,
+      "mean_prefill_kl": 0.0,
+      "mean_prefill_nll_difference": 0.0
+    },
+    "direct_repeat": {
+      "mean_decode_kl": 1.4628462433317882e-05,
+      "mean_decode_nll_difference": -7.185115857292352e-06,
+      "mean_prefill_kl": 0.0,
+      "mean_prefill_nll_difference": 0.0
+    },
+    "graph_repeat": {
+      "mean_decode_kl": 7.2936541211615445e-06,
+      "mean_decode_nll_difference": 3.887078735546555e-06,
+      "mean_prefill_kl": 0.0,
+      "mean_prefill_nll_difference": 0.0
+    },
+    "qualified_vs_direct": {
+      "mean_decode_kl": 1.0848446504685773e-05,
+      "mean_decode_nll_difference": 1.9163751540105257e-05,
+      "mean_prefill_kl": 0.0,
+      "mean_prefill_nll_difference": 0.0
+    },
+    "qualified_vs_graph": {
+      "mean_decode_kl": 9.254505890089448e-06,
+      "mean_decode_nll_difference": 3.2413039526253306e-05,
+      "mean_prefill_kl": 0.0,
+      "mean_prefill_nll_difference": 0.0
+    }
+  },
+  "all_64_generated_token_ids_per_leg_match": true,
+  "timing_blocks": [
+    {
+      "reverse_first_order": false,
+      "medians": {
+        "eager-qualified": {
+          "aggregate_tokens_per_second": 38.95639145284775,
+          "ttft_seconds": 1.1339850230142474
+        },
+        "graph-qualified": {
+          "aggregate_tokens_per_second": 41.02972258897073,
+          "ttft_seconds": 1.11708482899121
+        }
+      },
+      "throughput_change_percent": 5.322184778414374,
+      "ttft_change_percent": -1.490336616449739
+    },
+    {
+      "reverse_first_order": true,
+      "medians": {
+        "eager-qualified": {
+          "aggregate_tokens_per_second": 37.573282958644896,
+          "ttft_seconds": 1.0931489935028367
+        },
+        "graph-qualified": {
+          "aggregate_tokens_per_second": 40.66350734529367,
+          "ttft_seconds": 1.1141746290086303
+        }
+      },
+      "throughput_change_percent": 8.224525895301804,
+      "ttft_change_percent": 1.9234007103112294
+    }
+  ],
+  "all_20_timing_groups_retained": true,
+  "controlled_cohorts": [
+    {
+      "label": "smoke-0",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "smoke-1",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "smoke-2",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "eager-qualified-a-0",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-a-1",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-a-2",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-a-3",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-a-0",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-a-1",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-a-2",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-a-3",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "graph-qualified-a-0",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-a-1",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-a-2",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-a-3",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-b-0",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-b-1",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-b-2",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "graph-qualified-b-3",
+      "both_ranks_verified": true,
+      "graph": true
+    },
+    {
+      "label": "eager-direct-b-0",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-b-1",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-b-2",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-direct-b-3",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-b-0",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-b-1",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-b-2",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "eager-qualified-b-3",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "profile-0",
+      "both_ranks_verified": true,
+      "graph": false
+    },
+    {
+      "label": "profile-1",
+      "both_ranks_verified": true,
+      "graph": true
+    }
+  ],
+  "all_29_cohort_proofs_independently_verified": true,
+  "independent_verifier_sha256": "f5e0e22670cb97831afd03e310ba4454cdf2e4cabcb2edda90e236df0f0c164d",
+  "archive_verification": {
+    "status": "passed",
+    "payloads_verified": 711,
+    "archives": [
+      {
+        "status": "verified",
+        "rank": 0,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/cohort-dispatch-model-v2-evidence-rank0.tar.gz",
+        "bytes": 419281776,
+        "sha256": "7865bf68fa88e6121906d8890ed37986facf5b263cd0616e33804ceda754a415",
+        "files": 574,
+        "trace_files": 5,
+        "manifest_sha256": "fd4666f05d668c060dc563e4f2f2d03ed072f8d5e230262d4cac0bd2217f3303",
+        "finished_epoch": 1792247552.310203
+      },
+      {
+        "status": "verified",
+        "rank": 1,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/cohort-dispatch-model-v2-evidence-rank1.tar.gz",
+        "bytes": 5409653,
+        "sha256": "a94609b7d08d310ca6b35d2057a6a474bd4b3eebba879f13cf2ea6c2d1271236",
+        "files": 137,
+        "trace_files": 3,
+        "manifest_sha256": "a85592f981bc7c9add4f2165ca4c0c40cf1ed23d95aa11d579da625cd60023e0",
+        "finished_epoch": 1792247553.984108
+      }
+    ]
+  },
+  "service_restoration": {
+    "status": "complete",
+    "started_epoch": 1792247331.264014,
+    "health": 200,
+    "containers": [
+      {
+        "rank": 1,
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "rank": 0,
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ],
+    "finished_epoch": 1792247488.4838395
+  },
+  "experiment": "cohortdispatchv2",
+  "source_inventory_sha256": "f2df57a36d0cb7651b626c14b204535cd552aae1df2e2e314e9bc996ba9b93f2",
+  "prepared_sha256": "49e005eb35b32886a08940dcd47e909f8efb39d8dc053101af6755e6e0ab9889",
+  "all_96_prefill_distributions_match_bytes_by_context": true,
+  "graph_path_numerical_diagnostic_passed": true,
+  "all_modes_combined_numerical_gate_passed": false,
+  "broader_release_qualified": false,
+  "recommendation": "Retain original KDA operation with graph captures [1,4] for further experimental evaluation; reject direct-wrapper addition",
+  "allocated_cuda_gib_both_ranks": 166.49871587753296,
+  "all_twenty_timing_groups_generate_identical_sequences_by_prompt": true,
+  "profiles": {
+    "eager-qualified-r0": {
+      "trace_sha256": "04f8865f239ff57e2a4efd09d7c9d54527c1a4fb0f866e432dbe40eaabe55f3a",
+      "graph_launches": 0,
+      "shape_summary": [
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 86868.578,
+          "median_kernel_union_all_streams_us": 74279.77807617188,
+          "median_uncovered_all_streams_us": 12588.799923828119,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 407.29499999999996
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 21882.409
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 9229.954999999998
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 1318.3360000000002
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 9.056
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4747.137000000002
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1520.096
+            },
+            "other": {
+              "median_calls": 796,
+              "median_sum_us": 1249.1520000000003
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 848.067
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1649.8889999999992
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 33953.89999999999
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 1160.2890000000007
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 97.34400000000001
+            }
+          }
+        },
+        {
+          "shape": [
+            1032,
+            4,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 775086.655,
+          "median_kernel_union_all_streams_us": 764765.3051757812,
+          "median_uncovered_all_streams_us": 10321.349824218778,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 29666.727000000003
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 99197.05699999997
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 36813.454
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 62395.19799999997
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 64.512
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 34972.108000000015
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 61108.371000000036
+            },
+            "other": {
+              "median_calls": 703,
+              "median_sum_us": 13410.499999999989
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 593.408
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 9602.277000000002
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 393684.7230000001
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 23013.703999999998
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 393.44000000000005
+            }
+          }
+        }
+      ],
+      "m4_forwards": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1044sqsq4sqsk1044)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 86868.578,
+          "kernel_union_all_streams_us": 74279.77807617188,
+          "uncovered_all_streams_us": 12588.799923828119,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1249.1520000000003
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 848.067
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 8.96
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 1318.3360000000002
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1520.096
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21882.409
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9229.954999999998
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1645.376
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4747.137000000002
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 1160.2890000000007
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 407.29499999999996
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 91.80799999999998
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 34092.299
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1040sqsq4sqsk1040)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 85559.169,
+          "kernel_union_all_streams_us": 73286.279296875,
+          "uncovered_all_streams_us": 12272.889703124994,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1207.7130000000009
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 788.288
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 9.056
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 2365.600999999999
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1507.072000000001
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21377.44899999999
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9103.711999999998
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1649.8889999999992
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4650.598000000002
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 1143.6480000000001
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 384.064
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 97.34400000000001
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 32882.187999999995
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1036sqsq4sqsk1036)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 92039.812,
+          "kernel_union_all_streams_us": 76429.28637695312,
+          "uncovered_all_streams_us": 15610.52562304688,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1602.3669999999977
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 987.8399999999999
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 10.176
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 1108.3519999999992
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1749.0250000000003
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 22942.536
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9575.205999999998
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1719.520999999999
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4784.1320000000005
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 1161.5679999999995
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 419.13599999999997
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 151.58400000000003
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 33953.89999999999
+            }
+          }
+        }
+      ],
+      "cpu_m4_forward_spans_us": [
+        466168.424,
+        85836.962,
+        88940.963
+      ]
+    },
+    "graph-qualified-r0": {
+      "trace_sha256": "7ff8ea0258ddd1b85ed7493f558bdbfdb2ea4932aeffe55843c22fd3b551da70",
+      "graph_launches": 3,
+      "shape_summary": [
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 78825.731,
+          "median_kernel_union_all_streams_us": 77180.48291015625,
+          "median_uncovered_all_streams_us": 1739.7728632812505,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 380.70400000000006
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 23946.827999999998
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 9469.314
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 1797.088
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 9.248
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4445.1849999999995
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1687.2959999999996
+            },
+            "other": {
+              "median_calls": 876,
+              "median_sum_us": 3044.033000000002
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 1007.6170000000001
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1720.9920000000004
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 32057.104000000018
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 726.9760000000003
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 400.96
+            }
+          }
+        },
+        {
+          "shape": [
+            1032,
+            4,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 766811.836,
+          "median_kernel_union_all_streams_us": 756851.8579101562,
+          "median_uncovered_all_streams_us": 9959.97808984376,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 29276.588000000003
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 92370.97900000004
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 35274.509
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 79577.12299999998
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 62.144
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 34534.028999999995
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 61134.103999999985
+            },
+            "other": {
+              "median_calls": 703,
+              "median_sum_us": 13108.73799999999
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 556.544
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 9238.695000000003
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 378836.5759999999
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 22499.62299999999
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 486.97599999999994
+            }
+          }
+        }
+      ],
+      "m4_forwards": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1044sqsq4sqsk1044)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 83714.788,
+          "kernel_union_all_streams_us": 81975.01513671875,
+          "uncovered_all_streams_us": 1739.7728632812505,
+          "kernel_groups": {
+            "other": {
+              "calls": 876,
+              "sum_us": 3243.360000000004
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 1007.6170000000001
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 9.12
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 989.1529999999999
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1913.2490000000003
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 25927.342000000004
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 10198.592999999997
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1925.2159999999994
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4505.411999999998
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 789.8560000000002
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 494.336
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 373.2499999999999
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 34306.541
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1040sqsq4sqsk1040)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 78825.731,
+          "kernel_union_all_streams_us": 77180.48291015625,
+          "uncovered_all_streams_us": 1645.2480898437498,
+          "kernel_groups": {
+            "other": {
+              "calls": 876,
+              "sum_us": 3044.033000000002
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 1102.9450000000002
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 10.08
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 1797.088
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1687.2959999999996
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 23946.827999999998
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9469.314
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1720.9920000000004
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4445.1849999999995
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 726.9760000000003
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 380.70400000000006
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 400.96
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 32057.104000000018
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1036sqsq4sqsk1036)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 76607.969,
+          "kernel_union_all_streams_us": 74543.12573242188,
+          "uncovered_all_streams_us": 2064.8432675781223,
+          "kernel_groups": {
+            "other": {
+              "calls": 876,
+              "sum_us": 2790.8169999999996
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 791.2
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 9.248
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 3193.794000000001
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1608.898
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21832.361000000004
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 8927.171999999999
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1666.1760000000002
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4246.497
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 630.9439999999998
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 374.336
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 410.7199999999999
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 31380.364
+            }
+          }
+        }
+      ],
+      "cpu_m4_forward_spans_us": [
+        369064.451,
+        77596.191,
+        80519.808
+      ]
+    },
+    "eager-qualified-r1": {
+      "trace_sha256": "70e6d620bfd05c8c8c3f634236ebcced4189a988da2f1edabdb793b3d4b2538b",
+      "graph_launches": 0,
+      "shape_summary": [
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 86833.225,
+          "median_kernel_union_all_streams_us": 81326.47485351562,
+          "median_uncovered_all_streams_us": 5506.750146484381,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 368.672
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 21446.561000000005
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 9758.177000000007
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 9136.673000000003
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 9.216
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 3894.0480000000002
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1529.5040000000001
+            },
+            "other": {
+              "median_calls": 796,
+              "median_sum_us": 1283.8719999999987
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 791.9359999999998
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1628.9279999999994
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 31640.89800000001
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 946.048
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 89.24800000000002
+            }
+          }
+        },
+        {
+          "shape": [
+            1032,
+            4,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 774215.863,
+          "median_kernel_union_all_streams_us": 764009.6235351562,
+          "median_uncovered_all_streams_us": 10206.239464843762,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 29337.44300000001
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 94204.38899999992
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 35812.09900000001
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 72732.51900000001
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 55.328
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 36073.66599999999
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 63486.72400000008
+            },
+            "other": {
+              "median_calls": 703,
+              "median_sum_us": 14113.792000000012
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 509.02399999999994
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 9570.656
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 384829.65699999995
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 22959.329999999987
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 398.272
+            }
+          }
+        }
+      ],
+      "m4_forwards": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1044sqsq4sqsk1044)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 86833.225,
+          "kernel_union_all_streams_us": 81326.47485351562,
+          "uncovered_all_streams_us": 5506.750146484381,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1270.8159999999998
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 791.9359999999998
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 9.216
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 9136.673000000003
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1524.128000000001
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21446.561000000005
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9758.177000000007
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1623.2960000000003
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 3894.0480000000002
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 946.048
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 368.672
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 84.064
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 32400.644000000004
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1040sqsq4sqsk1040)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 85535.783,
+          "kernel_union_all_streams_us": 79166.80102539062,
+          "uncovered_all_streams_us": 6368.981974609371,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1283.8719999999987
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 791.264
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 8.096
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 8219.615000000002
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1529.5040000000001
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21407.520999999997
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9652.703999999998
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1628.9279999999994
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 3926.4650000000006
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 922.4639999999997
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 367.32800000000003
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 89.24800000000002
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 31419.684
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1036sqsq4sqsk1036)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 91985.769,
+          "kernel_union_all_streams_us": 86913.12670898438,
+          "uncovered_all_streams_us": 5072.642291015625,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1457.3440000000026
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 792.7360000000001
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 24.384
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 14847.522000000006
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1574.0479999999995
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21530.754
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9867.13699999999
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1701.7919999999997
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 3889.151999999999
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 974.6879999999998
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 369.82400000000007
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 98.33600000000001
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 31640.89800000001
+            }
+          }
+        }
+      ],
+      "cpu_m4_forward_spans_us": [
+        460782.931,
+        91822.247,
+        86211.302
+      ]
+    },
+    "graph-qualified-r1": {
+      "trace_sha256": "35fec5f4d4a629d6adb757fcb0a57cef8b16842fd39c0719c436ae993b941ecd",
+      "graph_launches": 3,
+      "shape_summary": [
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 78712.968,
+          "median_kernel_union_all_streams_us": 77053.45043945312,
+          "median_uncovered_all_streams_us": 1659.5175605468685,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 371.42400000000004
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 21609.313
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 8921.760999999999
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 6053.472999999999
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 8.416
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4205.536
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1523.5199999999998
+            },
+            "other": {
+              "median_calls": 876,
+              "median_sum_us": 2770.8800000000065
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 789.6000000000001
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1616.2559999999996
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 31679.492
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 629.9840000000002
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 435.424
+            }
+          }
+        },
+        {
+          "shape": [
+            1032,
+            4,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 766157.554,
+          "median_kernel_union_all_streams_us": 756043.888671875,
+          "median_uncovered_all_streams_us": 10113.665328125004,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 30045.411999999982
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 95795.55900000007
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 36444.067
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 50035.749
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 59.936
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 35406.59299999999
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 64636.993999999984
+            },
+            "other": {
+              "median_calls": 703,
+              "median_sum_us": 13550.016000000005
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 552.608
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 9289.023999999994
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 397004.7929999999
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 22984.25500000002
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 376.096
+            }
+          }
+        }
+      ],
+      "m4_forwards": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1044sqsq4sqsk1044)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 83689.096,
+          "kernel_union_all_streams_us": 82150.92065429688,
+          "uncovered_all_streams_us": 1538.17534570313,
+          "kernel_groups": {
+            "other": {
+              "calls": 876,
+              "sum_us": 2651.7770000000023
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 787.4879999999999
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 8.352
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 10542.113000000001
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1502.2080000000003
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21306.367999999995
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 8887.584999999997
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1612.8319999999994
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4177.375999999999
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 625.0240000000003
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 371.39200000000005
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 435.424
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 32519.426999999985
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1040sqsq4sqsk1040)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 78712.968,
+          "kernel_union_all_streams_us": 77053.45043945312,
+          "uncovered_all_streams_us": 1659.5175605468685,
+          "kernel_groups": {
+            "other": {
+              "calls": 876,
+              "sum_us": 2770.8800000000065
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 789.6000000000001
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 8.416
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 6053.472999999999
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1523.5199999999998
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21609.313
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 8921.760999999999
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1616.2559999999996
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4205.536
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 629.9840000000002
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 371.42400000000004
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 453.0879999999998
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 31401.091000000004
+            }
+          }
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1036sqsq4sqsk1036)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 76579.175,
+          "kernel_union_all_streams_us": 74370.72338867188,
+          "uncovered_all_streams_us": 2208.451611328128,
+          "kernel_groups": {
+            "other": {
+              "calls": 876,
+              "sum_us": 2832.192000000007
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 847.0720000000002
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 9.12
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 2016.096000000001
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1684.0650000000014
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21951.07199999999
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9061.151999999996
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1631.9359999999997
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4524.096
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 658.1119999999999
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 374.3040000000001
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 432.38399999999996
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 31679.492
+            }
+          }
+        }
+      ],
+      "cpu_m4_forward_spans_us": [
+        368875.342,
+        77066.678,
+        80312.983
+      ]
+    }
+  },
+  "profile_analysis_code_sha256": {
+    "analyze_stable_profiles.py": "862bbe048a7cbaebd0a37a411b2005a67e4e41967684ca916c52c5441c730614",
+    "analyze_dispatch_profiles.py": "78814bd94ab8eb3272e5116b2b25019cf2fbf5ec2c4eaebd9b684909817f6efb",
+    "analyze_full_profiles.py": "490ec06d037499418f400d525ef042c466dd81b957a26b9723c3f05e4fb07cf1",
+    "compare_full_model.py": "06793a3177d81c1f9691305c5a21cd9eed94a5cb4c29d76cc5f6a844ed328fef"
+  },
+  "limitations": [
+    "Profiled spans are not unprofiled request latency or throughput.",
+    "Kernel category sums can overlap; only interval unions estimate covered time.",
+    "Complete-forward anchors require 84 expert GEMMs on their annotated stream.",
+    "All contained device streams are included; unattributed concurrent work can remain.",
+    "Device-clock timestamps are never compared across the two nodes.",
+    "Shape matches do not prove identical activations or routing between model arms.",
+    "Uncovered time is not proof of a CPU bottleneck or a specific synchronization cause.",
+    "CPU scope durations include blocked time; nested scopes must not be added to parents.",
+    "Configured graph sizes do not prove replay; inspect actual graph launch events.",
+    "Sixteen quality contexts/four generated tokens; historical strict practical-task failure remains.",
+    "Timing compares graph/eager on the same compressed model, not a new compression-versus-stock reference.",
+    "Different prior-launch allocations and graph configuration prevent sole-cause attribution of improved reference repeatability to admission control."
+  ]
+}

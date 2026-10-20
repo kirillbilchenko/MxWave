@@ -1,0 +1,94 @@
+"""Archive terminal serving evidence without changing the serving configuration."""
+from __future__ import annotations
+
+import hashlib
+import json
+import pathlib
+import sys
+import tarfile
+import time
+import urllib.error
+import urllib.request
+
+ROOT = pathlib.Path(__file__).parent
+sys.path.insert(0, str(ROOT.parent / 'full-c16admissionv1-src'))
+import full_model_control as control
+
+
+def main():
+    state = json.loads((ROOT / 'controller.json').read_bytes())
+    assert state['phase'] == 'complete_live' and state['handover_committed']
+    prepared = json.loads((ROOT / 'prepared.json').read_bytes())
+    originals = [control.inspect(rank, control.ORIGINAL_IDS[rank]) for rank in (0, 1)]
+    assert [control.identity(item) for item in originals] == prepared['originals']
+    assert all(not item['State']['Running'] for item in originals)
+    assert control.health(8000)
+    key = pathlib.Path('/home/kirya/local-spark/runtime/secrets/llm_api_key').read_text().strip()
+    headers = {'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'}
+    checks = []
+    for port in (8000,):
+        for authenticated in (True, False):
+            query = urllib.request.Request(
+                f'http://127.0.0.1:{port}/v1/models', headers=headers if authenticated else {})
+            try:
+                with urllib.request.urlopen(query, timeout=15) as response:
+                    status = response.status
+                    body = json.loads(response.read())
+            except urllib.error.HTTPError as exc:
+                status = exc.code
+                body = None
+            assert status == (200 if authenticated else 401), (port, authenticated, status)
+            if authenticated:
+                assert any(item['id'] == 'glm-5.3-flash' for item in body['data'])
+            checks.append(dict(port=port, authenticated=authenticated, status=status))
+    # One ordinary streamed chat checks the existing authenticated listener after handover.
+    query = urllib.request.Request('http://127.0.0.1:8000/v1/chat/completions',
+        headers=headers, data=json.dumps(dict(model='glm-5.3-flash', stream=True,
+            messages=[dict(role='user', content='Reply with only the digit: what is 2 + 2?')],
+            temperature=0, seed=42, max_tokens=32,
+            chat_template_kwargs={'enable_thinking': False})).encode())
+    chunks = []
+    with urllib.request.urlopen(query, timeout=120) as response:
+        for line in response:
+            if not line.startswith(b'data: ') or line.strip() == b'data: [DONE]':
+                continue
+            event = json.loads(line[6:])
+            assert 'error' not in event
+            chunks.extend(choice['delta'].get('content') or '' for choice in event.get('choices', []))
+    text = ''.join(chunks).strip().strip('.!').strip()
+    assert text == '4', text
+    final = dict(status='passed', epoch=time.time(), checks=checks, streamed_chat=text,
+        original_identities_unchanged=True, originals_stopped=True, candidate_live=True,
+        controller_phase=state['phase'], full_stack_KL_qualified=False)
+    (ROOT / 'final-service-check.json').write_text(json.dumps(final, indent=2) + '\n')
+    for entry in prepared['launches']['candidate']:
+        report = control.inspect(entry['rank'], entry['name'])
+        assert report['State']['Running']
+    manifest = {}
+    files = []
+    for path in sorted(ROOT.rglob('*')):
+        if not path.is_file() or path.is_symlink():
+            continue
+        if path.suffix in ('.gz', '.incomplete', '.pyc') or path.name == 'evidence-manifest.json':
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        data = path.read_bytes()
+        assert key.encode() not in data, ('credential present; do not archive', relative)
+        manifest[relative] = dict(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+        files.append(path)
+    assert sum(item['bytes'] for item in manifest.values()) < 256 * 1024 ** 2
+    manifest_path = ROOT / 'evidence-manifest.json'
+    manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
+    archive = ROOT / 'evidence-v2.tar.gz'
+    assert not archive.exists()
+    with tarfile.open(archive, 'w:gz') as bundle:
+        for path in files + [manifest_path]:
+            bundle.add(path, arcname=path.relative_to(ROOT).as_posix(), recursive=False)
+    receipt = dict(status='passed', files=len(manifest), bytes=archive.stat().st_size,
+        archive_sha256=hashlib.sha256(archive.read_bytes()).hexdigest(), service_check=final)
+    (ROOT / 'archive-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
+    print(json.dumps(receipt))
+
+
+if __name__ == '__main__':
+    main()

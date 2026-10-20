@@ -1,0 +1,2289 @@
+{
+  "status": "complete",
+  "experiments": [
+    {
+      "namespace": "opt-stage-v1",
+      "accepted_attempt": "opt-stage-v1-attempt1",
+      "report_sha256": "4082a2a50d615a1d9d8a232b33fd4d6f3578819dfd3385be81620329d9462928",
+      "script_sha256": "4a3166f6e687855224f047e99091754b4fe2129d037a5a3325c7f32e6e84a4aa",
+      "runtime_sha256": "9c7fb2d77b7d6d78e94dbcf01502742439246173b2fde590d8471417ed44e386",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_stage.so": "2dc093d9190af7298f8b88ed59fd24d3c0e4a694c5d980f738dfc3c49d28660e"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v1/native/build/libmxwave_moe_stage.so",
+      "scale_encoding": "records",
+      "decoder": {
+        "all_byte_patterns": true,
+        "escape_vectors": 65536,
+        "eager_stream_graph_exact": true,
+        "all_65536_selector_words": true,
+        "upper_base_253_to_255_exact": true
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  252.0416021347046,
+                  248.52960109710693,
+                  257.8655958175659,
+                  247.92799949645996,
+                  248.59039783477783,
+                  251.2063980102539,
+                  262.8416061401367
+                ],
+                "async": [
+                  242.2111988067627,
+                  260.36479473114014,
+                  248.33600521087646,
+                  242.14560985565186,
+                  243.6527967453003,
+                  256.5551996231079,
+                  242.5856113433838
+                ]
+              },
+              "median_us": {
+                "raw": 251.2063980102539,
+                "async": 243.6527967453003
+              },
+              "async_over_raw": 0.9699306971287996
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  268.4256076812744,
+                  250.9216070175171,
+                  271.84159755706787,
+                  262.2544050216675,
+                  269.8431968688965,
+                  269.0864086151123,
+                  249.88319873809814
+                ],
+                "async": [
+                  250.2511978149414,
+                  245.64480781555176,
+                  259.0303897857666,
+                  251.48000717163086,
+                  257.04638957977295,
+                  252.19359397888184,
+                  246.54719829559326
+                ]
+              },
+              "median_us": {
+                "raw": 268.4256076812744,
+                "async": 251.48000717163086
+              },
+              "async_over_raw": 0.936870402730858
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "9daefca434cdc1b82bb2938e2d76a04725986565a99fadc514feafcb350157da",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  411.4031791687012,
+                  421.59838676452637,
+                  413.29917907714844,
+                  383.35039615631104,
+                  383.7696075439453,
+                  384.550404548645,
+                  400.3376007080078
+                ],
+                "async": [
+                  460.34560203552246,
+                  414.36638832092285,
+                  419.6159839630127,
+                  470.15042304992676,
+                  450.6144046783447,
+                  435.1168155670166,
+                  417.70238876342773
+                ]
+              },
+              "median_us": {
+                "raw": 400.3376007080078,
+                "async": 435.1168155670166
+              },
+              "async_over_raw": 1.0868747147345161
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  412.6192092895508,
+                  412.5328063964844,
+                  423.05917739868164,
+                  412.2176170349121,
+                  412.9216194152832,
+                  417.4704074859619,
+                  417.0191764831543
+                ],
+                "async": [
+                  464.20159339904785,
+                  441.5088176727295,
+                  454.9935817718506,
+                  440.36478996276855,
+                  441.51039123535156,
+                  441.02721214294434,
+                  440.59839248657227
+                ]
+              },
+              "median_us": {
+                "raw": 412.9216194152832,
+                "async": 441.5088176727295
+              },
+              "async_over_raw": 1.0692315367210057
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "1d187b39cdc85313781b71899be8bcc6dde80a550af182b374061a95df6c2b8f",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  745.0831890106201,
+                  819.8800086975098,
+                  789.7823810577393,
+                  781.1840057373047,
+                  798.1776237487793,
+                  782.3056221008301,
+                  778.9696216583252
+                ],
+                "async": [
+                  822.2736358642578,
+                  849.7280120849609,
+                  840.1455879211426,
+                  840.9536361694336,
+                  851.0640144348145,
+                  836.8528366088867,
+                  858.7519645690918
+                ]
+              },
+              "median_us": {
+                "raw": 782.3056221008301,
+                "async": 840.9536361694336
+              },
+              "async_over_raw": 1.0749681613064574
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  778.8000106811523,
+                  794.977617263794,
+                  779.1488170623779,
+                  779.033613204956,
+                  778.8224220275879,
+                  779.8160076141357,
+                  781.7359924316406
+                ],
+                "async": [
+                  834.2720031738281,
+                  839.4415855407715,
+                  836.3951683044434,
+                  836.8111610412598,
+                  836.5327835083008,
+                  836.4591598510742,
+                  835.3487968444824
+                ]
+              },
+              "median_us": {
+                "raw": 779.1488170623779,
+                "async": 836.4591598510742
+              },
+              "async_over_raw": 1.0735550661615239
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 16,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "0c033096ada0bcc4f5de18c73f2289c1b61c1c9261d7de5f58cc2ef9da98f5c4",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  1883.6463928222656,
+                  1883.3311080932617,
+                  2149.3392944335938,
+                  2109.5760345458984,
+                  2015.9391403198242,
+                  1985.006332397461,
+                  1990.4912948608398
+                ],
+                "async": [
+                  2002.6208877563477,
+                  2030.7823181152344,
+                  2156.96964263916,
+                  2192.1871185302734,
+                  2070.3359603881836,
+                  2062.3519897460938,
+                  2108.915138244629
+                ]
+              },
+              "median_us": {
+                "raw": 1990.4912948608398,
+                "async": 2070.3359603881836
+              },
+              "async_over_raw": 1.0401130443190036
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  2010.6576919555664,
+                  1989.8303985595703,
+                  2005.695915222168,
+                  1983.6992263793945,
+                  1985.0143432617188,
+                  2001.4896392822266,
+                  2040.2271270751953
+                ],
+                "async": [
+                  2092.4543380737305,
+                  2089.5200729370117,
+                  2129.755210876465,
+                  2067.4848556518555,
+                  2058.086395263672,
+                  2059.868812561035,
+                  2243.387222290039
+                ]
+              },
+              "median_us": {
+                "raw": 2001.4896392822266,
+                "async": 2089.5200729370117
+              },
+              "async_over_raw": 1.0439824578289372
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    },
+    {
+      "namespace": "opt-prmt-v1",
+      "accepted_attempt": "opt-prmt-v1-attempt1",
+      "report_sha256": "e2b8f7584f63f72b4efbcdfa64563b1aaeee2e4854943a860a6e1ab4791ac381",
+      "script_sha256": "4a3166f6e687855224f047e99091754b4fe2129d037a5a3325c7f32e6e84a4aa",
+      "runtime_sha256": "9c7fb2d77b7d6d78e94dbcf01502742439246173b2fde590d8471417ed44e386",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_prmt.so": "0fe8f957b3226a46f4958be6b8bf46328500dedf09ff21001192dbfc4c5dface"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v1/native/build/libmxwave_moe_prmt.so",
+      "scale_encoding": "records",
+      "decoder": {
+        "all_byte_patterns": true,
+        "escape_vectors": 65536,
+        "eager_stream_graph_exact": true,
+        "all_65536_selector_words": true,
+        "upper_base_253_to_255_exact": true
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  248.33920001983643,
+                  243.86401176452637,
+                  261.82079315185547,
+                  248.59519004821777,
+                  243.37921142578125,
+                  244.06719207763672,
+                  243.57600212097168
+                ],
+                "async": [
+                  250.6256103515625,
+                  238.92478942871094,
+                  247.91359901428223,
+                  238.7712001800537,
+                  238.9375925064087,
+                  238.4671926498413,
+                  238.7376070022583
+                ]
+              },
+              "median_us": {
+                "raw": 244.06719207763672,
+                "async": 238.92478942871094
+              },
+              "async_over_raw": 0.9789303814037816
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  243.01600456237793,
+                  254.00159358978271,
+                  243.63999366760254,
+                  246.34559154510498,
+                  243.55359077453613,
+                  245.43359279632568,
+                  243.886399269104
+                ],
+                "async": [
+                  238.62080574035645,
+                  256.93440437316895,
+                  243.53439807891846,
+                  253.6303997039795,
+                  250.45599937438965,
+                  239.7792100906372,
+                  242.23039150238037
+                ]
+              },
+              "median_us": {
+                "raw": 243.886399269104,
+                "async": 243.53439807891846
+              },
+              "async_over_raw": 0.9985567002045196
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "fc2d70c243b85633ff2e4f77bdde0088777f159d365099a2d7d7a7270493e593",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  474.5744228363037,
+                  417.82398223876953,
+                  402.8895854949951,
+                  446.73919677734375,
+                  418.4879779815674,
+                  424.40319061279297,
+                  386.0991954803467
+                ],
+                "async": [
+                  467.80481338500977,
+                  515.4096126556396,
+                  531.1520099639893,
+                  451.79362297058105,
+                  472.9599952697754,
+                  457.9728126525879,
+                  426.9296169281006
+                ]
+              },
+              "median_us": {
+                "raw": 418.4879779815674,
+                "async": 467.80481338500977
+              },
+              "async_over_raw": 1.1178452858820584
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  417.91038513183594,
+                  416.4703845977783,
+                  412.27521896362305,
+                  414.34078216552734,
+                  412.02402114868164,
+                  411.94400787353516,
+                  417.0703887939453
+                ],
+                "async": [
+                  474.44801330566406,
+                  483.8560104370117,
+                  450.4240036010742,
+                  450.8255958557129,
+                  450.9888172149658,
+                  450.2175807952881,
+                  450.63037872314453
+                ]
+              },
+              "median_us": {
+                "raw": 414.34078216552734,
+                "async": 450.8255958557129
+              },
+              "async_over_raw": 1.0880550871664136
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "c89a9e30b52c951e68e55796173b00b1e35516ac04f19dd9b99b1227105cacff",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  728.8879871368408,
+                  782.3919773101807,
+                  798.5424041748047,
+                  775.6832122802734,
+                  772.9904174804688,
+                  775.9247779846191,
+                  778.1599998474121
+                ],
+                "async": [
+                  815.067195892334,
+                  884.1423988342285,
+                  860.1984024047852,
+                  878.4416198730469,
+                  860.9359741210938,
+                  859.8223686218262,
+                  861.5663528442383
+                ]
+              },
+              "median_us": {
+                "raw": 775.9247779846191,
+                "async": 860.9359741210938
+              },
+              "async_over_raw": 1.1095611308576612
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  776.9855976104736,
+                  1219.5952415466309,
+                  1136.888027191162,
+                  1292.3583984375,
+                  1262.8591537475586,
+                  1275.9615898132324,
+                  1269.2079544067383
+                ],
+                "async": [
+                  861.6607666015625,
+                  1170.8831787109375,
+                  1265.6304359436035,
+                  1345.7679748535156,
+                  1399.3215560913086,
+                  1389.9279594421387,
+                  1397.316837310791
+                ]
+              },
+              "median_us": {
+                "raw": 1262.8591537475586,
+                "async": 1345.7679748535156
+              },
+              "async_over_raw": 1.0656516768793445
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 16,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "d905ef243e163568ce56e83eb52fea60d69843b42940b08b0624a3a18b1b1637",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  3307.294464111328,
+                  1882.5904846191406,
+                  2009.5312118530273,
+                  1979.0767669677734,
+                  1976.5008926391602,
+                  2003.0143737792969,
+                  1980.5631637573242
+                ],
+                "async": [
+                  2010.8896255493164,
+                  2051.2928009033203,
+                  2102.8640747070312,
+                  2103.47843170166,
+                  2104.582405090332,
+                  2139.6495819091797,
+                  3041.8256759643555
+                ]
+              },
+              "median_us": {
+                "raw": 1980.5631637573242,
+                "async": 2103.47843170166
+              },
+              "async_over_raw": 1.0620607664494546
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  3431.577682495117,
+                  3585.4049682617188,
+                  3523.9791870117188,
+                  3437.4160766601562,
+                  3465.5807495117188,
+                  1894.7376251220703,
+                  1996.8496322631836
+                ],
+                "async": [
+                  3429.451370239258,
+                  3830.596923828125,
+                  3834.507369995117,
+                  3707.147216796875,
+                  3716.419219970703,
+                  2635.4623794555664,
+                  2131.7455291748047
+                ]
+              },
+              "median_us": {
+                "raw": 3437.4160766601562,
+                "async": 3707.147216796875
+              },
+              "async_over_raw": 1.078469156517937
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    },
+    {
+      "namespace": "opt-early-v1",
+      "accepted_attempt": "opt-early-v1-attempt1",
+      "report_sha256": "22151f299a4edf8c12fbc41d56624591729034ecd353aea008d09312599083e7",
+      "script_sha256": "4a3166f6e687855224f047e99091754b4fe2129d037a5a3325c7f32e6e84a4aa",
+      "runtime_sha256": "9c7fb2d77b7d6d78e94dbcf01502742439246173b2fde590d8471417ed44e386",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_early.so": "90c7a63d003cb9eabacc91a7bc664da4118b3e399905c1c38028b44f31e1ec5c"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v2/native/build/libmxwave_moe_early.so",
+      "scale_encoding": "records",
+      "decoder": {
+        "all_byte_patterns": true,
+        "escape_vectors": 65536,
+        "eager_stream_graph_exact": true,
+        "all_65536_selector_words": true,
+        "upper_base_253_to_255_exact": true
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  249.7391939163208,
+                  260.3856086730957,
+                  254.98080253601074,
+                  249.93760585784912,
+                  250.28479099273682,
+                  266.0624027252197,
+                  250.08320808410645
+                ],
+                "async": [
+                  241.96479320526123,
+                  260.81600189208984,
+                  241.89600944519043,
+                  242.34719276428223,
+                  242.2624111175537,
+                  256.3391923904419,
+                  241.69280529022217
+                ]
+              },
+              "median_us": {
+                "raw": 250.28479099273682,
+                "async": 242.2624111175537
+              },
+              "async_over_raw": 0.9679469941287167
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  259.08799171447754,
+                  249.835205078125,
+                  249.94080066680908,
+                  249.53439235687256,
+                  249.7136116027832,
+                  249.66719150543213,
+                  249.83680248260498
+                ],
+                "async": [
+                  262.2704029083252,
+                  247.35679626464844,
+                  242.10081100463867,
+                  246.85280323028564,
+                  241.4896011352539,
+                  242.14398860931396,
+                  242.05279350280762
+                ]
+              },
+              "median_us": {
+                "raw": 249.835205078125,
+                "async": 242.14398860931396
+              },
+              "async_over_raw": 0.9692148411733809
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "0c796cbfe247a10a776b7021c9d9b38cc307cf437d327f0c6f209e2ffc2e82f8",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  384.46080684661865,
+                  429.7247886657715,
+                  437.23201751708984,
+                  415.60797691345215,
+                  382.60960578918457,
+                  543.120002746582,
+                  382.98399448394775
+                ],
+                "async": [
+                  632.9792022705078,
+                  573.3776092529297,
+                  577.7967929840088,
+                  659.6848011016846,
+                  585.7344150543213,
+                  565.8912181854248,
+                  501.0144233703613
+                ]
+              },
+              "median_us": {
+                "raw": 415.60797691345215,
+                "async": 577.7967929840088
+              },
+              "async_over_raw": 1.3902447139611362
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  419.5551872253418,
+                  419.3920135498047,
+                  407.67359733581543,
+                  408.28800201416016,
+                  407.3631763458252,
+                  407.8767776489258,
+                  408.4752082824707
+                ],
+                "async": [
+                  501.3711929321289,
+                  500.878381729126,
+                  507.1584224700928,
+                  513.4079933166504,
+                  513.1855964660645,
+                  512.9744052886963,
+                  512.171220779419
+                ]
+              },
+              "median_us": {
+                "raw": 408.28800201416016,
+                "async": 512.171220779419
+              },
+              "async_over_raw": 1.254436129038286
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "c89a9e30b52c951e68e55796173b00b1e35516ac04f19dd9b99b1227105cacff",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  733.5840225219727,
+                  736.4560127258301,
+                  763.7775897979736,
+                  769.9312210083008,
+                  773.1215953826904,
+                  771.5936183929443,
+                  770.1263904571533
+                ],
+                "async": [
+                  943.2479858398438,
+                  941.1808013916016,
+                  945.8911895751953,
+                  943.2559967041016,
+                  949.1647720336914,
+                  942.5680160522461,
+                  942.574405670166
+                ]
+              },
+              "median_us": {
+                "raw": 769.9312210083008,
+                "async": 943.2479858398438
+              },
+              "async_over_raw": 1.225106814871811
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  771.4479923248291,
+                  771.2624073028564,
+                  769.542407989502,
+                  772.1295833587646,
+                  792.0815944671631,
+                  774.3552207946777,
+                  770.3760147094727
+                ],
+                "async": [
+                  961.3183975219727,
+                  945.9775924682617,
+                  943.8655853271484,
+                  943.4016227722168,
+                  942.8607940673828,
+                  944.1439628601074,
+                  944.1023826599121
+                ]
+              },
+              "median_us": {
+                "raw": 771.4479923248291,
+                "async": 944.1023826599121
+              },
+              "async_over_raw": 1.2238056123715784
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 16,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "338377974fb383f7b33a8aecdb6311dc35b3fdea57fd351448e9547c2dd775c2",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  3486.1839294433594,
+                  3469.148635864258,
+                  1986.319923400879,
+                  2017.5695419311523,
+                  1996.183967590332,
+                  1979.2816162109375,
+                  1973.124885559082
+                ],
+                "async": [
+                  4125.028610229492,
+                  2382.8752517700195,
+                  2304.1648864746094,
+                  2186.37752532959,
+                  2216.156768798828,
+                  2186.087989807129,
+                  2189.7279739379883
+                ]
+              },
+              "median_us": {
+                "raw": 1996.183967590332,
+                "async": 2216.156768798828
+              },
+              "async_over_raw": 1.1101966576126916
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  3346.683120727539,
+                  3508.638381958008,
+                  3473.1712341308594,
+                  3498.0255126953125,
+                  3514.487838745117,
+                  3489.6255493164062,
+                  3505.611038208008
+                ],
+                "async": [
+                  2341.753578186035,
+                  3929.2606353759766,
+                  4060.8062744140625,
+                  4065.7825469970703,
+                  4056.212615966797,
+                  4099.214553833008,
+                  4066.9200897216797
+                ]
+              },
+              "median_us": {
+                "raw": 3498.0255126953125,
+                "async": 4060.8062744140625
+              },
+              "async_over_raw": 1.1608852650377366
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    },
+    {
+      "namespace": "opt-bf16stage-v1",
+      "accepted_attempt": "opt-bf16stage-v1-attempt1",
+      "report_sha256": "9131f393136ce4fcd9de35c6c61a4ba7de05add9788ac0b5cd34df14f4797df0",
+      "script_sha256": "4290582029721c46522544d19c231f4207c44a4d9e6c3afa26bbaded6f6e781e",
+      "runtime_sha256": "ca87b029d7b3ac925ec5372b9b4eb79657a523b3eaa660dde4ce00ff5e321498",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_bf16stage.so": "694faca402e373638eb95248333095dc3bd7707b2fdd09c404a27a31fc07dd01"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v3/native/build/libmxwave_moe_bf16stage.so",
+      "scale_encoding": "records",
+      "decoder": {
+        "all_byte_patterns": true,
+        "escape_vectors": 65536,
+        "eager_stream_graph_exact": true,
+        "all_65536_selector_words": true,
+        "upper_base_253_to_255_exact": true,
+        "stock_bf16_fragment_bits_exact": true
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  266.29440784454346,
+                  260.59839725494385,
+                  262.6672029495239,
+                  264.139199256897,
+                  263.7360095977783,
+                  263.64800930023193,
+                  268.1648015975952
+                ],
+                "async": [
+                  248.57919216156006,
+                  245.21279335021973,
+                  251.1552095413208,
+                  245.09599208831787,
+                  249.92640018463135,
+                  245.17440795898438,
+                  265.01920223236084
+                ]
+              },
+              "median_us": {
+                "raw": 263.7360095977783,
+                "async": 248.57919216156006
+              },
+              "async_over_raw": 0.9425303451760956
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  247.63998985290527,
+                  256.85598850250244,
+                  248.5055923461914,
+                  247.95520305633545,
+                  250.5215883255005,
+                  256.9904088973999,
+                  252.69439220428467
+                ],
+                "async": [
+                  247.26719856262207,
+                  260.3856086730957,
+                  247.04480171203613,
+                  242.81280040740967,
+                  243.0351972579956,
+                  258.6848020553589,
+                  246.5104103088379
+                ]
+              },
+              "median_us": {
+                "raw": 250.5215883255005,
+                "async": 247.04480171203613
+              },
+              "async_over_raw": 0.9861218083571025
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "bd6c5cb52899de21405da83662dd1ca7ca745acd731b4d17339e5d7943d25618",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  383.88960361480713,
+                  383.4144115447998,
+                  383.2672119140625,
+                  420.4080104827881,
+                  383.78241062164307,
+                  387.8959894180298,
+                  383.9983940124512
+                ],
+                "async": [
+                  458.900785446167,
+                  431.86402320861816,
+                  426.3343811035156,
+                  426.56641006469727,
+                  426.310396194458,
+                  455.1663875579834,
+                  426.6143798828125
+                ]
+              },
+              "median_us": {
+                "raw": 383.88960361480713,
+                "async": 426.6143798828125
+              },
+              "async_over_raw": 1.111294434300115
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  385.4736089706421,
+                  423.4560012817383,
+                  652.3248195648193,
+                  659.0432167053223,
+                  498.16479682922363,
+                  633.2015991210938,
+                  608.8511943817139
+                ],
+                "async": [
+                  430.91678619384766,
+                  446.36478424072266,
+                  659.0991973876953,
+                  637.12477684021,
+                  704.7776222229004,
+                  533.0383777618408,
+                  730.6975841522217
+                ]
+              },
+              "median_us": {
+                "raw": 608.8511943817139,
+                "async": 637.12477684021
+              },
+              "async_over_raw": 1.0464375905301586
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "1d187b39cdc85313781b71899be8bcc6dde80a550af182b374061a95df6c2b8f",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  1266.6831970214844,
+                  1247.6351737976074,
+                  1280.281639099121,
+                  1279.7087669372559,
+                  1222.2064018249512,
+                  1264.4255638122559,
+                  1254.2960166931152
+                ],
+                "async": [
+                  1352.8160095214844,
+                  1412.3647689819336,
+                  1341.4735794067383,
+                  1372.225570678711,
+                  1364.0751838684082,
+                  1376.7552375793457,
+                  1370.2912330627441
+                ]
+              },
+              "median_us": {
+                "raw": 1264.4255638122559,
+                "async": 1370.2912330627441
+              },
+              "async_over_raw": 1.0837262961777696
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  1268.3695793151855,
+                  1251.6719818115234,
+                  710.1759910583496,
+                  772.5696086883545,
+                  770.4783916473389,
+                  788.4079933166504,
+                  772.3696231842041
+                ],
+                "async": [
+                  1365.1311874389648,
+                  1373.078441619873,
+                  1221.2575912475586,
+                  864.2720222473145,
+                  877.1583557128906,
+                  859.0975761413574,
+                  857.4175834655762
+                ]
+              },
+              "median_us": {
+                "raw": 772.5696086883545,
+                "async": 877.1583557128906
+              },
+              "async_over_raw": 1.135377765120872
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 16,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "f6c41537ab6b991bc5daa7b3a95a297b1ea72ef287227f5a50e702677f99d135",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  3504.6142578125,
+                  3586.4158630371094,
+                  3534.560012817383,
+                  3569.615936279297,
+                  3425.5264282226562,
+                  3487.046432495117,
+                  3523.2032775878906
+                ],
+                "async": [
+                  3621.8799591064453,
+                  3618.961715698242,
+                  3651.9214630126953,
+                  3633.7982177734375,
+                  3652.092742919922,
+                  3636.257553100586,
+                  3621.7201232910156
+                ]
+              },
+              "median_us": {
+                "raw": 3523.2032775878906,
+                "async": 3633.7982177734375
+              },
+              "async_over_raw": 1.0313904510957608
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  3504.982376098633,
+                  3434.262466430664,
+                  2807.3631286621094,
+                  1969.9504852294922,
+                  1972.6448059082031,
+                  1975.1680374145508,
+                  1972.4367141723633
+                ],
+                "async": [
+                  3648.0545043945312,
+                  3597.443389892578,
+                  3552.956771850586,
+                  2023.3024597167969,
+                  2080.166435241699,
+                  2081.1424255371094,
+                  2082.592010498047
+                ]
+              },
+              "median_us": {
+                "raw": 1975.1680374145508,
+                "async": 2082.592010498047
+              },
+              "async_over_raw": 1.054387257716114
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    },
+    {
+      "namespace": "opt-stage-b64-v1",
+      "accepted_attempt": "opt-stage-b64-v1-attempt1",
+      "report_sha256": "851c05237450af4b1c0fb60aeed664cdd017ab381c744c09d7f430f77dca0386",
+      "script_sha256": "5eba681cd86fea799cfd735019bb4633c61705b9c3faded45c69c1d894094aa4",
+      "runtime_sha256": "ca87b029d7b3ac925ec5372b9b4eb79657a523b3eaa660dde4ce00ff5e321498",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_stage.so": "2dc093d9190af7298f8b88ed59fd24d3c0e4a694c5d980f738dfc3c49d28660e"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v1/native/build/libmxwave_moe_stage.so",
+      "scale_encoding": "records",
+      "decoder": {
+        "all_byte_patterns": true,
+        "escape_vectors": 65536,
+        "eager_stream_graph_exact": true,
+        "all_65536_selector_words": true,
+        "upper_base_253_to_255_exact": true,
+        "stock_bf16_fragment_bits_exact": null
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  242.36159324645996,
+                  242.30880737304688,
+                  259.883189201355,
+                  247.88799285888672,
+                  259.8736047744751,
+                  246.00799083709717,
+                  259.1200113296509
+                ],
+                "async": [
+                  235.89439392089844,
+                  238.71839046478271,
+                  245.36960124969482,
+                  238.17920684814453,
+                  246.14880084991455,
+                  236.08160018920898,
+                  244.40479278564453
+                ]
+              },
+              "median_us": {
+                "raw": 247.88799285888672,
+                "async": 238.71839046478271
+              },
+              "async_over_raw": 0.963009090160636
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  246.25918865203857,
+                  242.07680225372314,
+                  242.30399131774902,
+                  242.0032024383545,
+                  242.14880466461182,
+                  252.05600261688232,
+                  242.00799465179443
+                ],
+                "async": [
+                  240.16320705413818,
+                  253.51200103759766,
+                  235.4543924331665,
+                  235.915207862854,
+                  235.40799617767334,
+                  253.85279655456543,
+                  239.87200260162354
+                ]
+              },
+              "median_us": {
+                "raw": 242.14880466461182,
+                "async": 239.87200260162354
+              },
+              "async_over_raw": 0.9905975085603178
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 64,
+          "gate_up_plan": [
+            64,
+            256,
+            1
+          ],
+          "down_plan": [
+            64,
+            256,
+            1
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "72b7917ab190c8d3ac9f067a99fc2c79a5e64fe1891b369e79d2870ad01f3eeb",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  335.913610458374,
+                  335.0399971008301,
+                  359.1023921966553,
+                  335.11199951171875,
+                  332.48960971832275,
+                  332.55040645599365,
+                  332.87041187286377
+                ],
+                "async": [
+                  353.88479232788086,
+                  333.19199085235596,
+                  332.42719173431396,
+                  358.1183910369873,
+                  329.5520067214966,
+                  329.96320724487305,
+                  329.7568082809448
+                ]
+              },
+              "median_us": {
+                "raw": 335.0399971008301,
+                "async": 332.42719173431396
+              },
+              "async_over_raw": 0.9922015120907197
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  335.42399406433105,
+                  334.00158882141113,
+                  345.93279361724854,
+                  332.56640434265137,
+                  334.3103885650635,
+                  407.5808048248291,
+                  516.3008213043213
+                ],
+                "async": [
+                  329.91840839385986,
+                  355.66399097442627,
+                  349.36161041259766,
+                  330.16960620880127,
+                  328.93919944763184,
+                  435.04958152770996,
+                  537.4207973480225
+                ]
+              },
+              "median_us": {
+                "raw": 335.42399406433105,
+                "async": 349.36161041259766
+              },
+              "async_over_raw": 1.041552234171994
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 64,
+          "gate_up_plan": [
+            64,
+            256,
+            1
+          ],
+          "down_plan": [
+            64,
+            256,
+            1
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "95a29e74c9ea45e52ac548622a494114664558a7193033c03e189751c5328ea8",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  787.2576236724854,
+                  775.383996963501,
+                  772.7248191833496,
+                  745.2335834503174,
+                  772.438383102417,
+                  736.12961769104,
+                  762.7120018005371
+                ],
+                "async": [
+                  685.3839874267578,
+                  857.3776245117188,
+                  811.7088317871094,
+                  831.3759803771973,
+                  841.7280197143555,
+                  862.4575614929199,
+                  792.5151824951172
+                ]
+              },
+              "median_us": {
+                "raw": 772.438383102417,
+                "async": 831.3759803771973
+              },
+              "async_over_raw": 1.076300710275509
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  769.5263862609863,
+                  766.539192199707,
+                  766.868782043457,
+                  769.547176361084,
+                  786.4607810974121,
+                  790.7616138458252,
+                  767.8927898406982
+                ],
+                "async": [
+                  781.6527843475342,
+                  813.969612121582,
+                  837.1616363525391,
+                  838.2271766662598,
+                  806.0928344726562,
+                  891.4031982421875,
+                  936.780834197998
+                ]
+              },
+              "median_us": {
+                "raw": 769.5263862609863,
+                "async": 837.1616363525391
+              },
+              "async_over_raw": 1.0878920480169398
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 64,
+          "gate_up_plan": [
+            64,
+            256,
+            1
+          ],
+          "down_plan": [
+            64,
+            256,
+            1
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "67bd2540f3f1ba4f7ac8a4bfb2c7e425072e7bfe21d97ae054a970cfadfe8e23",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  1554.8944473266602,
+                  1593.654441833496,
+                  1622.2623825073242,
+                  1588.7951850891113,
+                  1590.93599319458,
+                  1561.9808197021484,
+                  1593.0720329284668
+                ],
+                "async": [
+                  1572.976016998291,
+                  1572.0767974853516,
+                  1571.560001373291,
+                  1546.0944175720215,
+                  1571.718406677246,
+                  1576.5263557434082,
+                  1568.3615684509277
+                ]
+              },
+              "median_us": {
+                "raw": 1590.93599319458,
+                "async": 1571.718406677246
+              },
+              "async_over_raw": 0.9879205784522196
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  2662.433624267578,
+                  2938.2383346557617,
+                  2837.958335876465,
+                  2881.5088272094727,
+                  2829.9184799194336,
+                  2816.379165649414,
+                  2875.270462036133
+                ],
+                "async": [
+                  2537.5919342041016,
+                  3029.6735763549805,
+                  3263.3041381835938,
+                  3202.2369384765625,
+                  3162.451171875,
+                  3168.155288696289,
+                  3118.5632705688477
+                ]
+              },
+              "median_us": {
+                "raw": 2837.958335876465,
+                "async": 3162.451171875
+              },
+              "async_over_raw": 1.1143402395646236
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    },
+    {
+      "namespace": "opt-nibbles-v1",
+      "accepted_attempt": "opt-nibbles-v1-attempt1",
+      "report_sha256": "564f09f0b07d077e25144d2a24592c32ff505063f0d7a9ecd3cb58a58d5b9a15",
+      "script_sha256": "e0d0f9457ffebd6231bf6d0ccb7fce83917ff74741237557c28f0898646908af",
+      "runtime_sha256": "066b0d4a3dc5e1c3f2396f106545a324aed41bf67fa8ed6178a51477f636ea8b",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_nibbles.so": "1cfe65536ad77b46cf51506a49402430031f800768122531107ac300092c8948"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v4/native/build/libmxwave_moe_nibbles.so",
+      "scale_encoding": "nibbles",
+      "decoder": {
+        "encoding": "nibbles",
+        "all_byte_patterns": true,
+        "escape_vectors": 0,
+        "all_65536_nibble_words": true,
+        "eager_stream_graph_exact": true,
+        "upper_base_253_to_255_exact": true,
+        "stock_bf16_fragment_bits_exact": true,
+        "span_over_15_and_wrong_encoding_rejected": true
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  260.9055995941162,
+                  249.6527910232544,
+                  263.9472007751465,
+                  254.60960865020752,
+                  264.5359992980957,
+                  252.51200199127197,
+                  250.09760856628418
+                ],
+                "async": [
+                  246.6991901397705,
+                  245.54080963134766,
+                  252.79040336608887,
+                  245.3279972076416,
+                  252.66718864440918,
+                  242.13440418243408,
+                  242.78719425201416
+                ]
+              },
+              "median_us": {
+                "raw": 254.60960865020752,
+                "async": 245.54080963134766
+              },
+              "async_over_raw": 0.9643815523422805
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  254.03199195861816,
+                  249.51200485229492,
+                  250.03039836883545,
+                  249.6959924697876,
+                  249.22559261322021,
+                  249.01280403137207,
+                  254.51200008392334
+                ],
+                "async": [
+                  245.3279972076416,
+                  242.56000518798828,
+                  242.75200366973877,
+                  246.9599962234497,
+                  243.20800304412842,
+                  243.35520267486572,
+                  243.30720901489258
+                ]
+              },
+              "median_us": {
+                "raw": 249.6959924697876,
+                "async": 243.30720901489258
+              },
+              "async_over_raw": 0.9744137525328204
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "778a3b80e8505bf82f94fadb4fb5a46c1180b28568a02c13233ec37e9eb1ce29",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  406.171178817749,
+                  422.41601943969727,
+                  413.50722312927246,
+                  394.28160190582275,
+                  392.577600479126,
+                  400.219202041626,
+                  426.20320320129395
+                ],
+                "async": [
+                  389.0176057815552,
+                  388.0176067352295,
+                  405.5903911590576,
+                  424.8976230621338,
+                  420.59521675109863,
+                  389.847993850708,
+                  389.98560905456543
+                ]
+              },
+              "median_us": {
+                "raw": 406.171178817749,
+                "async": 389.98560905456543
+              },
+              "async_over_raw": 0.960150865922355
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  395.3968048095703,
+                  438.6176109313965,
+                  461.20638847351074,
+                  636.5071773529053,
+                  637.9312038421631,
+                  480.60641288757324,
+                  668.1119918823242
+                ],
+                "async": [
+                  390.4367923736572,
+                  415.50397872924805,
+                  413.04798126220703,
+                  621.6784000396729,
+                  640.4352188110352,
+                  662.8623962402344,
+                  472.7759838104248
+                ]
+              },
+              "median_us": {
+                "raw": 480.60641288757324,
+                "async": 472.7759838104248
+              },
+              "async_over_raw": 0.98370718977697
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "c89a9e30b52c951e68e55796173b00b1e35516ac04f19dd9b99b1227105cacff",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  1299.6352195739746,
+                  1245.8928108215332,
+                  1283.9839935302734,
+                  1244.5839881896973,
+                  1257.6656341552734,
+                  1259.779167175293,
+                  1260.5232238769531
+                ],
+                "async": [
+                  1321.247959136963,
+                  1327.9487609863281,
+                  1288.6287689208984,
+                  1303.9551734924316,
+                  1288.8784408569336,
+                  1303.6255836486816,
+                  1265.1887893676758
+                ]
+              },
+              "median_us": {
+                "raw": 1259.779167175293,
+                "async": 1303.6255836486816
+              },
+              "async_over_raw": 1.0348048432740018
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  1245.2832221984863,
+                  1243.6832427978516,
+                  1255.8655738830566,
+                  1257.0015907287598,
+                  1303.172779083252,
+                  1278.711986541748,
+                  1276.7040252685547
+                ],
+                "async": [
+                  1323.8847732543945,
+                  1303.2671928405762,
+                  1352.3951530456543,
+                  1320.8784103393555,
+                  1316.2320137023926,
+                  1266.9055938720703,
+                  1289.9871826171875
+                ]
+              },
+              "median_us": {
+                "raw": 1257.0015907287598,
+                "async": 1316.2320137023926
+              },
+              "async_over_raw": 1.047120404151035
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 16,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "611016e0f7dde94b943ab4ee3cb6e40fcb753a904e8ebf1d26d1d645de029368",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  2014.918327331543,
+                  1866.6624069213867,
+                  1984.943962097168,
+                  1944.4768905639648,
+                  1943.9359664916992,
+                  1947.0752716064453,
+                  1944.9151992797852
+                ],
+                "async": [
+                  2005.4367065429688,
+                  1967.7711486816406,
+                  1991.3663864135742,
+                  1993.764877319336,
+                  1999.2303848266602,
+                  1993.6592102050781,
+                  2938.057518005371
+                ]
+              },
+              "median_us": {
+                "raw": 1944.9151992797852,
+                "async": 1993.764877319336
+              },
+              "async_over_raw": 1.0251166107692717
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  3503.732681274414,
+                  3510.1905822753906,
+                  3526.5342712402344,
+                  3465.6192779541016,
+                  3504.0592193603516,
+                  3551.7311096191406,
+                  3512.0399475097656
+                ],
+                "async": [
+                  3426.8463134765625,
+                  3578.700637817383,
+                  3544.5167541503906,
+                  3585.7887268066406,
+                  3565.0001525878906,
+                  3553.571319580078,
+                  3583.8287353515625
+                ]
+              },
+              "median_us": {
+                "raw": 3510.1905822753906,
+                "async": 3565.0001525878906
+              },
+              "async_over_raw": 1.0156144143823014
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    },
+    {
+      "namespace": "opt-aligned-v1",
+      "accepted_attempt": "opt-aligned-v1-attempt5",
+      "report_sha256": "d21a34eca77f0d88f520ae611ec2aa732531abd7453a19a35f3cf7a617491f44",
+      "script_sha256": "b1d5e971019dbe16dd94a9f7da7f3032c86c78790071209b0ad9ce59f9d4d626",
+      "runtime_sha256": "cd4a208b7d108ed6e8c97fe9a46ffe1d81e69e79bc94535e066d4368f069c844",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "libraries_sha256": {
+        "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "libmxwave_moe_aligned.so": "53ebb8478607104723786934c96ae7dc973a9d16ff93a2ec8c93a2a653dae658"
+      },
+      "candidate_library": "/audit/grouped-moe-opt-v5/native/build/libmxwave_moe_aligned.so",
+      "scale_encoding": "aligned_nibbles",
+      "decoder": {
+        "encoding": "aligned_nibbles",
+        "all_byte_patterns": true,
+        "escape_vectors": 0,
+        "all_65536_nibble_words": true,
+        "eager_stream_graph_exact": true,
+        "upper_base_253_to_255_exact": true,
+        "stock_bf16_fragment_bits_exact": true,
+        "span_over_15_and_wrong_encoding_rejected": true
+      },
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 113246208,
+      "compressed_scale_bytes": 56623136,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "7f9a740770526453276deeace0ec2c6776f70dd9ea2363ea95a4d770ef9ec1f1",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  251.86240673065186,
+                  253.09600830078125,
+                  254.60638999938965,
+                  252.03840732574463,
+                  252.08959579467773,
+                  251.36640071868896,
+                  251.79040431976318
+                ],
+                "async": [
+                  246.67038917541504,
+                  263.9888048171997,
+                  257.15200901031494,
+                  245.29120922088623,
+                  246.2575912475586,
+                  245.20161151885986,
+                  245.57440280914307
+                ]
+              },
+              "median_us": {
+                "raw": 252.03840732574463,
+                "async": 246.2575912475586
+              },
+              "async_over_raw": 0.977063749372473
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  267.7759885787964,
+                  255.79841136932373,
+                  251.7791986465454,
+                  255.52480220794678,
+                  251.37600898742676,
+                  251.77760124206543,
+                  251.36640071868896
+                ],
+                "async": [
+                  249.16319847106934,
+                  255.3663969039917,
+                  246.0400104522705,
+                  245.7456111907959,
+                  245.4767942428589,
+                  245.6144094467163,
+                  245.34080028533936
+                ]
+              },
+              "median_us": {
+                "raw": 251.7791986465454,
+                "async": 245.7456111907959
+              },
+              "async_over_raw": 0.9760361956500639
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "c65595d69caf82e6f597ac08bdcd4a2d0c444061753dec63a873611ef42f5472",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  383.1648111343384,
+                  397.1888065338135,
+                  422.160005569458,
+                  404.34718132019043,
+                  383.1552028656006,
+                  383.8848114013672,
+                  399.3328094482422
+                ],
+                "async": [
+                  410.80799102783203,
+                  389.40958976745605,
+                  389.52479362487793,
+                  402.1967887878418,
+                  389.65280055999756,
+                  410.13121604919434,
+                  389.9343967437744
+                ]
+              },
+              "median_us": {
+                "raw": 397.1888065338135,
+                "async": 389.9343967437744
+              },
+              "async_over_raw": 0.9817356137164417
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  410.24160385131836,
+                  411.1487865447998,
+                  437.1744155883789,
+                  411.8624210357666,
+                  412.08481788635254,
+                  411.03038787841797,
+                  409.5680236816406
+                ],
+                "async": [
+                  397.02560901641846,
+                  415.0991916656494,
+                  415.2991771697998,
+                  417.4975872039795,
+                  414.84317779541016,
+                  414.6463871002197,
+                  414.2000198364258
+                ]
+              },
+              "median_us": {
+                "raw": 411.1487865447998,
+                "async": 414.84317779541016
+              },
+              "async_over_raw": 1.0089855336352982
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "moe_block": 8,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "43ba40c40b987e6e02aab8c4dfff16fe3695daf5f1f2f4d4255d92c3c7d5a0ac",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  732.4719905853271,
+                  757.0943832397461,
+                  772.4847793579102,
+                  774.729585647583,
+                  775.164794921875,
+                  773.3535766601562,
+                  773.7760066986084
+                ],
+                "async": [
+                  750.1023769378662,
+                  784.7184181213379,
+                  781.3168048858643,
+                  796.9503879547119,
+                  781.2719821929932,
+                  781.8863868713379,
+                  784.4064235687256
+                ]
+              },
+              "median_us": {
+                "raw": 773.3535766601562,
+                "async": 781.8863868713379
+              },
+              "async_over_raw": 1.0110335174863119
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  771.8912124633789,
+                  773.3615875244141,
+                  774.2688179016113,
+                  773.6048221588135,
+                  773.3935832977295,
+                  775.2384185791016,
+                  773.6207962036133
+                ],
+                "async": [
+                  782.1536064147949,
+                  782.2783946990967,
+                  782.7839851379395,
+                  782.0591926574707,
+                  780.3599834442139,
+                  781.6463947296143,
+                  781.8912029266357
+                ]
+              },
+              "median_us": {
+                "raw": 773.6048221588135,
+                "async": 782.0591926574707
+              },
+              "async_over_raw": 1.0109285390376246
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "concentrated_routing": true,
+          "moe_block": 16,
+          "gate_up_plan": [
+            64,
+            128,
+            3
+          ],
+          "down_plan": [
+            64,
+            128,
+            3
+          ],
+          "stock_control_async_eager_stream_graph_bits_exact": true,
+          "dynamic_eager_stream_graph_matches_stock_for_own_alignment": true,
+          "output_sha256": "e60bad42d6704e8fe1d21b6ad6c589e67954c208a48f638ff03c850a15a98cae",
+          "graph_latency": {
+            "rawthen_async": {
+              "samples_us": {
+                "raw": [
+                  3520.3262329101562,
+                  3497.9583740234375,
+                  3473.5855102539062,
+                  3465.798568725586,
+                  3465.3568267822266,
+                  1920.863914489746,
+                  1999.6143341064453
+                ],
+                "async": [
+                  3550.737762451172,
+                  3523.756790161133,
+                  3589.275360107422,
+                  3504.7664642333984,
+                  2537.1999740600586,
+                  1991.0432815551758,
+                  1993.7776565551758
+                ]
+              },
+              "median_us": {
+                "raw": 3465.798568725586,
+                "async": 3504.7664642333984
+              },
+              "async_over_raw": 1.0112435546195466
+            },
+            "asyncthen_raw": {
+              "samples_us": {
+                "raw": [
+                  2013.0863189697266,
+                  2035.006332397461,
+                  2048.841667175293,
+                  1975.6912231445312,
+                  3243.299102783203,
+                  3476.3839721679688,
+                  3472.9408264160156
+                ],
+                "async": [
+                  2002.6128768920898,
+                  2030.8351516723633,
+                  2011.292839050293,
+                  2069.4047927856445,
+                  3187.094306945801,
+                  3464.9295806884766,
+                  3472.2320556640625
+                ]
+              },
+              "median_us": {
+                "raw": 2048.841667175293,
+                "async": 2069.4047927856445
+              },
+              "async_over_raw": 1.0100364639883088
+            }
+          }
+        }
+      ],
+      "idle_guard_accepted": true
+    }
+  ],
+  "raw_control_library_unchanged": true,
+  "scope": "Focused TP2-rank0 component, real full layer-23 weights, synthetic routing.",
+  "aligned_focused_latency_gate_passed": true,
+  "limitations": [
+    "Not a whole-model quality or tokens/sec result.",
+    "No actual two-node collectives or loader integration.",
+    "All rejected variants are retained; the two-partition confirmation is separate."
+  ]
+}

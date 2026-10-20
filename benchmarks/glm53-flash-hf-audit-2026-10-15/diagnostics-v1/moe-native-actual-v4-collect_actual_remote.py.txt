@@ -1,0 +1,91 @@
+"""Retain the bounded expert component, including failed results, after exact restoration."""
+from __future__ import annotations
+import hashlib
+import json
+import pathlib
+import shlex
+import shutil
+import subprocess
+import sys
+import tarfile
+import time
+
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+sys.path.insert(0,str(ROOT/'full-prefillbudgetv3-src'))
+import full_model_control as c
+PREFIX='moe-native-actual-v4'
+
+def sha(p):
+    with p.open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+    state=json.loads((ROOT/(PREFIX+'-controller.json')).read_bytes())
+    prepared=json.loads((ROOT/(PREFIX+'-prepared.json')).read_bytes())
+    assert state['phase']in ('complete','failed_restored')and not state['service_paused']
+    originals=[c.inspect(i,c.ORIGINAL_IDS[i])for i in (0,1)]
+    assert c.health(8000)and all(r['State']['Running']for r in originals)
+    assert [c.identity(r)for r in originals]==prepared['originals']
+    base=ROOT/(PREFIX+'-evidence');base.mkdir()
+    for suffix in ['controller.json','prepared.json','launch.json','controller.log']:
+        shutil.copyfile(ROOT/(PREFIX+'-'+suffix),base/suffix)
+    shutil.copyfile(ROOT/'restoration-nativeactualv4.json',base/'restoration.json')
+    source=ROOT/(PREFIX+'-src');manifest=json.loads((source/'source-manifest.json').read_bytes())
+    for name,want in manifest.items():
+        p=source/name;assert sha(p)==want;dest=base/'source'/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,dest)
+    shutil.copyfile(source/'source-manifest.json',base/'source-manifest.json')
+    for name,want in prepared['bindings'][0]['code'].items():
+        p=ROOT/'full-prefillbudgetv3-src'/name;assert sha(p)==want
+        dest=base/'baseline-source'/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,dest)
+    (base/'operands').mkdir()
+    subprocess.run(['scp','-q','-p','-r','-i','/home/kirya/.ssh/id_glm_cluster',
+        'kirya@192.168.192.2:'+prepared['operand_directory']+'/.',str(base/'operands')],check=True,timeout=90)
+    assert sha(base/'operands/manifest.json')==prepared['operand_manifest_sha256']
+    fixture=c.run(1,['cat',str(c.AUDIT/'grouped-moe-full-layer-v1/fixture/manifest.json')])
+    (base/'fixture-manifest.json').write_text(fixture);assert sha(base/'fixture-manifest.json')==prepared['fixture_manifest_sha256']
+    export=r'''import hashlib,json,pathlib,sys,tarfile
+r=pathlib.Path(sys.argv[1]);files=[p for p in sorted((r/'rank1').iterdir())if p.is_file()and not p.is_symlink()]
+assert sum(p.stat().st_size for p in files)<256*1024**2
+archive=r.parent/(r.name+'-rank1-results.tar.gz')
+with tarfile.open(archive,'x:gz',compresslevel=1)as tf:
+ for p in files:tf.add(p,arcname='rank1/'+p.name,recursive=False)
+with archive.open('rb')as f:digest=hashlib.file_digest(f,'sha256').hexdigest()
+print(json.dumps({'path':str(archive),'sha256':digest,'bytes':archive.stat().st_size,'payloads':len(files)}))
+'''
+    remote=json.loads(c.run(1,['python3','-S','-B','-c',export,str(ROOT/PREFIX)],timeout=180))
+    archive=ROOT/(PREFIX+'-rank1-results.tar.gz')
+    with archive.open('xb')as f:subprocess.run([*c.SSH,shlex.join(['cat',remote['path']])],stdout=f,check=True,timeout=180)
+    assert sha(archive)==remote['sha256']and archive.stat().st_size==remote['bytes']
+    with tarfile.open(archive)as tf:
+        members=tf.getmembers();assert all(m.isfile()and not pathlib.PurePosixPath(m.name).is_absolute()and '..'not in pathlib.PurePosixPath(m.name).parts for m in members)
+        tf.extractall(base,filter='data')
+    log=ROOT/PREFIX/'rank1-container.log'
+    if log.exists():shutil.copyfile(log,base/'rank1-container.log')
+    c.write(base/'post-restoration-check.json',dict(status='passed',health=200,epoch=time.time(),
+        original_identities=[c.identity(r)for r in originals]))
+    command=['docker','run','--rm','--network','none','--cpus','2','--memory','2g','--memory-swap','2g',
+        '-e','NVIDIA_VISIBLE_DEVICES=void','-e','CUDA_VISIBLE_DEVICES=',
+        '-e','OPENBLAS_NUM_THREADS=1','-e','OMP_NUM_THREADS=1','-e','PYTHONDONTWRITEBYTECODE=1',
+        '-v',str(base)+':/evidence','--entrypoint','/usr/bin/timeout',c.IMAGE,
+        '--kill-after=10','180','/usr/bin/python3','-B','/evidence/source/verify_native_actual.py',
+        '--root','/evidence/rank1','--operands','/evidence/operands','--output','/evidence/spark-independent-review.json']
+    review=subprocess.run(command,capture_output=True,timeout=210)
+    (base/'spark-verifier.log').write_bytes(review.stdout+review.stderr)
+    files=[p for p in sorted(base.rglob('*'))if p.is_file()];assert not any(p.is_symlink()for p in files)
+    inventory=[dict(path=str(p.relative_to(base)),bytes=p.stat().st_size,sha256=sha(p))for p in files]
+    c.write(base/'evidence-inventory.json',dict(files=inventory))
+    final=ROOT/(PREFIX+'-evidence.tar.gz')
+    with tarfile.open(final,'x:gz',compresslevel=1)as tf:
+        for p in sorted(base.rglob('*')):
+            if p.is_file():tf.add(p,arcname=str(p.relative_to(base)),recursive=False)
+    with tarfile.open(final)as tf:
+        for row in inventory:
+            f=tf.extractfile(row['path']);assert f is not None
+            assert hashlib.file_digest(f,'sha256').hexdigest()==row['sha256']
+    receipt=dict(status='complete',archive=str(final),archive_sha256=sha(final),archive_bytes=final.stat().st_size,
+        payloads=len(inventory),source_files=len(manifest),baseline_source_files=len(prepared['bindings'][0]['code']),
+        restored_health=200,verified_after_pack=True,Spark_CPU_review_passed=review.returncode==0,
+        component_phase=state['phase'],model_KL_qualified=False,finished_epoch=time.time(),
+        collector_source_sha256=sha(pathlib.Path(__file__)))
+    c.write(ROOT/(PREFIX+'-evidence-check.json'),receipt);print(json.dumps(receipt))
+
+if __name__=='__main__':main()

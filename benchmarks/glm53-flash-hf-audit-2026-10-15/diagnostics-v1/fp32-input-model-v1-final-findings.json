@@ -1,0 +1,2375 @@
+{
+  "status": "complete",
+  "created_epoch": 1792395699.8797948,
+  "source_sha256": "89d5e92bc9fc6ae577b4abff1b9709394b83fd7c3b5d028c792545c1692bdce3",
+  "archive_sha256": "bfbbafa8f53bdbd2c82bd2e6cc3d6f48b678433b015beb0ff7863bce9ebca8c2",
+  "verified_proof": {
+    "status": "passed",
+    "archive_sha256": "bfbbafa8f53bdbd2c82bd2e6cc3d6f48b678433b015beb0ff7863bce9ebca8c2",
+    "archive_bytes": 465586181,
+    "payloads": 1634,
+    "source_files": 229,
+    "measurement_complete": true,
+    "all_decisions_identical": true,
+    "maximum_float64_difference": 1.5542992113436551e-15,
+    "CPU_absolute_tolerance": 1e-12,
+    "CPU_relative_tolerance": 1e-10,
+    "model_KL_limit": 1e-05,
+    "model_absolute_NLL_limit": 0.0001,
+    "quality_qualified": false,
+    "original_service_restored": true,
+    "native_mhc_unchanged": true,
+    "input_FP32_split2_candidate_only": true,
+    "fp32_input_policy_checked_on_both_ranks": true,
+    "parent_exact_word_screen_passed": false,
+    "parent_input_timing_screen_passed": false,
+    "compression_numerical_gate_passed": false,
+    "all_quality_groupings_matched": true,
+    "C16_matched_numerical_gate_passed": false,
+    "exact16_dispatch_mechanism_passed": true,
+    "exact16_decode_ranges": 56,
+    "M8_dispatch_mechanism_passed": true,
+    "M8_decode_ranges": 50,
+    "dispatch_startup_preparation_passed": true,
+    "dispatch_cache_unchanged_after_startup": true,
+    "observed_speed_gate_passed": false,
+    "worker_profiles": 12,
+    "verifier_recovery": {
+      "original_failure_preserved": true,
+      "only_split2_grid_expectation_corrected": true,
+      "original_verifier_sha256": "8ba3017c087833d5d8543c748f562093a6cbac1da0262c197ac80adcfc6af84f",
+      "corrected_verifier_sha256": "d89d085a72172e09a6ec6f75c2c563ab0ccac33a9abf73499583197109639827",
+      "measurement_sources_and_gates_unchanged": true
+    }
+  },
+  "numerical": [
+    {
+      "reference": "control-c1-r0",
+      "candidate": "candidate-c1-r0",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_decode_conditioning_matches": true,
+      "all_generated_ids_match": true,
+      "mean_decode_kl": 5.390468235360015e-06,
+      "mean_decode_nll_difference": -4.842326918709075e-06,
+      "actual_model_grouping_equal": true,
+      "numerical_gate_passed": true,
+      "passed": true,
+      "bitwise_equal_full_vocabulary_rows": {
+        "prefill": 0,
+        "decode": 0
+      }
+    },
+    {
+      "reference": "control-c8-r0",
+      "candidate": "candidate-c8-r0",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_decode_conditioning_matches": true,
+      "all_generated_ids_match": true,
+      "mean_decode_kl": 3.7913301451571365e-06,
+      "mean_decode_nll_difference": -2.7007324793208663e-06,
+      "actual_model_grouping_equal": true,
+      "numerical_gate_passed": true,
+      "passed": true,
+      "bitwise_equal_full_vocabulary_rows": {
+        "prefill": 16,
+        "decode": 14
+      }
+    },
+    {
+      "reference": "control-c16-r0",
+      "candidate": "candidate-c16-r0",
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_decode_conditioning_matches": true,
+      "all_generated_ids_match": true,
+      "mean_decode_kl": 1.6018024842857082e-05,
+      "mean_decode_nll_difference": -1.203978271350068e-06,
+      "actual_model_grouping_equal": true,
+      "numerical_gate_passed": false,
+      "passed": false,
+      "bitwise_equal_full_vocabulary_rows": {
+        "prefill": 16,
+        "decode": 22
+      }
+    }
+  ],
+  "numerical_comparisons": 46,
+  "failed_numerical_comparisons": 10,
+  "all_mean_NLL_limits_pass": true,
+  "timing": [
+    {
+      "case": "c1-short",
+      "stock_tps": 14.855635156139655,
+      "candidate_tps": 17.051780280394553,
+      "tps_change_percent": 14.783246230621504,
+      "stock_ttft_seconds": 0.39090010049403645,
+      "candidate_ttft_seconds": 0.43194308248348534,
+      "ttft_change_ms": 41.04298198944889,
+      "ttft_change_percent": 10.499608963409578
+    },
+    {
+      "case": "c1-long",
+      "stock_tps": 12.602060332185516,
+      "candidate_tps": 14.144984108880813,
+      "tps_change_percent": 12.243424773603785,
+      "stock_ttft_seconds": 1.1573828904947732,
+      "candidate_ttft_seconds": 1.2219435150327627,
+      "ttft_change_ms": 64.5606245379895,
+      "ttft_change_percent": 5.5781561200019425
+    },
+    {
+      "case": "c8-short",
+      "stock_tps": 61.33831205094452,
+      "candidate_tps": 63.25698954858459,
+      "tps_change_percent": 3.1280246121649258,
+      "stock_ttft_seconds": 1.1632411907339701,
+      "candidate_ttft_seconds": 1.2009418332454516,
+      "ttft_change_ms": 37.70064251148142,
+      "ttft_change_percent": 3.2409996148514475
+    },
+    {
+      "case": "c8-long",
+      "stock_tps": 31.861713132597853,
+      "candidate_tps": 31.39371704136195,
+      "tps_change_percent": -1.468835304894811,
+      "stock_ttft_seconds": 6.4482551532564685,
+      "candidate_ttft_seconds": 6.7651360797462985,
+      "ttft_change_ms": 316.88092648983,
+      "ttft_change_percent": 4.914211968330684
+    },
+    {
+      "case": "c16-short",
+      "stock_tps": 80.6426176718177,
+      "candidate_tps": 81.322337059355,
+      "tps_change_percent": 0.8428786256709397,
+      "stock_ttft_seconds": 2.0792305469949497,
+      "candidate_ttft_seconds": 2.211434171986184,
+      "ttft_change_ms": 132.2036249912344,
+      "ttft_change_percent": 6.3582956292318915
+    },
+    {
+      "case": "c16-long",
+      "stock_tps": 37.15818225484926,
+      "candidate_tps": 36.4045938330638,
+      "tps_change_percent": -2.02805513094525,
+      "stock_ttft_seconds": 11.153408779748133,
+      "candidate_ttft_seconds": 11.672427395766135,
+      "ttft_change_ms": 519.0186160180019,
+      "ttft_change_percent": 4.653452825654636
+    }
+  ],
+  "preliminary_timing_reconciled_to_final_archive": true,
+  "CUDA_saving_GiB_TP2": 9.367162227630615,
+  "candidate_extra_RSS_MiB_TP2": {
+    "before_startup": 242.40625,
+    "after_startup_before_quality": 242.17578125,
+    "after_unprofiled_timing": 250.5234375,
+    "after_timing_and_profiles": -142.93359375
+  },
+  "timing_boundary_telemetry": {
+    "control": {
+      "samples": 144,
+      "SM_clock_MHz_min": 2437,
+      "SM_clock_MHz_max": 2496,
+      "temperature_C_min": 66,
+      "temperature_C_max": 76,
+      "transient_throttling_excluded": false
+    },
+    "candidate": {
+      "samples": 144,
+      "SM_clock_MHz_min": 2457,
+      "SM_clock_MHz_max": 2496,
+      "temperature_C_min": 68,
+      "temperature_C_max": 79,
+      "transient_throttling_excluded": false
+    }
+  },
+  "short_C16_admission": {
+    "control": [
+      {
+        "repeat": 0,
+        "first_cohort_requests": 4,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0030610309913754463,
+        "median_ttft_seconds": 1.9624512605078053,
+        "mean_ttft_seconds": 1.897699631877913
+      },
+      {
+        "repeat": 1,
+        "first_cohort_requests": 6,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0030600219615735114,
+        "median_ttft_seconds": 2.1717340989853255,
+        "mean_ttft_seconds": 1.8065898648164875
+      },
+      {
+        "repeat": 2,
+        "first_cohort_requests": 1,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0030705970129929483,
+        "median_ttft_seconds": 2.1203817664645612,
+        "mean_ttft_seconds": 2.0449213534921
+      },
+      {
+        "repeat": 3,
+        "first_cohort_requests": 7,
+        "end_reason": "deadline",
+        "collection_seconds": 0.003060291986912489,
+        "median_ttft_seconds": 2.038079327525338,
+        "mean_ttft_seconds": 1.8784071946975018
+      },
+      {
+        "repeat": 4,
+        "first_cohort_requests": 3,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0031780999852344394,
+        "median_ttft_seconds": 1.8685636015143245,
+        "mean_ttft_seconds": 1.9660438355713268
+      },
+      {
+        "repeat": 5,
+        "first_cohort_requests": 5,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0030615069554187357,
+        "median_ttft_seconds": 2.398512256506365,
+        "mean_ttft_seconds": 1.9509666211924923
+      }
+    ],
+    "candidate": [
+      {
+        "repeat": 0,
+        "first_cohort_requests": 7,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0030628489912487566,
+        "median_ttft_seconds": 2.405201627028873,
+        "mean_ttft_seconds": 1.8948798546880425
+      },
+      {
+        "repeat": 1,
+        "first_cohort_requests": 5,
+        "end_reason": "deadline",
+        "collection_seconds": 0.003081712988205254,
+        "median_ttft_seconds": 2.5061683064850513,
+        "mean_ttft_seconds": 2.038294094178127
+      },
+      {
+        "repeat": 2,
+        "first_cohort_requests": 6,
+        "end_reason": "deadline",
+        "collection_seconds": 0.003060480987187475,
+        "median_ttft_seconds": 2.1843301154731307,
+        "mean_ttft_seconds": 1.9948730585056182
+      },
+      {
+        "repeat": 3,
+        "first_cohort_requests": 7,
+        "end_reason": "deadline",
+        "collection_seconds": 0.003137037972919643,
+        "median_ttft_seconds": 1.77944938649307,
+        "mean_ttft_seconds": 1.8672173552549793
+      },
+      {
+        "repeat": 4,
+        "first_cohort_requests": 2,
+        "end_reason": "deadline",
+        "collection_seconds": 0.0030623460188508034,
+        "median_ttft_seconds": 1.8183085174823646,
+        "mean_ttft_seconds": 2.1011468527576653
+      },
+      {
+        "repeat": 5,
+        "first_cohort_requests": 1,
+        "end_reason": "deadline",
+        "collection_seconds": 0.003064359014388174,
+        "median_ttft_seconds": 2.2385382284992374,
+        "mean_ttft_seconds": 2.1608659496305336
+      }
+    ]
+  },
+  "C1_descriptive_crossover": {
+    "c1-short": {
+      "all_6_trials_included": true,
+      "candidate_minus_stock_median_arrival_seconds": [
+        0.04104298198944889,
+        0.031550278508802876,
+        0.02464771253289655,
+        0.015609785506967455,
+        0.011234891979256645,
+        0.005390990001615137,
+        -0.00376167701324448,
+        -0.013071639987174422,
+        -0.023536403488833457,
+        -0.03647139950771816,
+        -0.046610490477178246,
+        -0.059532803017646074,
+        -0.0710999985167291,
+        -0.08318466850323603,
+        -0.09478212599060498,
+        -0.10588992398697883,
+        -0.1201587445102632,
+        -0.12977503950241953,
+        -0.13642407950828783,
+        -0.14590434351703152,
+        -0.15498588752234355,
+        -0.16560644598212093,
+        -0.16851352146477439,
+        -0.17554405899136327,
+        -0.18259960651630536,
+        -0.18608971301000565,
+        -0.18831093501648866,
+        -0.19492016249569133,
+        -0.20615122801973484,
+        -0.21919496500049718,
+        -0.23103201552294195,
+        -0.23711350199300796,
+        -0.24190442651160993,
+        -0.2538390909903683,
+        -0.26379564648959786,
+        -0.2809704859973863,
+        -0.29578498148475774,
+        -0.3120832350105047,
+        -0.32453480100957677,
+        -0.3338968550087884,
+        -0.34354991200962104,
+        -0.35830492101376876,
+        -0.3724833650048822,
+        -0.3841751349682454,
+        -0.38793919849558733,
+        -0.393032954481896,
+        -0.39674952448694967,
+        -0.3996048190165311,
+        -0.4046177300042473,
+        -0.412275626527844,
+        -0.41877224048948847,
+        -0.4264467835309915,
+        -0.43091944899060763,
+        -0.4361393590515945,
+        -0.44311030200333335,
+        -0.45338902799994685,
+        -0.4640594999946188,
+        -0.4774121045193169,
+        -0.49298684200039133,
+        -0.5067564144555945,
+        -0.5209543884557206,
+        -0.5332759149605408,
+        -0.543902518984396,
+        -0.5548182149650529
+      ],
+      "first_ordinal_with_all_later_medians_earlier": 7
+    },
+    "c1-long": {
+      "all_6_trials_included": true,
+      "candidate_minus_stock_median_arrival_seconds": [
+        0.0645606245379895,
+        0.05071677002706565,
+        0.035826234525302425,
+        0.020970605546608567,
+        0.0070318804937414825,
+        -0.004175217007286847,
+        -0.011162621492985636,
+        -0.022034371475456282,
+        -0.02922755549661815,
+        -0.03820405949954875,
+        -0.0466210289450828,
+        -0.05190246301935986,
+        -0.05662285047583282,
+        -0.06058316648704931,
+        -0.06561643097666092,
+        -0.06884242949308828,
+        -0.07578461896628141,
+        -0.08638227949268185,
+        -0.09794035498634912,
+        -0.10952780052321032,
+        -0.12065682746469975,
+        -0.13394012945354916,
+        -0.14850915045826696,
+        -0.16046502246172167,
+        -0.1719150299904868,
+        -0.1850407644524239,
+        -0.19646670046495274,
+        -0.2094182044675108,
+        -0.222023326496128,
+        -0.23214320000261068,
+        -0.24160982796456665,
+        -0.2497552135027945,
+        -0.2551511574711185,
+        -0.2638383380253799,
+        -0.27461269349441864,
+        -0.2872500925150234,
+        -0.297043806000147,
+        -0.3045523625041824,
+        -0.307039552484639,
+        -0.31175523952697404,
+        -0.3198308074788656,
+        -0.3279196745133959,
+        -0.3396997005038429,
+        -0.35079615548602305,
+        -0.3613601104589179,
+        -0.3714421139738988,
+        -0.3811720625089947,
+        -0.39638652495341375,
+        -0.4119088669831399,
+        -0.4228999294573441,
+        -0.4325817354838364,
+        -0.4398074109631125,
+        -0.4499050579906907,
+        -0.4593948755355086,
+        -0.4691432285180781,
+        -0.478847328980919,
+        -0.4882708984951023,
+        -0.4980414684978314,
+        -0.5052535664581228,
+        -0.5099799179879483,
+        -0.5182878990017343,
+        -0.5286865970119834,
+        -0.5427634130173828,
+        -0.553951590496581
+      ],
+      "first_ordinal_with_all_later_medians_earlier": 6
+    }
+  },
+  "mixed_decode_KDA_kernel_sums": [
+    {
+      "rank": 0,
+      "kind": "mixed-C8",
+      "samples": 12,
+      "input_us": 13598.439000000002,
+      "output_us": 6632.2185,
+      "reduction_us": 83.96900000000002,
+      "total_KDA_us": 20356.0
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "samples": 10,
+      "input_us": 14063.688000000002,
+      "output_us": 6821.084999999999,
+      "reduction_us": 128.27200000000002,
+      "total_KDA_us": 20948.099000000002
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C8",
+      "samples": 12,
+      "input_us": 13743.814999999999,
+      "output_us": 6728.860000000001,
+      "reduction_us": 86.19200000000001,
+      "total_KDA_us": 20558.947
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "samples": 10,
+      "input_us": 14105.6395,
+      "output_us": 6613.148000000001,
+      "reduction_us": 122.97650000000003,
+      "total_KDA_us": 20883.119
+    }
+  ],
+  "candidate_prefill_forwards": [
+    {
+      "rank": 0,
+      "kind": "controlled",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 707,
+          "duration_sum_us": 32666.489999999972,
+          "kernel_union_us": 32666.491455078125
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 113.921,
+          "kernel_union_us": 113.9208984375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 87222.31999999998,
+          "kernel_union_us": 87222.32006835938
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130677.45499999999,
+          "kernel_union_us": 130677.45483398438
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 37126.80699999999,
+          "kernel_union_us": 37126.806640625
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 212135.55900000004,
+          "kernel_union_us": 212131.9423828125
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17837.943,
+          "kernel_union_us": 17837.94482421875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 59178.798,
+          "kernel_union_us": 59178.79736328125
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67720.45300000002,
+          "kernel_union_us": 67720.45288085938
+        },
+        "routing_activation": {
+          "calls": 213,
+          "duration_sum_us": 47892.09800000003,
+          "kernel_union_us": 47892.099609375
+        },
+        "other_gemm": {
+          "calls": 11,
+          "duration_sum_us": 3028.6609999999996,
+          "kernel_union_us": 3028.6611328125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 853.9250000000001,
+          "kernel_union_us": 853.92529296875
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 477343.1370000001,
+          "kernel_union_us": 477343.1376953125
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "controlled",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 802,
+          "duration_sum_us": 43052.254000000015,
+          "kernel_union_us": 43052.25341796875
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 3162.006,
+          "kernel_union_us": 3162.00537109375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 108.929,
+          "kernel_union_us": 108.928955078125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 107466.99,
+          "kernel_union_us": 107466.98999023438
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131611.25500000003,
+          "kernel_union_us": 131611.2548828125
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 37112.57300000001,
+          "kernel_union_us": 37112.57275390625
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 207900.02400000015,
+          "kernel_union_us": 207878.19775390625
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18322.94200000001,
+          "kernel_union_us": 18322.943115234375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 65556.892,
+          "kernel_union_us": 65556.89184570312
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 66669.05500000001,
+          "kernel_union_us": 66669.0546875
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 47723.51900000003,
+          "kernel_union_us": 47723.519287109375
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 819.206,
+          "kernel_union_us": 819.206787109375
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 474346.70200000005,
+          "kernel_union_us": 474346.7021484375
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "controlled",
+      "rows": 54,
+      "groups": {
+        "other": {
+          "calls": 948,
+          "duration_sum_us": 21238.804000000044,
+          "kernel_union_us": 21238.8037109375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 153.69699999999997,
+          "kernel_union_us": 153.69677734375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 13.6,
+          "kernel_union_us": 13.60009765625
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 13429.306000000002,
+          "kernel_union_us": 13429.30712890625
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 2889.717000000001,
+          "kernel_union_us": 2889.718505859375
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36171.022999999994,
+          "kernel_union_us": 36171.0224609375
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 39357.79500000001,
+          "kernel_union_us": 39325.9228515625
+        },
+        "recurrent": {
+          "calls": 113,
+          "duration_sum_us": 984.263,
+          "kernel_union_us": 984.26171875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 14948.741000000002,
+          "kernel_union_us": 14948.741943359375
+        },
+        "generic_marlin_linear": {
+          "calls": 90,
+          "duration_sum_us": 4832.893000000001,
+          "kernel_union_us": 4832.89306640625
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 1701.0350000000003,
+          "kernel_union_us": 1683.5634765625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 285.63400000000007,
+          "kernel_union_us": 285.6337890625
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 160901.53399999996,
+          "kernel_union_us": 160901.53393554688
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C8",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 705,
+          "duration_sum_us": 29866.755000000005,
+          "kernel_union_us": 29866.754638671875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 110.752,
+          "kernel_union_us": 110.751953125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 109567.518,
+          "kernel_union_us": 109567.517578125
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130126.36699999991,
+          "kernel_union_us": 130126.36499023438
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36038.531,
+          "kernel_union_us": 36038.530029296875
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 208630.177,
+          "kernel_union_us": 208620.32055664062
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17958.390000000003,
+          "kernel_union_us": 17958.39111328125
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 69088.40599999999,
+          "kernel_union_us": 69088.40600585938
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 65568.29099999997,
+          "kernel_union_us": 65568.29125976562
+        },
+        "routing_activation": {
+          "calls": 213,
+          "duration_sum_us": 47318.764999999985,
+          "kernel_union_us": 47318.766845703125
+        },
+        "other_gemm": {
+          "calls": 11,
+          "duration_sum_us": 3023.5069999999996,
+          "kernel_union_us": 3023.5068359375
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 992.8060000000003,
+          "kernel_union_us": 992.805908203125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 473153.03400000016,
+          "kernel_union_us": 473153.0349121094
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C8",
+      "rows": 997,
+      "groups": {
+        "other": {
+          "calls": 788,
+          "duration_sum_us": 14951.906999999997,
+          "kernel_union_us": 14951.907958984375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 618.949,
+          "kernel_union_us": 618.9482421875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 42.432,
+          "kernel_union_us": 42.431884765625
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 47061.965999999986,
+          "kernel_union_us": 47061.964599609375
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 58595.574,
+          "kernel_union_us": 58595.57470703125
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36037.183999999994,
+          "kernel_union_us": 36037.185546875
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 89814.48700000005,
+          "kernel_union_us": 89780.31127929688
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 9008.761999999999,
+          "kernel_union_us": 9008.7607421875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 55282.047000000006,
+          "kernel_union_us": 55282.0478515625
+        },
+        "generic_marlin_linear": {
+          "calls": 180,
+          "duration_sum_us": 34195.26100000001,
+          "kernel_union_us": 34195.260498046875
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 22131.562,
+          "kernel_union_us": 22131.55908203125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 295.172,
+          "kernel_union_us": 295.172607421875
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 319858.57899999985,
+          "kernel_union_us": 319858.5778808594
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C8",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 796,
+          "duration_sum_us": 32887.69599999995,
+          "kernel_union_us": 32887.693359375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 3040.117,
+          "kernel_union_us": 3040.117431640625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 98.305,
+          "kernel_union_us": 98.304931640625
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 99991.76900000006,
+          "kernel_union_us": 99991.76928710938
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130214.53199999993,
+          "kernel_union_us": 130214.53173828125
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36249.575999999994,
+          "kernel_union_us": 36249.57666015625
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 205502.8539999998,
+          "kernel_union_us": 205496.96484375
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17980.495999999996,
+          "kernel_union_us": 17980.496337890625
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 85578.599,
+          "kernel_union_us": 85578.59814453125
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67397.26600000002,
+          "kernel_union_us": 67397.26684570312
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48090.35500000001,
+          "kernel_union_us": 48090.353515625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1035.4290000000003,
+          "kernel_union_us": 1035.4287109375
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 461086.1930000002,
+          "kernel_union_us": 461086.19287109375
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C8",
+      "rows": 525,
+      "groups": {
+        "other": {
+          "calls": 788,
+          "duration_sum_us": 14217.728000000028,
+          "kernel_union_us": 14217.728759765625
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 452.3539999999999,
+          "kernel_union_us": 452.354248046875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 25.056,
+          "kernel_union_us": 25.055908203125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 41640.36199999999,
+          "kernel_union_us": 41640.362060546875
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 22274.102000000006,
+          "kernel_union_us": 22274.100830078125
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 37628.047999999995,
+          "kernel_union_us": 37628.048095703125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 71740.87200000005,
+          "kernel_union_us": 71630.21533203125
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 5423.2990000000045,
+          "kernel_union_us": 5423.301025390625
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 46842.441000000006,
+          "kernel_union_us": 46842.440673828125
+        },
+        "generic_marlin_linear": {
+          "calls": 180,
+          "duration_sum_us": 19712.226999999984,
+          "kernel_union_us": 19712.2265625
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 10801.82299999999,
+          "kernel_union_us": 10801.822998046875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 215.07399999999996,
+          "kernel_union_us": 215.073486328125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 238125.85599999997,
+          "kernel_union_us": 238125.85595703125
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "rows": 2016,
+      "groups": {
+        "other": {
+          "calls": 705,
+          "duration_sum_us": 29954.813999999973,
+          "kernel_union_us": 29954.814697265625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 109.216,
+          "kernel_union_us": 109.216064453125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 110029.45300000001,
+          "kernel_union_us": 110029.45288085938
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 127162.92999999998,
+          "kernel_union_us": 127162.9287109375
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 35759.992999999995,
+          "kernel_union_us": 35759.993408203125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 204675.17100000012,
+          "kernel_union_us": 204584.77099609375
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17675.052999999996,
+          "kernel_union_us": 17675.052734375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 66629.66100000002,
+          "kernel_union_us": 66629.66088867188
+        },
+        "generic_marlin_linear": {
+          "calls": 183,
+          "duration_sum_us": 65938.84300000007,
+          "kernel_union_us": 65938.84057617188
+        },
+        "routing_activation": {
+          "calls": 213,
+          "duration_sum_us": 46326.80600000002,
+          "kernel_union_us": 46326.806884765625
+        },
+        "other_gemm": {
+          "calls": 11,
+          "duration_sum_us": 2830.1929999999998,
+          "kernel_union_us": 2830.193115234375
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 993.2229999999997,
+          "kernel_union_us": 993.22314453125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 457372.7390000001,
+          "kernel_union_us": 457372.7395019531
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 795,
+          "duration_sum_us": 32089.26299999995,
+          "kernel_union_us": 32089.26025390625
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 3065.7810000000004,
+          "kernel_union_us": 3065.78076171875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 184.353,
+          "kernel_union_us": 184.35302734375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 106296.694,
+          "kernel_union_us": 106296.69311523438
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131051.30900000005,
+          "kernel_union_us": 131051.30981445312
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 35913.727000000006,
+          "kernel_union_us": 35913.725830078125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 208044.71600000004,
+          "kernel_union_us": 208021.802734375
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18363.983999999997,
+          "kernel_union_us": 18363.983642578125
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 109762.88300000002,
+          "kernel_union_us": 109762.88208007812
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67786.69399999996,
+          "kernel_union_us": 67786.69458007812
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 47301.59799999998,
+          "kernel_union_us": 47301.59814453125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1177.579,
+          "kernel_union_us": 1177.578857421875
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 446902.848,
+          "kernel_union_us": 446902.8479003906
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 47819.823,
+          "kernel_union_us": 47819.82373046875
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 480323.851,
+          "kernel_union_us": 480323.85009765625
+        },
+        "other": {
+          "calls": 800,
+          "duration_sum_us": 38793.38099999993,
+          "kernel_union_us": 38793.37841796875
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 105838.48500000006,
+          "kernel_union_us": 105838.48559570312
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130149.58099999996,
+          "kernel_union_us": 130149.58276367188
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 35911.872,
+          "kernel_union_us": 35911.872314453125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 207573.68100000007,
+          "kernel_union_us": 207567.88818359375
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18206.931999999997,
+          "kernel_union_us": 18206.931884765625
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 88679.497,
+          "kernel_union_us": 88679.49633789062
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 65713.71600000001,
+          "kernel_union_us": 65713.7158203125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1003.08,
+          "kernel_union_us": 1003.0810546875
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 3187.796,
+          "kernel_union_us": 3187.795654296875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 102.657,
+          "kernel_union_us": 102.656982421875
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 796,
+          "duration_sum_us": 41233.980999999985,
+          "kernel_union_us": 41233.98193359375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 3295.9890000000005,
+          "kernel_union_us": 3295.988525390625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 97.056,
+          "kernel_union_us": 97.055908203125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 106765.979,
+          "kernel_union_us": 106765.97802734375
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130936.40100000001,
+          "kernel_union_us": 130936.39990234375
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36247.840999999986,
+          "kernel_union_us": 36247.841064453125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 206399.397,
+          "kernel_union_us": 206391.27001953125
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18172.559,
+          "kernel_union_us": 18172.55908203125
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 78969.54800000001,
+          "kernel_union_us": 78969.54760742188
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 66548.446,
+          "kernel_union_us": 66548.44604492188
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 47480.36000000001,
+          "kernel_union_us": 47480.362060546875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1218.8580000000004,
+          "kernel_union_us": 1218.857421875
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 478341.86100000015,
+          "kernel_union_us": 478341.8615722656
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 795,
+          "duration_sum_us": 42990.88399999996,
+          "kernel_union_us": 42990.885986328125
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 3245.2039999999997,
+          "kernel_union_us": 3245.204345703125
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 94.816,
+          "kernel_union_us": 94.81591796875
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 106648.02899999998,
+          "kernel_union_us": 106648.02880859375
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 129857.67699999998,
+          "kernel_union_us": 129857.67651367188
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36250.473,
+          "kernel_union_us": 36250.471923828125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 208614.2489999999,
+          "kernel_union_us": 208596.39501953125
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18188.465,
+          "kernel_union_us": 18188.4638671875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 101444.05999999997,
+          "kernel_union_us": 101444.05981445312
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 64988.21000000002,
+          "kernel_union_us": 64988.21044921875
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48046.76499999999,
+          "kernel_union_us": 48046.7666015625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1147.113,
+          "kernel_union_us": 1147.113525390625
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 465252.1149999999,
+          "kernel_union_us": 465252.115234375
+        }
+      }
+    },
+    {
+      "rank": 0,
+      "kind": "mixed-C16",
+      "rows": 1045,
+      "groups": {
+        "other": {
+          "calls": 788,
+          "duration_sum_us": 27905.238999999972,
+          "kernel_union_us": 27905.24365234375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 663.812,
+          "kernel_union_us": 663.81201171875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 45.601,
+          "kernel_union_us": 45.60107421875
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 47403.528000000035,
+          "kernel_union_us": 47403.527587890625
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 64806.960000000065,
+          "kernel_union_us": 64806.958984375
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36172.22500000001,
+          "kernel_union_us": 36172.22412109375
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 95845.62499999996,
+          "kernel_union_us": 95730.04174804688
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 9550.651999999998,
+          "kernel_union_us": 9550.65185546875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 83070.40200000002,
+          "kernel_union_us": 83070.40283203125
+        },
+        "generic_marlin_linear": {
+          "calls": 180,
+          "duration_sum_us": 35291.675,
+          "kernel_union_us": 35291.673095703125
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 23149.929000000004,
+          "kernel_union_us": 23149.927001953125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 955.398,
+          "kernel_union_us": 955.398193359375
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 286379.3229999999,
+          "kernel_union_us": 286379.3229980469
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "controlled",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 707,
+          "duration_sum_us": 32788.921999999955,
+          "kernel_union_us": 32788.921142578125
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 139.648,
+          "kernel_union_us": 139.64794921875
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 109582.557,
+          "kernel_union_us": 109582.556640625
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130469.29999999996,
+          "kernel_union_us": 130469.29907226562
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36081.631,
+          "kernel_union_us": 36081.63134765625
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 204768.66699999996,
+          "kernel_union_us": 204763.96411132812
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17840.284999999996,
+          "kernel_union_us": 17840.28564453125
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 57371.07300000002,
+          "kernel_union_us": 57371.07373046875
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 68405.49600000001,
+          "kernel_union_us": 68405.49609375
+        },
+        "routing_activation": {
+          "calls": 213,
+          "duration_sum_us": 47571.08800000003,
+          "kernel_union_us": 47571.088134765625
+        },
+        "other_gemm": {
+          "calls": 11,
+          "duration_sum_us": 2431.2349999999997,
+          "kernel_union_us": 2431.235107421875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 862.5599999999997,
+          "kernel_union_us": 862.5595703125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 465598.12299999985,
+          "kernel_union_us": 465598.1242675781
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "controlled",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 802,
+          "duration_sum_us": 43272.93200000001,
+          "kernel_union_us": 43272.93359375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 2679.586,
+          "kernel_union_us": 2679.5859375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 91.008,
+          "kernel_union_us": 91.008056640625
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 104829.29099999998,
+          "kernel_union_us": 104829.29174804688
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131206.36999999994,
+          "kernel_union_us": 131206.37060546875
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36469.687000000005,
+          "kernel_union_us": 36469.6875
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 210768.67400000014,
+          "kernel_union_us": 210759.68408203125
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18153.826000000005,
+          "kernel_union_us": 18153.826171875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 67600.69399999999,
+          "kernel_union_us": 67600.6943359375
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 68358.10100000004,
+          "kernel_union_us": 68358.10107421875
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48349.07300000004,
+          "kernel_union_us": 48349.070556640625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 838.7879999999998,
+          "kernel_union_us": 838.788330078125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 471677.429,
+          "kernel_union_us": 471677.4289550781
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "controlled",
+      "rows": 54,
+      "groups": {
+        "other": {
+          "calls": 948,
+          "duration_sum_us": 22843.744999999974,
+          "kernel_union_us": 22843.742919921875
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 194.113,
+          "kernel_union_us": 194.112548828125
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 9.472,
+          "kernel_union_us": 9.471923828125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 6192.200999999998,
+          "kernel_union_us": 6192.201171875
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 3211.8459999999977,
+          "kernel_union_us": 3211.845947265625
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36792.481,
+          "kernel_union_us": 36792.480712890625
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 41668.37600000001,
+          "kernel_union_us": 41603.41650390625
+        },
+        "recurrent": {
+          "calls": 113,
+          "duration_sum_us": 1126.5320000000004,
+          "kernel_union_us": 1126.531005859375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 15689.724,
+          "kernel_union_us": 15689.72314453125
+        },
+        "generic_marlin_linear": {
+          "calls": 90,
+          "duration_sum_us": 5131.785999999999,
+          "kernel_union_us": 5131.78564453125
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 1600.4799999999993,
+          "kernel_union_us": 1571.201171875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 455.8719999999999,
+          "kernel_union_us": 455.87109375
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 162456.89899999998,
+          "kernel_union_us": 162456.89892578125
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C8",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 705,
+          "duration_sum_us": 30190.455999999976,
+          "kernel_union_us": 30190.457275390625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 100.8,
+          "kernel_union_us": 100.800048828125
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 96148.70299999998,
+          "kernel_union_us": 96148.703125
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131768.20500000005,
+          "kernel_union_us": 131768.20532226562
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36673.083999999995,
+          "kernel_union_us": 36673.0849609375
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 209283.689,
+          "kernel_union_us": 209276.36206054688
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17745.022,
+          "kernel_union_us": 17745.0224609375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 70161.55299999999,
+          "kernel_union_us": 70161.55346679688
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 66607.888,
+          "kernel_union_us": 66607.88891601562
+        },
+        "routing_activation": {
+          "calls": 213,
+          "duration_sum_us": 48491.818000000036,
+          "kernel_union_us": 48491.8193359375
+        },
+        "other_gemm": {
+          "calls": 11,
+          "duration_sum_us": 2572.163,
+          "kernel_union_us": 2572.163330078125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1036.6420000000003,
+          "kernel_union_us": 1036.642578125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 478688.96099999995,
+          "kernel_union_us": 478688.96044921875
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C8",
+      "rows": 997,
+      "groups": {
+        "other": {
+          "calls": 788,
+          "duration_sum_us": 15093.913999999993,
+          "kernel_union_us": 15093.919677734375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 608.993,
+          "kernel_union_us": 608.992431640625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 37.088,
+          "kernel_union_us": 37.087890625
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 54139.281999999985,
+          "kernel_union_us": 54139.281982421875
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 57711.617,
+          "kernel_union_us": 57711.617431640625
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 35458.235,
+          "kernel_union_us": 35458.235595703125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 88882.89599999994,
+          "kernel_union_us": 88840.78100585938
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 8926.030999999997,
+          "kernel_union_us": 8926.03076171875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 54330.132,
+          "kernel_union_us": 54330.132568359375
+        },
+        "generic_marlin_linear": {
+          "calls": 180,
+          "duration_sum_us": 33336.308,
+          "kernel_union_us": 33336.30615234375
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 21725.247,
+          "kernel_union_us": 21725.246826171875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 269.28099999999995,
+          "kernel_union_us": 269.28125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 317350.14199999993,
+          "kernel_union_us": 317350.1408691406
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C8",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 796,
+          "duration_sum_us": 33297.36400000003,
+          "kernel_union_us": 33297.36376953125
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 2636.355,
+          "kernel_union_us": 2636.35498046875
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 85.248,
+          "kernel_union_us": 85.248046875
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 87062.45000000003,
+          "kernel_union_us": 87062.4501953125
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131227.93200000003,
+          "kernel_union_us": 131227.93359375
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36445.21400000001,
+          "kernel_union_us": 36445.214111328125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 209082.66000000003,
+          "kernel_union_us": 209071.36352539062
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17849.372999999996,
+          "kernel_union_us": 17849.37451171875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 86602.11100000002,
+          "kernel_union_us": 86602.11108398438
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67053.16300000002,
+          "kernel_union_us": 67053.162109375
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48513.36400000004,
+          "kernel_union_us": 48513.364013671875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1130.401,
+          "kernel_union_us": 1130.40087890625
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 468104.14600000007,
+          "kernel_union_us": 468104.1462402344
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C8",
+      "rows": 525,
+      "groups": {
+        "other": {
+          "calls": 788,
+          "duration_sum_us": 13996.823999999999,
+          "kernel_union_us": 13996.82373046875
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 540.801,
+          "kernel_union_us": 540.800537109375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 24.064,
+          "kernel_union_us": 24.06396484375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 45955.21700000001,
+          "kernel_union_us": 45955.21630859375
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 22088.676000000018,
+          "kernel_union_us": 22088.676025390625
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36692.353999999985,
+          "kernel_union_us": 36692.354736328125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 72296.603,
+          "kernel_union_us": 72182.77954101562
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 5255.879999999999,
+          "kernel_union_us": 5255.8798828125
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 48954.515,
+          "kernel_union_us": 48954.515625
+        },
+        "generic_marlin_linear": {
+          "calls": 180,
+          "duration_sum_us": 20636.520000000008,
+          "kernel_union_us": 20636.52197265625
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 10919.987000000001,
+          "kernel_union_us": 10919.9892578125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 237.024,
+          "kernel_union_us": 237.0244140625
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 231074.219,
+          "kernel_union_us": 231074.21875
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "rows": 2016,
+      "groups": {
+        "other": {
+          "calls": 705,
+          "duration_sum_us": 30407.344999999987,
+          "kernel_union_us": 30407.343505859375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 102.4,
+          "kernel_union_us": 102.39990234375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 83884.09499999996,
+          "kernel_union_us": 83884.09521484375
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 130451.622,
+          "kernel_union_us": 130451.62426757812
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36656.35,
+          "kernel_union_us": 36656.349365234375
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 206477.90700000006,
+          "kernel_union_us": 206390.802734375
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17496.249000000003,
+          "kernel_union_us": 17496.2490234375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 66674.88399999998,
+          "kernel_union_us": 66674.88598632812
+        },
+        "generic_marlin_linear": {
+          "calls": 183,
+          "duration_sum_us": 68129.22700000004,
+          "kernel_union_us": 68129.22729492188
+        },
+        "routing_activation": {
+          "calls": 213,
+          "duration_sum_us": 47235.37000000002,
+          "kernel_union_us": 47235.37060546875
+        },
+        "other_gemm": {
+          "calls": 11,
+          "duration_sum_us": 2481.636,
+          "kernel_union_us": 2481.6357421875
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1030.3690000000001,
+          "kernel_union_us": 1030.369140625
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 474620.42799999996,
+          "kernel_union_us": 474620.427734375
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 795,
+          "duration_sum_us": 32107.95899999997,
+          "kernel_union_us": 32107.955810546875
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 2553.25,
+          "kernel_union_us": 2553.250244140625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 85.6,
+          "kernel_union_us": 85.60009765625
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 102231.07699999996,
+          "kernel_union_us": 102231.0771484375
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131477.42199999996,
+          "kernel_union_us": 131477.42114257812
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36426.994000000006,
+          "kernel_union_us": 36426.993896484375
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 205555.94199999978,
+          "kernel_union_us": 205532.0400390625
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 17813.920000000002,
+          "kernel_union_us": 17813.919921875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 109285.48700000001,
+          "kernel_union_us": 109285.486328125
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67172.93299999999,
+          "kernel_union_us": 67172.93359375
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48107.405,
+          "kernel_union_us": 48107.40673828125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1189.2519999999997,
+          "kernel_union_us": 1189.252197265625
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 452887.9180000002,
+          "kernel_union_us": 452887.91845703125
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 800,
+          "duration_sum_us": 39161.947,
+          "kernel_union_us": 39161.94677734375
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 2663.7200000000003,
+          "kernel_union_us": 2663.720458984375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 86.24,
+          "kernel_union_us": 86.239990234375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 102177.89400000003,
+          "kernel_union_us": 102177.89404296875
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 132037.77400000003,
+          "kernel_union_us": 132037.7744140625
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36093.81399999999,
+          "kernel_union_us": 36093.813720703125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 208963.0129999999,
+          "kernel_union_us": 208954.40673828125
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18098.432000000008,
+          "kernel_union_us": 18098.431396484375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 90301.71399999999,
+          "kernel_union_us": 90301.71435546875
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 65474.57099999998,
+          "kernel_union_us": 65474.5712890625
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 47827.31499999998,
+          "kernel_union_us": 47827.31494140625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 968.7059999999999,
+          "kernel_union_us": 968.7060546875
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 478610.2580000001,
+          "kernel_union_us": 478610.2580566406
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 796,
+          "duration_sum_us": 41594.913,
+          "kernel_union_us": 41594.91357421875
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 2725.4129999999996,
+          "kernel_union_us": 2725.41259765625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 92.96,
+          "kernel_union_us": 92.9599609375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 98836.76600000003,
+          "kernel_union_us": 98836.76538085938
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 132292.74700000003,
+          "kernel_union_us": 132292.74584960938
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 37008.794,
+          "kernel_union_us": 37008.794921875
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 207721.1309999999,
+          "kernel_union_us": 207716.20263671875
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18472.574000000004,
+          "kernel_union_us": 18472.57373046875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 78461.05600000001,
+          "kernel_union_us": 78461.05541992188
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67736.84400000003,
+          "kernel_union_us": 67736.84423828125
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48132.26899999999,
+          "kernel_union_us": 48132.267822265625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1112.9959999999999,
+          "kernel_union_us": 1112.99609375
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 480459.67200000014,
+          "kernel_union_us": 480459.67236328125
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "rows": 2048,
+      "groups": {
+        "other": {
+          "calls": 795,
+          "duration_sum_us": 43246.30199999995,
+          "kernel_union_us": 43246.298828125
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 2643.5570000000002,
+          "kernel_union_us": 2643.55712890625
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 87.616,
+          "kernel_union_us": 87.615966796875
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 99098.77999999996,
+          "kernel_union_us": 99098.78002929688
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 131595.57300000006,
+          "kernel_union_us": 131595.57177734375
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 36749.49800000001,
+          "kernel_union_us": 36749.499267578125
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 207975.40600000008,
+          "kernel_union_us": 207950.47924804688
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 18139.964000000004,
+          "kernel_union_us": 18139.964599609375
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 103107.65399999998,
+          "kernel_union_us": 103107.65356445312
+        },
+        "generic_marlin_linear": {
+          "calls": 93,
+          "duration_sum_us": 67815.94799999997,
+          "kernel_union_us": 67815.9482421875
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 48149.32699999999,
+          "kernel_union_us": 48149.327392578125
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 1128.0670000000002,
+          "kernel_union_us": 1128.0673828125
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 466622.37500000006,
+          "kernel_union_us": 466622.37451171875
+        }
+      }
+    },
+    {
+      "rank": 1,
+      "kind": "mixed-C16",
+      "rows": 1045,
+      "groups": {
+        "generic_marlin_linear": {
+          "calls": 180,
+          "duration_sum_us": 36287.95900000003,
+          "kernel_union_us": 36287.95654296875
+        },
+        "routing_activation": {
+          "calls": 224,
+          "duration_sum_us": 23049.52200000001,
+          "kernel_union_us": 23049.521728515625
+        },
+        "other": {
+          "calls": 788,
+          "duration_sum_us": 28169.032999999967,
+          "kernel_union_us": 28169.03369140625
+        },
+        "stable_expert_order": {
+          "calls": 42,
+          "duration_sum_us": 936.289,
+          "kernel_union_us": 936.288818359375
+        },
+        "routed_expert_gemm": {
+          "calls": 84,
+          "duration_sum_us": 284063.964,
+          "kernel_union_us": 284063.96484375
+        },
+        "communication": {
+          "calls": 91,
+          "duration_sum_us": 55065.616999999984,
+          "kernel_union_us": 55065.617919921875
+        },
+        "mhc": {
+          "calls": 270,
+          "duration_sum_us": 63637.226,
+          "kernel_union_us": 63637.22607421875
+        },
+        "bf16_weight_decode": {
+          "calls": 68,
+          "duration_sum_us": 35787.12700000001,
+          "kernel_union_us": 35787.12744140625
+        },
+        "bf16_dense_linear": {
+          "calls": 308,
+          "duration_sum_us": 94600.3790000001,
+          "kernel_union_us": 94502.97119140625
+        },
+        "recurrent": {
+          "calls": 102,
+          "duration_sum_us": 9597.971999999996,
+          "kernel_union_us": 9597.97216796875
+        },
+        "attention": {
+          "calls": 90,
+          "duration_sum_us": 79255.38900000001,
+          "kernel_union_us": 79255.39038085938
+        },
+        "other_gemm": {
+          "calls": 23,
+          "duration_sum_us": 666.2099999999999,
+          "kernel_union_us": 666.2099609375
+        },
+        "embedding_lookup": {
+          "calls": 1,
+          "duration_sum_us": 96.0,
+          "kernel_union_us": 96.0
+        }
+      }
+    }
+  ],
+  "parent_output_comparison": [
+    {
+      "arm": "control",
+      "groups": 10,
+      "full_vocabulary_rows": 640,
+      "equal_rows": 640,
+      "all_groupings_match": true,
+      "all_prompts_conditioning_generated_ids_match": true
+    },
+    {
+      "arm": "candidate",
+      "groups": 10,
+      "full_vocabulary_rows": 640,
+      "equal_rows": 290,
+      "all_groupings_match": true,
+      "all_prompts_conditioning_generated_ids_match": true
+    }
+  ],
+  "GPU_experiment_rerun": false,
+  "configuration_promoted": false,
+  "recommendation": "Keep the previously qualified warmed exact16 route; reject global input-FP32 promotion. No new experiment launched.",
+  "limits": [
+    "Fixed stock-then-candidate loads and six trials/case; no statistical significance claim.",
+    "Cross-run candidate speed changes are descriptive, not a paired kernel treatment estimate.",
+    "Matched finite contexts do not qualify universal equivalence or broad task quality.",
+    "C16 first-cohort sizes do not count all prefill forwards; admission remains a confounder.",
+    "Kernel sums are not API time; profiling is separate from ordinary timing.",
+    "CPU RSS and CUDA overlap on Spark; post-profile memory is profiler-influenced.",
+    "Boundary telemetry cannot exclude transient throttling. No clock correction or trial filtering."
+  ]
+}

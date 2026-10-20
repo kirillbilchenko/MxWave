@@ -1,0 +1,27 @@
+{
+  "status": "complete_offline",
+  "archive": {
+    "name": "mxwave-glm53-sync-review-v1.tar.gz",
+    "bytes": 127796,
+    "sha256": "f822da3d1809b0066a6b5782a709c8b18a8fe6ea1058fd7f7ff4ce3f9ecf5d8b",
+    "spark_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/mxwave-glm53-sync-review-v1.tar.gz"
+  },
+  "manifest_sha256": "5fd2980de4b560ebc054d011f8bb210c3c539e8c8f5abe532ea77b3d9109ad95",
+  "payload_files": 14,
+  "no_external_source_copied": true,
+  "runtime_code_not_gpu_executed": true,
+  "real_saved_control_check": {
+    "old_and_candidate_transport_match": true,
+    "added_proxy_pinning_rejected": true
+  },
+  "checks": [
+    "ruff check . passed",
+    "mypy mxwave passed (35 files)",
+    "full pytest passed (one existing GPU skip)"
+  ],
+  "reproduction": {
+    "integration": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/full-combineddispatchv1-src",
+    "root": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-combineddispatchv1",
+    "command": "python3 analysis/synchronization-v1/analyze-sync-offline-v1.py --integration \"$MXWAVE_RUN_ROOT/full-combineddispatchv1-src\" --root \"$MXWAVE_RUN_ROOT/run-combineddispatchv1\" --source-index analysis/synchronization-v1/roce-source-hashes-v1.json --output /tmp/mxwave-synchronization-review.json"
+  }
+}

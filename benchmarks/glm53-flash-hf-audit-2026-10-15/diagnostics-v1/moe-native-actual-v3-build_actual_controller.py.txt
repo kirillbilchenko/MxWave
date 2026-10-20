@@ -1,0 +1,107 @@
+"""Prepare a bounded controller from this repository's established restoration workflow."""
+from __future__ import annotations
+import ast
+import pathlib
+
+base = pathlib.Path(__file__).parent
+repo = pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+s = (repo / 'integrations/glm53_mxfp4/run_stable_warmup.py').read_text()
+s = s.replace('import full_model_control as control\nfrom benchmark_stable_warmup import assess, protocol', '''import sys
+sys.path.insert(0, '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/full-prefillbudgetv3-src')
+import full_model_control as control
+from verify_native_actual import assess''')
+s = s.replace('REVISION = "stablewarmv1"', 'REVISION = "nativeactualv3"')
+s = s.replace('DIRECTORY = "stable-warmup-v1"', 'DIRECTORY = "moe-native-actual-v3"')
+start, end = s.index('def command('), s.index('\ndef main()')
+s = s[:start] + '''def command(rank: int) -> list[str]:
+    """Run only the declared full-288-expert rank-1 comparison."""
+    assert rank == 1
+    prepared = json.loads((control.ROOT / (DIRECTORY + '-prepared.json')).read_bytes())
+    root = control.ROOT / DIRECTORY
+    argv = ['docker', 'run', '-d', '--name', f'mxwave-glm53-full-{REVISION}-raw-r{rank}',
+            '--gpus', 'all', '--network', 'none', '--cpus', '2', '--memory', '12g',
+            '--memory-swap', '12g', '--pids-limit', '512', '--user', f'{os.getuid()}:{os.getgid()}']
+    for source, target, readonly in (
+        (control.ROOT / (DIRECTORY + '-src'), '/src', True),
+        (control.AUDIT, '/audit', True), (control.OLD, '/experiment', True),
+        (Path(prepared['operand_directory']), '/operands', True),
+        (root / f'rank{rank}', '/result', False),
+    ):
+        argv += ['-v', f'{source}:{target}' + (':ro' if readonly else '')]
+    environment = {
+        'PYTHONPATH': '/src:/audit/full-model-v1/full-prefillbudgetv3-src:/experiment/triple-v2/src/integrations/zipserv',
+        'PYTHONDONTWRITEBYTECODE': '1', 'OMP_NUM_THREADS': '1',
+        'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1',
+        'HF_HUB_OFFLINE': '1', 'TRANSFORMERS_OFFLINE': '1',
+        'CUTE_DSL_ARCH': 'sm_121a',
+        'MXWAVE_MOE_MODE': 'aligned', 'MXWAVE_MOE_DISPATCH': 'dispatcher',
+        'MXWAVE_MOE_RAW_LIBRARY': '/audit/full-model-v1/native/libmxwave_moe_raw.so',
+        'MXWAVE_MOE_ALIGNED_LIBRARY': '/audit/full-model-v1/native/libmxwave_moe_aligned.so',
+        'MXWAVE_MOE_RECORD_CODEC': '/experiment/triple-v2/src/integrations/marlin_scales/records.py',
+        'TORCHINDUCTOR_CACHE_DIR': '/result/cache/inductor',
+        'TRITON_CACHE_DIR': '/result/cache/triton', 'CUDA_CACHE_PATH': '/result/cache/cuda',
+        'XDG_CACHE_HOME': '/result/cache',
+    }
+    for key, value in environment.items():
+        argv += ['-e', f'{key}={value}']
+    argv += ['--entrypoint', '/usr/bin/timeout', control.IMAGE, '--signal=TERM',
+             '--kill-after=10', '900', '/usr/bin/python3', '-B', '-u',
+             '/src/benchmark_native_experts.py', '--fixture',
+             '/audit/grouped-moe-full-layer-v1/fixture', '--operands', '/operands',
+             '--upstream', '/src/upstream-flashinfer', '--result', '/result', '--rank', '1']
+    return argv
+
+
+def preflight() -> dict[str, Any]:
+    """Bind every source and captured operand before any service pause."""
+    path = control.ROOT / (DIRECTORY + '-prepared.json')
+    prepared = json.loads(path.read_bytes())
+    bindings = [control.preflight(rank, control.ROOT / 'full-prefillbudgetv3-src') for rank in (0, 1)]
+    assert bindings == prepared['bindings']
+    script = """import hashlib,json,pathlib,sys
+src=pathlib.Path(sys.argv[1]);expected=json.loads(sys.argv[2]);operands=pathlib.Path(sys.argv[3])
+manifest=json.loads((src/'source-manifest.json').read_bytes())
+assert hashlib.sha256((src/'source-manifest.json').read_bytes()).hexdigest()==expected['source_manifest_sha256']
+actual={str(p.relative_to(src)):hashlib.sha256(p.read_bytes()).hexdigest()for p in src.rglob('*')if p.is_file()and p.name!='source-manifest.json'}
+assert actual==manifest
+assert hashlib.sha256((operands/'manifest.json').read_bytes()).hexdigest()==expected['operand_manifest_sha256']
+o=json.loads((operands/'manifest.json').read_bytes());assert o['status']=='complete'
+for r in o['rows']:
+ for t in r['tensors'].values():
+  p=operands/t['path'];assert p.stat().st_size==t['bytes']and hashlib.sha256(p.read_bytes()).hexdigest()==t['sha256']
+fixture=pathlib.Path(sys.argv[4]);assert hashlib.sha256(fixture.read_bytes()).hexdigest()==expected['fixture_manifest_sha256']
+print(json.dumps({'source_manifest_sha256':expected['source_manifest_sha256'],'operand_manifest_sha256':expected['operand_manifest_sha256'],'fixture_manifest_sha256':expected['fixture_manifest_sha256']}))
+"""
+    inputs = json.loads(control.run(1, ['python3', '-S', '-B', '-c', script,
+        str(control.ROOT / (DIRECTORY + '-src')), json.dumps(prepared),
+        prepared['operand_directory'], str(control.AUDIT / 'grouped-moe-full-layer-v1/fixture/manifest.json')], timeout=120))
+    # The controller and worker consume identical immutable source archives.
+    source_manifest = control.ROOT / (DIRECTORY + '-src/source-manifest.json')
+    assert hashlib.sha256(source_manifest.read_bytes()).hexdigest() == prepared['source_manifest_sha256']
+    for name, want in json.loads(source_manifest.read_bytes()).items():
+        assert hashlib.sha256((source_manifest.parent / name).read_bytes()).hexdigest() == want
+    return {'prepared_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+            'bindings': bindings, 'originals': prepared['originals'],
+            'protocol': prepared['protocol'], 'inputs': inputs}
+
+''' + s[end:]
+s = s.replace('Run two bounded fresh-cache warmup components', 'Run one bounded complete expert-layer comparison')
+s = s.replace('Finish both declared GPU processes', 'Finish the declared rank-1 GPU process')
+s = s.replace('Preserve the first declared warmup component attempt', 'Preserve the first declared actual-operand attempt')
+s = s.replace('time.time() + 2100', 'time.time() + 2400')
+s = s.replace('for rank in (0, 1):\n            control.run(rank, ["mkdir", "-p", str(root / f"rank{rank}")])', 'for rank in (1,):\n            control.run(rank, ["mkdir", "-p", str(root / f"rank{rank}")])')
+s = s.replace('deadline = time.monotonic() + 625', 'deadline = time.monotonic() + 925')
+s = s.replace('pending = {0, 1}', 'pending = {1}')
+s = s.replace('entry = state["runs"][rank]', 'entry = next(r for r in state["runs"] if r["rank"] == rank)')
+s = s.replace('''                        if entry["independent_assessment"] != report["assessment"]:
+                            raise ValueError("Component assessment does not reproduce")''', '')
+s = s.replace('control.ROOT / (DIRECTORY + "-src"))\n                                  for rank in (0, 1)]', 'control.ROOT / "full-prefillbudgetv3-src")\n                                  for rank in (0, 1)]')
+s = s.replace('''        success = all(''', '''        state['input_and_source_after'] = preflight()
+        assert state['input_and_source_after'] == state['preflight']
+        success = all(''')
+s = s.replace('.get("component_passed")', '.get("evidence_complete")')
+s = s.replace('state["component_passed"] = success', 'state["measurement_complete"] = success')
+assert 'protocol()' not in s and 'benchmark_stable_warmup' not in s
+ast.parse(s)
+(base / 'run_native_actual.py').write_text(s)
+print('Controller constructed; no remote action performed.')

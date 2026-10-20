@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/prepare-fp32-split-v1.py", line 72, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/prepare-fp32-split-v1.py", line 45, in main
+    for rank in (0,1):assert c.run(rank,['python3','-S','-c',setup,str(ROOT),sys.argv[1]],timeout=120).strip()=='assembled'
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/dense-output-v1-src/full_model_control.py", line 81, in run
+    raise RuntimeError(f"rank={rank} command={command[:2]!r} exited={result.returncode}: "
+RuntimeError: rank=0 command=['python3', '-S'] exited=1: Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+AssertionError
+

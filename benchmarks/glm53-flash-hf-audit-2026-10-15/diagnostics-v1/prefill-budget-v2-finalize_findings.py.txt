@@ -1,0 +1,85 @@
+"""Summarize every request and both-rank profiles after independent byte verification."""
+from __future__ import annotations
+import hashlib,json,pathlib,statistics,time
+BASE=pathlib.Path(__file__).parent
+ROOT=BASE/'evidence'
+def sha(p):
+ with p.open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def percentile(values,p):
+ values=sorted(values);index=(len(values)-1)*p;lo=int(index);hi=min(lo+1,len(values)-1)
+ return values[lo]+(values[hi]-values[lo])*(index-lo)
+def main():
+ proof=json.loads((BASE/'cross-host-verification.json').read_bytes());assert proof['status']=='passed'and proof['measurement_complete']
+ review=json.loads((BASE/'mac-independent-review.json').read_bytes())['recomputed_review']
+ profile=json.loads((BASE/'fresh-profile-review.json').read_bytes());jit=json.loads((BASE/'jit-window-review.json').read_bytes())
+ inv={r['path']:r for r in json.loads((ROOT/'evidence-inventory.json').read_bytes())['files']}
+ cells=[];trials=[];owners=[]
+ for arm in ('control','candidate'):
+  name='results/'+arm+'-prefill-budget.json';p=ROOT/name;assert sha(p)==inv[name]['sha256'];d=json.loads(p.read_bytes())
+  for case in ('c1-short','c16-short'):
+   for budget in (2048,2080):
+    rows=[t for t in d['timing']if t['case']==case and t['budget_tokens']==budget]
+    firsts=[r['arrivals'][0]['seconds']for t in rows for r in t['measurement']['requests']]
+    ends=[r['elapsed_seconds']for t in rows for r in t['measurement']['requests']]
+    cells.append({'arm':arm,'case':case,'budget_tokens':budget,'trials':len(rows),'requests':len(firsts),
+     'headline_TTFT_seconds':statistics.median(t['measurement']['median_ttft_seconds']for t in rows),
+     'mean_request_TTFT_seconds':statistics.mean(firsts),'pooled_median_TTFT_seconds':statistics.median(firsts),
+     'pooled_P95_TTFT_seconds':percentile(firsts,.95),'maximum_request_TTFT_seconds':max(firsts),
+     'mean_request_completion_seconds':statistics.mean(ends),
+     'median_TPS':statistics.median(t['measurement']['aggregate_tokens_per_second']for t in rows)})
+    for t in rows:
+     values=sorted(r['arrivals'][0]['seconds']for r in t['measurement']['requests'])
+     trials.append({'arm':arm,'case':case,'budget_tokens':budget,'repeat':t['repeat'],'first_token_seconds_sorted':values,
+      'mean_TTFT_seconds':statistics.mean(values),'median_TTFT_seconds':statistics.median(values),
+      'TPS':t['measurement']['aggregate_tokens_per_second'],'admission':t['admission'],
+      'memory_before':t['memory_before'],'memory_after':t['memory_after']})
+  for g in d['profiles']:
+   for w in g['worker_trace']:
+    seen={};steps=[]
+    for e in w['events']:
+     if 'prepared'not in e:continue
+     prompt=decode=finished=0
+     for row in e['prepared']['row_order']:
+      key=row['request_id'];prior=seen.get(key,0);need=max(0,row['prompt_tokens']-prior);take=min(need,row['scheduled_tokens'])
+      prompt+=take;decode+=row['scheduled_tokens']-take;finished+=int(need>0 and take==need);seen[key]=prior+row['scheduled_tokens']
+     steps.append({'sequence':e['sequence'],'prompt_tokens':prompt,'decode_tokens':decode,'requests_finishing_prompt':finished,'total_rows':e['prepared']['num_tokens'],'has_prefill':e['prepared']['has_prefill']})
+    owners.append({'arm':arm,'rank':w['rank'],'budget_tokens':g['budget_tokens'],'steps':steps})
+ lookup={(c['arm'],c['case'],c['budget_tokens']):c for c in cells};deltas=[]
+ metrics=('headline_TTFT_seconds','mean_request_TTFT_seconds','pooled_median_TTFT_seconds','pooled_P95_TTFT_seconds','median_TPS')
+ for case in ('c1-short','c16-short'):
+  for arm in ('control','candidate'):
+   a,b=(lookup[arm,case,k]for k in (2048,2080));deltas.append({'comparison':'budget2080_vs2048','arm':arm,'case':case,'differences':{m:b[m]-a[m]for m in metrics},'ratios':{m:b[m]/a[m]for m in metrics}})
+  for budget in (2048,2080):
+   a,b=(lookup[arm,case,budget]for arm in ('control','candidate'));deltas.append({'comparison':'compressed_vs_stock','budget_tokens':budget,'case':case,'differences':{m:b[m]-a[m]for m in metrics},'ratios':{m:b[m]/a[m]for m in metrics}})
+ prefills=[]
+ for p in profile['profiles']:
+  if p['kind']!='ordinary':continue
+  fs=[f for f in p['forwards']if f['has_prefill']]
+  # Classification comes from the unchanged source classifier, with all categories retained.
+  prefills.append({'arm':p['arm'],'rank':p['rank'],'budget_tokens':p['budget_tokens'],'prefill_forwards':len(fs),
+   'row_counts':[f['physical_rows']for f in fs],'prefill_groups':[f['groups']for f in fs],
+   'prefill_kernel_spans_us':[f['first_to_last_kernel_span_us']for f in fs],
+   'covered_decode_graph_launches':sum(f['graph_launches']for f in p['forwards']if not f['has_prefill'])})
+ numerical=[]
+ for budget in (2048,2080):
+  for count in (1,16):
+   rows=[r for r in review['numerical_comparisons']if r['matched_budget']and f'-b{budget}-'in r['reference']and f'-c{count}-'in r['reference']]
+   cross=[r for r in rows if r['reference'].split('-')[0]!=r['candidate'].split('-')[0]]
+   numerical.append({'budget_tokens':budget,'concurrency':count,'comparisons':len(rows),'cross_arm_comparisons':len(cross),'all_passed':all(r['passed']for r in rows),'cross_arm_values':[{k:v for k,v in r.items()if k!='steps'}for r in cross]})
+ result={'status':'complete','completed_epoch':time.time(),'archive_sha256':proof['archive_sha256'],
+  'proof':proof,'policy_checks':review['policy_checks'],'policy_gate_passed':review['policy_gate_passed'],
+  'original_compression_gates':review['compression_speed_gate_by_budget'],'numerical_summary':numerical,
+  'all94_comparisons_retained':len(review['numerical_comparisons']),'gated_same_budget_comparisons':review['gated_same_budget_numerical_comparisons'],
+  'combined_cuda_saving_bytes':review['combined_cuda_saving_bytes'],'combined_cuda_saving_GiB':review['combined_cuda_saving_bytes']/1024**3,
+  'memory_checks':review['memory_checks'],'memory_observations':review['memory_observations'],
+  'timing_cells':cells,'timing_deltas':deltas,'all_timing_trials':trials,'ordinary_prefill_profiles':prefills,
+  'profile_prompt_ownership':owners,'no_recognized_JIT_overlap':jit['no_recognized_JIT_event_overlaps_timed_envelopes'],
+  'limits':['Median of trial medians is the prospective headline; pooled statistics are supplementary.',
+   'One ordinary profile per arm/budget is separate from unprofiled timing trials.',
+   'Kernel sums are not API latency or a TP critical path.',
+   'Both cap settings use2080 allocation capacity; historical2048 steady memory is checked separately.',
+   'Cross-budget quality differs in grouping and is diagnostic; no universal batch-invariance claim.',
+   'No kernel, model configuration or admission policy promoted to the original service.']}
+ (BASE/'final-findings.json').open('x').write(json.dumps(result,indent=2)+'\n')
+ print(json.dumps({k:result[k]for k in ('status','policy_gate_passed','policy_checks','combined_cuda_saving_GiB','timing_cells')}))
+if __name__=='__main__':main()

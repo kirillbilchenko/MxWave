@@ -1,0 +1,182 @@
+"""Verify every retained byte, recompute the frozen pair, and review both-rank profiles."""
+from __future__ import annotations
+import argparse,gzip,hashlib,json,math,re,sys
+from collections import Counter,defaultdict
+from pathlib import Path
+def sha(p):
+ with p.open("rb")as f:return hashlib.file_digest(f,"sha256").hexdigest()
+def close(a,b):
+ if isinstance(a,dict):
+  assert a.keys()==b.keys(),(a.keys(),b.keys())
+  for k in a:close(a[k],b[k])
+ elif isinstance(a,list):
+  assert len(a)==len(b)
+  for x,y in zip(a,b,strict=True):close(x,y)
+ elif isinstance(a,float):assert math.isclose(a,b,rel_tol=1e-10,abs_tol=1e-12),(a,b)
+ else:assert a==b,(a,b)
+def trace_review(path,groups,rank):
+    with gzip.open(path,"rt") if path.name.endswith(".gz") else path.open() as handle:
+        trace=json.load(handle)
+    events=trace["traceEvents"]
+    tag=re.compile(r"^mxwave_c8_(.+)_step_(\d+)$")
+    ranges=[]
+    for e in events:
+        m=tag.match(e.get("name",""))
+        if m and e.get("cat")=="user_annotation":
+            ranges.append({"label":m[1],"sequence":int(m[2]),"pid":e["pid"],"tid":e["tid"],
+             "start":e["ts"],"end":e["ts"]+e["dur"],"cuda_graph_launches":0,
+             "kernels":[]})
+    ranges.sort(key=lambda r:r["start"])
+    runtime={}
+    for e in events:
+        if e.get("cat") not in ("cuda_runtime","cuda_driver"):continue
+        key=e.get("args",{}).get("correlation")
+        if key is None:continue
+        assert key not in runtime
+        owners=[i for i,r in enumerate(ranges)if (r["pid"],r["tid"])==(e["pid"],e["tid"])
+          and r["start"]<=e["ts"]<=r["end"]]
+        assert len(owners)<=1
+        owner=owners[0] if owners else None
+        runtime[key]=owner
+        if owner is not None and e.get("name","").startswith("cudaGraphLaunch"):
+            ranges[owner]["cuda_graph_launches"]+=1
+    unassigned=0
+    total=0
+    for e in events:
+        if e.get("cat")!="kernel":continue
+        total+=1
+        owner=runtime.get(e.get("args",{}).get("correlation"))
+        if owner is None:
+            unassigned+=1;continue
+        ranges[owner]["kernels"].append(e)
+    rows=[]
+    for r in ranges:
+        group=groups[r["label"]]
+        workers={w["rank"]:w for w in group["worker_trace"]}
+        event=workers[rank]["events"][r["sequence"]]
+        assert event["sequence"]==r["sequence"]
+        variants=Counter()
+        durations=defaultdict(float)
+        order=[]
+        for e in sorted(r["kernels"],key=lambda e:e["ts"]):
+            args=e.get("args",{})
+            value={"name":e["name"],"grid":args.get("grid"),"block":args.get("block"),
+                   "shared_memory_bytes":args.get("shared memory")}
+            key=json.dumps(value,sort_keys=True,separators=(",",":"))
+            variants[key]+=1;durations[e["name"]]+=float(e.get("dur",0))
+            order.append(key)
+        variant_rows=[{**json.loads(k),"count":v}for k,v in sorted(variants.items())]
+        digest=lambda v:hashlib.sha256(json.dumps(v,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+        rows.append({"label":r["label"],"sequence":r["sequence"],
+          "batch":event["prepared"],"total_scheduled_tokens":event["total_scheduled_tokens"],
+          "cuda_graph_launches":r["cuda_graph_launches"],"kernel_events":len(r["kernels"]),
+          "kernel_variant_multiset_sha256":digest(variant_rows),
+          "observed_kernel_order_sha256":digest(order),
+          "kernel_variants":variant_rows,
+          "kernel_duration_sum_us":sum(durations.values()),
+          "top_kernel_duration_sums_us":[{"name":n,"duration_us":v}for n,v in sorted(durations.items(),key=lambda t:(-t[1],t[0]))[:12]]})
+    assert sum(x["kernel_events"] for x in rows)+unassigned==total
+    labels=sorted({r["label"]for r in rows})
+    coverage={label:{"profiled_steps":sum(r["label"]==label for r in rows),
+       "recorded_steps":len(next(w for w in groups[label]["worker_trace"]if w["rank"]==rank)["events"])}
+       for label in labels}
+    return {"path":str(path),"rank":rank,"labels":labels,"steps":rows,
+      "kernel_events":total,"unassigned_kernel_events":unassigned,"coverage":coverage,
+      "ownership":"Device correlation -> host launch inside mxwave_c8 label/step annotation; same PID/TID",
+      "limits":["Kernel variants or order do not prove numerical root cause.",
+       "Duration sums are not wall time or measured memory bandwidth.",
+       "Sampling/logprob work outside the model annotation remains explicitly unassigned.",
+       "Profiler active window may omit later forwards."]}
+def verify_decode_mechanism(profiles):
+ rows=[]
+ for profile in profiles:
+  arm="candidate"if profile["labels"][0].startswith("candidate-")else"control"
+  assert len(profile["labels"])==1
+  expected=8 if "-c8-" in profile["labels"][0] else 16
+  selected=[s for s in profile["steps"]if not s["batch"]["has_prefill"]and s["batch"]["num_tokens_after_padding"]==expected]
+  assert selected,("No expected decode shape observed",expected,profile["path"])
+  for step in selected:
+   variants=step["kernel_variants"]
+   rebuild=sum(v["count"]for v in variants if "bf16triplebitmap_decompress_kernel"in v["name"].lower())
+   fused=[v for v in variants if "BF16TripleBitmap_MM_Kernel"in v["name"]]
+   calls=sum(v["count"]for v in fused)
+   assert rebuild==0 and step["cuda_graph_launches"]>0
+   if arm=="candidate":
+    assert calls==68
+    assert sum(v["count"]for v in fused if v["grid"][1]==197)==34
+    assert sum(v["count"]for v in fused if v["grid"][1]==64)==34
+   else:assert calls==0
+   rows.append({"arm":arm,"rank":profile["rank"],"label":step["label"],"sequence":step["sequence"],
+    "actual_rows":step["batch"]["num_tokens"],"physical_rows":expected,"graph_launches":step["cuda_graph_launches"],
+    "reconstruction_calls":rebuild,"compressed_KDA_calls":calls})
+ assert {(r["arm"],r["rank"],r["physical_rows"])for r in rows}=={(a,r,m)for a in("control","candidate")for r in(0,1)for m in(16,)}
+ return rows
+def main():
+ p=argparse.ArgumentParser();p.add_argument("--root",required=True,type=Path);p.add_argument("--output",required=True,type=Path);args=p.parse_args();root=args.root
+ inventory=json.loads((root/"evidence-inventory.json").read_bytes())["files"]
+ for row in inventory:
+  rel=Path(row["path"]);assert not rel.is_absolute()and".."not in rel.parts
+  f=root/rel;assert f.is_file()and not f.is_symlink()
+  assert f.stat().st_size==row["bytes"]and sha(f)==row["sha256"],row["path"]
+ prepared=json.loads((root/"prepared.json").read_bytes());state=json.loads((root/"controller.json").read_bytes())
+ restored=json.loads((root/"post-restoration-check.json").read_bytes())
+ assert not state["service_paused"]and restored["health"]==200 and restored["originals"]==prepared["originals"]
+ sources={row["path"][7:]:sha(root/row["path"])for row in inventory if row["path"].startswith("source/")}
+ plan=json.loads((root/"results/prefill-budget-plan.json").read_bytes())
+ component=root/"component-cross-host-verification.json"
+ assert sha(component)==plan["input_component_proof_sha256"]
+ proof=json.loads(component.read_bytes())
+ assert proof["primary_exact16_component_qualified"] and proof["archive_sha256"]==plan["input_component_evidence_sha256"]
+ warm=root/"warmup-component-cross-host-verification.json"
+ assert sha(warm)==plan["warmup_component_proof_sha256"]
+ warmproof=json.loads(warm.read_bytes());assert warmproof["status"]=="passed"and warmproof["component_passed"]
+ assert warmproof["archive_sha256"]==plan["warmup_component_evidence_sha256"]
+ assert all(sources[k]==v for k,v in plan["qualified_warmup_sources"].items())
+ parent=root/"parent-cross-host-verification.json"
+ assert sha(parent)==plan["parent_model_proof_sha256"]
+ parent_proof=json.loads(parent.read_bytes())
+ assert parent_proof["status"]=="passed" and parent_proof["compression_numerical_gate_passed"]
+ assert parent_proof["archive_sha256"]==plan["parent_model_archive_sha256"]
+ assert not plan["candidate_input_fp32"] and "fp32_input_worker.py" not in sources
+ assert sources==prepared["bindings"][0]["code"]==prepared["bindings"][1]["code"]
+ assert len(sources)==plan["expected_source_files"]==217
+ assert all(sources[k]==v for k,v in plan["parent_source_sha256"].items() if k not in plan["changed_parent_sources"])
+ assert all(sources[k]==v for k,v in plan["source_sha256"].items())
+ assert "consistent_mhc.py"not in sources and plan["native_mhc"]and not plan["consistent_mhc_policy_enabled"]
+ sys.path.insert(0,str(root/"source"));from analyze_prefill_budget import review
+ complete=state["phase"]=="complete"
+ result={"status":"passed","measurement_complete":complete,"controller_phase":state["phase"],
+ "payloads":len(inventory),"source_files":len(sources),"original_service_restored":True,
+ "quality_qualified":False,"all_previous_failures_preserved":True,"source_inventory_covers_plugin_TOML":True,
+ "native_mhc_unchanged":True,"profiles":[]}
+ groups={}
+ for arm in("control","candidate"):
+  file=root/f"results/{arm}-prefill-budget.json"
+  if file.exists():
+   data=json.loads(file.read_bytes())
+   for row in[*data.get("quality",[]),*data.get("profiles",[])]:
+    if"worker_trace"in row:groups[row["label"]]=row
+ if complete:
+  recalculated=review(root/"results");online=json.loads((root/"results/quality-model-review.json").read_bytes())
+  close(recalculated,online);result["recomputed_review"]=recalculated
+ for row in inventory:
+  rel=row["path"]
+  if not rel.startswith("traces/")or not rel.endswith((".pt.trace.json.gz",".pt.trace.json")):continue
+  m=re.match(r"dp0_pp0_tp([01])_",Path(rel).name)
+  if not m:continue
+  value=trace_review(root/rel,groups,int(m[1]));value["path"]=rel;result["profiles"].append(value)
+ if complete:
+  assert len(result["profiles"])==plan["worker_traces_expected"]==16
+  expected={(label,rank) for label,g in groups.items() if g.get("profiled") or g.get("after_all_unprofiled_timing") for rank in (0,1)}
+  observed={(label,t["rank"]) for t in result["profiles"] for label in t["labels"]}
+  assert len(expected)==16 and observed==expected
+  coverage=[v for t in result["profiles"]for v in t["coverage"].values()]
+  result["all_profiled_model_forwards_covered"]=all(v["profiled_steps"]==v["recorded_steps"]for v in coverage)
+  result["graph_launches_per_profile"]=[sum(s["cuda_graph_launches"]for s in t["steps"])for t in result["profiles"]]
+  assert all(n>0 for n in result["graph_launches_per_profile"])
+  assert result["all_profiled_model_forwards_covered"]
+  result["decode_dispatch_mechanism"]=verify_decode_mechanism(result["profiles"])
+  result["exact16_dispatch_mechanism_passed"]=True
+ args.output.write_text(json.dumps(result,indent=2,allow_nan=False)+"\n")
+ print(json.dumps({k:v for k,v in result.items()if k not in("profiles","recomputed_review")}))
+if __name__=="__main__":main()

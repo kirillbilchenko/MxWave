@@ -1,0 +1,90 @@
+{
+  "status": "verified",
+  "utc": "2026-10-19T20:03:44.673949+00:00",
+  "raw_archive_local": "/private/tmp/mxwave-nvfp4-model-v1/evidence.tar.gz",
+  "raw_archive_spark": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/nvfp4-model-v1/evidence.tar.gz",
+  "files": {
+    "nvfp4-model-v1-independent-review.json": {
+      "bytes": 103832,
+      "sha256": "625b8f1007bef8c574237fefccdeb507a01fb1f09e71b4e55d45546dbdecfc8d"
+    },
+    "nvfp4-model-v1-spark-review.json": {
+      "bytes": 103820,
+      "sha256": "096bdef56060bdb47770e8db842930d26ad7e173366ee1dc01541a40549080cb"
+    },
+    "nvfp4-model-v1-supplement-review.json": {
+      "bytes": 389248,
+      "sha256": "555470880fde385548dc70c5074754056dec84cff86a487dee9207c8c1f98c4c"
+    },
+    "nvfp4-model-v1-mac-archive-review.json": {
+      "bytes": 5761,
+      "sha256": "08e84c8f62889fb27467384c1c5ce9136f27910f16dd12e3cff45ed8763bade2"
+    },
+    "nvfp4-model-v1-archive-receipt.json": {
+      "bytes": 250,
+      "sha256": "a61e888737d0d1471a12bcb2759c2b34526fb6c3f46cf3ae9048a0e1acf5185e"
+    },
+    "nvfp4-model-v1-evidence-manifest.json": {
+      "bytes": 21577,
+      "sha256": "2b3072caedbbb2fd5d3399a67994df9b866188f220f7fe04331d181d026c6d43"
+    },
+    "nvfp4-model-v1-final-check.json": {
+      "bytes": 6092,
+      "sha256": "7f3c870025df443edc2c1a0c846c175479fc98e8c40d8672167e7ba6c6e36417"
+    },
+    "nvfp4-model-v1-analyze_model.py.txt": {
+      "bytes": 9768,
+      "sha256": "6eff4a3c898aff01c6163c5ff79c0baa00b64e492844962716f3c4c735b33c9e"
+    },
+    "nvfp4-model-v1-supplement_model.py.txt": {
+      "bytes": 5777,
+      "sha256": "e502688a1f346f44d0594e8d6bfc071b205426bfdb9a4c518f5547c2378f2117"
+    },
+    "nvfp4-model-v1-retain_model.py.txt": {
+      "bytes": 4556,
+      "sha256": "509dbd6a5f0c9147fe640581ea5c8e6d5c8bfe08990bdccb3e2bd23af3546577"
+    },
+    "nvfp4-model-v1-analysis-check.json": {
+      "bytes": 151,
+      "sha256": "c1ff6334410e6610076d39ff58cbb1f36541135b81f0a779b98820dc7f489207"
+    },
+    "nvfp4-model-v1-source-manifest.json": {
+      "bytes": 1401,
+      "sha256": "8d042e03d22e391557a05adad24ea822187559a38691824cc52893d00334fa6b"
+    }
+  },
+  "repository_sources": {
+    "integrations/glm53_nvfp4/benchmark.py": "e43c93f0ce5676bd79e10e951dd3e21b58526c7536871d11a62557215346f539",
+    "integrations/glm53_nvfp4/build.py": "4a92d6be1109f941d785b6deec8492e7add16335ae4ed7b11564aeb96473cc6b",
+    "integrations/glm53_nvfp4/codec.py": "4eba42ab96307660ea6150f5aa6446eea4560d8446b49b10649e9fb990913216",
+    "integrations/glm53_nvfp4/nv_adapter.py": "547b51429a51d214f0652a9f6a00b2f74ac630b113797044422978b70e4a7533",
+    "integrations/glm53_nvfp4/nv_boot.py": "06cde4862bc2fa415a52a4068734bd24dbc206196b9134abc248a1ded8d6da0d",
+    "integrations/glm53_nvfp4/nv_plugin.py": "4b488f863334129028d62d19f193733e65c72001cae720298f8d09f49839b1b3",
+    "integrations/glm53_nvfp4/nv_worker.py": "172d417bab3b2a98e817be47d01699cb531c529c50ed623bd6a72a90060429cb",
+    "integrations/glm53_nvfp4/smoke_adapter.py": "683270b1f18322b091b9dd7b0cf992a48edce7a9444678bc7bf9f05a5b00065a",
+    "integrations/glm53_nvfp4/bridge.cu": "451d2183d9835adc1b940d0079aae691829859cf7df7197302013b6234ed0bce",
+    "integrations/glm53_nvfp4/scale_decode.cuh": "8a9ba0b17355d6ef43c4ba9cf1c8bb0fa05a21b445056d8c5c354d8f00184fd5",
+    "tests/test_glm53_nvfp4_adapter.py": "877f5f5dc1031413f851602fb56ca19929432a46d3e4dbc6d5af52dbafaca948",
+    "tests/test_glm53_nvfp4_codec.py": "a7344b5493262576d199bb87523bc5b902b57d8f46ea5b1748a15c5d20fd8f08"
+  },
+  "runtime_sources_match_both_deployed_ranks": true,
+  "validation": {
+    "ruff": "pass",
+    "strict_mypy_mxwave": "35 source files pass",
+    "pytest": "835 passed, 1 skipped",
+    "focused_codec_and_ownership_tests": 21
+  },
+  "claim_limits": [
+    "All four timing controls fail the unchanged 2% gate.",
+    "C1/C8 full-model KL unqualified; all self-repeat gates fail.",
+    "No PPL, broad task accuracy, SQNR, long-context or increased-KV test.",
+    "Raw archive retained on Spark and locally; compact review and hashes retained in repository."
+  ],
+  "local_awake_lease": {
+    "pid": 55790,
+    "started_epoch": 1792438043.747115,
+    "seconds": 5400,
+    "stopped_epoch": 1792440301.7001238,
+    "status": "terminated_after_restoration"
+  }
+}

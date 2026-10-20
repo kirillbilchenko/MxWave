@@ -1,0 +1,13 @@
+{
+  "status": "failed",
+  "pid": 1203155,
+  "started_epoch": 1792387673.7134101,
+  "head_free_before": 1503625216,
+  "worker_backup_root": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/retained-fp32-input-model-v1",
+  "canonical_archives_unchanged": true,
+  "model_files_touched": false,
+  "service_paused": false,
+  "directories": [],
+  "error": "CalledProcessError(1, ['python3', '-S', '-c', \"import hashlib,json,pathlib,sys\\nb=pathlib.Path(sys.argv[1]);rows=[]\\nassert b.is_dir() and not b.is_symlink()\\nfor p in sorted(b.rglob('*')):\\n assert not p.is_symlink() and (p.is_file() or p.is_dir()),p\\n if p.is_file():\\n  with p.open('rb') as f:h=hashlib.file_digest(f,'sha256').hexdigest()\\n  rows.append({'path':str(p.relative_to(b)),'bytes':p.stat().st_size,'sha256':h})\\nprint(json.dumps(rows))\\n\", '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-repeatpolicyv1'])",
+  "finished_epoch": 1792387673.7484999
+}

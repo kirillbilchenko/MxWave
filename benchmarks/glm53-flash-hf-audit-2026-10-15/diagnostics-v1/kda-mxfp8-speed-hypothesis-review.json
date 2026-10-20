@@ -1,0 +1,41 @@
+{
+  "status": "arithmetic_estimate_not_a_serving_measurement",
+  "sources": {
+    "serving_startup_sha256": "c78c9173bdd9c8e16f2deaa56bfe8c536e51ead4332adfea498af545f6e9a3d6",
+    "quality_review_sha256": "33ab837e56693780434881b07491b9ddc924f7bb08a39a199739ae93b01705da"
+  },
+  "memory": [
+    {
+      "rank": 0,
+      "weight_elements": 2321809408,
+      "current_KDA_packed_bytes": 3298566000,
+      "current_reconstruction_pool_bytes": 206569472,
+      "encoded_MXFP8_payload_bytes": 2394365952,
+      "encoded_payload_reduction_bytes": 904200048,
+      "payload_plus_removed_pool_reduction_before_new_runtime_buffers_bytes": 1110769520
+    },
+    {
+      "rank": 1,
+      "weight_elements": 2321809408,
+      "current_KDA_packed_bytes": 3297978432,
+      "current_reconstruction_pool_bytes": 206569472,
+      "encoded_MXFP8_payload_bytes": 2394365952,
+      "encoded_payload_reduction_bytes": 903612480,
+      "payload_plus_removed_pool_reduction_before_new_runtime_buffers_bytes": 1110181952
+    }
+  ],
+  "limits": [
+    "Encoded payload assumes one E4M3 byte per weight and one E8M0 byte per 32 weights.",
+    "Actual Marlin scale representation, layout padding and workspace must be measured; this is not an allocated-memory result.",
+    "The C1 attribution is 9.08/9.94 ms of kernel-time sums, not saved wall time.",
+    "C8/C16 verification widths and kernel choices are unmeasured for this proposed variant.",
+    "Quantization may change DFlash acceptance; end-to-end throughput needs its own measurement."
+  ],
+  "suggested_comparison": [
+    "Current CT with lossless BF16 KDA",
+    "Same CT with actual MXFP8 KDA and unchanged MXFP4 experts",
+    "ModelOpt under matching serving settings"
+  ],
+  "native_MXFP8_speed_measured": false,
+  "full_quality_gate_passed": false
+}

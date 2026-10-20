@@ -1,0 +1,59 @@
+"""Read stored client progress without issuing requests to the running model."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import shlex
+import subprocess
+
+BASE = Path(__file__).parent
+REMOTE = '''import hashlib,json,pathlib,statistics,time
+root=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-fp32inputmodelv1/results')
+arms=[]
+for arm in ('control','candidate'):
+ p=root/f'{arm}-warmed-model.json'
+ if not p.exists():continue
+ raw=p.read_bytes();d=json.loads(raw);summaries=[]
+ for case in sorted({r['case'] for r in d['timing']}):
+  rows=[r for r in d['timing'] if r['case']==case]
+  summaries.append({'case':case,'trials':len(rows),
+   'median_tps':statistics.median(r['measurement']['aggregate_tokens_per_second'] for r in rows),
+   'median_ttft_seconds':statistics.median(r['measurement']['median_ttft_seconds'] for r in rows)})
+ arms.append({'arm':arm,'status':d['status'],'phase':d.get('phase'),
+ 'source_path':str(p),'source_sha256':hashlib.sha256(raw).hexdigest(),'source_bytes':len(raw),
+ 'quality_groups':len(d['quality']),'timing_groups':len(d['timing']),
+ 'self_comparisons':[{k:v for k,v in r.items() if k!='steps'} for r in d['self_comparisons']],
+ 'summaries':summaries,'error':d.get('error')})
+print(json.dumps({'checked_epoch':time.time(),'arms':arms,'preliminary_only':True},indent=2))
+'''
+
+
+def main() -> None:
+    """Preserve each interim observation without changing the frozen review."""
+    raw = subprocess.check_output(
+        ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+         shlex.join(['python3', '-c', REMOTE])], timeout=30,
+    )
+    result = json.loads(raw)
+    path = BASE / f'arm-progress-{int(result["checked_epoch"])}.json'
+    with path.open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    for arm in result['arms']:
+        if arm['arm'] == 'candidate':
+            shown = {key: value for key, value in arm.items() if key != 'self_comparisons'}
+            shown['self_repeats_recorded'] = len(arm['self_comparisons'])
+            shown['all_recorded_self_repeats_pass'] = all(
+                row['passed'] for row in arm['self_comparisons']
+            ) if arm['self_comparisons'] else None
+            shown['all_recorded_self_repeats_KL_NLL_zero'] = all(
+                row['mean_decode_kl'] == row['mean_decode_nll_difference'] == 0
+                for row in arm['self_comparisons']
+            ) if arm['self_comparisons'] else None
+            print(json.dumps(shown, indent=2))
+    print(json.dumps({'retained': str(path)}))
+
+
+if __name__ == '__main__':
+    main()

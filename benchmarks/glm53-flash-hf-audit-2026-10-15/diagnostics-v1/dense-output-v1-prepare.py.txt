@@ -1,0 +1,73 @@
+"""CPU-only source preparation for the bounded dense-output comparison."""
+from __future__ import annotations
+import hashlib,json,pathlib,shutil,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='dense-output-v1';sys.path.insert(0,str(ROOT/'kda-memory-v1-src-v2'))
+import full_model_control as c
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+ receipt=ROOT/(DIR+'-preparation.json');assert not receipt.exists()
+ state={'status':'running','service_paused':False,'GPU_controller_launched':False,'started_epoch':time.time()};c.write(receipt,state)
+ try:
+  archive=ROOT/(DIR+'-source.tar.gz');assert sha(archive)==sys.argv[1]
+  parent=json.loads((ROOT/'kda-memory-v1-prepared-v2.json').read_bytes())
+  assert [c.preflight(rank,ROOT/'kda-memory-v1-src-v2') for rank in (0,1)]==parent['bindings']
+  previous=json.loads((ROOT/'kda-memory-v1-evidence-check.json').read_bytes())
+  assert previous['status']=='complete' and previous['restored_health']==200 and previous['source_files']==210
+  assert json.loads((ROOT/'kda-memory-v1-controller.json').read_bytes())['phase']=='complete'
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+  identities=[c.identity(v) for v in originals]
+  assert c.health(8000) and all(v['State']['Running'] for v in originals) and identities==parent['originals']
+  c.run(1,['python3','-S','-c','import pathlib,sys;assert not pathlib.Path(sys.argv[1]).exists()',str(archive)])
+  subprocess.run(['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=8','-i','/home/kirya/.ssh/id_glm_cluster',str(archive),'kirya@192.168.192.2:'+str(archive)],check=True,timeout=120)
+  setup=r'''import hashlib,json,pathlib,shutil,sys,tarfile
+r=pathlib.Path(sys.argv[1]);a=r/'dense-output-v1-source.tar.gz';assert hashlib.sha256(a.read_bytes()).hexdigest()==sys.argv[2]
+assert shutil.disk_usage(r).free>=3*1024**3
+o=r/'dense-output-v1-overlay';o.mkdir()
+with tarfile.open(a) as tf:
+ rows=tf.getmembers();assert all(m.isfile() and not pathlib.PurePosixPath(m.name).is_absolute() and '..' not in pathlib.PurePosixPath(m.name).parts for m in rows)
+ assert len({m.name for m in rows})==len(rows) and sum(m.size for m in rows)<32*1024**2
+ tf.extractall(o,filter='data')
+for row in json.loads((o/'inventory.json').read_bytes())['files']:
+ p=o/row['path'];assert p.stat().st_size==row['bytes'] and hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256']
+plan=json.loads((o/'plan.json').read_bytes());parent=json.loads((r/'kda-memory-v1-prepared-v2.json').read_bytes())
+assert plan['parent_source_sha256']==parent['bindings'][0]['code']
+proof=json.loads((o/'parent-diagnostic-cross-host.json').read_bytes());assert proof['status']=='passed' and proof['all_decisions_identical'] and proof['archive_sha256']==plan['parent_diagnostic_archive_sha256']
+proof=json.loads((o/'parent-model-cross-host.json').read_bytes());assert proof['status']=='passed' and proof['all_decisions_identical'] and proof['archive_sha256']==plan['parent_model_archive_sha256']
+code=r/'dense-output-v1-src';shutil.copytree(r/'kda-memory-v1-src-v2',code,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+for p in (o/'src').glob('*.py'):
+ assert not (code/p.name).exists() and hashlib.sha256(p.read_bytes()).hexdigest()==plan['source_sha256'][p.name]
+ compile(p.read_text(),p.name,'exec');shutil.copyfile(p,code/p.name)
+print('assembled')
+'''
+  for rank in (0,1):assert c.run(rank,['python3','-S','-c',setup,str(ROOT),sys.argv[1]],timeout=120).strip()=='assembled'
+  code=ROOT/(DIR+'-src');sys.path.insert(0,str(code))
+  from dense_output_probe import protocol,select_cases
+  from run_dense_output import input_bindings
+  overlay=ROOT/(DIR+'-overlay');plan=json.loads((overlay/'plan.json').read_bytes())
+  assert plan['protocol']==protocol() and plan['selected_cases']==select_cases(json.loads((overlay/'parent-candidate.json').read_bytes()))
+  checks=json.loads((overlay/'local-checks.json').read_bytes());assert checks['all_passed'] and checks['source_sha256']==plan['source_sha256']
+  bindings=[c.preflight(rank,code) for rank in (0,1)]
+  assert bindings[0]==bindings[1] and len(bindings[0]['code'])==plan['expected_source_files']==213
+  assert bindings[0]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']}
+  state['CPU_CLI_checks']=[]
+  for rank in (0,1):
+   argv=['docker','run','--rm','--network','none','--cpus','2','--memory','4g','--memory-swap','4g','--pids-limit','256','-v',str(code)+':/src:ro','-v',str(c.OLD)+':/experiment:ro','-e','PYTHONPATH=/src:/experiment/triple-v2/src/integrations/zipserv','-e','PYTHONDONTWRITEBYTECODE=1','-e','OMP_NUM_THREADS=1','--entrypoint','/usr/bin/python3',c.IMAGE,'-B','/src/benchmark_dense_output.py','--help']
+   help_text=c.run(rank,argv,timeout=90);assert '--rank' in help_text and '--report' in help_text and '--plan' in help_text
+   state['CPU_CLI_checks'].append({'rank':rank,'passed':True,'GPU_used':False})
+  inputs=[input_bindings(rank) for rank in (0,1)];assert inputs[0]==inputs[1]
+  prepared={'status':'prepared','bindings':bindings,'protocol':protocol(),'source_archive_sha256':sha(archive),
+   'parent_revision':'kdamemoryv1','parent_prepared_sha256':sha(ROOT/'kda-memory-v1-prepared-v2.json'),
+   'parent_proof_sha256':sha(ROOT/'kda-memory-v1-evidence-check.json'),'input_bindings':inputs,
+   'originals':identities,'all_parent_sources_unchanged':True,'new_sources':sorted(plan['source_sha256']),
+   'GPU_controller_launched':False,'prepared_epoch':time.time()}
+  path=ROOT/(DIR+'-prepared.json');assert not path.exists();c.write(path,prepared)
+  c.run(1,['python3','-S','-c','import pathlib,sys;p=pathlib.Path(sys.argv[1]);assert not p.exists();p.write_text(sys.argv[2])',str(path),path.read_text()])
+  state.update(status='passed',source_files=213,prepared_sha256=sha(path),plan_sha256=sha(overlay/'plan.json'),original_health=200,finished_epoch=time.time())
+  c.write(receipt,state);print(json.dumps(state))
+ except BaseException as exc:
+  state.update(status='failed',error=repr(exc),finished_epoch=time.time());c.write(receipt,state);raise
+if __name__=='__main__':main()

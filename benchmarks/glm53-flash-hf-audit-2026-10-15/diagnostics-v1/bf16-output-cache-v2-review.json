@@ -1,0 +1,69 @@
+{
+  "status": "passed",
+  "case": "kda-output-l0-r0",
+  "tokens": 4,
+  "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+  "code_sha256": "141f8ccdb08d04599df5d04600780418bbc5e6a55dd6184bfccacbd2a4e85beb",
+  "source_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+  "artifact_sha256": "3943d44dc1678fb0cd2db54bb6589d5b898227385676abded660f144c1541f60",
+  "gpu_weight_bits_exact": true,
+  "arithmetic": {
+    "bits_exact": true,
+    "finite": true,
+    "relative_l2": 0.0,
+    "requires_bits_exact": true,
+    "passed": true
+  },
+  "after_arithmetic": {
+    "bits_exact": true,
+    "finite": true,
+    "relative_l2": 0.0,
+    "requires_bits_exact": true,
+    "passed": true
+  },
+  "eviction_bytes": 134217728,
+  "l2_cache_bytes": 25165824,
+  "production_paused": true,
+  "summaries": [
+    {
+      "mode": "warm",
+      "dense_median_us": 122.97599948942661,
+      "fused_median_us": 138.35199922323227,
+      "median_paired_ratio": 1.124723762885791,
+      "order_ratios": {
+        "dense": 1.1211133562854911,
+        "fused": 1.124723762885791
+      }
+    },
+    {
+      "mode": "evicted",
+      "dense_median_us": 200.79199969768524,
+      "fused_median_us": 192.21599772572517,
+      "median_paired_ratio": 0.954897659969054,
+      "order_ratios": {
+        "dense": 0.9543002178899292,
+        "fused": 0.9571031062048276
+      }
+    }
+  ],
+  "cuda_peak_bytes": 259411456,
+  "limits": [
+    "One M4 layer-zero/rank-zero component; no full-model benchmark loaded.",
+    "128 MiB read/write buffer is an eviction workload, not a hardware cache flush API.",
+    "CUDA graph replay removes most host launch differences; not model throughput.",
+    "Per-call CUDA-event intervals exclude eviction work and post-call host synchronization.",
+    "Production GLM temporarily paused under the independent restoration watchdog.",
+    "Warm/cold cache-pressure comparison is not an improvement to the adapter or a new model TPS result."
+  ],
+  "report": {
+    "bytes": 17593,
+    "sha256": "708c12a53192ecfa2e446372f00b78699c26274dace1c875f50ca615dfc5f15b"
+  },
+  "checks": {
+    "complete_blocks": 8,
+    "calls_per_arm_per_block": 12,
+    "both_arm_orders": true,
+    "both_cache_treatment_orders": true
+  }
+}

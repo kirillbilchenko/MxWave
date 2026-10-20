@@ -1,0 +1,59 @@
+{
+  "status": "read_only_audit_complete",
+  "speculative_configs_equal": true,
+  "drafts_share_target_head_and_embedding": true,
+  "checkpoint_fingerprints": [
+    {
+      "rank": 0,
+      "path": "/home/kirya/local-spark/models/glm-5.3-flash/derived/incoai/GLM-5.3-Flash-DFlash2-fp8blk",
+      "files": {
+        "config.json": "15bc842939ff7ca3ccc5aad36d25fff854da05a60086a4f55672d804fc6dbe7b",
+        "model.safetensors": "6cba1cff8ab4fcd657b89575f5db3debe1f5a39c78bda422953f553dc2357f8b"
+      }
+    },
+    {
+      "rank": 1,
+      "path": "/home/kirya/local-spark/models/glm-5.3-flash/derived/incoai/GLM-5.3-Flash-DFlash2-fp8blk",
+      "files": {
+        "config.json": "15bc842939ff7ca3ccc5aad36d25fff854da05a60086a4f55672d804fc6dbe7b",
+        "model.safetensors": "6cba1cff8ab4fcd657b89575f5db3debe1f5a39c78bda422953f553dc2357f8b"
+      }
+    }
+  ],
+  "remaining": [
+    "Interpret config, shared-head and position-counter differences with final profiles.",
+    "Use matched-token replay if aggregate evidence cannot isolate the acceptance cause."
+  ],
+  "no_new_GPU_experiment_started": true,
+  "parent_verifications": {
+    "speed": {
+      "status": "verified",
+      "payloads": 115,
+      "archive_sha256": "2a5b53a90afc0f1ef2fe96f1d8648707d1e1cf840d296e2414cc5858625018a1",
+      "independent_numeric_fields": 7441,
+      "maximum_numeric_difference": 0.0,
+      "controller_phase": "complete_restored"
+    },
+    "gsm8k": {
+      "status": "verified",
+      "payloads": 2690,
+      "archive_sha256": "aa911801d3369a51b13174e06fdad4fe89d320eb547b73ee6567fc40eb0f945a",
+      "controller_phase": "complete_restored",
+      "independently_regraded_answers": 2638,
+      "independent_numeric_fields": 2933,
+      "maximum_numeric_difference": 0.0
+    }
+  },
+  "all_audited_draft_weight_files_identical": true,
+  "head_methods_by_mode": {
+    "ct_bf16": [
+      "VocabMethod"
+    ],
+    "ct_mxfp8": [
+      "VocabMethod"
+    ],
+    "modelopt": [
+      "UnquantizedLinearMethod"
+    ]
+  }
+}

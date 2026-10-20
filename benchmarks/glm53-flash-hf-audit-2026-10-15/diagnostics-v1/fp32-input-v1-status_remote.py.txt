@@ -1,0 +1,12 @@
+import json,pathlib,shutil,sys
+r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-input-v1-src'));import full_model_control as c
+s=json.loads((r/'fp32-input-v1-controller.json').read_bytes());out={k:s.get(k) for k in ('phase','pid','watchdog_pid','service_paused','error','updated_epoch')};out['head_free_bytes']=shutil.disk_usage(r).free
+script='''import json,pathlib,sys
+p=pathlib.Path(sys.argv[1])
+if not p.exists():print(json.dumps({'report':'not_started'}))
+else:
+ s=json.loads(p.read_bytes());print(json.dumps({'status':s['status'],'cases':len(s['cases']),'known_checks':sum(len(c['known']) for c in s['cases']),'fallback_checks':sum(len(c['fallback']) for c in s['cases']),'compiled_checks':sum(len(c['compiled']) for c in s['cases']),'stream_stress':sum('stream_stress' in c for c in s['cases']),'last_case':s['cases'][-1]['name'] if s['cases'] else None,'error':s.get('error'),'assessment':s.get('assessment')}))
+'''
+out['ranks']=[json.loads(c.run(rank,['python3','-S','-c',script,str(r/'fp32-input-v1'/f'rank{rank}'/'integration.json')])) for rank in (0,1)]
+p=r/'fp32-input-v1-evidence-check.json';out['collector']=json.loads(p.read_bytes()) if p.exists() else None
+print(json.dumps(out))

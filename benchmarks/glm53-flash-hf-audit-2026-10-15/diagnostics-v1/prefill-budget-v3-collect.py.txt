@@ -1,0 +1,118 @@
+"""Collect only after controller exit and exact original-service restoration."""
+from __future__ import annotations
+import hashlib,json,os,pathlib,shutil,subprocess,sys,tarfile,time
+ROOT=pathlib.Path("/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1")
+REV="prefillbudgetv3";sys.path.insert(0,str(ROOT/f"full-{REV}-src"));import full_model_control as c
+def sha(p):
+ with p.open("rb")as f:return hashlib.file_digest(f,"sha256").hexdigest()
+def retain_file(source,dest,link=False):
+ source=pathlib.Path(source);dest=pathlib.Path(dest)
+ assert source.is_file()and not source.is_symlink()
+ if dest.exists():
+  assert not dest.is_symlink()and dest.stat().st_size==source.stat().st_size and sha(dest)==sha(source)
+  return str(dest)
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if link:
+  try:os.link(source,dest)
+  except PermissionError:shutil.copyfile(source,dest)
+ else:shutil.copyfile(source,dest)
+ assert dest.stat().st_size==source.stat().st_size and sha(dest)==sha(source)
+ return str(dest)
+def retain_text(dest,value):
+ bits=value.encode()
+ if dest.exists():assert dest.read_bytes()==bits
+ else:
+  with dest.open("xb")as stream:stream.write(bits)
+def main():
+ receipt=ROOT/"prefill-budget-v3-evidence-check.json";assert not receipt.exists()
+ progress={"status":"waiting","started_epoch":time.time()};c.write(receipt,progress)
+ try:
+  path=ROOT/f"quality-model-controller-{REV}.json";deadline=time.monotonic()+12000
+  while time.monotonic()<deadline:
+   if path.exists():
+    state=json.loads(path.read_bytes())
+    if state["phase"]in("complete","failed_restored","preparation_failed"):
+     launch_path=ROOT/"prefill-budget-v3-launch.json"
+     if launch_path.exists():
+      pid=json.loads(launch_path.read_bytes())["controller_pid"]
+      status=subprocess.run(["ps","-p",str(pid),"-o","stat="],capture_output=True,text=True)
+      if status.returncode!=0 or status.stdout.strip().startswith("Z"):break
+   time.sleep(5)
+  else:raise TimeoutError("No terminal controller exit")
+  assert not state["service_paused"]and c.health(8000)
+  prepared=json.loads((ROOT/"prefill-budget-v3-prepared.json").read_bytes())
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank])for rank in(0,1)]
+  assert all(x["State"]["Running"]for x in originals)
+  assert [c.identity(x)for x in originals]==prepared["originals"]
+  assert[c.preflight(rank,ROOT/f"full-{REV}-src")for rank in(0,1)]==prepared["bindings"]
+  assert shutil.disk_usage(ROOT).free>=2*1024**3
+  base=ROOT/"prefill-budget-v3-evidence";base.mkdir(exist_ok=True)
+  names={path.name:"controller.json",f"restoration-{REV}.json":"restoration.json",
+   "prefill-budget-v3-prepared.json":"prepared.json","prefill-budget-v3-launch.json":"launch.json",
+   "prefill-budget-v3-controller.log":"controller.log","prefill-budget-v3-preparation.log":"preparation.log",
+   "prefill-budget-v3-preparation.json":"preparation.json","prefill-budget-v3-source-only.tar.gz":"source-overlay.tar.gz",
+   "prepare-prefill-budget-v3.py":"prepare.py","collect-prefill-budget-v3.py":"collect.py","verify-prefill-budget-v3.py":"verify.py",
+   "launch-prefill-budget-v3.py":"launch.py","prefill-budget-v3-parent-proof.json":"parent-cross-host-verification.json",
+   "prefill-budget-v3-cpu-simulation.py":"cpu-simulation.py","prefill-budget-v3-local-checks.json":"local-checks.json"}
+  names.update({"prefill-budget-v3-mechanism-CPU-check.json":"mechanism-CPU-check.json",
+   "prefill-budget-v3-cpu-protocol-check.json":"cpu-protocol-check.json",
+   "prefill-budget-v3-overlay/component-proof.json":"component-cross-host-verification.json",
+   "prefill-budget-v3-overlay/warmup-component-proof.json":"warmup-component-cross-host-verification.json",
+   "prefill-budget-v3-overlay/parent-proof.json":"parent-cross-host-verification.json",
+   "prefill-budget-v3-storage-relocation.json":"storage-relocation.json",
+   "relocate-evidence-prefill-budget-v3.py":"storage-relocation.py"})
+  for name,target in names.items():
+   if(ROOT/name).is_file():retain_file(ROOT/name,base/target)
+  for rel,digest in prepared["bindings"][0]["code"].items():
+   source=ROOT/f"full-{REV}-src"/rel;assert sha(source)==digest
+   dest=base/"source"/rel;dest.parent.mkdir(parents=True,exist_ok=True);retain_file(source,dest)
+  shutil.copytree(ROOT/f"run-{REV}/results",base/"results",copy_function=lambda a,b:retain_file(a,b,link=True),dirs_exist_ok=True)
+  log_code="import subprocess,sys;p=subprocess.run(['docker','logs',sys.argv[1]],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,check=True);sys.stdout.buffer.write(p.stdout)"
+  for arm in("control","candidate"):
+   stage="raw"if arm=="control"else"aligned"
+   for rank in(0,1):
+    meta=state.get("launches",{}).get(arm,[None,None])[rank]
+    if meta is None:continue
+    if c.run(rank,["docker","ps","-aq","--filter",f"name=^/{meta['name']}$"]).strip():
+     assert not c.inspect(rank,meta["name"])["State"]["Running"]
+     retain_text(base/f"engine-{arm}-rank{rank}.log",c.run(rank,["python3","-S","-c",log_code,meta["name"]],timeout=90))
+    traces=pathlib.Path(next(src for src,dst,_ in meta["mounts"]if dst=="/traces"))
+    assert str(traces).startswith(str(ROOT/f"run-{REV}"))
+    target=base/"traces"/f"rank{rank}"/stage;target.mkdir(parents=True,exist_ok=True)
+    if rank==0:
+     for source in traces.rglob("*"):
+      if source.is_file()and not source.is_symlink():
+       dest=target/source.relative_to(traces);dest.parent.mkdir(parents=True,exist_ok=True);retain_file(source,dest)
+    else:
+     subprocess.run(["scp","-q","-p","-r","-o","BatchMode=yes","-o","ConnectTimeout=8","-i","/home/kirya/.ssh/id_glm_cluster","kirya@192.168.192.2:"+str(traces)+"/.",str(target)],check=True,timeout=240)
+   client=f"mxwave-glm53-bench-{REV}-{stage}"
+   if c.run(0,["docker","ps","-aq","--filter",f"name=^/{client}$"]).strip():
+    retain_text(base/f"client-{arm}.log",c.run(0,["python3","-S","-c",log_code,client],timeout=90))
+  c.write(base/"post-restoration-check.json",{"status":"passed","health":200,"originals":[c.identity(x)for x in originals],"checked_epoch":time.time()})
+  files=[p for p in sorted(base.rglob("*"))if p.is_file()];assert not any(p.is_symlink()for p in files)
+  c.write(base/"evidence-inventory.json",{"files":[{"path":str(p.relative_to(base)),"bytes":p.stat().st_size,"sha256":sha(p)}for p in files]})
+  review=ROOT/"prefill-budget-v3-independent-review.json"
+  argv=["docker","run","--rm","--network","none","--cpus","2","--memory","6g","--memory-swap","6g",
+   "-e","NVIDIA_VISIBLE_DEVICES=void","-e","CUDA_VISIBLE_DEVICES=","-e","OPENBLAS_NUM_THREADS=1","-e","OMP_NUM_THREADS=1",
+   "-v",str(base)+":/evidence:ro","-v",str(ROOT)+":/output","--entrypoint","/usr/bin/timeout",c.IMAGE,
+   "--kill-after=10","900","/usr/bin/python3","/evidence/verify.py","--root","/evidence","--output","/output/"+review.name]
+  checked=subprocess.run(argv,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=930)
+  (ROOT/"prefill-budget-v3-verifier.log").write_bytes(checked.stdout);assert checked.returncode==0,checked.stdout.decode()[-10000:]
+  assert json.loads(review.read_bytes())["status"]=="passed"
+  archive=ROOT/"evidence-prefill-budget-v3.tar.gz";assert not archive.exists()
+  with tarfile.open(archive,"w:gz",compresslevel=1)as tf:
+   for p in[*files,base/"evidence-inventory.json"]:tf.add(p,arcname=str(p.relative_to(base)),recursive=False)
+   tf.add(review,arcname="spark-independent-review.json",recursive=False)
+  with tarfile.open(archive)as tf:
+   for row in json.loads((base/"evidence-inventory.json").read_bytes())["files"]:
+    bits=tf.extractfile(row["path"]).read();assert len(bits)==row["bytes"]and hashlib.sha256(bits).hexdigest()==row["sha256"],row["path"]
+  progress.update(status="complete",archive=str(archive),archive_sha256=sha(archive),archive_bytes=archive.stat().st_size,payloads=len(files),
+   copy_owned_traces_and_link_results=True,source_files=217,restored_health=200,measurements_complete=state["phase"]=="complete",quality_qualified=False,
+   verified_after_pack=True,finished_epoch=time.time())
+  c.write(receipt,progress)
+  status=json.loads((ROOT/"CURRENT_LOSSLESS_STATUS.json").read_bytes())
+  status.update(active_experiment=None,service_paused=False,original_health=200,latest_prefill_budget=progress,updated_epoch=time.time())
+  c.write(ROOT/"CURRENT_LOSSLESS_STATUS.json",status);print(json.dumps(progress))
+ except BaseException as exc:
+  progress.update(status="failed",error=repr(exc),finished_epoch=time.time());c.write(receipt,progress);raise
+if __name__=="__main__":main()

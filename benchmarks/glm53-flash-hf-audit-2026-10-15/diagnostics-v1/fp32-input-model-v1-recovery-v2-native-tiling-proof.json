@@ -1,0 +1,37 @@
+{
+  "sha256": "181fcb52c2e5c496b00f84eecec57ef0e322406ae6dcd92f825b97c7766461f6",
+  "lines": [
+    {
+      "line": 18,
+      "text": "#define MMA_M 16"
+    },
+    {
+      "line": 23,
+      "text": "#define WARP_ROW_TENSORS 4"
+    },
+    {
+      "line": 30,
+      "text": "#define WARP_ROW_TENSORS_BITMAP_V3 1"
+    },
+    {
+      "line": 46,
+      "text": "template<int BLOCK_ROW_WARPS_, int BLOCK_COL_WARPS_, int WARP_COL_TENSORS_, int N8_ = 0>"
+    },
+    {
+      "line": 47,
+      "text": "struct TilingConfigBF16TripleBitmap {"
+    },
+    {
+      "line": 48,
+      "text": "    static constexpr int BLOCK_ROW_WARPS  = BLOCK_ROW_WARPS_;"
+    },
+    {
+      "line": 53,
+      "text": "    static constexpr int TILE_M        = MMA_M * (WARP_ROW_TENSORS_BITMAP_V3 * BLOCK_ROW_WARPS);"
+    },
+    {
+      "line": 61,
+      "text": "    static constexpr int BLOCK_WARPS   = BLOCK_ROW_WARPS * BLOCK_COL_WARPS;"
+    }
+  ]
+}

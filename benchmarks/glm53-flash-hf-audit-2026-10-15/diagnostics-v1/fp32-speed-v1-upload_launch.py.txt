@@ -1,0 +1,6 @@
+import hashlib,pathlib,shlex,subprocess
+b=pathlib.Path(__file__).parent;r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1';ssh=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark'];data=(b/'launch.py').read_bytes()
+code='import hashlib,pathlib,sys;p=pathlib.Path(sys.argv[1]);data=sys.stdin.buffer.read();assert hashlib.sha256(data).hexdigest()==sys.argv[2];p.open("xb").write(data)'
+subprocess.run([*ssh,shlex.join(['python3','-S','-c',code,r+'/launch-fp32-speed-v1.py',hashlib.sha256(data).hexdigest()])],input=data,check=True,timeout=60)
+result=subprocess.run([*ssh,shlex.join(['python3','-S',r+'/launch-fp32-speed-v1.py'])],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=120)
+(b/'launch.log').write_bytes(result.stdout);print(result.stdout.decode());result.check_returncode()

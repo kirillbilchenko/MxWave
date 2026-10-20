@@ -1,0 +1,99 @@
+"""Capture owned worker memory maps during early untimed warmup, never modify workers."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import pathlib
+import shlex
+import subprocess
+import sys
+import time
+
+ROOT = pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+REV = 'fp32inputmodelv1'
+SOURCE = r'''import hashlib,json,pathlib,time
+started=time.time()
+workers=[]
+for p in pathlib.Path('/proc').iterdir():
+ if not p.name.isdigit():continue
+ try:comm=(p/'comm').read_text().strip()
+ except (FileNotFoundError,PermissionError):continue
+ if comm.startswith('VLLM::Worker'):workers.append(p)
+assert len(workers)==1,[(p.name,(p/'comm').read_text()) for p in workers]
+p=workers[0]
+before=(p/'stat').read_text();status=(p/'status').read_text()
+maps=(p/'smaps').read_text();rollup=(p/'smaps_rollup').read_text()
+after=(p/'stat').read_text()
+assert before.split(')',1)[1].split()[19]==after.split(')',1)[1].split()[19]
+assert len(maps.encode())<16*1024**2
+print(json.dumps({'started_epoch':started,'finished_epoch':time.time(),'namespace_pid':int(p.name),
+ 'comm':(p/'comm').read_text().strip(),'starttime_ticks':before.split(')',1)[1].split()[19],
+ 'status':status,'smaps':maps,'smaps_rollup':rollup,'smaps_sha256':hashlib.sha256(maps.encode()).hexdigest()}))
+'''
+
+
+def phase(arm):
+    state = json.loads((ROOT / f'quality-model-controller-{REV}.json').read_bytes())
+    path = ROOT / f'run-{REV}/results/{arm}-warmed-model.json'
+    data = json.loads(path.read_bytes()) if path.exists() else {}
+    return {'controller_phase': state['phase'], 'arm_phase': data.get('phase'),
+            'status': data.get('status'), 'timing_groups': len(data.get('timing', [])),
+            'warmup_groups': len(data.get('warmups', [])), 'checked_epoch': time.time()}
+
+
+def eligible(state, arm):
+    return (state['controller_phase'] == f'measuring_{arm}'
+            and state['arm_phase'] == 'untimed_warmups'
+            and state['status'] == 'running' and state['timing_groups'] == 0
+            and 1 <= state['warmup_groups'] <= 6)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('arm', choices=['control', 'candidate'])
+    args = parser.parse_args()
+    arm = args.arm
+    destination = ROOT / f'{REV}-memory-maps-{arm}.json'
+    assert not destination.exists()
+    before = phase(arm)
+    if not eligible(before, arm):
+        print(json.dumps({'status': 'skipped_outside_early_untimed_warmup', 'phase': before}))
+        return
+    sys.path.insert(0, str(ROOT / f'full-{REV}-src'))
+    import full_model_control as c
+    result = {'status': 'running', 'arm': arm, 'before': before,
+              'source_sha256': hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+              'read_only': True, 'worker_RPC_used': False, 'workers': []}
+    try:
+        for rank in (0, 1):
+            current = phase(arm)
+            assert eligible(current, arm), current
+            stage = 'raw' if arm == 'control' else 'aligned'
+            name = f'mxwave-glm53-full-{REV}-{stage}-r{rank}'
+            metadata = c.inspect(rank, name)
+            assert metadata['State']['Running'] and metadata['Image'] == c.IMAGE
+            start = time.time()
+            payload = c.run(rank, ['docker', 'exec', '--user', 'root', name,
+                                  'python3', '-S', '-c', SOURCE], timeout=15)
+            result['workers'].append({'rank': rank, 'container': c.identity(metadata),
+                                      'started_epoch': start, 'finished_epoch': time.time(),
+                                      'process': json.loads(payload)})
+        after = phase(arm)
+        result['after'] = after
+        assert after['arm_phase'] == 'untimed_warmups' and after['timing_groups'] == 0, after
+        result.update(status='complete', all_reads_before_ordinary_timing=True,
+                      finished_epoch=time.time())
+    except BaseException as exc:
+        result.update(status='failed', error=repr(exc), after=phase(arm),
+                      finished_epoch=time.time())
+        raise
+    finally:
+        with destination.open('x') as stream:
+            json.dump(result, stream, indent=2)
+            stream.write('\n')
+        print(json.dumps({k:v for k,v in result.items() if k!='workers'}))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,54 @@
+"""Bind the reference before/after comparison to every verified final raw payload."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+
+BASE=Path('/private/tmp/mxwave-warmed-model-v1')
+PARENT=Path('/private/tmp/mxwave-matched-row16-v1/evidence')
+
+
+def sha(path):
+    with path.open('rb')as stream:
+        return hashlib.file_digest(stream,'sha256').hexdigest()
+
+
+def main():
+    preliminary=BASE/'reference-startup-comparison-preliminary.json'
+    result=json.loads(preliminary.read_bytes())
+    proof=json.loads((BASE/'cross-host-verification.json').read_bytes())
+    assert proof['status']=='passed' and proof['measurement_complete'] and proof['all_decisions_identical']
+    root=BASE/'evidence';snapshot=BASE/'live/reference-quality-complete'
+    inventory={x['path']:x for x in json.loads((root/'evidence-inventory.json').read_bytes())['files']}
+    receipt=json.loads((snapshot/'snapshot-receipt.json').read_bytes())
+    assert sha(snapshot/'snapshot-receipt.json')==result['new_snapshot_receipt_sha256']
+    rows={r['path']:r for r in receipt['files']}
+    final=json.loads((root/'results/control-warmed-model.json').read_bytes())
+    captured=json.loads((snapshot/'control-warmed-model.json').read_bytes())
+    assert [g for g in final['quality']if not g['profiled']]==captured['quality']
+    checked=0
+    for group in result['groups']:
+        name=group['label']+'-decode-quality.json';rel='results/'+name
+        assert sha(root/rel)==rows[name]['sha256']==inventory[rel]['sha256']
+        metadata=json.loads((root/rel).read_bytes())
+        old=json.loads((PARENT/rel).read_bytes())
+        for a,b in zip(old['contexts'],metadata['contexts'],strict=True):
+            for c,d in zip(a['steps'],b['steps'],strict=True):
+                new_path=root/'results'/d['file'];old_path=PARENT/'results'/c['file']
+                assert sha(new_path)==d['sha256']==inventory['results/'+d['file']]['sha256']
+                assert sha(old_path)==c['sha256']==d['sha256']
+                checked+=1
+    assert checked==result['full_vocabulary_rows']==result['matching_payload_hashes']==576
+    result.update(status='complete',new_raw_payloads_independently_verified=True,
+                  new_final_archive_verification_pending=False,new_archive_sha256=proof['archive_sha256'],
+                  preliminary_review_sha256=sha(preliminary),finalizer_sha256=sha(Path(__file__)),
+                  old_and_new_raw_payloads_rehashed=2*checked)
+    result['limits']=['Applies to the fixed unprofiled reference contexts at C1/C8/C16 with matching actual grouping.',
+                      'Does not establish universal numerical identity or a serving-speed improvement.']
+    with (BASE/'reference-startup-comparison.json').open('x')as stream:
+        json.dump(result,stream,indent=2);stream.write('\n')
+    print(json.dumps({k:v for k,v in result.items()if k!='groups'}))
+
+
+if __name__=='__main__':main()

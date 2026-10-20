@@ -1,0 +1,19 @@
+"""Screen selector strength only on fixed retained states; this is not live acceptance."""
+from __future__ import annotations
+import hashlib,importlib.util,json,sys
+from pathlib import Path
+from safetensors.numpy import load_file
+root,source,output=map(Path,sys.argv[1:])
+spec=importlib.util.spec_from_file_location('context_analysis',source);analysis=importlib.util.module_from_spec(spec);spec.loader.exec_module(analysis)
+report={'scope':'Offline fixed-state screen, excluding positions without seven retained reference tokens. Changed proposals alter later histories; these totals are not serving acceptance or speed.','source_sha256':{'analyzer':hashlib.sha256(source.read_bytes()).hexdigest(),'script':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'evidence_manifest':hashlib.sha256((root/'evidence-manifest.json').read_bytes()).hexdigest()},'cases':{}}
+for case in json.loads((root/'inputs.json').read_bytes())['cases']:
+ sums={str(x):0 for x in (0.0,.25,.5,.75,1.0,1.25,1.5)};retained=[]
+ for p in sorted((root/'head-r0').glob(f"frame-{case['case']}-*.safetensors")):
+  data=load_file(p);offset=int(data['sample_positions'].reshape(-1)[0])-case['original_case']['prompt_tokens'];history=case['histories']['ct_mxfp8']['token_ids']
+  if offset+7>len(history):continue
+  row=analysis.proposal_review({'draft_ids':data['graph_ids'],'draft_values':data['graph_values'],'draft_scores':data['graph_scores'],'draft_proposal':data['packed_proposal']},history[offset:offset+7])
+  for factor,value in row['selector_strength_sensitivity'].items():sums[factor]+=value['known_common_prefix_matches']
+  retained.append({'payload':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'generated_offset':offset,'matches_by_factor':{k:v['known_common_prefix_matches'] for k,v in row['selector_strength_sensitivity'].items()}})
+ report['cases'][case['case']]={'captured_states':len(retained),'sum_prefix_matches':sums,'states':retained}
+output.write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps({name:{k:v for k,v in row.items() if k!='states'} for name,row in report['cases'].items()}))

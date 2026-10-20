@@ -1,0 +1,77 @@
+"""Read bounded experiment status and maintain a current, explicitly provisional handoff."""
+import datetime,json,pathlib,shlex,subprocess,time
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+script='''import json,pathlib,time,statistics
+r=pathlib.Path(__import__('sys').argv[1]);rev='prefillbudgetv3'
+p=r/('quality-model-controller-'+rev+'.json');c=json.loads(p.read_bytes())if p.exists()else{}
+out={'epoch':time.time(),'phase':c.get('phase','not_launched'),'service_paused':c.get('service_paused',False),'error':c.get('error'),'arms':[],'watchdog_pid':c.get('watchdog_pid')}
+for arm in ('control','candidate'):
+ p=r/('run-'+rev)/'results'/(arm+'-prefill-budget.json')
+ if not p.exists():continue
+ d=json.loads(p.read_bytes());row={'arm':arm,'status':d['status'],'phase':d.get('phase'),'error':d.get('error'),'quality_complete':sum(g.get('status')=='complete'for g in d['quality']),'timing_complete':len(d['timing']),'profiles_complete':sum(g.get('status')=='complete'for g in d['profiles']),'self_comparisons':[{'KL':x.get('mean_decode_kl'),'passed':x['passed']}for x in d['self_comparisons']]}
+ if d.get('moe_operand_capture'):
+  capture=d['moe_operand_capture'];row['operand_capture']={'armed':capture.get('armed'),'retained':[{'rank':v.get('rank'),'status':v.get('status'),'error':v.get('error'),'shapes':[x['tokens']for x in v.get('rows',[])]}for v in capture.get('retained',[])]}
+ if d.get('dispatch_startup'):row['startup_passed']=all(s['status']=='complete'and all(s['checks'].values())for s in d['dispatch_startup'])
+ if d.get('snapshot_before'):row['cuda_allocated_TP2']=sum(x['cuda_allocated_bytes']for x in d.get('snapshot_before_profiles',d['snapshot_before']))
+ row['ordinary_profile_prefill_rows']=[{'budget_tokens':g['budget_tokens'],'rows':[e['prepared']['num_tokens']for w in g.get('worker_trace',[])if w['rank']==0 for e in w['events']if e.get('prepared',{}).get('has_prefill')]}for g in d['profiles']if g.get('worker_trace')]
+ row['timing_cells']=[]
+ for case in ('c1-short','c16-short'):
+  for budget in (2048,4096):
+   rows=[t['measurement']for t in d['timing']if t['case']==case and t['budget_tokens']==budget]
+   if rows:row['timing_cells'].append({'case':case,'budget':budget,'trials':len(rows),'median_TPS':statistics.median(x['aggregate_tokens_per_second']for x in rows),'median_TTFT':statistics.median(x['median_ttft_seconds']for x in rows),'mean_request_TTFT':statistics.mean(r['arrivals'][0]['seconds']for x in rows for r in x['requests'])})
+ out['arms'].append(row)
+p=r/'prefill-budget-v3-evidence-check.json'
+if p.exists():out['collection']=json.loads(p.read_bytes())
+print(json.dumps(out))
+'''
+p=subprocess.run(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['python3','-S','-c',script,ROOT])],capture_output=True,text=True,timeout=45)
+assert p.returncode==0,p.stderr[-1500:]
+data=json.loads(p.stdout);stamp=int(data['epoch'])
+(BASE/f'status-{stamp}.json').write_text(json.dumps(data,indent=2)+'\n')
+(BASE/'latest-status.json').write_text(json.dumps(data,indent=2)+'\n')
+now=datetime.datetime.fromtimestamp(data['epoch'],datetime.timezone.utc).strftime('%d %B %Y, %H:%M UTC')
+note=f'''<!-- PREFILL_BUDGET_STATUS_BEGIN -->
+**Bounded latency follow-up: {data['phase']}, {now}.**
+The authorized experiment compares scheduler budgets 2,048 / 4,096 at fixed
+10 ms admission, with qualified warmed exact16 compression and no resident BF16 cache.
+Both conditions use 4,096 worker capacity; historical steady allocations and
+per-trial peaks are retained. Compression/native floating-point kernels are unchanged.
+The integer dispatch shape bound extends to 4,096, with 39 guarded startup variants.
+Same-budget, actually matched C1/C16 comparisons keep KL <=1e-5 / abs mean NLL <=1e-4;
+52 cross-budget comparisons are diagnostics because grouping deliberately changes.
+'''
+for a in data['arms']:
+ note+=f"- {a['arm']}: {a['quality_complete']}/10 quality captures, {a['timing_complete']}/36 timing groups, {a['profiles_complete']}/2 ordinary profiles; phase `{a['phase']}`.\n"
+completed=BASE/'provisional-completed-review.json'
+if completed.exists():
+ review=json.loads(completed.read_bytes())
+ if review.get('status')=='complete':
+  failures=[name for name,passed in review['policy_checks'].items()if not passed]
+  note+=f"\nCompleted comparison, pending independent archival verification: numerical gate **{review['compression_numerical_gate_passed']}**; policy gate **{review['policy_gate_passed']}**; all {review['timed_token_sequence_pairs']:,} timed output pairs match: **{review['all_timed_generated_ids_match']}**.\n"
+  for row in review['numerics']:
+   note+=f"C{row['concurrency']} / {row['budget']:,}: cross-arm KL {row['KL_max']:.9g}. "
+  note+='\nFailed prospective checks: '+', '.join(failures)+'.\n'
+note+=f'''
+Service paused for experiment: **{data['service_paused']}**. Independent restoration
+watchdog owns the bounded pause. Results are provisional until collection and
+independent verification finish. No configuration is promoted; MTP remains deferred.
+Working evidence: `/private/tmp/mxwave-prefill-budget-v3`; revision `prefillbudgetv3`.
+V3 uses mean and p95 request TTFT plus single-token ITL guards. All 814 tests
+pass, with one GPU skip; Ruff and strict core mypy pass. After all measured
+work, stock-only eager forwards capture actual layer 23 operands for the separate
+native expert screen. These captures do not instrument measured graphs.
+Prior completed measurements and failed gates below remain unchanged.
+<!-- PREFILL_BUDGET_STATUS_END -->
+
+'''
+repo=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/docs')
+for name in ('GLM53_HANDOFF.md','GLM53_CURRENT_STATE.md'):
+ path=repo/name;s=path.read_text();start=s.find('<!-- PREFILL_BUDGET_STATUS_BEGIN -->')
+ if start>=0:
+  end=s.index('<!-- PREFILL_BUDGET_STATUS_END -->',start)+len('<!-- PREFILL_BUDGET_STATUS_END -->');s=s[:start]+s[end:].lstrip('\n')
+ else:
+  # Retain the initial preparation note as history below the current status.
+  pass
+ at=s.index('\n')+1;path.write_text(s[:at]+'\n'+note+s[at:].lstrip('\n'))
+print(json.dumps(data))

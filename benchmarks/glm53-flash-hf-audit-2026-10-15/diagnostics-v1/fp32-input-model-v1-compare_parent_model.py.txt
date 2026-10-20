@@ -1,0 +1,117 @@
+"""Compare archive-bound model outputs to the preceding warmed exact16 run."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+BASE = Path('/private/tmp/mxwave-fp32-input-model-v1')
+OLD = Path('/private/tmp/mxwave-warmed-model-v1')
+sys.path.insert(0, str(BASE / 'evidence/source'))
+from measure_warmed_model import model_signature
+
+
+def sha(path: Path) -> str:
+    """Hash a retained file."""
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main() -> None:
+    """Retain every changed row without filtering the failed numerical gate."""
+    roots = [OLD, BASE]
+    proofs = [json.loads((root / 'cross-host-verification.json').read_bytes()) for root in roots]
+    assert all(p['status'] == 'passed' and p['measurement_complete'] for p in proofs)
+    assert proofs[0]['archive_sha256'] == '0fc867240d04e1770e2970143f48f630551feb35f53b739403c4fb6b8bde64e0'
+    inventories = [
+        {row['path']: row for row in json.loads(
+            (root / 'evidence/evidence-inventory.json').read_bytes())['files']}
+        for root in roots
+    ]
+    checked: set[tuple[int, str]] = set()
+
+    def bound(index: int, name: str) -> Path:
+        path = roots[index] / 'evidence' / name
+        if (index, name) not in checked:
+            meta = inventories[index][name]
+            assert path.stat().st_size == meta['bytes'] and sha(path) == meta['sha256']
+            checked.add((index, name))
+        return path
+
+    plans = [json.loads(bound(i, 'results/warmed-model-plan.json').read_bytes()) for i in (0, 1)]
+    assert plans[0]['source_protocol_sha256'] == plans[1]['source_protocol_sha256']
+    bound(1, 'source/measure_warmed_model.py')
+    bound(1, 'source/c8_forward_trace.py')
+    groups = []
+    for arm in ('control', 'candidate'):
+        reports = [json.loads(bound(i, f'results/{arm}-warmed-model.json').read_bytes())
+                   for i in (0, 1)]
+        assert all(r['status'] == 'complete' for r in reports)
+        lookups = [{g['label']: g for g in report['quality']} for report in reports]
+        assert lookups[0].keys() == lookups[1].keys() and len(lookups[0]) == 10
+        for label in sorted(lookups[0]):
+            data = [json.loads(bound(i, f'results/{label}-decode-quality.json').read_bytes())
+                    for i in (0, 1)]
+            assert all(d['status'] == 'complete' and len(d['contexts']) == 16 for d in data)
+            rows = []
+            for left, right in zip(data[0]['contexts'], data[1]['contexts'], strict=True):
+                assert left['index'] == right['index']
+                for a, b in zip(left['steps'], right['steps'], strict=True):
+                    assert a['position'] == b['position'] and a['kind'] == b['kind']
+                    paths = [bound(i, 'results/' + step['file'])
+                             for i, step in enumerate((a, b))]
+                    assert all(inventories[i]['results/' + step['file']]['sha256'] == step['sha256']
+                               for i, step in enumerate((a, b)))
+                    rows.append({
+                        'context': left['index'], 'position': a['position'], 'kind': a['kind'],
+                        'prompt_equal': left['prompt_sha256'] == right['prompt_sha256'],
+                        'generated_ids_equal': left['token_ids'] == right['token_ids'],
+                        'conditioning_equal': a['conditioning_token_ids'] == b['conditioning_token_ids'],
+                        'full_vocabulary_bytes_equal': paths[0].read_bytes() == paths[1].read_bytes(),
+                    })
+            assert len(rows) == 64
+            groups.append({
+                'arm': arm, 'label': label, 'rows': rows,
+                'worker_groupings_match': [
+                    model_signature(lookups[0][label], rank) == model_signature(lookups[1][label], rank)
+                    for rank in (0, 1)
+                ],
+                'equal_rows_by_kind': {
+                    kind: sum(r['kind'] == kind and r['full_vocabulary_bytes_equal'] for r in rows)
+                    for kind in ('prefill', 'decode')
+                },
+            })
+    summary = []
+    for arm in ('control', 'candidate'):
+        chosen = [g for g in groups if g['arm'] == arm]
+        rows = [r for g in chosen for r in g['rows']]
+        summary.append({
+            'arm': arm, 'groups': len(chosen), 'full_vocabulary_rows': len(rows),
+            'equal_rows': sum(r['full_vocabulary_bytes_equal'] for r in rows),
+            'all_groupings_match': all(all(g['worker_groupings_match']) for g in chosen),
+            'all_prompts_conditioning_generated_ids_match': all(
+                r['prompt_equal'] and r['conditioning_equal'] and r['generated_ids_equal'] for r in rows
+            ),
+        })
+    result = {
+        'status': 'complete', 'source_sha256': sha(Path(__file__)),
+        'old_archive_sha256': proofs[0]['archive_sha256'],
+        'new_archive_sha256': proofs[1]['archive_sha256'],
+        'new_GPU_experiment': False, 'original_gates_changed': False,
+        'checked_files': len(checked), 'summaries': summary, 'groups': groups,
+        'limits': [
+            'Fixed retained contexts only; no universal equivalence or task-quality claim.',
+            'Changed final outputs do not locate the first differing intermediate layer.',
+            'The two runs were measured at different times; this is not a paired kernel speed experiment.',
+        ],
+    }
+    with (BASE / 'parent-model-output-comparison.json').open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    print(json.dumps({'summaries': summary, 'checked_files': len(checked)}, indent=2))
+
+
+if __name__ == '__main__':
+    main()

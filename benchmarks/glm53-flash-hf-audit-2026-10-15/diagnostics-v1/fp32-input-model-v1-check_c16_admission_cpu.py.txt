@@ -1,0 +1,81 @@
+"""Exercise the frozen admission policy with C16 bounds and synthetic arrival times."""
+from __future__ import annotations
+import collections
+import hashlib
+import importlib.util
+import json
+import pathlib
+import queue
+import sys
+from types import SimpleNamespace
+
+BASE = pathlib.Path(__file__).parent
+SOURCE = pathlib.Path('/private/tmp/mxwave-warmed-model-v1/evidence/source/prefill_admission.py')
+spec = importlib.util.spec_from_file_location('ttft_admission_cpu', SOURCE)
+policy = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = policy
+spec.loader.exec_module(policy)
+
+
+def request():
+    return SimpleNamespace(num_prompt_tokens=256, num_computed_tokens=0,
+                           num_output_tokens=0, pooling_params=None)
+
+
+def run(window, spacing):
+    now = 0.
+    pending = collections.deque([(i * spacing / 1000, request()) for i in range(1, 16)])
+
+    class Engine:
+        def __init__(self):
+            self.scheduler = SimpleNamespace(waiting=[request()], running=[], skipped_waiting=[],
+                connector=None, ec_connector=None, num_waiting_for_streaming_input=0,
+                max_num_running_reqs=16, max_num_scheduled_tokens=2048)
+            self.batch_queue = []
+            self.input_queue = self
+
+        def is_running(self):
+            return True
+
+        def is_scheduler_paused(self):
+            return False
+
+        def _handle_client_request(self, kind, value):
+            assert kind == 'add'
+            self.scheduler.waiting.append(value)
+
+        def get(self, timeout):
+            nonlocal now
+            if not pending or pending[0][0] > now + timeout:
+                now += timeout
+                raise queue.Empty
+            when, value = pending.popleft()
+            now = max(now, when)
+            return 'add', value
+
+    engine = Engine()
+    window_policy = policy.AdmissionWindow(window)
+    window_policy.collect(engine, was_idle=True, add_type='add', clock=lambda: now)
+    event = window_policy.events[0]
+    assert not event['deadline_extended'] and len(engine.scheduler.waiting) <= 8
+    return {'window_ms': window, 'synthetic_arrival_spacing_ms': spacing,
+            'event': event, 'messages_remaining': len(pending)}
+
+
+def main():
+    cases = [run(w, s) for s in [0, .5, 2] for w in [3, 10]]
+    assert [c['event']['final_requests'] for c in cases] == [8, 8, 7, 8, 2, 6]
+    prior = json.loads((BASE / 'c16-admission-CPU-check.json').read_bytes())
+    assert prior['cases'] == cases
+    assert prior['frozen_admission_source_sha256'] == hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+    result = {'status': 'passed', 'source_sha256': hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+              'matches_initial_cpu_check': True, 'GPU_experiment_run': False,
+              'observed_first_cohort_sizes': [c['event']['final_requests'] for c in cases]}
+    with (BASE / 'c16-admission-CPU-recheck.json').open('x') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps(result))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,112 @@
+"""Start the authenticated trial using unchanged model adapters and an additive startup hook."""
+
+from __future__ import annotations
+
+import json
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+def main():
+    import hashlib
+
+    import glm_levers
+
+    revision = json.loads(pathlib.Path("/trial/revision.json").read_bytes())
+    assert (
+        hashlib.sha256(pathlib.Path(glm_levers.__file__).read_bytes()).hexdigest()
+        == revision["glm_levers_source_sha256"]
+    )
+    assert glm_levers.DRAFT_FP8_KV
+    source = pathlib.Path(os.environ["MXWAVE_TRIAL_FROZEN_CODE"]) / "engine_plugin"
+    with tempfile.TemporaryDirectory(prefix="mxwave-serving-entry-") as tmp:
+        package = pathlib.Path(tmp) / "package"
+        shutil.copytree(source, package)
+        p = package / "pyproject.toml"
+        s = p.read_text()
+        anchor = "[tool.setuptools]"
+        assert s.count(anchor) == 1
+        p.write_text(
+            s.replace(anchor, 'mxwave_serving_trial = "trial_plugin:install"\n\n' + anchor)
+        )
+        subprocess.run(
+            [
+                "uv",
+                "pip",
+                "install",
+                "--python",
+                "/usr/bin/python3",
+                "--break-system-packages",
+                "--no-deps",
+                "--no-build-isolation",
+                str(package),
+            ],
+            check=True,
+        )
+    if os.environ.get("MXWAVE_VALIDATE_ONLY") == "1":
+        from vllm import platforms
+        from vllm.platforms.cpu import CpuPlatform
+
+        platforms.current_platform = CpuPlatform()
+        from vllm.entrypoints.cli.serve import cmd_init
+        from vllm.plugins import load_general_plugins
+        from vllm.utils.argparse_utils import FlexibleArgumentParser
+
+        load_general_plugins()
+        parser = FlexibleArgumentParser()
+        sub = parser.add_subparsers(dest="subparser")
+        commands = cmd_init()
+        for command in commands:
+            command.subparser_init(sub)
+        args = parser.parse_args(sys.argv[1:])
+        next(c for c in commands if c.name == args.subparser).validate(args)
+        assert args.max_model_len == 8192 and args.max_num_batched_tokens == 2048
+        assert args.max_num_seqs == 4 and args.speculative_config is None
+        assert args.served_model_name == ["mxwave-glm53-pilot"]
+        import trial_worker
+        from vllm.v1.worker.gpu_worker import Worker
+
+        assert hasattr(trial_worker.TrialWorker, "mxwave_prepare_dispatch_startup")
+        assert getattr(Worker.load_model, "_mxwave_native_kda_before_capture", False)
+        # vLLM extension classes cannot shadow existing Worker methods.
+        assert all(
+            not hasattr(Worker, name)
+            for name in dir(trial_worker.TrialWorker)
+            if not name.startswith("__")
+        )
+        import kda_mxfp8_runtime
+
+        assert callable(kda_mxfp8_runtime.method_type().apply)
+        assert args.kv_cache_memory_bytes == 4 * 1024**3
+        print(
+            json.dumps(
+                {
+                    "status": "validated",
+                    "arm": os.environ["MXWAVE_TRIAL_ARM"],
+                    "speculation": False,
+                    "max_model_len": args.max_model_len,
+                }
+            )
+        )
+        return
+    secret = pathlib.Path("/run/secrets/llm_api_key").read_text().strip()
+    assert secret and "\n" not in secret
+    os.environ["VLLM_API_KEY"] = secret
+    assert os.environ["VLLM_SERVER_DEV_MODE"] == "1"
+    os.execv(
+        "/usr/bin/python3",
+        [
+            "/usr/bin/python3",
+            "-c",
+            "from vllm.entrypoints.cli.main import main; main()",
+            *sys.argv[1:],
+        ],
+    )
+
+
+if __name__ == "__main__":
+    main()

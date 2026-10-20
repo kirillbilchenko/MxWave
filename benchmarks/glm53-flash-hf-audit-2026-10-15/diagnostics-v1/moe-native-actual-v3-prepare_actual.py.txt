@@ -1,0 +1,49 @@
+"""Bind completed real operand captures to the already frozen native comparison."""
+from __future__ import annotations
+import json
+import pathlib
+import shlex
+import subprocess
+
+base=pathlib.Path(__file__).parent
+root='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+freeze=json.loads((base/'actual-source-freeze.json').read_bytes())
+script=r'''
+import hashlib,json,pathlib,subprocess,sys,time
+root=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(root/'full-prefillbudgetv3-src'));import full_model_control as c
+freeze=json.loads(sys.argv[2]);prefix='moe-native-actual-v3'
+state=json.loads((root/'quality-model-controller-prefillbudgetv3.json').read_bytes())
+stock=json.loads((root/'run-prefillbudgetv3/results/control-prefill-budget.json').read_bytes())
+if stock['status']!='complete':
+ print(json.dumps({'status':'awaiting_stock_completion','phase':stock.get('phase')}));sys.exit(0)
+assert stock['moe_operand_capture']['after_all_measurements']
+captures=stock['moe_operand_capture']['retained'];assert len(captures)==2
+assert all(r['status']=='complete'and r['python_wrapper_removed']and {t['tokens']for t in r['rows']}=={1,8,16,256}for r in captures)
+meta=state['launches']['control'][1]
+trace=pathlib.Path(next(s for s,d,_ in meta['mounts']if d=='/traces'))
+assert str(trace).startswith(str(root/'run-prefillbudgetv3'))
+operands=trace/'moe-operands/rank1'
+manifest_raw=c.run(1,['cat',str(operands/'manifest.json')]);manifest=json.loads(manifest_raw)
+assert manifest=={k:v for k,v in next(r for r in captures if r['rank']==1).items()if k!='rank'}
+fixture=c.run(1,['cat',str(c.AUDIT/'grouped-moe-full-layer-v1/fixture/manifest.json')])
+parent=json.loads((root/'prefill-budget-v3-prepared.json').read_bytes())
+plan_path=root/(prefix+'-src/plan.json')
+assert hashlib.sha256(plan_path.read_bytes()).hexdigest()==freeze['plan_sha256']
+plan=json.loads(plan_path.read_bytes());assert plan['baseline_bindings']==parent['bindings']
+prepared=dict(status='prepared',prepared_epoch=time.time(),protocol=plan,
+ bindings=parent['bindings'],originals=parent['originals'],
+ source_manifest_sha256=freeze['source_manifest_sha256'],source_archive_sha256=freeze['archive_sha256'],
+ operand_directory=str(operands),operand_manifest_sha256=hashlib.sha256(manifest_raw.encode()).hexdigest(),
+ fixture_manifest_sha256=hashlib.sha256(fixture.encode()).hexdigest(),
+ source_capture='prefillbudgetv3',GPU_job_started=False)
+path=root/(prefix+'-prepared.json');assert not path.exists();c.write(path,prepared)
+subprocess.run(['scp','-q','-i','/home/kirya/.ssh/id_glm_cluster',str(path),'kirya@192.168.192.2:'+str(path)],check=True,timeout=45)
+checked=json.loads(c.run(0,['python3','-S','-B',str(root/(prefix+'-src/run_native_actual.py')),'--check-only'],timeout=180))
+print(json.dumps({'status':'prepared','prepared':prepared,'checked':checked,'operand_manifest':manifest}))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','spark',shlex.join(['python3','-S','-B','-c',script,root,json.dumps(freeze)])],timeout=240)
+data=json.loads(raw)
+if data['status']=='prepared':
+    (base/'actual-preparation.json').write_bytes(raw)
+    (base/'actual-operand-manifest.json').write_text(json.dumps(data['operand_manifest'],indent=2)+'\n')
+print(json.dumps({k:v for k,v in data.items()if k not in ('prepared','operand_manifest')}))

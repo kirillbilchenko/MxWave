@@ -1,0 +1,255 @@
+{
+  "status": "existing_trace_category_review_complete",
+  "new_gpu_measurement": false,
+  "source_profile_review_sha256": "3f0294215b170d304ccc0f7db0275215e80743b180890dc0410ba3d89f0cd343",
+  "scope": "Common-settings DFlash C1, 256 prompt / 64 output, nine 8-row target graph replays per arm/rank; one profile per arm. This is not the tuned-production trace.",
+  "groups_combined_as_nonexpert_linear": [
+    "dense_bf16_linear",
+    "other_marlin_linear",
+    "compressed_bf16_gemm",
+    "dense_bf16_reduction",
+    "compressed_bf16_reduction"
+  ],
+  "arms": {
+    "current_r0": {
+      "raw_trace_sha256": "be44b3c1dda98c93d000c607b7f97217055784bc88ff65da40bc874fb8881498",
+      "graph_replays": 9,
+      "median_target_graph_gpu_span_ms": 91.4540849609375,
+      "mean_kernel_group_ms": {
+        "attention": 0.48662099999999997,
+        "communication": 4.946232888888889,
+        "dense_bf16_linear": 3.371343777777779,
+        "dense_bf16_reduction": 1.1790122222222224,
+        "expert_gemm": 57.299335444444445,
+        "mhc": 1.8891322222222218,
+        "other": 5.020281333333328,
+        "other_marlin_linear": 19.381693555555554,
+        "stable_expert_dispatch": 0.37168055555555557
+      },
+      "nonexpert_linear_mean_ms": 23.932049555555555,
+      "other_phases": {
+        "target_logits": {
+          "calls": 10,
+          "median_gpu_span_ms": 3.011265991210937,
+          "mean_kernel_sum_ms": 3.1389913
+        },
+        "draft_propose": {
+          "calls": 10,
+          "median_gpu_span_ms": 7.748949462890625,
+          "mean_kernel_sum_ms": 7.701013700000001
+        },
+        "target_eager": {
+          "calls": 1,
+          "median_gpu_span_ms": 398.7769089355469,
+          "mean_kernel_sum_ms": 400.16987
+        }
+      }
+    },
+    "current_r1": {
+      "raw_trace_sha256": "3d445fae366adea53668a22bda4d18fd5d2dc9fb47af7cf4f1d6662370076f5d",
+      "graph_replays": 9,
+      "median_target_graph_gpu_span_ms": 91.13622680664062,
+      "mean_kernel_group_ms": {
+        "attention": 0.5242108888888889,
+        "communication": 1.7965021111111112,
+        "dense_bf16_linear": 3.625497444444446,
+        "dense_bf16_reduction": 1.2536497777777775,
+        "expert_gemm": 58.54886,
+        "mhc": 2.1095231111111112,
+        "other": 5.5104341111111035,
+        "other_marlin_linear": 19.976465222222224,
+        "stable_expert_dispatch": 0.3692357777777778
+      },
+      "nonexpert_linear_mean_ms": 24.855612444444446,
+      "other_phases": {
+        "target_logits": {
+          "calls": 10,
+          "median_gpu_span_ms": 3.1332716064453123,
+          "mean_kernel_sum_ms": 3.1745905
+        },
+        "draft_propose": {
+          "calls": 10,
+          "median_gpu_span_ms": 7.581234863281249,
+          "mean_kernel_sum_ms": 7.6638849
+        },
+        "target_eager": {
+          "calls": 1,
+          "median_gpu_span_ms": 396.66239697265627,
+          "mean_kernel_sum_ms": 398.364539
+        }
+      }
+    },
+    "ct_stock_r0": {
+      "raw_trace_sha256": "8c543ab1e03a4f58ff5c082d2f4ed83ccd2d8183f8dc9d1d0d53160622c94bbd",
+      "graph_replays": 9,
+      "median_target_graph_gpu_span_ms": 102.58225317382812,
+      "mean_kernel_group_ms": {
+        "attention": 0.5330173333333333,
+        "communication": 4.670427111111111,
+        "dense_bf16_linear": 33.10755188888889,
+        "dense_bf16_reduction": 1.2932067777777778,
+        "expert_gemm": 53.942573555555555,
+        "mhc": 2.0619935555555555,
+        "other": 5.371111777777769,
+        "other_marlin_linear": 4.238543888888889,
+        "stable_expert_dispatch": 0.3762532222222223
+      },
+      "nonexpert_linear_mean_ms": 38.63930255555556,
+      "other_phases": {
+        "target_logits": {
+          "calls": 10,
+          "median_gpu_span_ms": 3.1664365234375,
+          "mean_kernel_sum_ms": 3.2017675
+        },
+        "draft_propose": {
+          "calls": 10,
+          "median_gpu_span_ms": 8.061579833984375,
+          "mean_kernel_sum_ms": 7.9116843
+        },
+        "target_eager": {
+          "calls": 1,
+          "median_gpu_span_ms": 356.46343115234373,
+          "mean_kernel_sum_ms": 355.063207
+        }
+      }
+    },
+    "ct_stock_r1": {
+      "raw_trace_sha256": "376d2201e3e5be2608f1156222210484b8f6e082f51b810a72fa4ebc29afcfc1",
+      "graph_replays": 9,
+      "median_target_graph_gpu_span_ms": 102.22511108398437,
+      "mean_kernel_group_ms": {
+        "attention": 0.5373732222222223,
+        "communication": 3.711708111111111,
+        "dense_bf16_linear": 33.24280888888889,
+        "dense_bf16_reduction": 1.2846316666666664,
+        "expert_gemm": 54.34244977777778,
+        "mhc": 2.088958,
+        "other": 5.411758888888881,
+        "other_marlin_linear": 4.266005222222222,
+        "stable_expert_dispatch": 0.3837731111111111
+      },
+      "nonexpert_linear_mean_ms": 38.79344577777778,
+      "other_phases": {
+        "target_logits": {
+          "calls": 10,
+          "median_gpu_span_ms": 3.2104550781250003,
+          "mean_kernel_sum_ms": 3.1792485
+        },
+        "draft_propose": {
+          "calls": 10,
+          "median_gpu_span_ms": 8.193649047851562,
+          "mean_kernel_sum_ms": 7.9529606
+        },
+        "target_eager": {
+          "calls": 1,
+          "median_gpu_span_ms": 355.274541015625,
+          "mean_kernel_sum_ms": 353.429391
+        }
+      }
+    },
+    "candidate_r0": {
+      "raw_trace_sha256": "540be99a809901d643e7e9886c58dcd555fa53f2c630414c2e58a292aa84fc76",
+      "graph_replays": 9,
+      "median_target_graph_gpu_span_ms": 98.12982495117187,
+      "mean_kernel_group_ms": {
+        "attention": 0.490742,
+        "communication": 5.696481222222223,
+        "compressed_bf16_gemm": 21.975551555555555,
+        "compressed_embedding": 0.006627555555555556,
+        "dense_bf16_linear": 9.030386666666665,
+        "dense_bf16_reduction": 1.1700632222222216,
+        "expert_gemm": 51.175154222222226,
+        "mhc": 1.8260176666666674,
+        "other": 4.960111555555551,
+        "other_marlin_linear": 4.075306777777778,
+        "stable_expert_dispatch": 0.3867562222222222
+      },
+      "nonexpert_linear_mean_ms": 36.25130822222222,
+      "other_phases": {
+        "target_logits": {
+          "calls": 10,
+          "median_gpu_span_ms": 2.549634521484375,
+          "mean_kernel_sum_ms": 2.6413051
+        },
+        "draft_propose": {
+          "calls": 10,
+          "median_gpu_span_ms": 7.020295410156249,
+          "mean_kernel_sum_ms": 7.0975977
+        },
+        "target_eager": {
+          "calls": 1,
+          "median_gpu_span_ms": 416.0875510253906,
+          "mean_kernel_sum_ms": 414.17199300000004
+        }
+      }
+    },
+    "candidate_r1": {
+      "raw_trace_sha256": "447dc0513f1e90308d35e3ade4ff3687f9a0d4391dc82e9017ecdd4e5b48d8f6",
+      "graph_replays": 9,
+      "median_target_graph_gpu_span_ms": 98.02161401367188,
+      "mean_kernel_group_ms": {
+        "attention": 0.5251845555555555,
+        "communication": 1.7562403333333336,
+        "compressed_bf16_gemm": 23.17366322222222,
+        "compressed_embedding": 0.0021404444444444444,
+        "dense_bf16_linear": 9.452846555555555,
+        "dense_bf16_reduction": 1.275906333333333,
+        "expert_gemm": 52.324575222222215,
+        "mhc": 2.054287111111112,
+        "other": 5.321046777777771,
+        "other_marlin_linear": 4.308707555555555,
+        "stable_expert_dispatch": 0.3922747777777778
+      },
+      "nonexpert_linear_mean_ms": 38.211123666666666,
+      "other_phases": {
+        "target_logits": {
+          "calls": 10,
+          "median_gpu_span_ms": 2.513236572265625,
+          "mean_kernel_sum_ms": 2.592715
+        },
+        "draft_propose": {
+          "calls": 10,
+          "median_gpu_span_ms": 7.0812443847656255,
+          "mean_kernel_sum_ms": 7.1303393
+        },
+        "target_eager": {
+          "calls": 1,
+          "median_gpu_span_ms": 414.2629760742187,
+          "mean_kernel_sum_ms": 412.449881
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Kernel-time sums can overlap and cannot be added to or subtracted from median GPU spans as an end-to-end speed prediction.",
+    "Categories identify non-expert projection work, not individual module ownership. KDA versus other projection attribution is not resolved here.",
+    "Single descriptive profile per arm, not a repeatable new performance qualification.",
+    "Quantization-format differences and required adapters remain confounded across ModelOpt versus CT; same-CT off/on isolates the storage/runtime treatment."
+  ],
+  "deltas": {
+    "ct_stock": {
+      "rank0": {
+        "nonexpert_linear_mean_ms": 14.707253000000005,
+        "expert_gemm_mean_ms": -3.35676188888889,
+        "median_target_graph_span_ms": 11.128168212890628
+      },
+      "rank1": {
+        "nonexpert_linear_mean_ms": 13.93783333333333,
+        "expert_gemm_mean_ms": -4.2064102222222175,
+        "median_target_graph_span_ms": 11.088884277343752
+      }
+    },
+    "candidate": {
+      "rank0": {
+        "nonexpert_linear_mean_ms": 12.319258666666666,
+        "expert_gemm_mean_ms": -6.124181222222219,
+        "median_target_graph_span_ms": 6.675739990234376
+      },
+      "rank1": {
+        "nonexpert_linear_mean_ms": 13.35551122222222,
+        "expert_gemm_mean_ms": -6.2242847777777826,
+        "median_target_graph_span_ms": 6.885387207031258
+      }
+    }
+  }
+}

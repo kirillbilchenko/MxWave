@@ -1,0 +1,176 @@
+"""Retain terminal integration evidence and distinguish it from full-model qualification."""
+from __future__ import annotations
+
+import datetime
+import hashlib
+import json
+import re
+import shutil
+from pathlib import Path
+
+BASE = Path(__file__).parent
+WORK = Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+DEST = WORK / 'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+
+
+def main():
+    proof = json.loads((BASE / 'cross-host-verification.json').read_bytes())
+    result = json.loads((BASE / 'final-findings.json').read_bytes())
+    service = json.loads((BASE / 'final-service-check.json').read_bytes())
+    lease = json.loads((BASE / 'awake-release.json').read_bytes())
+    retainer = json.loads((BASE / 'retainer-state.json').read_bytes())
+    controller = json.loads((BASE / 'evidence/controller.json').read_bytes())
+    assert proof['status'] == service['status'] == 'passed'
+    assert lease['status'] == 'released' and retainer['phase'] == 'complete'
+    assert result['known_parent_comparisons'] == 120 and result['fallback_raw_comparisons'] == 66
+    existing=[{'path':p.name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+              for p in sorted(DEST.glob('fp32-input-v1-*')) if p.is_file()]
+    checkpoint=BASE/'pre-completion-retention-inventory.json'
+    assert not checkpoint.exists()
+    checkpoint.write_text(json.dumps({'files':existing},indent=2)+'\n')
+    updates=[]
+    def retain(source,target):
+        if target.exists():
+            old=target.read_bytes();new=source.read_bytes()
+            if old==new:
+                return
+            assert not target.name.endswith('.py.txt'), ('Frozen script changed',target)
+            preserved=target.with_name(target.stem+'-before-completion'+target.suffix)
+            assert not preserved.exists(),preserved
+            shutil.copyfile(target,preserved)
+            updates.append({'path':target.name,'previous_snapshot':preserved.name,
+                            'previous_sha256':hashlib.sha256(old).hexdigest(),
+                            'current_sha256':hashlib.sha256(new).hexdigest()})
+        shutil.copyfile(source,target)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    stamp = now.strftime('%d October %Y, %H:%M UTC')
+    berlin = now.astimezone(datetime.timezone(datetime.timedelta(hours=2))).strftime('%d October %H:%M Berlin')
+    def utc(epoch):
+        return datetime.datetime.fromtimestamp(epoch,datetime.timezone.utc).strftime('%H:%M:%S UTC')
+    rank0,rank1 = result['ranks']
+    block = f'''**Completed input-only FP32 integration, {stamp} / {berlin}:**
+`fp32inputv1` independently verifies on Spark and Mac: **{proof['payloads']} payloads /
+227 sources**. Both GPU jobs exit zero. All **120 retained-output comparisons**
+and **66 raw native-fallback comparisons** pass. Four compiled M8/M16 captures,
+two compiled M8 -> native M17 -> M8 sequences, and six simultaneous two-stream
+fixtures pass. All 192 graph checks retain zero additional allocation after
+replay; all 384 stress replays preserve the expected outputs and guards. Each
+two-stream fixture owns distinct slots and rejects a third stream.
+
+The input-only adapter uses FP32 split 2 for physical rows **1/4/8/16**, reusing
+the existing **206,569,472-byte/rank two-slot pool** without a separate scratch
+allocation or resident BF16 weight cache. All output projections and untested
+input row counts preserve the qualified path. Compiled capture extra bytes are
+**{rank0['compiled_capture_extra_bytes']} / {rank1['compiled_capture_extra_bytes']}**
+on ranks zero/one, below the 16 MiB bound that detects a hidden pool clone.
+Peak fixture CUDA allocation is **{rank0['CUDA_peak_bytes']:,} /
+{rank1['CUDA_peak_bytes']:,} bytes**, below 2 GiB/rank.
+
+**This is an integration pass, not a new full-model result.** Matching the
+retained FP32 output does not establish equality to stock GEMM output. All
+**216 prior exact-word failures** and **two input split-2 timing repeat failures**
+remain failed. No new API speed, model KL/NLL or CPU-memory result exists, and
+no configuration is promoted. The preceding component timings suggest roughly
+1.0-1.4 ms saved per decode forward/rank by extrapolation; API impact remains
+unmeasured. The warmed exact16 model remains the measured C1/GPU-capacity candidate.
+
+All **220 speed-parent sources remain unchanged**, with seven explicit additions.
+The initial source-freeze refusal is retained: the editable worktree KDA file
+differs from the qualified frozen parent, so the parent was preserved and the
+exponent helper added explicitly. Local validation passes **770 tests / one GPU
+skip, Ruff and strict core mypy**. Ten adapter/lifetime tests also pass against
+the actual frozen dependencies without CUDA initialization. The previous
+archival extension correction preserves every script byte/hash using `.py.txt`.
+
+Archive: **{proof['archive_bytes']:,} bytes**, SHA256
+`{proof['archive_sha256']}`.
+Local: `/private/tmp/mxwave-fp32-input-v1/evidence.tar.gz`; remote:
+`ROOT/evidence-fp32-input-v1.tar.gz`. Both reviewers bind the precision and speed
+parent archives. Reviews, failures, findings and operational receipts are retained
+under `diagnostics-v1/fp32-input-v1-*`.
+
+**Operations complete:** original GLM restored **{utc(controller['restoration']['finished_epoch'])}**;
+independently rechecked **{utc(service['checked_epoch'])}**, health 200 with exact original
+identities/configurations. Controller **236636**, collector **236635**, watchdog
+**238423**, both GPU jobs and Mac retainer **65803** are terminal. Owned awake
+lease **65158** was identity checked and released. Do not rerun completed jobs.
+
+**Next:** prepare fresh stock versus compressed+input-FP32 full-model quality,
+ordinary API timing, memory and trace measurements. Keep native mHC, matched
+quality cohorts, stable sparse/expert order, startup warmup, exact16 output,
+**KL <=1e-5 / absolute mean NLL <=1e-4**, and the original speed/TTFT gate.
+Verify adequate evidence storage before launching; the head is short of the
+previous full-model reserve. CPU-memory improvement, concurrent serving gains,
+prefill/admission latency, wider qualification and the calibrated roofline remain
+open. MTP stays deferred. No new model experiment has been launched.
+
+'''
+    path=WORK/'docs/GLM53_HANDOFF.md'
+    text=path.read_text()
+    text=re.sub(r'Snapshot: \*\*.*?\*\*\.',f'Snapshot: **{stamp} / {berlin}**.',text,count=1)
+    start=text.index('**GPU integration check launched')
+    end=text.index('**Completed FP32 speed diagnostic',start)
+    text=text[:start]+block+text[end:]
+    text=text.replace('Verify typed scratch capacity, stream ownership, graph replay and allocation\nbefore integration.',
+                      'Typed scratch capacity, stream ownership, graph replay and allocation\nare now verified by the input-only integration checkpoint above.')
+    path.write_text(text)
+    brief=f'''**{stamp} integration follow-up:** input-only FP32 split 2 passes
+the independently verified GPU integration fixture (**{proof['payloads']} payloads / 227
+sources**): 120 retained-output checks, 66 native-fallback checks, compiled
+captures and six two-stream stress fixtures. The existing pool is reused with
+zero retained replay growth; a third stream is rejected. Both GPU jobs, retention
+and exact original-service restoration are complete; the awake lease is released.
+This adds no full-model quality/speed or CPU-saving result. The 216 prior exact-word
+failures and two input timing repeat failures remain failed. Fresh matched model
+qualification is next, after evidence-storage preparation. See the [handoff](GLM53_HANDOFF.md).
+
+'''
+    names=['GLM53_CURRENT_STATE.md','GLM53_SPEED_OPTIONS.md','GLM53_LOSSLESS_RUNTIME_HANDOFF.md',
+           'GLM53_BF16_KERNEL_DIAGNOSTIC.md','GLM53_OUTPUT_ROW16.md']
+    for name in names:
+        path=WORK/'docs'/name;text=path.read_text()
+        if name=='GLM53_CURRENT_STATE.md':
+            text=re.sub(r'Updated \*\*.*?\*\*\.',f'Updated **{stamp}**.',text,count=1)
+            start=text.index('**18 October 2026, 22:42 UTC:')
+            end=text.index('**18 October 2026, 22:31 UTC',start)
+            text=text[:start]+brief+text[end:]
+        else:
+            if name=='GLM53_OUTPUT_ROW16.md':
+                text=text.replace('**Current checkpoint, 18 October 17:44 UTC:**','**Historical checkpoint, 18 October 17:44 UTC:**',1)
+            pos=text.index('\n\n')+2;text=text[:pos]+brief+text[pos:]
+        path.write_text(text)
+    path=WORK/'README.md';text=path.read_text()
+    pos=text.index('The FP32 split timing follow-up')
+    paragraph=f'''The input-only FP32 adapter now passes its GPU integration fixture, independently
+verified on Spark/Mac ({proof['payloads']} payloads / 227 sources): 120 retained-output
+comparisons, 66 fallback comparisons, compiled graphs and six two-stream stress
+fixtures. It reuses the existing fixed pool with zero retained replay growth.
+Prior exact-word and timing failures remain; full-model quality and serving-speed
+testing of this adapter are pending. GLM is restored healthy. See the
+[current handoff](docs/GLM53_HANDOFF.md).
+
+'''
+    path.write_text(text[:pos]+paragraph+text[pos:])
+    # Archive snapshots are data, with unchanged bytes; do not expose them as lintable code.
+    for path in sorted(BASE.iterdir()):
+        if path.is_file() and path.suffix in ('.json','.py','.log'):
+            target=DEST/('fp32-input-v1-'+path.name+('.txt' if path.suffix=='.py' else ''))
+            retain(path,target)
+    for name in ['spark-independent-review.json','inventory.json','post-restoration-check.json',
+                 'controller.json','restoration.json','watchdog.json','launch.json']:
+        target=DEST/('fp32-input-v1-'+name)
+        retain(BASE/'evidence'/name,target)
+    (DEST/'fp32-input-v1-retention-checkpoint-updates.json').write_text(json.dumps({'updates':updates},indent=2)+'\n')
+    rows=[{'path':p.name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+          for p in sorted(DEST.glob('fp32-input-v1-*')) if p.is_file()]
+    record={'status':'complete','archive_sha256':proof['archive_sha256'],
+            'payloads':proof['payloads'],'source_files':227,
+            'all_decisions_independently_identical':True,'integration_passed':True,
+            'original_service_restored':True,'owned_awake_lease_released':True,
+            'model_quality_or_serving_speed_qualified':False,'artifacts':rows}
+    (DEST/'fp32-input-v1-final-retention.json').write_text(json.dumps(record,indent=2)+'\n')
+    print(json.dumps({'updated_documents':7,'retained_supplements':len(rows),'snapshot':stamp}))
+
+
+if __name__=='__main__':
+    main()

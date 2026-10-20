@@ -1,0 +1,1097 @@
+{
+  "status": "complete",
+  "revision": "decodevaluesv1",
+  "model_arm": "raw_runtime_reference",
+  "model_loads": 1,
+  "logical_probes": 4,
+  "worker_probes": 8,
+  "fixed_state_graph_invocations": 40,
+  "new_reference_repeats": 0,
+  "reused_reference_revision": "decodestatev2",
+  "quality_qualified": false,
+  "previous_failed_gates_preserved": true,
+  "new_kl_ppl_accuracy_or_throughput_measurement": false,
+  "source_inventory_sha256": "d80e6588de59dbdec80c02eceb96dcf0d444ed197b96817d19de83cc20ebc5f7",
+  "prepared_sha256": "a0d08475a3de6b74a1139394207ef96ec8d4a2d2f34a189dbeea81cf511d7346",
+  "plan_sha256": "81263c5fb60c04e67d41668e7368cd75577a91f5d677d1ba9a620c53602b6ba0",
+  "source_archive_sha256": "de7cd6dea63527f752834d954f66c635ee983d5d17d6929928f9e3b7d3a95b1c",
+  "frozen_independent_verifier_sha256": "e7ee1f2f3e3dbbd862a2c6d6ae9589d9d61ad194255fdde6929f68e9293290c2",
+  "independent_numerical_verification": {
+    "spark_cpu_and_mac_passed": true,
+    "reports_byte_equal": false,
+    "hidden_raw_artifacts": 40,
+    "earliest_changed_active_raw_pairs": 32,
+    "source_scale_groups": 336,
+    "cpu_report_comparison": {
+      "all_discrete_values_equal": true,
+      "floating_fields_with_different_rounding": 10,
+      "maximum_float64_absolute_difference": 3.552713678800501e-15,
+      "relative_comparison_tolerance": 1e-10,
+      "absolute_comparison_tolerance": 1e-12,
+      "scope": "CPU reduction/reconstruction agreement only; historical model-quality gates are unchanged."
+    }
+  },
+  "archive_verification": {
+    "status": "passed",
+    "payloads_verified": 454,
+    "archives": [
+      {
+        "rank": 0,
+        "files": 237,
+        "source_files": 150,
+        "archive_sha256": "740d98fece542c9d9dda8810526f5992ff820c208fd3dfc0b559ef5c8e5dff0f",
+        "manifest_sha256": "15db8dbcf0a43ca89a7ec31bf6184b2d5a402fe0ec6a330818caab969d49fe0e"
+      },
+      {
+        "rank": 1,
+        "files": 217,
+        "source_files": 150,
+        "archive_sha256": "6587dcb73c72f20a4c7c72565998b3f782a5d31012a159af11f40c7b9b9e6507",
+        "manifest_sha256": "f7a8b2fadd6ca3b722a720467b304e87419b14f7a9a8f4da95625136ff59d457"
+      }
+    ],
+    "verifier_sha256": "3c4b763e30961b32026cdb846967d9d6ab6f974920f7d72a377b758d08cda7c5"
+  },
+  "restored_service": {
+    "identities": [
+      {
+        "rank": 0,
+        "running": true,
+        "original_identity_matches": true
+      },
+      {
+        "rank": 1,
+        "running": true,
+        "original_identity_matches": true
+      }
+    ],
+    "active_experiments": [],
+    "health_8000": true
+  },
+  "api_comparison": {
+    "completions": 16,
+    "generated_ids": 64,
+    "generated_ids_match_saved_reference": true,
+    "distinct_prompts": 8,
+    "all_four_ids_per_completion": true
+  },
+  "findings": {
+    "first_changed_active_layer": 4,
+    "first_changed_active_cache_index": 0,
+    "active_layers_0_1_2_exact_in_all_replays": true,
+    "changed_active_views_per_nonfirst_replay": 62,
+    "device_synchronization_eliminates_variation": false,
+    "hidden_max_absolute_error_range": [
+      0.2890625,
+      4.375
+    ],
+    "hidden_relative_l2_range": [
+      0.042963265916619774,
+      0.39348344413613995
+    ],
+    "first_changed_cache_max_absolute_error_range": [
+      0.0078125,
+      0.03125
+    ],
+    "first_changed_cache_relative_l2_range": [
+      0.0009731311380678728,
+      0.00226340220301407
+    ]
+  },
+  "probes": [
+    {
+      "label": "g0s2normal",
+      "rank": 0,
+      "completion_policy": "normal",
+      "target": {
+        "group_start": 0,
+        "graph_step": 2
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15871,
+          "changed_bytes": 19821,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.265625,
+          "rms_error_finite": 0.4487284833303896,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.3788613259485403,
+          "sqnr_db_finite": 8.430394502279196
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16084,
+          "changed_bytes": 20516,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.09375,
+          "rms_error_finite": 0.44855093571613125,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.37871142255025875,
+          "sqnr_db_finite": 8.433831913124338
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15999,
+          "changed_bytes": 19942,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.0078125,
+          "rms_error_finite": 0.44347839302909337,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.3744286762577156,
+          "sqnr_db_finite": 8.532617949556201
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16076,
+          "changed_bytes": 20374,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.30859375,
+          "rms_error_finite": 0.4660471180603185,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.39348344413613995,
+          "sqnr_db_finite": 8.101470718275108
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 29843,
+          "changed_bytes": 30467,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0008921397966743599,
+          "reference_rms_finite": 0.4006487923397197,
+          "relative_l2_finite": 0.002226737765673566,
+          "sqnr_db_finite": 53.04661850284582
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 16905,
+          "changed_bytes": 17334,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0007690078346147002,
+          "reference_rms_finite": 0.4006487923397197,
+          "relative_l2_finite": 0.001919406346201189,
+          "sqnr_db_finite": 54.33666147213294
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 25333,
+          "changed_bytes": 25750,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0006434903288748511,
+          "reference_rms_finite": 0.4006487923397197,
+          "relative_l2_finite": 0.0016061207251293055,
+          "sqnr_db_finite": 55.88443627595426
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 18614,
+          "changed_bytes": 18938,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0004470521238403808,
+          "reference_rms_finite": 0.4006487923397197,
+          "relative_l2_finite": 0.001115820470167085,
+          "sqnr_db_finite": 59.04811351097648
+        }
+      ]
+    },
+    {
+      "label": "g0s2normal",
+      "rank": 1,
+      "completion_policy": "normal",
+      "target": {
+        "group_start": 0,
+        "graph_step": 2
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15871,
+          "changed_bytes": 19821,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.265625,
+          "rms_error_finite": 0.4487284833303896,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.3788613259485403,
+          "sqnr_db_finite": 8.430394502279196
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16084,
+          "changed_bytes": 20516,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.09375,
+          "rms_error_finite": 0.44855093571613125,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.37871142255025875,
+          "sqnr_db_finite": 8.433831913124338
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15999,
+          "changed_bytes": 19942,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.0078125,
+          "rms_error_finite": 0.44347839302909337,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.3744286762577156,
+          "sqnr_db_finite": 8.532617949556201
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16076,
+          "changed_bytes": 20374,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 3.30859375,
+          "rms_error_finite": 0.4660471180603185,
+          "reference_rms_finite": 1.1844135376101683,
+          "relative_l2_finite": 0.39348344413613995,
+          "sqnr_db_finite": 8.101470718275108
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 29679,
+          "changed_bytes": 30285,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0008951044773730688,
+          "reference_rms_finite": 0.3954685897986221,
+          "relative_l2_finite": 0.00226340220301407,
+          "sqnr_db_finite": 52.90476531481617
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 16896,
+          "changed_bytes": 17326,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.000771942478139996,
+          "reference_rms_finite": 0.3954685897986221,
+          "relative_l2_finite": 0.0019519691273915823,
+          "sqnr_db_finite": 54.19054110950854
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 25104,
+          "changed_bytes": 25486,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0006456189230092884,
+          "reference_rms_finite": 0.3954685897986221,
+          "relative_l2_finite": 0.0016325415966361478,
+          "sqnr_db_finite": 55.742714884556754
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 18285,
+          "changed_bytes": 18580,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.0078125,
+          "rms_error_finite": 0.00045364995086470043,
+          "reference_rms_finite": 0.3954685897986221,
+          "relative_l2_finite": 0.0011471200559713352,
+          "sqnr_db_finite": 58.807822541410665
+        }
+      ]
+    },
+    {
+      "label": "g0s2devicesync",
+      "rank": 0,
+      "completion_policy": "device_sync",
+      "target": {
+        "group_start": 0,
+        "graph_step": 2
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16063,
+          "changed_bytes": 19906,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 4.375,
+          "rms_error_finite": 0.3890065961451421,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.33195472947130017,
+          "sqnr_db_finite": 9.578422788652347
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15229,
+          "changed_bytes": 18378,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 4.2734375,
+          "rms_error_finite": 0.43113509474706163,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.3679046452182671,
+          "sqnr_db_finite": 8.68529457336253
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15945,
+          "changed_bytes": 18747,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.1064453125,
+          "rms_error_finite": 0.16647083906141324,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.1420561576412793,
+          "sqnr_db_finite": 16.95079872749827
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15877,
+          "changed_bytes": 17960,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.4375,
+          "rms_error_finite": 0.08478507685562746,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.0723504627677627,
+          "sqnr_db_finite": 22.81117373406598
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 28929,
+          "changed_bytes": 29524,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.000864118778389544,
+          "reference_rms_finite": 0.40033221248306383,
+          "relative_l2_finite": 0.0021585042408399768,
+          "sqnr_db_finite": 53.316941874862714
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 25725,
+          "changed_bytes": 26148,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0006352010162440844,
+          "reference_rms_finite": 0.40033221248306383,
+          "relative_l2_finite": 0.001586684749409109,
+          "sqnr_db_finite": 55.99018705018704
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 29228,
+          "changed_bytes": 29865,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0008716079001930547,
+          "reference_rms_finite": 0.40033221248306383,
+          "relative_l2_finite": 0.002177211508379252,
+          "sqnr_db_finite": 53.24198757480463
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 22476,
+          "changed_bytes": 22982,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0007920317640722202,
+          "reference_rms_finite": 0.40033221248306383,
+          "relative_l2_finite": 0.0019784362571266417,
+          "sqnr_db_finite": 54.07355875252935
+        }
+      ]
+    },
+    {
+      "label": "g0s2devicesync",
+      "rank": 1,
+      "completion_policy": "device_sync",
+      "target": {
+        "group_start": 0,
+        "graph_step": 2
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16063,
+          "changed_bytes": 19906,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 4.375,
+          "rms_error_finite": 0.3890065961451421,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.33195472947130017,
+          "sqnr_db_finite": 9.578422788652347
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15229,
+          "changed_bytes": 18378,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 4.2734375,
+          "rms_error_finite": 0.43113509474706163,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.3679046452182671,
+          "sqnr_db_finite": 8.68529457336253
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15945,
+          "changed_bytes": 18747,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.1064453125,
+          "rms_error_finite": 0.16647083906141324,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.1420561576412793,
+          "sqnr_db_finite": 16.95079872749827
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15877,
+          "changed_bytes": 17960,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.4375,
+          "rms_error_finite": 0.08478507685562746,
+          "reference_rms_finite": 1.1718664070992681,
+          "relative_l2_finite": 0.0723504627677627,
+          "sqnr_db_finite": 22.81117373406598
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 28936,
+          "changed_bytes": 29546,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0008744041855876942,
+          "reference_rms_finite": 0.3951250217706302,
+          "relative_l2_finite": 0.002212981050072008,
+          "sqnr_db_finite": 53.10044609908155
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 25510,
+          "changed_bytes": 25918,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.0078125,
+          "rms_error_finite": 0.0006313047995237333,
+          "reference_rms_finite": 0.3951250217706302,
+          "relative_l2_finite": 0.001597734298614491,
+          "sqnr_db_finite": 55.92990883385558
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 29427,
+          "changed_bytes": 30024,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0008905813872982781,
+          "reference_rms_finite": 0.3951250217706302,
+          "relative_l2_finite": 0.0022539230325313592,
+          "sqnr_db_finite": 52.94121836843922
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 22363,
+          "changed_bytes": 22843,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0007991975947620692,
+          "reference_rms_finite": 0.3951250217706302,
+          "relative_l2_finite": 0.0020226448610637547,
+          "sqnr_db_finite": 53.881607291889104
+        }
+      ]
+    },
+    {
+      "label": "g4s0devicesync",
+      "rank": 0,
+      "completion_policy": "device_sync",
+      "target": {
+        "group_start": 4,
+        "graph_step": 0
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15966,
+          "changed_bytes": 18411,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.703125,
+          "rms_error_finite": 0.11742411390730365,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.09356095896838035,
+          "sqnr_db_finite": 20.578106709352273
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15942,
+          "changed_bytes": 18229,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.52734375,
+          "rms_error_finite": 0.10360758075429034,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.08255224833476371,
+          "sqnr_db_finite": 21.665421882043276
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15425,
+          "changed_bytes": 16790,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.2890625,
+          "rms_error_finite": 0.05392124542596777,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.042963265916619774,
+          "sqnr_db_finite": 27.338054250241143
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15723,
+          "changed_bytes": 17558,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.5546875,
+          "rms_error_finite": 0.0851683169242506,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.06786024726953631,
+          "sqnr_db_finite": 23.36769124406868
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 19028,
+          "changed_bytes": 19340,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0005319075673554138,
+          "reference_rms_finite": 0.4045063240480572,
+          "relative_l2_finite": 0.0013149548863226692,
+          "sqnr_db_finite": 57.62178293522915
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 26668,
+          "changed_bytes": 27106,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0006846384090127149,
+          "reference_rms_finite": 0.4045063240480572,
+          "relative_l2_finite": 0.0016925283198573101,
+          "sqnr_db_finite": 55.42928111690527
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 19180,
+          "changed_bytes": 19495,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0006093046840398411,
+          "reference_rms_finite": 0.4045063240480572,
+          "relative_l2_finite": 0.0015062921092117536,
+          "sqnr_db_finite": 56.4418159794777
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 19629,
+          "changed_bytes": 19948,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0005767391940310358,
+          "reference_rms_finite": 0.4045063240480572,
+          "relative_l2_finite": 0.0014257853579627015,
+          "sqnr_db_finite": 56.91891699134758
+        }
+      ]
+    },
+    {
+      "label": "g4s0devicesync",
+      "rank": 1,
+      "completion_policy": "device_sync",
+      "target": {
+        "group_start": 4,
+        "graph_step": 0
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15966,
+          "changed_bytes": 18411,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.703125,
+          "rms_error_finite": 0.11742411390730365,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.09356095896838035,
+          "sqnr_db_finite": 20.578106709352273
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15942,
+          "changed_bytes": 18229,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.52734375,
+          "rms_error_finite": 0.10360758075429034,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.08255224833476371,
+          "sqnr_db_finite": 21.665421882043276
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15425,
+          "changed_bytes": 16790,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.2890625,
+          "rms_error_finite": 0.05392124542596777,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.042963265916619774,
+          "sqnr_db_finite": 27.338054250241143
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15723,
+          "changed_bytes": 17558,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.5546875,
+          "rms_error_finite": 0.0851683169242506,
+          "reference_rms_finite": 1.2550546210945532,
+          "relative_l2_finite": 0.06786024726953631,
+          "sqnr_db_finite": 23.36769124406868
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 18791,
+          "changed_bytes": 19072,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0005411711298377383,
+          "reference_rms_finite": 0.39526342922824814,
+          "relative_l2_finite": 0.0013691404006041614,
+          "sqnr_db_finite": 57.27104028376084
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 26468,
+          "changed_bytes": 26905,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0006805422914315416,
+          "reference_rms_finite": 0.39526342922824814,
+          "relative_l2_finite": 0.0017217436299641997,
+          "sqnr_db_finite": 55.28063030248828
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 19222,
+          "changed_bytes": 19517,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0006109942719716162,
+          "reference_rms_finite": 0.39526342922824814,
+          "relative_l2_finite": 0.0015457900397326983,
+          "sqnr_db_finite": 56.216989907938604
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 19419,
+          "changed_bytes": 19747,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0005748208583340573,
+          "reference_rms_finite": 0.39526342922824814,
+          "relative_l2_finite": 0.0014542728110627258,
+          "sqnr_db_finite": 56.74708230660397
+        }
+      ]
+    },
+    {
+      "label": "g4s0normal",
+      "rank": 0,
+      "completion_policy": "normal",
+      "target": {
+        "group_start": 4,
+        "graph_step": 0
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15351,
+          "changed_bytes": 17532,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.0,
+          "rms_error_finite": 0.1214964871754354,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.09697568676976595,
+          "sqnr_db_finite": 20.266742721948976
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16027,
+          "changed_bytes": 18687,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.375,
+          "rms_error_finite": 0.13236820961440507,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.10565324423994207,
+          "sqnr_db_finite": 19.522343254983465
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15743,
+          "changed_bytes": 17856,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.15625,
+          "rms_error_finite": 0.11873640364267309,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.09477265191374533,
+          "sqnr_db_finite": 20.46633933687754
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15965,
+          "changed_bytes": 18481,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.09375,
+          "rms_error_finite": 0.12224565827325429,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.0975736578173909,
+          "sqnr_db_finite": 20.21334827959375
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 11848,
+          "changed_bytes": 12036,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.0078125,
+          "rms_error_finite": 0.0004474263649917997,
+          "reference_rms_finite": 0.4045082576599177,
+          "relative_l2_finite": 0.0011060994590819072,
+          "sqnr_db_finite": 59.12411640116186
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 27521,
+          "changed_bytes": 28010,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0007170163440686925,
+          "reference_rms_finite": 0.4045082576599177,
+          "relative_l2_finite": 0.0017725629341082815,
+          "sqnr_db_finite": 55.02796672853131
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 13572,
+          "changed_bytes": 13826,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.00039363958113444806,
+          "reference_rms_finite": 0.4045082576599177,
+          "relative_l2_finite": 0.0009731311380678728,
+          "sqnr_db_finite": 60.23657261494865
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 12084,
+          "changed_bytes": 12273,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.00046537514033770464,
+          "reference_rms_finite": 0.4045082576599177,
+          "relative_l2_finite": 0.0011504712982372775,
+          "sqnr_db_finite": 58.782484231304544
+        }
+      ]
+    },
+    {
+      "label": "g4s0normal",
+      "rank": 1,
+      "completion_policy": "normal",
+      "target": {
+        "group_start": 4,
+        "graph_step": 0
+      },
+      "first_changed_active_cache": "language_model.model.layers.4.self_attn/cache0",
+      "active_layers_0_1_2_exact": true,
+      "changed_active_views_per_nonfirst_replay": 62,
+      "hidden_error_vs_first_replay": [
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15351,
+          "changed_bytes": 17532,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.0,
+          "rms_error_finite": 0.1214964871754354,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.09697568676976595,
+          "sqnr_db_finite": 20.266742721948976
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 16027,
+          "changed_bytes": 18687,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.375,
+          "rms_error_finite": 0.13236820961440507,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.10565324423994207,
+          "sqnr_db_finite": 19.522343254983465
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15743,
+          "changed_bytes": 17856,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.15625,
+          "rms_error_finite": 0.11873640364267309,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.09477265191374533,
+          "sqnr_db_finite": 20.46633933687754
+        },
+        {
+          "elements": 16384,
+          "changed_elements_by_bits": 15965,
+          "changed_bytes": 18481,
+          "bytes_exact": false,
+          "finite_pairs": 16384,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 1.09375,
+          "rms_error_finite": 0.12224565827325429,
+          "reference_rms_finite": 1.252855135368985,
+          "relative_l2_finite": 0.0975736578173909,
+          "sqnr_db_finite": 20.21334827959375
+        }
+      ],
+      "earliest_active_cache_error_vs_first_replay": [
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 11844,
+          "changed_bytes": 12008,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.03125,
+          "rms_error_finite": 0.0004597183471954095,
+          "reference_rms_finite": 0.39526690167998074,
+          "relative_l2_finite": 0.0011630580381041123,
+          "sqnr_db_finite": 58.68797225746115
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 27023,
+          "changed_bytes": 27523,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0007016844652644286,
+          "reference_rms_finite": 0.39526690167998074,
+          "relative_l2_finite": 0.0017752168529216548,
+          "sqnr_db_finite": 55.014971756123295
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 13200,
+          "changed_bytes": 13431,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.0003931763672907235,
+          "reference_rms_finite": 0.39526690167998074,
+          "relative_l2_finite": 0.0009947110815998709,
+          "sqnr_db_finite": 60.04606087528899
+        },
+        {
+          "elements": 147456,
+          "changed_elements_by_bits": 12067,
+          "changed_bytes": 12251,
+          "bytes_exact": false,
+          "finite_pairs": 147456,
+          "nonfinite_pairs": 0,
+          "max_absolute_error_finite": 0.015625,
+          "rms_error_finite": 0.00046901212245177337,
+          "reference_rms_finite": 0.39526690167998074,
+          "relative_l2_finite": 0.001186570695543587,
+          "sqnr_db_finite": 58.5141276306888
+        }
+      ]
+    }
+  ],
+  "restoration": {
+    "status": "complete",
+    "started_epoch": 1792262473.605719,
+    "health": 200,
+    "containers": [
+      {
+        "rank": 1,
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "rank": 0,
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ],
+    "finished_epoch": 1792262630.4159205
+  },
+  "limits": [
+    "Intrusive fixed-tracked-state replay is not an estimate of ordinary serving KL or a candidate qualification.",
+    "Only registered KV/input/bounded metadata storages are reset; native scratch and other internal state remain untracked.",
+    "The first observed active-state difference narrows a boundary, not a first causal operation.",
+    "The large final hidden differences must not be described as proven floating-point roundoff.",
+    "Device-sync policies have different probe history; no cross-policy magnitude or speed improvement claim.",
+    "Eight distinct prompts and matching greedy IDs are not a task-accuracy benchmark."
+  ],
+  "next_step": "Capture actual graph operands and outputs across layer-3 MLA, MoE and mHC into layer 4; reproduce first differing operation from identical operands/workspace before changing kernels.",
+  "roofline": "deferred_by_user_until_model_work_finished"
+}

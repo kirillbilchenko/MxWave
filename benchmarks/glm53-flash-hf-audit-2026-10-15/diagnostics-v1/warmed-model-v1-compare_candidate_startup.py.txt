@@ -1,0 +1,103 @@
+"""Compare archive-verified compressed outputs before and after startup preparation."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+OLD = Path('/private/tmp/mxwave-matched-row16-v1/evidence')
+NEW = BASE/'evidence'
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def verified_json(root, inventory, relative):
+    path = root/relative
+    assert sha(path) == inventory[relative]['sha256']
+    assert path.stat().st_size == inventory[relative]['bytes']
+    return json.loads(path.read_bytes())
+
+
+def compare_metadata(left, right):
+    """Keep every mismatch, including conditioning and token identity changes."""
+    assert left['status'] == right['status'] == 'complete'
+    assert len(left['contexts']) == len(right['contexts']) == 16
+    rows = []
+    for a, b in zip(left['contexts'], right['contexts'], strict=True):
+        assert a['index'] == b['index']
+        assert len(a['steps']) == len(b['steps']) == 4
+        for c, d in zip(a['steps'], b['steps'], strict=True):
+            assert (c['position'], c['kind']) == (d['position'], d['kind'])
+            rows.append({
+                'context':a['index'], 'position':c['position'], 'kind':c['kind'],
+                'prompt_equal':a['prompt_sha256'] == b['prompt_sha256'],
+                'generated_ids_equal':a['token_ids'] == b['token_ids'],
+                'conditioning_equal':c['conditioning_token_ids'] == d['conditioning_token_ids'],
+                'payload_hash_equal':c['sha256'] == d['sha256'],
+                'old_payload':c['file'], 'new_payload':d['file'],
+                'old_sha256':c['sha256'], 'new_sha256':d['sha256'],
+            })
+    return rows
+
+
+def main():
+    proofs = {key:json.loads((root.parent/'cross-host-verification.json').read_bytes())
+              for key, root in [('old', OLD), ('new', NEW)]}
+    assert all(p['status'] == 'passed' and p['measurement_complete']
+               and p['all_decisions_identical'] for p in proofs.values())
+    assert proofs['old']['archive_sha256'] == '15feabeb92479432ba548f85137da090b6a7ab5c6f25dacf8f3472559ac4c0d2'
+    inventories = {key:{r['path']:r for r in json.loads((root/'evidence-inventory.json').read_bytes())['files']}
+                   for key, root in [('old', OLD), ('new', NEW)]}
+    for relative in ('source/measure_matched_row16.py', 'source/c8_forward_trace.py'):
+        assert sha(OLD/relative) == inventories['old'][relative]['sha256']
+    sys.path.insert(0, str(OLD/'source'))
+    from measure_matched_row16 import model_signature
+    old = verified_json(OLD, inventories['old'], 'results/candidate-matched-row16.json')
+    new = verified_json(NEW, inventories['new'], 'results/candidate-warmed-model.json')
+    assert old['status'] == new['status'] == 'complete'
+    old_groups = {g['label']:g for g in old['quality'] if not g['profiled']}
+    new_groups = {g['label']:g for g in new['quality'] if not g['profiled']}
+    assert old_groups.keys() == new_groups.keys() and len(new_groups) == 9
+    groups = []
+    for label, group in new_groups.items():
+        rel = 'results/'+label+'-decode-quality.json'
+        a = verified_json(OLD, inventories['old'], rel)
+        b = verified_json(NEW, inventories['new'], rel)
+        rows = compare_metadata(a, b)
+        assert len(rows) == 64
+        for row in rows:
+            for key, root in [('old', OLD), ('new', NEW)]:
+                rel = 'results/'+row[key+'_payload']
+                assert sha(root/rel) == row[key+'_sha256'] == inventories[key][rel]['sha256']
+                assert (root/rel).stat().st_size == inventories[key][rel]['bytes']
+        groups.append({
+            'label':label,
+            'matching_worker_grouping':[model_signature(old_groups[label], rank) == model_signature(group, rank) for rank in (0,1)],
+            'full_vocabulary_rows':len(rows),
+            'matching_payload_hashes':sum(r['payload_hash_equal'] for r in rows),
+            'mismatches':[r for r in rows if not all(r[k] for k in ('prompt_equal','generated_ids_equal','conditioning_equal','payload_hash_equal'))],
+        })
+    result = {
+        'status':'complete', 'source_sha256':sha(Path(__file__)),
+        'old_archive_sha256':proofs['old']['archive_sha256'], 'new_archive_sha256':proofs['new']['archive_sha256'],
+        'full_vocabulary_rows':sum(g['full_vocabulary_rows'] for g in groups),
+        'matching_payload_hashes':sum(g['matching_payload_hashes'] for g in groups),
+        'old_and_new_raw_payloads_rehashed':2*sum(g['full_vocabulary_rows'] for g in groups),
+        'all_worker_groupings_match':all(all(g['matching_worker_grouping']) for g in groups),
+        'all_prompts_conditioning_outputs_and_hashes_match':not any(g['mismatches'] for g in groups),
+        'groups':groups, 'new_GPU_experiment':False, 'original_measurements_or_gates_changed':False,
+        'limits':['Finite before/after compressed-arm comparison with the same nine unprofiled C1/C8/C16 groups.',
+                  'This does not assert bitwise identity between stock and compressed outputs or a universal quality guarantee.'],
+    }
+    with (BASE/'candidate-startup-comparison.json').open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False);stream.write('\n')
+    print(json.dumps({k:v for k,v in result.items() if k != 'groups'}))
+
+
+if __name__ == '__main__':
+    main()

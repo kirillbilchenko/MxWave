@@ -1,0 +1,224 @@
+{
+  "epoch": 1792419326.579067,
+  "phase": "complete",
+  "service_paused": false,
+  "error": null,
+  "arms": [
+    {
+      "arm": "control",
+      "status": "complete",
+      "phase": "complete",
+      "error": null,
+      "quality_complete": 10,
+      "timing_complete": 36,
+      "profiles_complete": 2,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "operand_capture": {
+        "armed": [
+          {
+            "status": "complete",
+            "rank": 0,
+            "armed": true,
+            "after_measured_work": true
+          },
+          {
+            "status": "complete",
+            "rank": 1,
+            "armed": true,
+            "after_measured_work": true
+          }
+        ],
+        "retained": [
+          {
+            "rank": 0,
+            "status": "complete",
+            "error": null,
+            "shapes": [
+              1,
+              8,
+              16,
+              256
+            ]
+          },
+          {
+            "rank": 1,
+            "status": "complete",
+            "error": null,
+            "shapes": [
+              1,
+              8,
+              16,
+              256
+            ]
+          }
+        ]
+      },
+      "startup_passed": true,
+      "cuda_allocated_TP2": 189487090688,
+      "ordinary_profile_prefill_rows": [
+        {
+          "budget_tokens": 2048,
+          "rows": [
+            2048,
+            2048,
+            23
+          ]
+        },
+        {
+          "budget_tokens": 4096,
+          "rows": [
+            4096
+          ]
+        }
+      ],
+      "timing_cells": [
+        {
+          "case": "c1-short",
+          "budget": 2048,
+          "trials": 6,
+          "median_TPS": 14.894943629285255,
+          "median_TTFT": 0.38643191405571997,
+          "mean_request_TTFT": 0.3911252236963871
+        },
+        {
+          "case": "c1-short",
+          "budget": 4096,
+          "trials": 6,
+          "median_TPS": 14.936683294070074,
+          "median_TTFT": 0.3819215100375004,
+          "mean_request_TTFT": 0.3829829541888709
+        },
+        {
+          "case": "c16-short",
+          "budget": 2048,
+          "trials": 12,
+          "median_TPS": 80.99611317477938,
+          "median_TTFT": 1.7934788222191855,
+          "mean_request_TTFT": 1.8551062019226567
+        },
+        {
+          "case": "c16-short",
+          "budget": 4096,
+          "trials": 12,
+          "median_TPS": 84.22846947393231,
+          "median_TTFT": 2.0587894005002454,
+          "mean_request_TTFT": 2.0318047370352965
+        }
+      ]
+    },
+    {
+      "arm": "candidate",
+      "status": "complete",
+      "phase": "complete",
+      "error": null,
+      "quality_complete": 10,
+      "timing_complete": 36,
+      "profiles_complete": 2,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "startup_passed": true,
+      "cuda_allocated_TP2": 179438812672,
+      "ordinary_profile_prefill_rows": [
+        {
+          "budget_tokens": 2048,
+          "rows": [
+            2048,
+            2048,
+            23
+          ]
+        },
+        {
+          "budget_tokens": 4096,
+          "rows": [
+            2560,
+            266,
+            1291
+          ]
+        }
+      ],
+      "timing_cells": [
+        {
+          "case": "c1-short",
+          "budget": 2048,
+          "trials": 6,
+          "median_TPS": 16.819570810395188,
+          "median_TTFT": 0.412087615521159,
+          "mean_request_TTFT": 0.4133563358336687
+        },
+        {
+          "case": "c1-short",
+          "budget": 4096,
+          "trials": 6,
+          "median_TPS": 16.826329996248063,
+          "median_TTFT": 0.41174531052820385,
+          "mean_request_TTFT": 0.41186334784530726
+        },
+        {
+          "case": "c16-short",
+          "budget": 2048,
+          "trials": 12,
+          "median_TPS": 81.95607901330622,
+          "median_TTFT": 1.6664878657611553,
+          "mean_request_TTFT": 1.925446726443018
+        },
+        {
+          "case": "c16-short",
+          "budget": 4096,
+          "trials": 12,
+          "median_TPS": 85.85103706344239,
+          "median_TTFT": 2.0815846357727423,
+          "mean_request_TTFT": 2.0561018565810323
+        }
+      ]
+    }
+  ],
+  "watchdog_pid": 154619,
+  "collection": {
+    "status": "complete",
+    "started_epoch": 1792416088.9734623,
+    "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/evidence-prefill-budget-v3.tar.gz",
+    "archive_sha256": "72366e1e4fc6180ad6a0183db1bd641160688d9f4b15d21f100a82169f1c1491",
+    "archive_bytes": 467206410,
+    "payloads": 1639,
+    "copy_owned_traces_and_link_results": true,
+    "source_files": 217,
+    "restored_health": 200,
+    "measurements_complete": true,
+    "quality_qualified": false,
+    "verified_after_pack": true,
+    "finished_epoch": 1792419291.2771428
+  }
+}

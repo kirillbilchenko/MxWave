@@ -1,0 +1,129 @@
+"""Record the independently verified speed result and preserve every failed gate."""
+import datetime,hashlib,json,pathlib,re,shutil
+w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');b=pathlib.Path(__file__).parent;d=w/'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+s=json.loads((b/'final-findings.json').read_bytes());proof=json.loads((b/'cross-host-verification.json').read_bytes());service=json.loads((b/'final-service-check.json').read_bytes());lease=json.loads((b/'awake-release.json').read_bytes());assert proof['status']=='passed' and service['status']=='passed' and lease['status']=='released'
+now=datetime.datetime.now(datetime.timezone.utc);stamp=now.strftime('%d October %Y, %H:%M UTC');berlin=now.astimezone(datetime.timezone(datetime.timedelta(hours=2))).strftime('%d October %H:%M Berlin')
+g={(x['kind'],x['tokens'],x['split'],x['cache']):x for x in s['groups']}
+assert len(s['failed_conditions'])==78 and sum(g['input',n,2,c]['strict_passes'] for n in (1,4,8,16) for c in ('warm','pressure'))==46
+lines=['| Physical rows | Input time saved, warm | Input time saved, pressure | Strict timing passes |','|---|---:|---:|---:|']
+for n in (1,4,8,16):
+ a,z=g['input',n,2,'warm'],g['input',n,2,'pressure'];lines.append(f"| M{n} | {100*(1-a['median_paired_ratio']):.2f}% | {100*(1-z['median_paired_ratio']):.2f}% | {a['strict_passes']+z['strict_passes']}/12 |")
+block=f'''**Completed FP32 speed diagnostic, {stamp} / {berlin}:**
+`fp32speedv1` independently verifies on Spark and Mac: **246 payloads / 220
+source files**, **884,736 CUDA-event samples / 288 conditions** over 12 actual
+rank-specific KDA input/output matrices at layers 0/22/44. Both GPU jobs exit
+zero. Every before/after output matches the retained precision fixture; weight
+bytes, workspace guards, graph/eager agreement and zero retained replay
+allocation pass. All 217 parent sources and native libraries remain unchanged.
+
+**The useful next candidate is input-only FP32 split 2, with modest component
+gains.** The following medians cover all six matrices across both GPUs, compared
+with the existing split-one compressed kernel. Each condition also compares
+the same-compiler rebuilt control and tests all three arms' repeatability.
+
+{chr(10).join(lines)}
+
+Input split 2 passes **46/48** strict timing conditions. The two M8 pressure
+conditions fail unchanged repeat controls; all input split-2 speed comparisons
+pass, but those two conditions remain unqualified. Sampled per-projection
+savings are about **29-41 us** by group median. Multiplying those medians by 34
+KDA layers gives only an **estimated 1.0-1.4 ms per decode forward/rank**; this
+is not measured API latency, a model-throughput result or coverage of every layer.
+The earlier large C16 reconstruction fallback was already fixed by exact16.
+
+Output split 2 saves about **28-29% warm / 5-6% under pressure** by group median,
+but passes only **42/48** strict timing conditions. Split 4 illustrates why a
+warm-cache win is insufficient: at M8 its median output time is about **34%
+lower warm but 4.16% higher under pressure**. Larger split factors offer no
+uniform improvement. No broad FP32 policy is integrated or promoted.
+
+**The frozen broad timing screen fails:** **78/288** conditions fail (40 on
+rank zero, 38 on rank one): 70 candidate-speed failures, seven repeat-control
+failures and two rebuilt/original-equivalence failures, with overlap. Every raw
+sample, both ABBA/BAAB directions and failed decision remains retained. The
+previous **216 failed M4/M8 exact-word precision checks also remain failed**.
+This speed experiment establishes no new model KL/NLL, serving-speed or
+CPU-memory result. The current warmed exact16 model remains the measured
+C1/GPU-capacity candidate; its overall serving-speed gate still fails.
+
+Telemetry retains **4,608 boundaries/rank**: SM clocks **2,405-2,535 /
+2,398-2,528 MHz**, temperatures **46-73 / 46-74 C**, no sampled throttle flags;
+memory clocks are unavailable. Boundary samples cannot exclude transients.
+Peak CUDA allocation is **311,241,216 / 311,248,896 bytes**, below 2 GiB/rank.
+Graph timing includes runtime input padding and logical output cropping.
+Local validation: **762 tests passed, one GPU skip, Ruff and strict core mypy**.
+
+Archive: **13,315,462 bytes**, SHA256
+`55dde1aedfa17bdf97cb607a51d318edb7c3ae0202ab3081335657cb8aa360cc`.
+Local: `/private/tmp/mxwave-fp32-speed-v1/evidence.tar.gz`; remote:
+`ROOT/evidence-fp32-speed-v1.tar.gz`. Its reviewer also requires the immutable
+parent precision archive SHA
+`e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b`.
+Native inputs are bound to that archive rather than duplicated. All decisions
+match on Spark/Mac. Both reviews, findings, scripts, proofs and retained control
+failures are under `diagnostics-v1/fp32-speed-v1-*`.
+
+**Operations complete:** originals restored **22:29:52 UTC**, independently
+rechecked **22:30:40 UTC**, health 200 and exact identities/configurations.
+Controller **40765**, collector **40764** and watchdog **42417** are terminal;
+both GPU containers are stopped, exit zero, no OOM. The exclusive Mac retainer
+**60005** completed; do not rerun it. Owned awake lease **56814** was identity
+checked and released **22:31:09 UTC**. Its initial receipt lookup was sandbox
+denied, then recovered by identifying the exact sole matching process.
+
+Storage recovery removed only **2,230 verified duplicate unpacked files /
+1,061,076,481 bytes** on the head after matching every path, size and hash to
+the immutable archive. Parent archives remain verified on both Spark hosts and
+Mac, with the Mac unpacked evidence also retained. Original fixtures/native
+builds/raw GPU outputs remain. Plan evidence space before another full-model run.
+
+**Next:** prepare a bounded **input-only split-2** full-model probe, retaining
+native mHC, matched grouping, stable sparse/expert ordering, startup warming,
+exact16 output and the unchanged **KL <=1e-5 / absolute mean NLL <=1e-4** limits.
+Only route the tested physical row counts 1/4/8/16 through the new kernel;
+leave untested counts on the qualified route until independently covered.
+Verify typed scratch capacity, stream ownership, graph replay and allocation
+before integration. This exploratory model test must retain the component
+precision and timing failures; it cannot relabel them as passes. CPU-memory
+savings, concurrent serving gains, prefill/admission latency, wider quality
+qualification and the calibrated full roofline remain open. MTP stays deferred.
+
+'''
+p=w/'docs/GLM53_HANDOFF.md';text=p.read_text();text=re.sub(r'Snapshot: \*\*.*?\*\*\.',f'Snapshot: **{stamp} / {berlin}**.',text,count=1);start=text.index('**Timing experiment launched');end=text.index('**Completed precision experiment',start);text=text[:start]+block+text[end:];text=text.replace('**Next:** measure FP32 split performance with matched controls and warm/pressure\nconditions before deciding whether a full-model quality probe is worthwhile.', '**Historical precision-checkpoint plan, now completed above:** measure FP32 split\nperformance before deciding whether a full-model quality probe is worthwhile.');p.write_text(text)
+brief=f'''**{stamp} speed follow-up:** FP32 timing independently verifies on
+Spark/Mac (**246 payloads / 220 sources / 884,736 events**). Input split 2 saves
+about **7-8% of component time** (46/48 strict timing conditions pass; two M8
+pressure repeat controls fail). Output gains shrink substantially under pressure;
+the broad screen fails 78/288 conditions. Prior 216 exact-word failures remain
+failed. No new full-model quality/speed or CPU-saving claim is made. GLM is
+restored healthy, all jobs/retention complete and the owned awake lease released.
+Next is a bounded input-only split-2 model probe under unchanged KL/NLL limits.
+See the [handoff](GLM53_HANDOFF.md) for measurements, controls and provenance.
+
+'''
+for name in ['GLM53_CURRENT_STATE.md','GLM53_SPEED_OPTIONS.md','GLM53_LOSSLESS_RUNTIME_HANDOFF.md','GLM53_BF16_KERNEL_DIAGNOSTIC.md']:
+ p=w/'docs'/name;text=p.read_text()
+ if name=='GLM53_CURRENT_STATE.md':
+  text=re.sub(r'Updated \*\*.*?\*\*\.',f'Updated **{stamp}**.',text,count=1)
+  start=text.index('**18 October 2026, 22:18 UTC:');end=text.index('**18 October 22:12 UTC',start);text=text[:start]+brief+text[end:]
+ else:
+  pos=text.index('\n\n')+2;text=text[:pos]+brief+text[pos:]
+ p.write_text(text)
+p=w/'README.md';text=p.read_text();pos=text.index('The separate FP32 split-K precision prototype');text=text[:pos]+'''The FP32 split timing follow-up independently verifies 884,736 events across
+288 conditions (246 payloads / 220 sources). Input split 2 saves about 7-8% of
+component time and passes 46/48 strict timing conditions; two M8 pressure repeat
+controls fail. The broad screen fails 78/288 conditions, and all prior exact-word
+precision failures remain failed. Output gains are sensitive to cache pressure.
+No new serving-speed, model-quality or CPU-saving result is claimed. GLM is
+restored healthy; the next bounded probe is input-only split 2 under unchanged
+KL/NLL limits. See the [current handoff](docs/GLM53_HANDOFF.md).
+
+'''+text[pos:];p.write_text(text)
+# Retain the standalone review sources and receipts alongside frozen experiment evidence.
+for p in sorted(b.iterdir()):
+ if p.is_file() and p.suffix in ('.json','.py','.log'):shutil.copyfile(p,d/('fp32-speed-v1-'+p.name))
+for name in ['spark-independent-review.json','inventory.json','post-restoration-check.json','controller.json','restoration.json','watchdog.json','launch.json']:
+ shutil.copyfile(b/'evidence'/name,d/('fp32-speed-v1-'+name))
+files=[{'path':p.name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in sorted(d.glob('fp32-speed-v1-*')) if p.is_file() and p.name!='fp32-speed-v1-final-retention.json']
+(d/'fp32-speed-v1-final-retention.json').write_text(json.dumps({'status':'complete','archive_sha256':proof['archive_sha256'],'all_decisions_independently_identical':True,'source_files':220,'payloads':246,'conditions':288,'events':884736,'original_service_restored':True,'owned_awake_lease_released':True,'artifacts':files},indent=2)+'\n')
+print(json.dumps({'updated_documents':6,'retained_supplements':len(files),'snapshot':stamp,'work_remains_active':True}))

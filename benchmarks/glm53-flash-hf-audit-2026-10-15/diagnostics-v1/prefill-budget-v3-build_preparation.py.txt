@@ -1,0 +1,93 @@
+"""Freeze the bounded scheduling experiment and its independent collection/review tools."""
+from __future__ import annotations
+import hashlib,json,pathlib,shutil,sys,tarfile,time
+BASE=pathlib.Path(__file__).parent
+OLD=pathlib.Path('/private/tmp/mxwave-c16-admission-v1')
+WARM=pathlib.Path('/private/tmp/mxwave-warmed-model-v1')
+sys.path.insert(0,str(BASE/'cpu-source'))
+from prefill_budget_protocol import plan as make_plan
+def sha(p):
+ with p.open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def write(p,x):p.write_text(json.dumps(x,indent=2,allow_nan=False)+'\n')
+def rep(s,a,b):
+ assert a in s,a
+ return s.replace(a,b)
+def main():
+ overlay=BASE/'overlay';(overlay/'src').mkdir(parents=True)
+ parent=json.loads((WARM/'evidence/prepared.json').read_bytes())
+ proof=json.loads((WARM/'cross-host-verification.json').read_bytes())
+ assert proof['status']=='passed'and proof['compression_numerical_gate_passed']
+ assert sha(WARM/'evidence.tar.gz')==proof['archive_sha256']
+ sources={}
+ for p in sorted([*(BASE/'cpu-source').glob('*budget*.py'),BASE/'cpu-source/moe_capture.py']):
+  shutil.copyfile(p,overlay/'src'/p.name);sources[p.name]=sha(p)
+ assert len(sources)==10
+ plugin='engine_plugin/pyproject.toml'
+ source=BASE/'cpu-source'/plugin;target=overlay/'src'/plugin;target.parent.mkdir();shutil.copyfile(source,target)
+ sources[plugin]=sha(source)
+ for n,h in parent['bindings'][0]['code'].items():
+  if n!=plugin:assert sha(BASE/'cpu-source'/n)==h
+ for source,name in ((WARM/'cross-host-verification.json','parent-proof.json'),(WARM/'evidence/component-cross-host-verification.json','component-proof.json'),(WARM/'evidence/warmup-component-cross-host-verification.json','warmup-component-proof.json')):
+  shutil.copyfile(source,overlay/name)
+ plan=json.loads((OLD/'plan.json').read_bytes())
+ plan.update(make_plan(plan['source_protocol_sha256'],proof['archive_sha256'],input_fp32=False))
+ for k in ('windows_ms',):plan.pop(k,None)
+ old_memory=json.loads((OLD/'evidence/results/candidate-c16-admission.json').read_bytes())
+ plan.update(revision='prefillbudgetv3',purpose='One bounded latency experiment: interleave scheduler budgets 2048/4096 at fixed 10 ms admission in stock and qualified compressed arms, preserving memory savings.',
+  parent_model_proof_sha256=sha(overlay/'parent-proof.json'),parent_source_sha256=parent['bindings'][0]['code'],source_sha256=sources,
+  expected_source_files=217,changed_parent_sources=[plugin],all_parent_python_and_kernels_unchanged=True,
+  integer_dispatch_extension='Same Triton kernel, guard through4096; five added block/capacity variants,39 guarded startup cases in each arm.',
+  historical_candidate_allocated_bytes_by_rank={str(r['rank']):r['cuda_allocated_bytes']for r in old_memory['snapshot_before_profiles']},
+  historical_candidate_report_sha256=sha(OLD/'evidence/results/candidate-c16-admission.json'),
+  historical_candidate_archive_sha256=sha(OLD/'evidence.tar.gz'),
+  frozen_epoch=time.time(),head_free_bytes_required_before_launch=4*1024**3,collector_free_bytes_required=2*1024**3,
+  CPU_protocol_check=json.loads((BASE/'cpu-protocol-check.json').read_bytes()),
+  same_budget_numerical_comparisons_expected=42,cross_budget_numerical_diagnostics_expected=52,
+  worker_capacity_same_in_both_budget_conditions=True,one_experiment_no_automatic_retries=True,
+  no_BF16_resident_cache=True,automatic_promotion_allowed=False,
+  latency_primary='mean TTFT with nearest-rank p95 TTFT and single-token ITL guards; all request/trial values retained',
+  operand_capture='stock only, after every measured snapshot; separate eager C1/C8/C16 and P256 forwards, layer23, <=8 MiB per rank; not graph operands',
+  capture_source='moe_capture.py',component_dispatch_4096_checked=True)
+ from prefill_budget_protocol import validate_plan
+ validate_plan(plan)
+ write(BASE/'plan.json',plan);write(overlay/'plan.json',plan)
+ for name in ('prepare.py','collect.py','verify.py','launch.py','deploy_prepare.py','launch_local.py'):
+  source=OLD/('collect_recovery.py'if name=='collect.py'else name)
+  s=source.read_text().replace('c16-admission','prefill-budget').replace('c16admission','prefillbudget').replace('c16_admission','prefill_budget').replace('prefill-budget-v1','prefill-budget-v3').replace('prefillbudgetv1','prefillbudgetv3')
+  s=s.replace('==211','==217').replace('source_files=211','source_files=217').replace('"source_files":211','"source_files":217')
+  if name=='prepare.py':
+   s=s.replace('6_000_000_000','4*1024**3')
+   a=s.index("for p in(o/'src').glob('*.py'):");z=s.index("print('assembled')",a)
+   s=s[:a]+'''for p in(o/'src').rglob('*'):
+ if not p.is_file():continue
+ rel=str(p.relative_to(o/'src'));target=code/rel
+ assert hashlib.sha256(p.read_bytes()).hexdigest()==plan['source_sha256'][rel]
+ if target.exists():assert rel=='engine_plugin/pyproject.toml' and hashlib.sha256(target.read_bytes()).hexdigest()==plan['parent_source_sha256'][rel]
+ if p.suffix=='.py':compile(p.read_text(),p.name,'exec')
+ target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,target)
+''' +s[z:]
+   s=rep(s,'for n,v in parent["bindings"][0]["code"].items())','for n,v in parent["bindings"][0]["code"].items() if n not in plan["changed_parent_sources"])')
+   s=rep(s,'command.index("--max-num-batched-tokens")+1]=="2048"','command.index("--max-num-batched-tokens")+1]=="4096"')
+   s=s.replace('=="warmed_model_worker.WarmedModelWorker"','=="budget_worker.BudgetWorker"')
+   s=s.replace('"all_parent_sources_unchanged":True','"all_parent_python_and_kernels_unchanged":True,"changed_parent_sources":plan["changed_parent_sources"]')
+  elif name=='verify.py':
+   s=rep(s,'for k,v in plan["parent_source_sha256"].items())','for k,v in plan["parent_source_sha256"].items() if k not in plan["changed_parent_sources"])')
+  elif name=='collect.py':
+   s=s.replace('>=3*1024**3','>=2*1024**3')
+   a=s.index('  for name,target in {\n   "prefill-budget-v3-evidence-check-initial-failure.json"');z=s.index('  files=[',a)
+   s=s[:a]+s[z:]
+   s=s.replace('archival_recovery_only=True,initial_failure_preserved=True,','copy_owned_traces_and_link_results=True,')
+  elif name=='launch.py':
+   s=s.replace('Final short-C16 3/10 ms admission comparison','Bounded 2048/4096-token prefill latency comparison at10ms admission')
+  elif name=='deploy_prepare.py':
+   s=s.replace("('prefill-budget-v3-storage-relocation.json','storage-relocation.json')", "('prefill-budget-v3-prepared.json','prepared.json')")
+  s=s.replace('prefill-budget-v1','prefill-budget-v3').replace('prefillbudgetv1','prefillbudgetv3')
+  compile(s,name,'exec');(BASE/name).write_text(s)
+ files=[p for p in sorted(overlay.rglob('*'))if p.is_file()]
+ write(overlay/'inventory.json',{'files':[{'path':str(p.relative_to(overlay)),'bytes':p.stat().st_size,'sha256':sha(p)}for p in files]})
+ with tarfile.open(BASE/'source-only.tar.gz','x:gz',compresslevel=1)as tf:
+  for p in [*files,overlay/'inventory.json']:tf.add(p,arcname=str(p.relative_to(overlay)),recursive=False)
+ write(BASE/'source-freeze.json',{'source_files':217,'all_parent_python_and_kernels_unchanged':True,'new_sources':sources,'source_archive_sha256':sha(BASE/'source-only.tar.gz'),'plan_sha256':sha(BASE/'plan.json'),'operations_sha256':{n:sha(BASE/n)for n in ('prepare.py','collect.py','verify.py','launch.py')}})
+ write(BASE/'local-checks.json',{'status':'passed','ruff_passed':True,'mypy_passed':True,'pytest_passed':True,'CPU_protocol_simulation_passed':True,'sources':sources,'tests_passed':814,'tests_skipped':1,'plan_sha256':sha(BASE/'plan.json'),'GPU_initialized':False})
+ print(json.dumps({'status':'frozen','sources':217,'plan_sha256':sha(BASE/'plan.json')}))
+if __name__=='__main__':main()

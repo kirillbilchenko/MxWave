@@ -1,0 +1,37 @@
+"""Own one terminal model archive download and independent review; never restart GPU work."""
+from __future__ import annotations
+import json,os,pathlib,shlex,subprocess,sys,time
+
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+
+def main():
+    path=BASE/'retainer-state.json';assert not path.exists()
+    state={'phase':'waiting_for_collector','pid':os.getpid(),'collector_pid':1258388,
+           'controller_pid':1258389,'started_epoch':time.time(),'transient_poll_errors':0}
+    def save():path.write_text(json.dumps(state,indent=2)+'\n')
+    save()
+    try:
+        deadline=time.monotonic()+14400
+        while time.monotonic()<deadline:
+            try:
+                raw=subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',
+                    shlex.join(['cat',ROOT+'/fp32-input-model-v1-evidence-check.json'])],timeout=35)
+            except (subprocess.CalledProcessError,subprocess.TimeoutExpired) as exc:
+                state.update(transient_poll_errors=state['transient_poll_errors']+1,
+                             last_poll_error=repr(exc),last_observed_epoch=time.time());save();time.sleep(15);continue
+            receipt=json.loads(raw)
+            if receipt['status']=='complete':break
+            if receipt['status']=='failed':raise RuntimeError(receipt)
+            state['last_observed_epoch']=time.time();save();time.sleep(15)
+        else:raise TimeoutError('Retention observation expired; inspect the same controller/collector before further action')
+        state.update(phase='retaining',collector=receipt);save()
+        with (BASE/'retention.log').open('xb') as out:
+            subprocess.run([sys.executable,'-B',str(BASE/'retain_and_review.py')],stdout=out,
+                           stderr=subprocess.STDOUT,check=True,timeout=1500)
+        state.update(phase='complete',finished_epoch=time.time());save()
+        print((BASE/'cross-host-verification.json').read_text())
+    except BaseException as exc:
+        state.update(phase='failed',error=repr(exc),finished_epoch=time.time());save();raise
+
+if __name__=='__main__':main()

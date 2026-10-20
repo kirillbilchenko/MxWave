@@ -1,0 +1,442 @@
+{
+  "status": "complete",
+  "started_epoch": 1792092018.7194846,
+  "phases": [
+    {
+      "label": "graphs_before",
+      "dispatch": [
+        {
+          "status": "complete",
+          "eager": false,
+          "one_token_runtime_mode": "FULL",
+          "retained_graphs": 2,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        }
+      ],
+      "actual_graph_replays": 3,
+      "token_ids": [
+        38,
+        4,
+        38,
+        4
+      ]
+    },
+    {
+      "label": "eager",
+      "dispatch": [
+        {
+          "status": "complete",
+          "eager": true,
+          "one_token_runtime_mode": "NONE",
+          "retained_graphs": 2,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        }
+      ],
+      "actual_graph_replays": 0,
+      "token_ids": [
+        38,
+        4,
+        38,
+        4
+      ]
+    },
+    {
+      "label": "graphs_after",
+      "dispatch": [
+        {
+          "status": "complete",
+          "eager": false,
+          "one_token_runtime_mode": "FULL",
+          "retained_graphs": 2,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        }
+      ],
+      "actual_graph_replays": 3,
+      "token_ids": [
+        38,
+        4,
+        38,
+        4
+      ]
+    }
+  ],
+  "code_sha256": {
+    "diagnostic_worker.py": "b9d7f20d5cb8f1ddddfcc81ee59eabf1943eff64475f29cb3b20244e31752696",
+    "diagnose_checker.py": "90b60e53209c0cf9ba2f0627c80f33eb87456ceb1faa3de65f22540bc6e6412f",
+    "diagnose_dispatch.py": "f009b09d84b8a01ca6c85f43e9b4b83dce22a20cbc7b23ca764deb3ce1580ced"
+  },
+  "scope": "Tiny TP1 Llama, actual pinned GPUModelRunner; not GLM quality or TP2 proof",
+  "checker": {
+    "status": "complete",
+    "started_epoch": 1792092023.3001509,
+    "cases": [
+      {
+        "name": "torch.int32/cpu-cuda",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": true,
+        "loaded_sha256": "0dabea587922553aed8960cbf13e60507312f85187e38f653ae9c676002288af",
+        "source_reference_sha256": "0dabea587922553aed8960cbf13e60507312f85187e38f653ae9c676002288af"
+      },
+      {
+        "name": "torch.int32/cuda-cpu",
+        "actual_device": "cuda:0",
+        "expected_device": "cpu",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": true,
+        "loaded_sha256": "0dabea587922553aed8960cbf13e60507312f85187e38f653ae9c676002288af",
+        "source_reference_sha256": "0dabea587922553aed8960cbf13e60507312f85187e38f653ae9c676002288af"
+      },
+      {
+        "name": "torch.int32/cuda-cuda",
+        "actual_device": "cuda:0",
+        "expected_device": "cuda:0",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": true,
+        "loaded_sha256": "0dabea587922553aed8960cbf13e60507312f85187e38f653ae9c676002288af",
+        "source_reference_sha256": "0dabea587922553aed8960cbf13e60507312f85187e38f653ae9c676002288af"
+      },
+      {
+        "name": "torch.bfloat16/cpu-cuda",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.bfloat16",
+        "bits_exact": true,
+        "loaded_sha256": "848c4fb4513de66fcb16a48dbee65344b5f8aecd8be5338cd90049f7d44afa08",
+        "source_reference_sha256": "848c4fb4513de66fcb16a48dbee65344b5f8aecd8be5338cd90049f7d44afa08"
+      },
+      {
+        "name": "torch.bfloat16/cuda-cpu",
+        "actual_device": "cuda:0",
+        "expected_device": "cpu",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.bfloat16",
+        "bits_exact": true,
+        "loaded_sha256": "848c4fb4513de66fcb16a48dbee65344b5f8aecd8be5338cd90049f7d44afa08",
+        "source_reference_sha256": "848c4fb4513de66fcb16a48dbee65344b5f8aecd8be5338cd90049f7d44afa08"
+      },
+      {
+        "name": "torch.bfloat16/cuda-cuda",
+        "actual_device": "cuda:0",
+        "expected_device": "cuda:0",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.bfloat16",
+        "bits_exact": true,
+        "loaded_sha256": "848c4fb4513de66fcb16a48dbee65344b5f8aecd8be5338cd90049f7d44afa08",
+        "source_reference_sha256": "848c4fb4513de66fcb16a48dbee65344b5f8aecd8be5338cd90049f7d44afa08"
+      },
+      {
+        "name": "torch.float32/cpu-cuda",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.float32",
+        "bits_exact": true,
+        "loaded_sha256": "1d0a60a3bee48d97823ea8094b14e01792d1c33fbcc99805f0453d87d81ba5e2",
+        "source_reference_sha256": "1d0a60a3bee48d97823ea8094b14e01792d1c33fbcc99805f0453d87d81ba5e2"
+      },
+      {
+        "name": "torch.float32/cuda-cpu",
+        "actual_device": "cuda:0",
+        "expected_device": "cpu",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.float32",
+        "bits_exact": true,
+        "loaded_sha256": "1d0a60a3bee48d97823ea8094b14e01792d1c33fbcc99805f0453d87d81ba5e2",
+        "source_reference_sha256": "1d0a60a3bee48d97823ea8094b14e01792d1c33fbcc99805f0453d87d81ba5e2"
+      },
+      {
+        "name": "torch.float32/cuda-cuda",
+        "actual_device": "cuda:0",
+        "expected_device": "cuda:0",
+        "shape": [
+          6,
+          4
+        ],
+        "dtype": "torch.float32",
+        "bits_exact": true,
+        "loaded_sha256": "1d0a60a3bee48d97823ea8094b14e01792d1c33fbcc99805f0453d87d81ba5e2",
+        "source_reference_sha256": "1d0a60a3bee48d97823ea8094b14e01792d1c33fbcc99805f0453d87d81ba5e2"
+      },
+      {
+        "name": "torch.float8_e4m3fn/cpu-cuda",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          256
+        ],
+        "dtype": "torch.float8_e4m3fn",
+        "bits_exact": true,
+        "loaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "source_reference_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      {
+        "name": "torch.float8_e4m3fn/cuda-cpu",
+        "actual_device": "cuda:0",
+        "expected_device": "cpu",
+        "shape": [
+          256
+        ],
+        "dtype": "torch.float8_e4m3fn",
+        "bits_exact": true,
+        "loaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "source_reference_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      {
+        "name": "torch.float8_e4m3fn/cuda-cuda",
+        "actual_device": "cuda:0",
+        "expected_device": "cuda:0",
+        "shape": [
+          256
+        ],
+        "dtype": "torch.float8_e4m3fn",
+        "bits_exact": true,
+        "loaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "source_reference_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      {
+        "name": "torch.float8_e8m0fnu/cpu-cuda",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          256
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": true,
+        "loaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "source_reference_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      {
+        "name": "torch.float8_e8m0fnu/cuda-cpu",
+        "actual_device": "cuda:0",
+        "expected_device": "cpu",
+        "shape": [
+          256
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": true,
+        "loaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "source_reference_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      {
+        "name": "torch.float8_e8m0fnu/cuda-cuda",
+        "actual_device": "cuda:0",
+        "expected_device": "cuda:0",
+        "shape": [
+          256
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": true,
+        "loaded_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880",
+        "source_reference_sha256": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      {
+        "name": "signed-zero",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          1
+        ],
+        "dtype": "torch.float32",
+        "bits_exact": false,
+        "loaded_sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "source_reference_sha256": "6d58692645c9d1cfaf13541cbd258f86193ef63c2f1d38f6bbca9617372d7bd6"
+      },
+      {
+        "name": "shape-mismatch",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          2,
+          2
+        ],
+        "dtype": "torch.float32",
+        "bits_exact": false,
+        "loaded_sha256": "f6bb1294da2f78cd935b01c7656280df5eaa0439e9d97bc03775825a41a508e4",
+        "source_reference_sha256": "f6bb1294da2f78cd935b01c7656280df5eaa0439e9d97bc03775825a41a508e4"
+      },
+      {
+        "name": "scalar",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [],
+        "dtype": "torch.float32",
+        "bits_exact": true,
+        "loaded_sha256": "d99e58435243d9fef9c88273b8d553b4fba4d0baf8009d29eae74fa99e0d9f57",
+        "source_reference_sha256": "d99e58435243d9fef9c88273b8d553b4fba4d0baf8009d29eae74fa99e0d9f57"
+      },
+      {
+        "name": "empty",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          0
+        ],
+        "dtype": "torch.float32",
+        "bits_exact": true,
+        "loaded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_reference_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "prepared-expert/w13_weight",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          256,
+          4096
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": true,
+        "loaded_sha256": "910aa9bb66d3d8977e004056555428492337b1492fa1b3bfec76f98828b84237",
+        "source_reference_sha256": "910aa9bb66d3d8977e004056555428492337b1492fa1b3bfec76f98828b84237"
+      },
+      {
+        "name": "prepared-expert/w13_weight/changed-bit",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          256,
+          4096
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": false,
+        "loaded_sha256": "910aa9bb66d3d8977e004056555428492337b1492fa1b3bfec76f98828b84237",
+        "source_reference_sha256": "a90620525923012e3147381d934518bb130c847d7a70e418a706e237b4ff2f85"
+      },
+      {
+        "name": "prepared-expert/w2_weight",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          64,
+          8192
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": true,
+        "loaded_sha256": "e8c58203adee6b78b9dbc9b84089105be07b0af6f6bd006d6556afcd2e67e0c7",
+        "source_reference_sha256": "e8c58203adee6b78b9dbc9b84089105be07b0af6f6bd006d6556afcd2e67e0c7"
+      },
+      {
+        "name": "prepared-expert/w2_weight/changed-bit",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          64,
+          8192
+        ],
+        "dtype": "torch.int32",
+        "bits_exact": false,
+        "loaded_sha256": "e8c58203adee6b78b9dbc9b84089105be07b0af6f6bd006d6556afcd2e67e0c7",
+        "source_reference_sha256": "6ba042e9ce7c58f448a78f1043703835bf9d9a513c5865cccf2f4be7a0e24084"
+      },
+      {
+        "name": "prepared-expert/w13_weight_scale",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          128,
+          2048
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": true,
+        "loaded_sha256": "28928284c7e90a31616b536768fb33b0ac0768e58eff351cf0c6086f277aa154",
+        "source_reference_sha256": "28928284c7e90a31616b536768fb33b0ac0768e58eff351cf0c6086f277aa154"
+      },
+      {
+        "name": "prepared-expert/w13_weight_scale/changed-bit",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          128,
+          2048
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": false,
+        "loaded_sha256": "28928284c7e90a31616b536768fb33b0ac0768e58eff351cf0c6086f277aa154",
+        "source_reference_sha256": "1be6f37e47eca00a3eb33ab4e5b3302e258b0ec49eb9aa8ea02b0af576789f7a"
+      },
+      {
+        "name": "prepared-expert/w2_weight_scale",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          32,
+          4096
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": true,
+        "loaded_sha256": "f279335e48dc9d2b6f649d9beddc1a6669612c1724af25cf35b808a921130ce8",
+        "source_reference_sha256": "f279335e48dc9d2b6f649d9beddc1a6669612c1724af25cf35b808a921130ce8"
+      },
+      {
+        "name": "prepared-expert/w2_weight_scale/changed-bit",
+        "actual_device": "cpu",
+        "expected_device": "cuda:0",
+        "shape": [
+          32,
+          4096
+        ],
+        "dtype": "torch.float8_e8m0fnu",
+        "bits_exact": false,
+        "loaded_sha256": "f279335e48dc9d2b6f649d9beddc1a6669612c1724af25cf35b808a921130ce8",
+        "source_reference_sha256": "0f27dee5bc37ba625653d364c59b24b927585870bf773966a9951e91df227a19"
+      }
+    ],
+    "code_sha256": {
+      "diagnostic_worker.py": "b9d7f20d5cb8f1ddddfcc81ee59eabf1943eff64475f29cb3b20244e31752696",
+      "diagnose_checker.py": "90b60e53209c0cf9ba2f0627c80f33eb87456ceb1faa3de65f22540bc6e6412f"
+    },
+    "scope": "Checker device/hash regression and one source expert; not full loader coverage",
+    "memory_before": {
+      "cuda_free_bytes": 2458112000,
+      "cuda_total_bytes": 130594160640,
+      "cuda_allocated_bytes": 0,
+      "cuda_reserved_bytes": 0,
+      "max_host_rss_bytes": 1211699200,
+      "memory.current": "1145335808",
+      "memory.max": "5368709120",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "passed": true,
+    "finished_epoch": 1792092023.730051,
+    "cuda_peak_bytes": 19269120
+  },
+  "engine": [
+    {
+      "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner",
+      "captured_graphs": 2
+    }
+  ],
+  "passed": true,
+  "finished_epoch": 1792092137.113823,
+  "cuda_peak_bytes": 118921216
+}

@@ -1,0 +1,135 @@
+{
+  "repository": "amd/GLM-5.3-Flash-Quark-MXFP4",
+  "revision": "b5688f25491202978c19c4d036eef579f61bbe07",
+  "index_sha256": "1a91c7f25ab61e7a0e537b047075d91537441e43263be01faf47d8b895f302cd",
+  "indexed_payload_bytes": 185077182400,
+  "source_shards": 62,
+  "quant_method": "quark",
+  "format": null,
+  "config_groups": null,
+  "quark_global": {
+    "input_tensors": {
+      "dtype": "fp4",
+      "is_dynamic": true,
+      "qscheme": "per_group",
+      "ch_axis": -1,
+      "group_size": 32,
+      "block_size": null,
+      "symmetric": null,
+      "round_method": "half_even",
+      "scale_type": "float",
+      "scale_format": "e8m0",
+      "scale_calculation_mode": "even",
+      "mx_element_dtype": null,
+      "observer_cls": "PerBlockMXObserver",
+      "is_scale_quant": false,
+      "enable_buffer_reuse": false,
+      "max_input_numel": 4194304
+    },
+    "output_tensors": null,
+    "weight": {
+      "dtype": "fp4",
+      "is_dynamic": false,
+      "qscheme": "per_group",
+      "ch_axis": -1,
+      "group_size": 32,
+      "block_size": null,
+      "symmetric": null,
+      "round_method": "half_even",
+      "scale_type": "float",
+      "scale_format": "e8m0",
+      "scale_calculation_mode": "even",
+      "mx_element_dtype": null,
+      "observer_cls": "PerBlockMXObserver",
+      "is_scale_quant": false,
+      "enable_buffer_reuse": false,
+      "max_input_numel": 4194304
+    },
+    "bias": null,
+    "target_device": null
+  },
+  "quark_layer_override_count": 924,
+  "tensor_examples": {
+    "model.language_model.layers.3.mlp.experts.0.down_proj.weight": {
+      "dtype": "U8",
+      "shape": [
+        4096,
+        1024
+      ],
+      "bytes": 4194304
+    },
+    "model.language_model.layers.3.mlp.experts.0.down_proj.weight_scale": {
+      "dtype": "U8",
+      "shape": [
+        4096,
+        64
+      ],
+      "bytes": 262144
+    },
+    "model.language_model.layers.3.mlp.experts.0.gate_proj.weight": {
+      "dtype": "U8",
+      "shape": [
+        2048,
+        2048
+      ],
+      "bytes": 4194304
+    },
+    "model.language_model.layers.3.mlp.experts.0.gate_proj.weight_scale": {
+      "dtype": "U8",
+      "shape": [
+        2048,
+        128
+      ],
+      "bytes": 262144
+    },
+    "model.language_model.layers.3.mlp.experts.0.up_proj.weight": {
+      "dtype": "U8",
+      "shape": [
+        2048,
+        2048
+      ],
+      "bytes": 4194304
+    },
+    "model.language_model.layers.3.mlp.experts.0.up_proj.weight_scale": {
+      "dtype": "U8",
+      "shape": [
+        2048,
+        128
+      ],
+      "bytes": 262144
+    },
+    "model.language_model.layers.0.mlp.up_proj.weight": {
+      "dtype": "F8_E4M3",
+      "shape": [
+        12288,
+        4096
+      ],
+      "bytes": 50331648
+    },
+    "model.language_model.layers.0.mlp.up_proj.weight_scale": {
+      "dtype": "F32",
+      "shape": [
+        96,
+        32
+      ],
+      "bytes": 12288
+    },
+    "lm_head.weight": {
+      "dtype": "BF16",
+      "shape": [
+        154880,
+        4096
+      ],
+      "bytes": 1268776960
+    },
+    "model.language_model.embed_tokens.weight": {
+      "dtype": "BF16",
+      "shape": [
+        154880,
+        4096
+      ],
+      "bytes": 1268776960
+    }
+  },
+  "errors": []
+}

@@ -1,0 +1,30 @@
+"""Retain a terminal component once, verify all bytes and recompute its decisions on Mac."""
+from __future__ import annotations
+import hashlib,json,pathlib,shlex,subprocess,sys,tarfile
+BASE=pathlib.Path('/private/tmp/mxwave-fp32-input-v1')
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def main():
+ receipt=json.loads(subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['cat',ROOT+'/fp32-input-v1-evidence-check.json'])],text=True,timeout=30))
+ if receipt['status']!='complete':print(json.dumps({'status':'waiting','collector':receipt}));return
+ assert receipt['verified_after_pack'] and receipt['restored_health']==200 and receipt['source_files']==227
+ archive=BASE/'evidence.tar.gz';assert not archive.exists()
+ with archive.open('xb') as f:subprocess.run(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['cat',receipt['archive']])],stdout=f,check=True,timeout=240)
+ assert sha(archive)==receipt['archive_sha256'] and archive.stat().st_size==receipt['archive_bytes']
+ root=BASE/'evidence';root.mkdir()
+ with tarfile.open(archive) as tf:
+  seen=set();total=0
+  for m in tf.getmembers():
+   p=pathlib.PurePosixPath(m.name);assert m.isfile() and not p.is_absolute() and '..' not in p.parts and m.name not in seen
+   seen.add(m.name);total+=m.size
+  assert total<1024**3;tf.extractall(root,filter='data')
+ assert sha(root/'verify.py')=='60d7debe3de4bb9e7ed16437844234f576a13cefe034cecf0ec30cf96573c177'
+ out=BASE/'mac-independent-review.json'
+ subprocess.run([sys.executable,'-B',str(root/'verify.py'),'--root',str(root),'--output',str(out),'--precision-archive','/private/tmp/mxwave-fp32-split-v1/evidence.tar.gz','--speed-archive','/private/tmp/mxwave-fp32-speed-v1/evidence.tar.gz'],check=True,timeout=600)
+ spark=json.loads((root/'spark-independent-review.json').read_bytes());mac=json.loads(out.read_bytes())
+ assert spark==mac
+ proof={'status':'passed','archive_sha256':sha(archive),'archive_bytes':archive.stat().st_size,'payloads':mac['payloads'],'source_files':mac['source_files'],
+  'diagnostic_complete':mac['diagnostic_complete'],'integration_invariants_passed_on_both_GPUs':mac['integration_invariants_passed_on_both_GPUs'],'parent_exact_word_screen_passed':False,'all_decisions_identical':True,'original_service_restored':True,'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False}
+ (BASE/'cross-host-verification.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps(proof))
+if __name__=='__main__':main()

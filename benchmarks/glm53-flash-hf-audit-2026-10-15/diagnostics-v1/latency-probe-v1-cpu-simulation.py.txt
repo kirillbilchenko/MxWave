@@ -1,0 +1,115 @@
+"""Exercise the real diagnostic CLI and review with explicitly synthetic CPU transports."""
+from __future__ import annotations
+import copy,hashlib,json,pathlib,shutil,sys
+
+BASE=pathlib.Path('/private/tmp/mxwave-latency-probe-v1')
+PARENT=pathlib.Path('/private/tmp/mxwave-matched-c8-v1/evidence')
+sys.path.insert(0,str(PARENT/'source'))
+sys.path.insert(0,str(BASE/'overlay/src'))
+import measure_latency_probe as measure
+import analyze_latency_probe as analyze
+
+def events(prompts,tokens,split):
+    result=[]
+    def add(indexes,counts,new):
+        sequence=len(result)
+        rows=[dict(request_id=str(i),prompt_sha256=analyze.prompt_hash(prompts[i]),
+                   prompt_tokens=len(prompts[i]),scheduled_tokens=n)for i,n in zip(indexes,counts)]
+        total=sum(counts);physical=total if new else next(n for n in [1,2,4,8,16]if n>=total)
+        prepared=dict(num_reqs=len(rows),num_tokens=total,num_tokens_after_padding=physical,
+                      has_prefill=bool(new),request_state_indices=indexes,
+                      prefill_lengths=[len(prompts[i])if i in new else 0 for i in indexes],
+                      row_order=rows,descriptor=dict(mode='NONE'if new else'FULL',num_tokens=physical,
+                                                    num_reqs=len(rows),max_query_len=max(counts)))
+        result.append(dict(sequence=sequence,status='complete',total_scheduled_tokens=total,
+                           scheduled_order=rows,prepared=prepared,host_elapsed_ns=100000000,
+                           host_thread_cpu_ns=2000000,host_prepare_elapsed_ns=100000,
+                           host_prepare_thread_cpu_ns=90000))
+    if split:
+        add(list(range(6)),[256]*6,set(range(6)))
+        add(list(range(8)),[1]*6+[256]*2,{6,7})
+        for _ in range(tokens-2):add(list(range(8)),[1]*8,set())
+        add([6,7],[1,1],set())
+    else:
+        if sum(map(len,prompts))<=2048:add(list(range(len(prompts))),list(map(len,prompts)),set(range(len(prompts))))
+        else:
+            for i,p in enumerate(prompts):add([i],[len(p)],{i})
+        for _ in range(tokens-1):add(list(range(len(prompts))),[1]*len(prompts),set())
+    return result
+
+def main():
+    root=BASE/'cpu-simulation';root.mkdir()
+    for name in ['protocol.json','source-audit.json']:shutil.copyfile(PARENT/'results'/name,root/name)
+    shutil.copyfile(BASE/'overlay/plan.json',root/'latency-probe-plan.json')
+    plan=json.loads((root/'latency-probe-plan.json').read_bytes())
+    protocol=json.loads((root/'protocol.json').read_bytes())
+    prompt_table={(x['batch'],x['prompt_tokens']):x['prompts']for x in protocol['timing']}
+    state={}
+    def transport(base,prompts,tokens,*args,**kwargs):
+        spec=next(x for x in plan['groups']if state['label'].endswith('-'+x['name']))
+        split=spec['admission']=='split'
+        state['events']=events(prompts,tokens,split)
+        outputs=[]
+        for i,p in enumerate(prompts):
+            start=1_000_000_000
+            arrivals=[dict(monotonic_ns=start+(n+1)*100_000_000,seconds=(n+1)/10,tokens=1)for n in range(tokens)]
+            end=arrivals[-1]['monotonic_ns']+1000
+            outputs.append(dict(request_start_monotonic_ns=start,request_start_epoch_ns=start,
+                                request_end_monotonic_ns=end,elapsed_seconds=(end-start)/1e9,
+                                ttft_seconds=.1,token_ids=[42]*tokens,arrivals=arrivals,
+                                usage=dict(prompt_tokens=len(p),completion_tokens=tokens)))
+        value=dict(status='complete',requests=outputs,client_start_monotonic_ns=1_000_000_000,
+                   client_end_monotonic_ns=end,diagnostic_not_serving_speed=True)
+        if split:value['resume_return_monotonic_ns']=1_000_000_001
+        return value
+    def rpc(base,name,args=None):
+        if name=='mxwave_latency_trace':
+            enabled,label=args
+            if enabled:
+                state['label']=label
+                return [dict(rank=r,enabled=True)for r in(0,1)]
+            return [dict(rank=r,enabled=False,label=label,events=copy.deepcopy(state['events']),
+                         GPU_tensors_copied=False,CUDA_synchronization_added=False,
+                         telemetry=dict(thread_stopped=True,settings_changed=False,errors=[],limit_reached=False,
+                                        samples=[dict(sm_MHz=2496,temperature_C=65,sample_start_monotonic_ns=1000)]))for r in(0,1)]
+        if name=='mxwave_checkpoint_check':return [dict(status='passed')for _ in(0,1)]
+        if name=='mxwave_native_mhc_policy':return [dict(native_mhc_unchanged=True)for _ in(0,1)]
+        if name=='mxwave_stable_sparse_policy':return [dict(patched_aliases=['synthetic'],actual_decode_context_parallel_size=1)for _ in(0,1)]
+        if name in('mxwave_mhc_warmup','mxwave_set_eager'):return [{'synthetic':True}]*2
+        raise ValueError(name)
+    measure.rpc=rpc;measure.request=lambda *a,**k:{'synthetic':True}
+    measure.configure=lambda *a:None;measure.admission=lambda *a:{'synthetic':True}
+    measure.snapshot=lambda:[{'synthetic':True}]*2
+    measure.ordinary_group=transport;measure.split_group=transport
+    for arm in('control','candidate'):
+        prior=json.loads((PARENT/f'results/{arm}-matched-c8.json').read_bytes())
+        measure.source_check=lambda *a:copy.deepcopy(prior['source_before'])
+        sys.argv=['measure_latency_probe.py','--root',str(root),'--label',arm,'--vocabulary','163840',
+                  '--data',str(root),'--cpu-audit',str(root/'source-audit.json'),'--profile']
+        measure.main()
+    result=analyze.review(root)
+    assert len(result['groups'])==30 and len(result['paired_outputs'])==106
+    assert result['all_paired_token_sequences_equal']and result['all_requested_splits_observed']
+    candidate=root/'candidate-latency-probe.json';original=candidate.read_bytes();data=json.loads(original)
+    group=next(x for x in data['groups']if x['name']=='profile-split-first')
+    for worker in group['worker_trace']:worker['events']=events(prompt_table[8,256],16,False)
+    candidate.write_text(json.dumps(data));negative=analyze.review(root)
+    assert not negative['all_requested_splits_observed']
+    candidate.write_bytes(original);data=json.loads(original)
+    data['groups'][0]['measurement']['requests'][0]['token_ids'][0]=99
+    candidate.write_text(json.dumps(data));assert not analyze.review(root)['all_paired_token_sequences_equal']
+    candidate.write_bytes(original);data=json.loads(original)
+    for worker in data['groups'][0]['worker_trace']:worker['events'].pop()
+    candidate.write_text(json.dumps(data))
+    try:analyze.review(root)
+    except AssertionError as exc:assert 'Missing or duplicated model work'in str(exc)
+    else:raise AssertionError('Missing forward was accepted')
+    candidate.write_bytes(original)
+    receipt=dict(status='passed',synthetic_CPU_only=True,GPU_experiment_run=False,
+                 real_measurement_CLI_executed_both_arms=True,groups=30,paired_requests=106,
+                 wrong_split_not_qualified=True,changed_output_not_equal=True,missing_forward_rejected=True,
+                 sources=plan['source_sha256'],simulation_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest())
+    (BASE/'cpu-protocol-check.json').write_text(json.dumps(receipt,indent=2)+'\n')
+    print(json.dumps(receipt))
+
+if __name__=='__main__':main()

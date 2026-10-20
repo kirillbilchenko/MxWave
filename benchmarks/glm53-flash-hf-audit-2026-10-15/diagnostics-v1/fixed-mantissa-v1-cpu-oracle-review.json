@@ -1,0 +1,51 @@
+{
+  "status": "CPU_oracle_passed",
+  "source_sha256": "ff04bd5ff5c9886c9f02f45e4691dd26f80bd41d9242fda12b2d241999d37696",
+  "GPU_experiment_run": false,
+  "runtime_changed": false,
+  "all_65536_BF16_patterns_checked_at_bases": [
+    0,
+    64,
+    120,
+    248
+  ],
+  "tile_cases": 77,
+  "rare_count_stress_cases": [
+    0,
+    1,
+    7,
+    8,
+    9,
+    15,
+    16,
+    17,
+    1023,
+    1024,
+    2048,
+    4095,
+    4096
+  ],
+  "exhaustive_output_sha256": "8674ce8cc2d655c3ec963798b78be4a0e90e17f3d28cb90a6e22266cb9cbc407",
+  "all_4097_rare_counts_payload_delta_histogram_bytes": {
+    "0": 2305,
+    "-16": 1792
+  },
+  "fixed_buffer_bytes_per_tile": 4096,
+  "three_bitplane_bytes_per_tile": 1536,
+  "malformed_layouts_rejected": [
+    "short_fixed_buffer",
+    "short_bitplane",
+    "short_exception_buffer",
+    "wrong_warp_offset",
+    "wrong_exception_count"
+  ],
+  "limits": [
+    "This is an independently authored representation oracle, not a GPU decoder or speed result.",
+    "All BF16 patterns include signed zeros, subnormals, infinities and NaN payloads; no floats are cast.",
+    "The payload comparison holds the bitplanes fixed and excludes metadata, which must be accounted separately.",
+    "Actual checkpoint conversion and complete independent GPU reconstruction remain untested.",
+    "The intended GPU change would retain original K accumulation; exact arithmetic requires execution proof.",
+    "A fixed mantissa address removes a variable common-stream address, but does not prove that dependency limits performance.",
+    "Require NCU attribution and unprofiled interleaved timing against the pinned kernel, with both cache conditions and original gates."
+  ]
+}

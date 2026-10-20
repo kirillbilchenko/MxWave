@@ -1,0 +1,146 @@
+"""Independent CPU audit of complete routed-layer timing and retained BF16 outputs."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import pathlib
+import statistics
+
+
+def assess(report):
+    """Recompute prospective timing decisions without importing any GPU runtime."""
+    cases = []
+    for row in report['cases']:
+        if row['status'] != 'complete':
+            continue
+        samples = {}
+        assert len(row['timing']) == 32
+        for arm in ('current', 'native'):
+            entries = [r for r in row['timing'] if r['arm'] == arm]
+            assert [r['trial'] for r in entries] == list(range(16))
+            assert all(r['replays'] == 40 and math.isfinite(r['layer_ms'])
+                       and r['layer_ms'] > 0 for r in entries)
+            samples[arm] = [r['layer_ms'] for r in entries]
+        for trial in range(16):
+            expected = ['current', 'native'] if trial % 2 == 0 else ['native', 'current']
+            assert [r['arm'] for r in row['timing'][trial * 2:trial * 2 + 2]] == expected
+        medians = {arm: statistics.median(times) for arm, times in samples.items()}
+        ratio = statistics.median(samples['current'][8:]) / statistics.median(samples['current'][:8])
+        stable = abs(ratio - 1) <= .02
+        reduction = 1 - medians['native'] / medians['current']
+        passed = stable and reduction >= .15
+        assert row['control_stable'] == stable and row['layer_time_gate_passed'] == passed
+        assert math.isclose(row['time_reduction_fraction'], reduction, abs_tol=1e-14)
+        assert len(row['numerics']['current_repeats']) == 20
+        assert len(row['numerics']['native_repeat_metrics']) == 20
+        assert all(r['bitwise_exact'] for r in row['numerics']['current_repeats'])
+        cases.append(dict(tokens=row['tokens'], median_current_ms=medians['current'],
+                          median_native_ms=medians['native'], control_half_ratio=ratio,
+                          control_stable=stable, time_reduction_fraction=reduction,
+                          layer_time_gate_passed=passed))
+    complete = report['status'] == 'complete' and {c['tokens'] for c in cases} == {1, 8, 16, 256}
+    high = complete and all(c['layer_time_gate_passed'] for c in cases if c['tokens'] in (8, 16))
+    if complete:
+        assert report['high_concurrency_layer_time_gate_passed'] == high
+    return dict(evidence_complete=complete, cases=cases,
+                high_concurrency_layer_time_gate_passed=high,
+                full_model_KL_qualified=False, full_model_memory_qualified=False,
+                production_promotion=False)
+
+
+def verify(root, operands):
+    """Check every output byte and recompute numerical errors from retained tensors."""
+    import numpy as np
+    report = json.loads((root / 'report.json').read_bytes())
+    result = assess(report)
+    payloads = {}
+    source_bytes = (operands / 'manifest.json').read_bytes()
+    assert hashlib.sha256(source_bytes).hexdigest() == report['operand_manifest_sha256']
+    source = json.loads(source_bytes)
+    assert source['status'] == 'complete' and source['layer'] == 23
+    source_rows = {r['tokens']: r for r in source['rows']}
+    assert set(source_rows) == {1, 8, 16, 256}
+
+    def payload(record):
+        name = record['path']
+        assert pathlib.Path(name).name == name
+        path = root / name
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        assert len(raw) == record['bytes'] and digest == record['sha256']
+        payloads[name] = digest
+        return raw
+
+    def tensor(record):
+        assert record['dtype'] == 'torch.bfloat16'
+        raw = payload(record)
+        bits = np.frombuffer(raw, dtype='<u2').astype(np.uint32) << 16
+        return bits.view(np.float32).reshape(record['shape']).astype(np.float64)
+
+    def numerical(a, b):
+        finite = bool(np.isfinite(a).all() and np.isfinite(b).all())
+        delta = a - b
+        return dict(finite=finite, changed_values=int(np.count_nonzero(a != b)),
+                    values=a.size, max_abs=float(np.abs(delta).max()) if finite else None,
+                    relative_l2=float(np.linalg.norm(delta) / max(np.linalg.norm(b), 1e-30)) if finite else None,
+                    rms_error=float(np.sqrt(np.mean(delta * delta))) if finite else None,
+                    reference_rms=float(np.sqrt(np.mean(b * b))) if finite else None)
+
+    def compare(cpu, gpu):
+        for key, value in cpu.items():
+            if isinstance(value, float):
+                assert math.isclose(value, gpu[key], rel_tol=1e-5, abs_tol=1e-7), (key, value, gpu[key])
+            else:
+                assert value == gpu[key], (key, value, gpu[key])
+
+    numerics = []
+    for case in report['cases']:
+        records = case['numerics']
+        if 'current_output' not in records:
+            continue
+        expected = source_rows[case['tokens']]['tensors']['output']
+        assert records['captured_output']['sha256'] == expected['sha256']
+        assert records['current_output']['shape'] == expected['shape'] == [case['tokens'], 4096]
+        current = tensor(records['current_output'])
+        captured = tensor(records['captured_output'])
+        exact = payload(records['current_output']) == payload(records['captured_output'])
+        assert records['reference_reproducer_bitwise_exact'] == exact
+        compare(numerical(current, captured), records['captured_model_vs_replay'])
+        row = dict(tokens=case['tokens'], reference_reproducer_bitwise_exact=exact)
+        if 'native_first_output' in records:
+            first = tensor(records['native_first_output'])
+            row['native_vs_current'] = numerical(first, current)
+            compare(row['native_vs_current'], records['native_vs_current'])
+            repeats = []
+            for repeat in records.get('native_repeat_metrics', []):
+                value = tensor(repeat['payload'])
+                check = numerical(value, first)
+                compare(check, repeat)
+                repeats.append(dict(vs_first=check, vs_current=numerical(value, current),
+                                    bitwise_repeat=payload(repeat['payload']) == payload(records['native_first_output'])))
+            row['native_repeats'] = repeats
+            for repeat in records.get('current_repeats', []):
+                same = payload(repeat['payload']) == payload(records['current_output'])
+                assert repeat['bitwise_exact'] == same
+            if 'native_final_output' in records:
+                payload(records['native_final_output'])
+        if case.get('trace'):
+            payload(case['trace'])
+        numerics.append(row)
+    result.update(numerics=numerics, payloads=payloads,
+                  report_sha256=hashlib.sha256((root / 'report.json').read_bytes()).hexdigest(),
+                  CPU_numerical_metric_relative_tolerance=1e-5,
+                  CPU_numerical_metric_absolute_tolerance=1e-7,
+                  tolerances_are_audit_not_quality_thresholds=True)
+    return result
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', type=pathlib.Path, required=True)
+    parser.add_argument('--operands', type=pathlib.Path, required=True)
+    parser.add_argument('--output', type=pathlib.Path, required=True)
+    args = parser.parse_args()
+    args.output.write_text(json.dumps(verify(args.root, args.operands), indent=2, allow_nan=False) + '\n')

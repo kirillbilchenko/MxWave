@@ -1,0 +1,83 @@
+{
+  "status": "verified",
+  "controller_phase": "complete",
+  "original_service_restored": true,
+  "smoke_status": "passed",
+  "reviews": {
+    "timing": {
+      "controls_passed": false,
+      "candidates": {
+        "direct_pair": {
+          "decode_at_least_5_percent_faster": false,
+          "all_coupled_cases_within_2_percent": false,
+          "passed": false
+        },
+        "row_coalesced": {
+          "decode_at_least_5_percent_faster": false,
+          "all_coupled_cases_within_2_percent": false,
+          "passed": false
+        }
+      },
+      "pure_measurements": 4,
+      "coupled_measurements": 44,
+      "event_samples": 6656
+    }
+  },
+  "confirmed_component_winners": [],
+  "quality_qualified": false,
+  "verifier_sha256": "9e551a7682a754e765fbe89c15527a7d922839fa220616500d71ba175b9c55cf",
+  "source_files": 12,
+  "archive_sha256": "004472e31ba216790982307a5cf13152fd981432786f293c313994090ab630cb",
+  "outer_payloads": 36,
+  "native_payloads": 13,
+  "cross_host_review_bytes_equal": true,
+  "logical_payload_bandwidth": {
+    "interpretation": "Logical packed input plus padded output bytes divided by retained-event median; not measured DRAM traffic or matched copy bandwidth.",
+    "measurements": [
+      {
+        "case": "kda-input-l0-r0",
+        "cache": "warm",
+        "logical_payload_bytes": 176679640,
+        "logical_payload_GB_per_second": {
+          "qualified": 209.75956460041425,
+          "stock": 209.58439039064515,
+          "direct_pair": 209.27853759965586,
+          "row_coalesced": 206.02021501735908
+        }
+      },
+      {
+        "case": "kda-input-l0-r0",
+        "cache": "pressure",
+        "logical_payload_bytes": 176679640,
+        "logical_payload_GB_per_second": {
+          "qualified": 206.25495252989316,
+          "stock": 194.22516337998115,
+          "direct_pair": 191.04301880716946,
+          "row_coalesced": 204.8982206589967
+        }
+      },
+      {
+        "case": "kda-output-l0-r0",
+        "cache": "warm",
+        "logical_payload_bytes": 57364200,
+        "logical_payload_GB_per_second": {
+          "qualified": 203.621327928152,
+          "stock": 203.8818592698664,
+          "direct_pair": 200.316372649474,
+          "row_coalesced": 202.958537258297
+        }
+      },
+      {
+        "case": "kda-output-l0-r0",
+        "cache": "pressure",
+        "logical_payload_bytes": 57364200,
+        "logical_payload_GB_per_second": {
+          "qualified": 204.4515635910644,
+          "stock": 204.23028407906253,
+          "direct_pair": 196.56583740355867,
+          "row_coalesced": 204.45738921096068
+        }
+      }
+    ]
+  }
+}

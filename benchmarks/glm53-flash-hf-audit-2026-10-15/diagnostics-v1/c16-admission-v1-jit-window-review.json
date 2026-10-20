@@ -1,0 +1,2618 @@
+{
+  "status": "complete",
+  "source_sha256": "e1d800b4ca7b575ac1d613c8e3b40bd99dbc1602cdc00618f034ca114ab4d022",
+  "archive_sha256": "68499bcd530ef1a9ed337fa03ee1e90272f5c0ec0c099b8a9f7b64efbc236809",
+  "verified_inputs": [
+    {
+      "path": "results/c16-admission-plan.json",
+      "bytes": 39692,
+      "sha256": "b85013c785af0cd230f4739bb2faf527e495018f390dd4464b30e6a68716c9a4"
+    },
+    {
+      "path": "results/control-c16-admission.json",
+      "bytes": 12756900,
+      "sha256": "d677d37b6f5a3a77c3746b97fb38d79a858a4312a780585632883555155146a9"
+    },
+    {
+      "path": "engine-control-rank0.log",
+      "bytes": 244524,
+      "sha256": "77a9aa40c33f6622c014244d8dcd61fafcfa5c60cc45b28aad7e3e322b585d6e"
+    },
+    {
+      "path": "engine-control-rank1.log",
+      "bytes": 145035,
+      "sha256": "e4848ff5d6dd8e6f9d812575d80ef9323733301083d2b99ff2ca17779caae3f3"
+    },
+    {
+      "path": "results/candidate-c16-admission.json",
+      "bytes": 13153997,
+      "sha256": "bb83912f6fa69a76bc2c735da2dfe49846be5213e1bf48fdeaf0ecf4c6a8bcfa"
+    },
+    {
+      "path": "engine-candidate-rank0.log",
+      "bytes": 247683,
+      "sha256": "02bd1a6ed82d0a09ed66e599934080fda5131d4e995d39fcbb95fa6d7dcf226a"
+    },
+    {
+      "path": "engine-candidate-rank1.log",
+      "bytes": 146280,
+      "sha256": "43240bda8845ae50e62c6fad0fd8ef2cbbb51f3a22269ffdfdc620d0de47b8b2"
+    }
+  ],
+  "reviews": [
+    {
+      "arm": "control",
+      "rank": 0,
+      "recognized_log_events": 38,
+      "events_overlapping_timing_envelopes": 0,
+      "events_possibly_after_dispatch_startup": 6,
+      "events": [
+        {
+          "line": 336,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397014.0,
+          "epoch_upper_exclusive": 1792397015.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:03:34  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 337,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397019.0,
+          "epoch_upper_exclusive": 1792397020.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:03:39  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 338,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397020.0,
+          "epoch_upper_exclusive": 1792397021.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:03:40  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_post_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 339,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397021.0,
+          "epoch_upper_exclusive": 1792397022.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:03:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_post_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 385,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397037.0,
+          "epoch_upper_exclusive": 1792397038.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:03:57  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 386,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397042.0,
+          "epoch_upper_exclusive": 1792397043.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:02  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 387,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397043.0,
+          "epoch_upper_exclusive": 1792397044.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:03  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 388,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397044.0,
+          "epoch_upper_exclusive": 1792397045.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:04  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 389,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397044.0,
+          "epoch_upper_exclusive": 1792397045.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:04  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 390,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397049.0,
+          "epoch_upper_exclusive": 1792397050.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:09  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 391,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397051.0,
+          "epoch_upper_exclusive": 1792397052.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:11  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 392,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397052.0,
+          "epoch_upper_exclusive": 1792397053.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:12  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 393,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397052.0,
+          "epoch_upper_exclusive": 1792397053.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:12  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 394,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397057.0,
+          "epoch_upper_exclusive": 1792397058.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:04:17  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 475,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397135.0,
+          "epoch_upper_exclusive": 1792397136.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:05:35 [jit_monitor.py:135] TileLang JIT compilation during inference: mhc_pre_big_fuse_with_norm_tilelang. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 478,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397135.0,
+          "epoch_upper_exclusive": 1792397136.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:35  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 479,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397140.0,
+          "epoch_upper_exclusive": 1792397141.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:40  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 480,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397141.0,
+          "epoch_upper_exclusive": 1792397142.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 481,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397145.0,
+          "epoch_upper_exclusive": 1792397146.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:45  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 482,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397147.0,
+          "epoch_upper_exclusive": 1792397148.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:47  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 483,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397152.0,
+          "epoch_upper_exclusive": 1792397153.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:52  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 484,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397153.0,
+          "epoch_upper_exclusive": 1792397154.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:53  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 485,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397158.0,
+          "epoch_upper_exclusive": 1792397159.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:05:58  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 486,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397160.0,
+          "epoch_upper_exclusive": 1792397161.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:00  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 487,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397165.0,
+          "epoch_upper_exclusive": 1792397166.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:05  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 488,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397166.0,
+          "epoch_upper_exclusive": 1792397167.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:06  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 489,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397170.0,
+          "epoch_upper_exclusive": 1792397171.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:10  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 490,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397173.0,
+          "epoch_upper_exclusive": 1792397174.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:13  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 491,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397177.0,
+          "epoch_upper_exclusive": 1792397178.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:17  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 492,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397179.0,
+          "epoch_upper_exclusive": 1792397180.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:19  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 493,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397183.0,
+          "epoch_upper_exclusive": 1792397184.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:06:23  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 494,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397184.0,
+          "epoch_upper_exclusive": 1792397185.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:06:24 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _canonicalize. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 501,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397216.0,
+          "epoch_upper_exclusive": 1792397217.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:06:56 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 502,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397216.0,
+          "epoch_upper_exclusive": 1792397217.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:06:56 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_seed_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 503,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397217.0,
+          "epoch_upper_exclusive": 1792397218.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:06:57 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _sparse_mla_fwd_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 505,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397217.0,
+          "epoch_upper_exclusive": 1792397218.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:06:57 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 506,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397217.0,
+          "epoch_upper_exclusive": 1792397218.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:06:57 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _topk_log_softmax_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 564,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397336.0,
+          "epoch_upper_exclusive": 1792397337.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:08:56 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_softmax_rotate_write_cache_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        }
+      ],
+      "timing_envelopes": [
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792397700.8075306,
+          "end_epoch": 1792397713.5712028,
+          "measured_wall_seconds": 12.754711166024208
+        },
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792397713.6714315,
+          "end_epoch": 1792397726.4336767,
+          "measured_wall_seconds": 12.755077071022242
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792397726.5147645,
+          "end_epoch": 1792397730.8748085,
+          "measured_wall_seconds": 4.352277124999091
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792397730.9781196,
+          "end_epoch": 1792397735.310362,
+          "measured_wall_seconds": 4.32513553602621
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792397735.4145722,
+          "end_epoch": 1792397739.7244887,
+          "measured_wall_seconds": 4.302887903992087
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792397739.8601072,
+          "end_epoch": 1792397744.1929438,
+          "measured_wall_seconds": 4.325723849935457
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792397744.2796907,
+          "end_epoch": 1792397756.9892442,
+          "measured_wall_seconds": 12.701939538004808
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792397757.0793061,
+          "end_epoch": 1792397769.8513885,
+          "measured_wall_seconds": 12.76510687393602
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792397769.942729,
+          "end_epoch": 1792397782.8753722,
+          "measured_wall_seconds": 12.926092937006615
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792397782.9723172,
+          "end_epoch": 1792397795.6779969,
+          "measured_wall_seconds": 12.698994087986648
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792397795.7782786,
+          "end_epoch": 1792397800.0758307,
+          "measured_wall_seconds": 4.290246163029224
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792397800.206488,
+          "end_epoch": 1792397804.5563858,
+          "measured_wall_seconds": 4.342894886969589
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792397804.6728017,
+          "end_epoch": 1792397809.0539782,
+          "measured_wall_seconds": 4.374158233986236
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792397809.2030764,
+          "end_epoch": 1792397813.5628746,
+          "measured_wall_seconds": 4.352421537972987
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792397813.6714396,
+          "end_epoch": 1792397826.3401036,
+          "measured_wall_seconds": 12.661620463011786
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792397826.4476895,
+          "end_epoch": 1792397838.9039059,
+          "measured_wall_seconds": 12.449847269104794
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792397839.0144506,
+          "end_epoch": 1792397851.6716785,
+          "measured_wall_seconds": 12.64980608294718
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792397851.7889261,
+          "end_epoch": 1792397864.2897913,
+          "measured_wall_seconds": 12.494107656064443
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792397864.4367256,
+          "end_epoch": 1792397868.7197385,
+          "measured_wall_seconds": 4.276793093071319
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792397868.863391,
+          "end_epoch": 1792397873.158643,
+          "measured_wall_seconds": 4.286952955997549
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792397873.305619,
+          "end_epoch": 1792397877.59913,
+          "measured_wall_seconds": 4.285560569958761
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792397877.745633,
+          "end_epoch": 1792397882.0226195,
+          "measured_wall_seconds": 4.268701183027588
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792397882.1728294,
+          "end_epoch": 1792397894.7604067,
+          "measured_wall_seconds": 12.579538961988874
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792397894.941897,
+          "end_epoch": 1792397907.6618106,
+          "measured_wall_seconds": 12.712624188046902
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 3,
+          "start_epoch": 1792397907.8246868,
+          "end_epoch": 1792397920.4226625,
+          "measured_wall_seconds": 12.590252252994105
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 10,
+          "start_epoch": 1792397920.560121,
+          "end_epoch": 1792397933.2599015,
+          "measured_wall_seconds": 12.692374060978182
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 10,
+          "start_epoch": 1792397933.4038708,
+          "end_epoch": 1792397946.1193378,
+          "measured_wall_seconds": 12.708435053005815
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 3,
+          "start_epoch": 1792397946.2887213,
+          "end_epoch": 1792397959.082936,
+          "measured_wall_seconds": 12.787439554929733
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 3,
+          "start_epoch": 1792397959.2782419,
+          "end_epoch": 1792397972.189947,
+          "measured_wall_seconds": 12.905475792009383
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 10,
+          "start_epoch": 1792397972.3445709,
+          "end_epoch": 1792397984.9750323,
+          "measured_wall_seconds": 12.624166517984122
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 10,
+          "start_epoch": 1792397985.1629977,
+          "end_epoch": 1792397997.9230282,
+          "measured_wall_seconds": 12.752357604098506
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 3,
+          "start_epoch": 1792397998.0867343,
+          "end_epoch": 1792398010.9022818,
+          "measured_wall_seconds": 12.80791318404954
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 3,
+          "start_epoch": 1792398011.0923884,
+          "end_epoch": 1792398023.6643305,
+          "measured_wall_seconds": 12.5651732099941
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 10,
+          "start_epoch": 1792398023.837215,
+          "end_epoch": 1792398036.5157814,
+          "measured_wall_seconds": 12.671501915086992
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 10,
+          "start_epoch": 1792398036.695469,
+          "end_epoch": 1792398049.5876136,
+          "measured_wall_seconds": 12.88571637601126
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 3,
+          "start_epoch": 1792398049.789979,
+          "end_epoch": 1792398062.4567974,
+          "measured_wall_seconds": 12.659105825936422
+        }
+      ]
+    },
+    {
+      "arm": "control",
+      "rank": 1,
+      "recognized_log_events": 38,
+      "events_overlapping_timing_envelopes": 0,
+      "events_possibly_after_dispatch_startup": 6,
+      "events": [
+        {
+          "line": 70,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397014.0,
+          "epoch_upper_exclusive": 1792397015.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:03:34  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 71,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397019.0,
+          "epoch_upper_exclusive": 1792397020.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:03:39  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 72,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397020.0,
+          "epoch_upper_exclusive": 1792397021.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:03:40  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_post_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 73,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397021.0,
+          "epoch_upper_exclusive": 1792397022.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:03:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_post_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 80,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397037.0,
+          "epoch_upper_exclusive": 1792397038.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:03:57  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 81,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397042.0,
+          "epoch_upper_exclusive": 1792397043.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:02  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 82,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397042.0,
+          "epoch_upper_exclusive": 1792397043.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:02  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 83,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397043.0,
+          "epoch_upper_exclusive": 1792397044.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:03  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 84,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397043.0,
+          "epoch_upper_exclusive": 1792397044.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:03  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 85,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397048.0,
+          "epoch_upper_exclusive": 1792397049.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:08  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 86,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397051.0,
+          "epoch_upper_exclusive": 1792397052.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:11  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 87,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397052.0,
+          "epoch_upper_exclusive": 1792397053.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:12  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 88,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397052.0,
+          "epoch_upper_exclusive": 1792397053.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:12  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 89,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397057.0,
+          "epoch_upper_exclusive": 1792397058.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:04:17  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 98,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397135.0,
+          "epoch_upper_exclusive": 1792397136.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:05:35 [jit_monitor.py:135] TileLang JIT compilation during inference: mhc_pre_big_fuse_with_norm_tilelang. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 99,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397135.0,
+          "epoch_upper_exclusive": 1792397136.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:35  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 100,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397140.0,
+          "epoch_upper_exclusive": 1792397141.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:40  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 101,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397141.0,
+          "epoch_upper_exclusive": 1792397142.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 102,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397146.0,
+          "epoch_upper_exclusive": 1792397147.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:46  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 103,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397147.0,
+          "epoch_upper_exclusive": 1792397148.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:47  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 104,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397152.0,
+          "epoch_upper_exclusive": 1792397153.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:52  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 105,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397153.0,
+          "epoch_upper_exclusive": 1792397154.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:53  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 106,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397158.0,
+          "epoch_upper_exclusive": 1792397159.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:05:58  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 107,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397160.0,
+          "epoch_upper_exclusive": 1792397161.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:00  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 108,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397165.0,
+          "epoch_upper_exclusive": 1792397166.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:05  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 109,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397166.0,
+          "epoch_upper_exclusive": 1792397167.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:06  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 110,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397171.0,
+          "epoch_upper_exclusive": 1792397172.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:11  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 111,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397173.0,
+          "epoch_upper_exclusive": 1792397174.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:13  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 112,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397178.0,
+          "epoch_upper_exclusive": 1792397179.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:18  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 113,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792397179.0,
+          "epoch_upper_exclusive": 1792397180.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:19  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 114,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792397183.0,
+          "epoch_upper_exclusive": 1792397184.0,
+          "text": "(Worker_TP1 pid=175) 2026-10-19 08:06:23  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 115,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397184.0,
+          "epoch_upper_exclusive": 1792397185.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:06:24 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _canonicalize. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 116,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397216.0,
+          "epoch_upper_exclusive": 1792397217.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:06:56 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 117,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397216.0,
+          "epoch_upper_exclusive": 1792397217.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:06:56 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_seed_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 118,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397217.0,
+          "epoch_upper_exclusive": 1792397218.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:06:57 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _sparse_mla_fwd_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 120,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397217.0,
+          "epoch_upper_exclusive": 1792397218.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:06:57 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 121,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397217.0,
+          "epoch_upper_exclusive": 1792397218.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:06:57 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _topk_log_softmax_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 122,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792397336.0,
+          "epoch_upper_exclusive": 1792397337.0,
+          "text": "(Worker_TP1 pid=175) WARNING 10-19 08:08:56 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_softmax_rotate_write_cache_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        }
+      ],
+      "timing_envelopes": [
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792397700.8075306,
+          "end_epoch": 1792397713.5712028,
+          "measured_wall_seconds": 12.754711166024208
+        },
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792397713.6714315,
+          "end_epoch": 1792397726.4336767,
+          "measured_wall_seconds": 12.755077071022242
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792397726.5147645,
+          "end_epoch": 1792397730.8748085,
+          "measured_wall_seconds": 4.352277124999091
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792397730.9781196,
+          "end_epoch": 1792397735.310362,
+          "measured_wall_seconds": 4.32513553602621
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792397735.4145722,
+          "end_epoch": 1792397739.7244887,
+          "measured_wall_seconds": 4.302887903992087
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792397739.8601072,
+          "end_epoch": 1792397744.1929438,
+          "measured_wall_seconds": 4.325723849935457
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792397744.2796907,
+          "end_epoch": 1792397756.9892442,
+          "measured_wall_seconds": 12.701939538004808
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792397757.0793061,
+          "end_epoch": 1792397769.8513885,
+          "measured_wall_seconds": 12.76510687393602
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792397769.942729,
+          "end_epoch": 1792397782.8753722,
+          "measured_wall_seconds": 12.926092937006615
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792397782.9723172,
+          "end_epoch": 1792397795.6779969,
+          "measured_wall_seconds": 12.698994087986648
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792397795.7782786,
+          "end_epoch": 1792397800.0758307,
+          "measured_wall_seconds": 4.290246163029224
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792397800.206488,
+          "end_epoch": 1792397804.5563858,
+          "measured_wall_seconds": 4.342894886969589
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792397804.6728017,
+          "end_epoch": 1792397809.0539782,
+          "measured_wall_seconds": 4.374158233986236
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792397809.2030764,
+          "end_epoch": 1792397813.5628746,
+          "measured_wall_seconds": 4.352421537972987
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792397813.6714396,
+          "end_epoch": 1792397826.3401036,
+          "measured_wall_seconds": 12.661620463011786
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792397826.4476895,
+          "end_epoch": 1792397838.9039059,
+          "measured_wall_seconds": 12.449847269104794
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792397839.0144506,
+          "end_epoch": 1792397851.6716785,
+          "measured_wall_seconds": 12.64980608294718
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792397851.7889261,
+          "end_epoch": 1792397864.2897913,
+          "measured_wall_seconds": 12.494107656064443
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792397864.4367256,
+          "end_epoch": 1792397868.7197385,
+          "measured_wall_seconds": 4.276793093071319
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792397868.863391,
+          "end_epoch": 1792397873.158643,
+          "measured_wall_seconds": 4.286952955997549
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792397873.305619,
+          "end_epoch": 1792397877.59913,
+          "measured_wall_seconds": 4.285560569958761
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792397877.745633,
+          "end_epoch": 1792397882.0226195,
+          "measured_wall_seconds": 4.268701183027588
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792397882.1728294,
+          "end_epoch": 1792397894.7604067,
+          "measured_wall_seconds": 12.579538961988874
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792397894.941897,
+          "end_epoch": 1792397907.6618106,
+          "measured_wall_seconds": 12.712624188046902
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 3,
+          "start_epoch": 1792397907.8246868,
+          "end_epoch": 1792397920.4226625,
+          "measured_wall_seconds": 12.590252252994105
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 10,
+          "start_epoch": 1792397920.560121,
+          "end_epoch": 1792397933.2599015,
+          "measured_wall_seconds": 12.692374060978182
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 10,
+          "start_epoch": 1792397933.4038708,
+          "end_epoch": 1792397946.1193378,
+          "measured_wall_seconds": 12.708435053005815
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 3,
+          "start_epoch": 1792397946.2887213,
+          "end_epoch": 1792397959.082936,
+          "measured_wall_seconds": 12.787439554929733
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 3,
+          "start_epoch": 1792397959.2782419,
+          "end_epoch": 1792397972.189947,
+          "measured_wall_seconds": 12.905475792009383
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 10,
+          "start_epoch": 1792397972.3445709,
+          "end_epoch": 1792397984.9750323,
+          "measured_wall_seconds": 12.624166517984122
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 10,
+          "start_epoch": 1792397985.1629977,
+          "end_epoch": 1792397997.9230282,
+          "measured_wall_seconds": 12.752357604098506
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 3,
+          "start_epoch": 1792397998.0867343,
+          "end_epoch": 1792398010.9022818,
+          "measured_wall_seconds": 12.80791318404954
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 3,
+          "start_epoch": 1792398011.0923884,
+          "end_epoch": 1792398023.6643305,
+          "measured_wall_seconds": 12.5651732099941
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 10,
+          "start_epoch": 1792398023.837215,
+          "end_epoch": 1792398036.5157814,
+          "measured_wall_seconds": 12.671501915086992
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 10,
+          "start_epoch": 1792398036.695469,
+          "end_epoch": 1792398049.5876136,
+          "measured_wall_seconds": 12.88571637601126
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 3,
+          "start_epoch": 1792398049.789979,
+          "end_epoch": 1792398062.4567974,
+          "measured_wall_seconds": 12.659105825936422
+        }
+      ]
+    },
+    {
+      "arm": "candidate",
+      "rank": 0,
+      "recognized_log_events": 38,
+      "events_overlapping_timing_envelopes": 0,
+      "events_possibly_after_dispatch_startup": 6,
+      "events": [
+        {
+          "line": 380,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398581.0,
+          "epoch_upper_exclusive": 1792398582.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:29:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 381,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398586.0,
+          "epoch_upper_exclusive": 1792398587.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:29:46  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 382,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398587.0,
+          "epoch_upper_exclusive": 1792398588.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:29:47  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_post_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 383,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398587.0,
+          "epoch_upper_exclusive": 1792398588.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:29:47  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_post_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 429,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398604.0,
+          "epoch_upper_exclusive": 1792398605.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:04  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 430,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398609.0,
+          "epoch_upper_exclusive": 1792398610.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:09  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 431,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398610.0,
+          "epoch_upper_exclusive": 1792398611.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:10  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 432,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398610.0,
+          "epoch_upper_exclusive": 1792398611.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:10  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 433,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398611.0,
+          "epoch_upper_exclusive": 1792398612.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:11  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 434,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398615.0,
+          "epoch_upper_exclusive": 1792398616.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:15  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 435,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398617.0,
+          "epoch_upper_exclusive": 1792398618.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:17  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 436,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398618.0,
+          "epoch_upper_exclusive": 1792398619.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:18  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 437,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398618.0,
+          "epoch_upper_exclusive": 1792398619.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:18  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 438,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398623.0,
+          "epoch_upper_exclusive": 1792398624.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:30:23  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 519,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398683.0,
+          "epoch_upper_exclusive": 1792398684.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:31:23 [jit_monitor.py:135] TileLang JIT compilation during inference: mhc_pre_big_fuse_with_norm_tilelang. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 522,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398683.0,
+          "epoch_upper_exclusive": 1792398684.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:23  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 523,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398687.0,
+          "epoch_upper_exclusive": 1792398688.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:27  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 524,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398689.0,
+          "epoch_upper_exclusive": 1792398690.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:29  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 525,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398693.0,
+          "epoch_upper_exclusive": 1792398694.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:33  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 526,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398695.0,
+          "epoch_upper_exclusive": 1792398696.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:35  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 527,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398699.0,
+          "epoch_upper_exclusive": 1792398700.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:39  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 528,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398701.0,
+          "epoch_upper_exclusive": 1792398702.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 529,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398705.0,
+          "epoch_upper_exclusive": 1792398706.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:45  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 530,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398707.0,
+          "epoch_upper_exclusive": 1792398708.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:47  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 531,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398712.0,
+          "epoch_upper_exclusive": 1792398713.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:52  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 532,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398713.0,
+          "epoch_upper_exclusive": 1792398714.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:53  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 533,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398718.0,
+          "epoch_upper_exclusive": 1792398719.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:31:58  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 534,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398720.0,
+          "epoch_upper_exclusive": 1792398721.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:32:00  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 535,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398725.0,
+          "epoch_upper_exclusive": 1792398726.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:32:05  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 536,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398726.0,
+          "epoch_upper_exclusive": 1792398727.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:32:06  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 537,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398730.0,
+          "epoch_upper_exclusive": 1792398731.0,
+          "text": "(Worker_TP0 pid=215) 2026-10-19 08:32:10  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 538,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398732.0,
+          "epoch_upper_exclusive": 1792398733.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:32:12 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _canonicalize. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 545,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398763.0,
+          "epoch_upper_exclusive": 1792398764.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:32:43 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 546,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398763.0,
+          "epoch_upper_exclusive": 1792398764.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:32:43 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_seed_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 547,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398764.0,
+          "epoch_upper_exclusive": 1792398765.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:32:44 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _sparse_mla_fwd_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 549,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398765.0,
+          "epoch_upper_exclusive": 1792398766.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:32:45 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 550,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398765.0,
+          "epoch_upper_exclusive": 1792398766.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:32:45 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _topk_log_softmax_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 608,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398884.0,
+          "epoch_upper_exclusive": 1792398885.0,
+          "text": "(Worker_TP0 pid=215) WARNING 10-19 08:34:44 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_softmax_rotate_write_cache_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        }
+      ],
+      "timing_envelopes": [
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792399245.8538227,
+          "end_epoch": 1792399258.4034555,
+          "measured_wall_seconds": 12.543883092002943
+        },
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792399258.4803462,
+          "end_epoch": 1792399270.9836905,
+          "measured_wall_seconds": 12.497127025970258
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792399271.0682416,
+          "end_epoch": 1792399274.8959548,
+          "measured_wall_seconds": 3.820782906957902
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792399274.9830317,
+          "end_epoch": 1792399278.8337579,
+          "measured_wall_seconds": 3.844473115983419
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792399278.940571,
+          "end_epoch": 1792399282.7721217,
+          "measured_wall_seconds": 3.8249321499606594
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792399282.8895695,
+          "end_epoch": 1792399286.7191556,
+          "measured_wall_seconds": 3.8234380619833246
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792399286.8275921,
+          "end_epoch": 1792399299.260052,
+          "measured_wall_seconds": 12.426114724949002
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792399299.3807392,
+          "end_epoch": 1792399311.8217442,
+          "measured_wall_seconds": 12.434730626060627
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792399311.9190779,
+          "end_epoch": 1792399324.5441356,
+          "measured_wall_seconds": 12.617520249914378
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792399324.666826,
+          "end_epoch": 1792399337.0501883,
+          "measured_wall_seconds": 12.377088845008984
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792399337.1516457,
+          "end_epoch": 1792399340.9354942,
+          "measured_wall_seconds": 3.7781589209334925
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792399341.0407457,
+          "end_epoch": 1792399344.8228981,
+          "measured_wall_seconds": 3.777044274029322
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792399344.9761975,
+          "end_epoch": 1792399348.7550027,
+          "measured_wall_seconds": 3.7734191039344296
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792399348.889436,
+          "end_epoch": 1792399352.6569126,
+          "measured_wall_seconds": 3.761676451074891
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792399352.7680979,
+          "end_epoch": 1792399365.420282,
+          "measured_wall_seconds": 12.646654171985574
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792399365.534292,
+          "end_epoch": 1792399378.309473,
+          "measured_wall_seconds": 12.769443485070951
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792399378.4279068,
+          "end_epoch": 1792399391.1779628,
+          "measured_wall_seconds": 12.743769851978868
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792399391.3290136,
+          "end_epoch": 1792399403.7999008,
+          "measured_wall_seconds": 12.465104373986833
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792399403.947665,
+          "end_epoch": 1792399407.8036194,
+          "measured_wall_seconds": 3.8489421459380537
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792399407.932209,
+          "end_epoch": 1792399411.7847288,
+          "measured_wall_seconds": 3.846676270943135
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792399411.961027,
+          "end_epoch": 1792399415.8128128,
+          "measured_wall_seconds": 3.84409508400131
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792399415.9721406,
+          "end_epoch": 1792399419.808453,
+          "measured_wall_seconds": 3.830091668991372
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792399419.9615917,
+          "end_epoch": 1792399432.3680742,
+          "measured_wall_seconds": 12.400555429980159
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792399432.5013773,
+          "end_epoch": 1792399444.9507895,
+          "measured_wall_seconds": 12.44444809795823
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 3,
+          "start_epoch": 1792399445.1080267,
+          "end_epoch": 1792399457.5938096,
+          "measured_wall_seconds": 12.480405504000373
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 10,
+          "start_epoch": 1792399457.7641428,
+          "end_epoch": 1792399470.183909,
+          "measured_wall_seconds": 12.414391738013364
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 10,
+          "start_epoch": 1792399470.379393,
+          "end_epoch": 1792399482.7649448,
+          "measured_wall_seconds": 12.379519806941971
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 3,
+          "start_epoch": 1792399482.9449441,
+          "end_epoch": 1792399495.4769602,
+          "measured_wall_seconds": 12.526213701930828
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 3,
+          "start_epoch": 1792399495.6543133,
+          "end_epoch": 1792399508.2928338,
+          "measured_wall_seconds": 12.632298020995222
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 10,
+          "start_epoch": 1792399508.4554672,
+          "end_epoch": 1792399521.284009,
+          "measured_wall_seconds": 12.82451244792901
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 10,
+          "start_epoch": 1792399521.4903297,
+          "end_epoch": 1792399533.9405107,
+          "measured_wall_seconds": 12.445319106103852
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 3,
+          "start_epoch": 1792399534.1068172,
+          "end_epoch": 1792399546.740132,
+          "measured_wall_seconds": 12.62926692306064
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 3,
+          "start_epoch": 1792399546.9315917,
+          "end_epoch": 1792399559.4681423,
+          "measured_wall_seconds": 12.532486409065314
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 10,
+          "start_epoch": 1792399559.6406262,
+          "end_epoch": 1792399572.1352794,
+          "measured_wall_seconds": 12.488821487058885
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 10,
+          "start_epoch": 1792399572.3395858,
+          "end_epoch": 1792399584.7674322,
+          "measured_wall_seconds": 12.421818049042486
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 3,
+          "start_epoch": 1792399584.9762487,
+          "end_epoch": 1792399597.4383554,
+          "measured_wall_seconds": 12.4567473619245
+        }
+      ]
+    },
+    {
+      "arm": "candidate",
+      "rank": 1,
+      "recognized_log_events": 38,
+      "events_overlapping_timing_envelopes": 0,
+      "events_possibly_after_dispatch_startup": 6,
+      "events": [
+        {
+          "line": 114,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398581.0,
+          "epoch_upper_exclusive": 1792398582.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:29:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 115,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398586.0,
+          "epoch_upper_exclusive": 1792398587.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:29:46  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 116,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398587.0,
+          "epoch_upper_exclusive": 1792398588.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:29:47  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_post_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 117,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398588.0,
+          "epoch_upper_exclusive": 1792398589.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:29:48  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_post_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 124,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398604.0,
+          "epoch_upper_exclusive": 1792398605.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:04  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 125,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398609.0,
+          "epoch_upper_exclusive": 1792398610.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:09  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 126,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398610.0,
+          "epoch_upper_exclusive": 1792398611.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:10  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 127,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398610.0,
+          "epoch_upper_exclusive": 1792398611.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:10  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 128,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398611.0,
+          "epoch_upper_exclusive": 1792398612.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:11  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 129,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398615.0,
+          "epoch_upper_exclusive": 1792398616.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:15  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 130,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398617.0,
+          "epoch_upper_exclusive": 1792398618.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:17  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_fused_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 131,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398618.0,
+          "epoch_upper_exclusive": 1792398619.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:18  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_fused_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 132,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398619.0,
+          "epoch_upper_exclusive": 1792398620.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:19  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 133,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398623.0,
+          "epoch_upper_exclusive": 1792398624.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:30:23  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 142,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398683.0,
+          "epoch_upper_exclusive": 1792398684.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:31:23 [jit_monitor.py:135] TileLang JIT compilation during inference: mhc_pre_big_fuse_with_norm_tilelang. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 143,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398683.0,
+          "epoch_upper_exclusive": 1792398684.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:23  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 144,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398687.0,
+          "epoch_upper_exclusive": 1792398688.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:27  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 145,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398689.0,
+          "epoch_upper_exclusive": 1792398690.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:29  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 146,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398694.0,
+          "epoch_upper_exclusive": 1792398695.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:34  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 147,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398695.0,
+          "epoch_upper_exclusive": 1792398696.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:35  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 148,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398700.0,
+          "epoch_upper_exclusive": 1792398701.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:40  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 149,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398701.0,
+          "epoch_upper_exclusive": 1792398702.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:41  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 150,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398706.0,
+          "epoch_upper_exclusive": 1792398707.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:46  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 151,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398708.0,
+          "epoch_upper_exclusive": 1792398709.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:48  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 152,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398712.0,
+          "epoch_upper_exclusive": 1792398713.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:52  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 153,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398714.0,
+          "epoch_upper_exclusive": 1792398715.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:54  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 154,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398718.0,
+          "epoch_upper_exclusive": 1792398719.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:31:58  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 155,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398720.0,
+          "epoch_upper_exclusive": 1792398721.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:32:00  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 156,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398725.0,
+          "epoch_upper_exclusive": 1792398726.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:32:05  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 157,
+          "kind": "TileLang_compile_begin",
+          "epoch_floor": 1792398726.0,
+          "epoch_upper_exclusive": 1792398727.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:32:06  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:129): TileLang begins to compile kernel `mhc_pre_big_fuse_with_norm_tilelang` with `out_idx=None`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 158,
+          "kind": "TileLang_compile_end",
+          "epoch_floor": 1792398731.0,
+          "epoch_upper_exclusive": 1792398732.0,
+          "text": "(Worker_TP1 pid=174) 2026-10-19 08:32:11  [TileLang:tilelang.jit.kernel:INFO] (kernel.py:137): TileLang completes to compile kernel `mhc_pre_big_fuse_with_norm_tilelang`",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 159,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398732.0,
+          "epoch_upper_exclusive": 1792398733.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:32:12 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _canonicalize. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": false
+        },
+        {
+          "line": 160,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398763.0,
+          "epoch_upper_exclusive": 1792398764.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:32:43 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 161,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398763.0,
+          "epoch_upper_exclusive": 1792398764.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:32:43 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_tail_seed_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 162,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398764.0,
+          "epoch_upper_exclusive": 1792398765.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:32:44 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _sparse_mla_fwd_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 164,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398765.0,
+          "epoch_upper_exclusive": 1792398766.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:32:45 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 165,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398765.0,
+          "epoch_upper_exclusive": 1792398766.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:32:45 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _topk_log_softmax_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        },
+        {
+          "line": 166,
+          "kind": "monitored_JIT_warning",
+          "epoch_floor": 1792398884.0,
+          "epoch_upper_exclusive": 1792398885.0,
+          "text": "(Worker_TP1 pid=174) WARNING 10-19 08:34:44 [jit_monitor.py:135] Triton kernel JIT compilation during inference: _kpool_softmax_rotate_write_cache_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.",
+          "overlapping_timing_envelopes": [],
+          "possibly_after_dispatch_startup": true
+        }
+      ],
+      "timing_envelopes": [
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792399245.8538227,
+          "end_epoch": 1792399258.4034555,
+          "measured_wall_seconds": 12.543883092002943
+        },
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792399258.4803462,
+          "end_epoch": 1792399270.9836905,
+          "measured_wall_seconds": 12.497127025970258
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 3,
+          "start_epoch": 1792399271.0682416,
+          "end_epoch": 1792399274.8959548,
+          "measured_wall_seconds": 3.820782906957902
+        },
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "window_ms": 10,
+          "start_epoch": 1792399274.9830317,
+          "end_epoch": 1792399278.8337579,
+          "measured_wall_seconds": 3.844473115983419
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792399278.940571,
+          "end_epoch": 1792399282.7721217,
+          "measured_wall_seconds": 3.8249321499606594
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792399282.8895695,
+          "end_epoch": 1792399286.7191556,
+          "measured_wall_seconds": 3.8234380619833246
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 10,
+          "start_epoch": 1792399286.8275921,
+          "end_epoch": 1792399299.260052,
+          "measured_wall_seconds": 12.426114724949002
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "window_ms": 3,
+          "start_epoch": 1792399299.3807392,
+          "end_epoch": 1792399311.8217442,
+          "measured_wall_seconds": 12.434730626060627
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792399311.9190779,
+          "end_epoch": 1792399324.5441356,
+          "measured_wall_seconds": 12.617520249914378
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792399324.666826,
+          "end_epoch": 1792399337.0501883,
+          "measured_wall_seconds": 12.377088845008984
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 3,
+          "start_epoch": 1792399337.1516457,
+          "end_epoch": 1792399340.9354942,
+          "measured_wall_seconds": 3.7781589209334925
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "window_ms": 10,
+          "start_epoch": 1792399341.0407457,
+          "end_epoch": 1792399344.8228981,
+          "measured_wall_seconds": 3.777044274029322
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792399344.9761975,
+          "end_epoch": 1792399348.7550027,
+          "measured_wall_seconds": 3.7734191039344296
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792399348.889436,
+          "end_epoch": 1792399352.6569126,
+          "measured_wall_seconds": 3.761676451074891
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 10,
+          "start_epoch": 1792399352.7680979,
+          "end_epoch": 1792399365.420282,
+          "measured_wall_seconds": 12.646654171985574
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "window_ms": 3,
+          "start_epoch": 1792399365.534292,
+          "end_epoch": 1792399378.309473,
+          "measured_wall_seconds": 12.769443485070951
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792399378.4279068,
+          "end_epoch": 1792399391.1779628,
+          "measured_wall_seconds": 12.743769851978868
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792399391.3290136,
+          "end_epoch": 1792399403.7999008,
+          "measured_wall_seconds": 12.465104373986833
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 3,
+          "start_epoch": 1792399403.947665,
+          "end_epoch": 1792399407.8036194,
+          "measured_wall_seconds": 3.8489421459380537
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "window_ms": 10,
+          "start_epoch": 1792399407.932209,
+          "end_epoch": 1792399411.7847288,
+          "measured_wall_seconds": 3.846676270943135
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792399411.961027,
+          "end_epoch": 1792399415.8128128,
+          "measured_wall_seconds": 3.84409508400131
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792399415.9721406,
+          "end_epoch": 1792399419.808453,
+          "measured_wall_seconds": 3.830091668991372
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 10,
+          "start_epoch": 1792399419.9615917,
+          "end_epoch": 1792399432.3680742,
+          "measured_wall_seconds": 12.400555429980159
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "window_ms": 3,
+          "start_epoch": 1792399432.5013773,
+          "end_epoch": 1792399444.9507895,
+          "measured_wall_seconds": 12.44444809795823
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 3,
+          "start_epoch": 1792399445.1080267,
+          "end_epoch": 1792399457.5938096,
+          "measured_wall_seconds": 12.480405504000373
+        },
+        {
+          "case": "c16-short",
+          "repeat": 6,
+          "window_ms": 10,
+          "start_epoch": 1792399457.7641428,
+          "end_epoch": 1792399470.183909,
+          "measured_wall_seconds": 12.414391738013364
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 10,
+          "start_epoch": 1792399470.379393,
+          "end_epoch": 1792399482.7649448,
+          "measured_wall_seconds": 12.379519806941971
+        },
+        {
+          "case": "c16-short",
+          "repeat": 7,
+          "window_ms": 3,
+          "start_epoch": 1792399482.9449441,
+          "end_epoch": 1792399495.4769602,
+          "measured_wall_seconds": 12.526213701930828
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 3,
+          "start_epoch": 1792399495.6543133,
+          "end_epoch": 1792399508.2928338,
+          "measured_wall_seconds": 12.632298020995222
+        },
+        {
+          "case": "c16-short",
+          "repeat": 8,
+          "window_ms": 10,
+          "start_epoch": 1792399508.4554672,
+          "end_epoch": 1792399521.284009,
+          "measured_wall_seconds": 12.82451244792901
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 10,
+          "start_epoch": 1792399521.4903297,
+          "end_epoch": 1792399533.9405107,
+          "measured_wall_seconds": 12.445319106103852
+        },
+        {
+          "case": "c16-short",
+          "repeat": 9,
+          "window_ms": 3,
+          "start_epoch": 1792399534.1068172,
+          "end_epoch": 1792399546.740132,
+          "measured_wall_seconds": 12.62926692306064
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 3,
+          "start_epoch": 1792399546.9315917,
+          "end_epoch": 1792399559.4681423,
+          "measured_wall_seconds": 12.532486409065314
+        },
+        {
+          "case": "c16-short",
+          "repeat": 10,
+          "window_ms": 10,
+          "start_epoch": 1792399559.6406262,
+          "end_epoch": 1792399572.1352794,
+          "measured_wall_seconds": 12.488821487058885
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 10,
+          "start_epoch": 1792399572.3395858,
+          "end_epoch": 1792399584.7674322,
+          "measured_wall_seconds": 12.421818049042486
+        },
+        {
+          "case": "c16-short",
+          "repeat": 11,
+          "window_ms": 3,
+          "start_epoch": 1792399584.9762487,
+          "end_epoch": 1792399597.4383554,
+          "measured_wall_seconds": 12.4567473619245
+        }
+      ]
+    }
+  ],
+  "no_recognized_JIT_event_overlaps_timed_envelopes": true,
+  "new_GPU_experiment": false,
+  "original_measurements_or_gates_changed": false,
+  "limits": [
+    "Only recognized TileLang/compiler-monitor messages are classified; absence is not proof against unlogged compilation.",
+    "Timestamps use the experiment UTC log convention and one-second uncertainty.",
+    "Timing envelopes include before/after telemetry RPCs; an overlap is a candidate for investigation, not proof of a measured-request stall.",
+    "Compiler begin/end/warning entries are separate log events, not counts of unique compilations.",
+    "Dispatch cache stability is independently checked by the frozen model review."
+  ]
+}

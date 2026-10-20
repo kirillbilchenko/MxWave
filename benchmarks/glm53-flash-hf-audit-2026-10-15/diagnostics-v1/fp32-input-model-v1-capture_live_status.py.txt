@@ -1,0 +1,54 @@
+"""Read only the existing controller; never launch or restart model work."""
+from __future__ import annotations
+import json
+import pathlib
+import shlex
+import subprocess
+import time
+
+BASE = pathlib.Path(__file__).parent
+REMOTE = '''import json,pathlib,time,collections
+r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+s=json.loads((r/'quality-model-controller-fp32inputmodelv1.json').read_bytes())
+c=json.loads((r/'fp32-input-model-v1-evidence-check.json').read_bytes())
+paths=list((r/'run-fp32inputmodelv1/results').glob('*'))
+live=[]
+for pid in [1258388,1258389,1262165]:
+ p=pathlib.Path(f'/proc/{pid}/stat')
+ live.append({'pid':pid,'state':p.read_text().split(')',1)[1].split()[0] if p.exists() else 'absent'})
+arms=[]
+for name in ['control','candidate']:
+ p=r/f'run-fp32inputmodelv1/results/{name}-warmed-model.json'
+ if p.exists():
+  d=json.loads(p.read_bytes())
+  arms.append({'arm':name,'status':d.get('status'),'quality_groups':len(d.get('quality',[])),
+               'timing_groups':len(d.get('timing',[])),'profiles':len(d.get('profiles',[]))})
+print(json.dumps({'checked_epoch':time.time(),'phase':s.get('phase'),
+ 'service_paused':s.get('service_paused'),'watchdog_pid':1262165,'error':s.get('error'),
+ 'updated_epoch':s.get('updated_epoch'),'collector_status':c.get('status'),
+ 'live_processes':live,'file_counts':dict(collections.Counter(p.suffix for p in paths)),
+ 'completed_quality_reports':sorted(p.name for p in paths if p.name.endswith('decode-quality.json')),
+ 'arm_results':arms,'newest_payload_epoch':max(p.stat().st_mtime for p in paths)},indent=2))
+'''
+
+
+def main():
+    raw = subprocess.check_output(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10',
+                                   'spark', shlex.join(['python3', '-c', REMOTE])], timeout=30)
+    status = json.loads(raw)
+    path = BASE / f'live-{int(status["checked_epoch"])}.json'
+    with path.open('x') as stream:
+        json.dump(status, stream, indent=2)
+        stream.write('\n')
+    latest = BASE / 'latest-live-status.json'
+    if latest.exists():
+        previous = json.loads(latest.read_bytes())
+        keep = BASE / f'live-{int(previous["checked_epoch"])}.json'
+        if not keep.exists():
+            keep.write_bytes(latest.read_bytes())
+    latest.write_bytes(path.read_bytes())
+    print(json.dumps(status, indent=2))
+
+
+if __name__ == '__main__':
+    main()

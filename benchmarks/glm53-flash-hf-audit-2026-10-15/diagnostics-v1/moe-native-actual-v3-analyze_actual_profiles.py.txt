@@ -1,0 +1,59 @@
+"""Attribute retained component graph kernels to their exact host launch ranges."""
+from __future__ import annotations
+import collections
+import hashlib
+import json
+import pathlib
+import re
+
+base=pathlib.Path(__file__).parent
+root=base/'actual-evidence/rank1'
+report=json.loads((root/'report.json').read_bytes())
+rows=[]
+for case in report['cases']:
+    if not case.get('trace'):continue
+    meta=case['trace'];path=root/meta['path'];raw=path.read_bytes()
+    assert hashlib.sha256(raw).hexdigest()==meta['sha256']and len(raw)==meta['bytes']
+    events=json.loads(raw)['traceEvents']
+    ranges=[]
+    for event in events:
+        match=re.fullmatch(r'mxwave_layer23_m(\d+)_(current|native)',event.get('name',''))
+        if match and event.get('cat')=='user_annotation':
+            assert int(match[1])==case['tokens']
+            ranges.append(dict(arm=match[2],pid=event['pid'],tid=event['tid'],
+                start=event['ts'],end=event['ts']+event['dur'],graph_launches=0,kernels=[]))
+    assert {r['arm']for r in ranges}=={'current','native'}and len(ranges)==2
+    launches={}
+    for event in events:
+        if event.get('cat')not in ('cuda_runtime','cuda_driver'):continue
+        corr=event.get('args',{}).get('correlation')
+        if corr is None:continue
+        owners=[i for i,r in enumerate(ranges)if (r['pid'],r['tid'])==(event['pid'],event['tid'])
+                and r['start']<=event['ts']<=r['end']]
+        assert len(owners)<=1 and corr not in launches
+        launches[corr]=owners[0]if owners else None
+        if owners and event.get('name','').startswith('cudaGraphLaunch'):
+            ranges[owners[0]]['graph_launches']+=1
+    unassigned=[]
+    for event in events:
+        if event.get('cat')not in ('kernel','gpu_memset','gpu_memcpy'):continue
+        owner=launches.get(event.get('args',{}).get('correlation'))
+        (unassigned if owner is None else ranges[owner]['kernels']).append(event)
+    for item in ranges:
+        assert item['graph_launches']==1 and item['kernels']
+        grouped=collections.defaultdict(lambda:dict(calls=0,duration_sum_us=0.0))
+        for event in item['kernels']:
+            key=(event['cat'],event['name'])
+            grouped[key]['calls']+=1;grouped[key]['duration_sum_us']+=event['dur']
+        rows.append(dict(tokens=case['tokens'],arm=item['arm'],graph_launches=item['graph_launches'],
+            kernel_duration_sum_us=sum(e['dur']for e in item['kernels']if e['cat']=='kernel'),
+            first_to_last_GPU_event_span_us=max(e['ts']+e['dur']for e in item['kernels'])-min(e['ts']for e in item['kernels']),
+            groups=[dict(category=k[0],name=k[1],**v)for k,v in grouped.items()],
+            trace_sha256=meta['sha256'],unassigned_GPU_events=len(unassigned)))
+result=dict(status='complete',rows=rows,
+    source_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+    report_sha256=hashlib.sha256((root/'report.json').read_bytes()).hexdigest(),
+    limits=['One profiled graph replay per arm/shape; speed comes from the separate unprofiled trials.',
+            'Kernel sums and GPU spans are component diagnostics, not model latency or throughput.'])
+(base/'actual-profile-review.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps([{k:v for k,v in row.items()if k!='groups'}for row in rows]))

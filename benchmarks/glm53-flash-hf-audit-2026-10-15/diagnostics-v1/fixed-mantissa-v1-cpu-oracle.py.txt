@@ -1,0 +1,178 @@
+"""CPU oracle for a fixed sign/mantissa stream plus rare exponent bytes.
+
+This independently authored representation experiment preserves BF16 bit
+patterns. It does not replace or invoke the current GPU kernel. A 64-row by
+64-column tile retains three exponent bitplanes; each logical position has
+one fixed sign/mantissa byte, while code zero reads a separate exponent byte.
+"""
+
+from __future__ import annotations
+
+import dataclasses
+import hashlib
+import json
+import pathlib
+
+import numpy as np
+
+
+@dataclasses.dataclass(frozen=True)
+class Tile:
+    """Immutable CPU tile, with little-endian bitplanes and explicit rare count."""
+
+    base: int
+    sign_mantissa: bytes
+    planes: tuple[bytes, bytes, bytes]
+    rare_exponents: bytes
+    rare_count: int
+    warp_rare_offsets: tuple[int, int, int, int]
+
+
+def native_order(bits: np.ndarray) -> np.ndarray:
+    """Map one 64x64 tile to four 16x64 warp groups and column-first 8x8 pairs."""
+    if bits.dtype != np.dtype('<u2') or bits.shape != (64, 64):
+        raise ValueError('Require one little-endian 64x64 BF16 bit-pattern tile')
+    return bits.reshape(4, 2, 8, 4, 2, 8).transpose(0, 3, 4, 1, 2, 5).reshape(-1)
+
+
+def matrix_order(ordered: np.ndarray) -> np.ndarray:
+    """Invert the register-load ordering without floating-point arithmetic."""
+    return ordered.reshape(4, 4, 2, 2, 8, 8).transpose(0, 3, 4, 1, 2, 5).reshape(64, 64)
+
+
+def pack(bits: np.ndarray, base: int) -> Tile:
+    """Encode all positions exactly; seven consecutive exponents use codes 1..7."""
+    if not 0 <= base <= 248:
+        raise ValueError('The exponent base must leave seven valid uint8 codes')
+    ordered = native_order(bits)
+    exponents = ((ordered >> 7) & 255).astype(np.uint8)
+    common = (exponents.astype(np.int16) > base) & (exponents.astype(np.int16) <= base + 7)
+    codes = np.where(common, exponents.astype(np.int16) - base, 0).astype(np.uint8)
+    mantissas = (((ordered >> 8) & 128) | (ordered & 127)).astype(np.uint8)
+    positions = np.left_shift(np.uint64(1), np.arange(64, dtype=np.uint64))
+    planes = tuple(np.bitwise_or.reduce(
+        (((codes.reshape(64, 64) >> shift) & 1).astype(np.uint64) * positions),
+        axis=1).astype('<u8').tobytes() for shift in range(3))
+    rare = exponents[~common].tobytes()
+    counts = (~common).reshape(4, 1024).sum(axis=1).tolist()
+    offsets = (0, counts[0], counts[0] + counts[1], counts[0] + counts[1] + counts[2])
+    return Tile(base, mantissas.tobytes(), planes, rare + bytes((-len(rare)) % 16),
+                len(rare), offsets)
+
+
+def unpack(tile: Tile) -> np.ndarray:
+    """Independently reconstruct a tile from its bytes and validate every address bound."""
+    if len(tile.sign_mantissa) != 4096 or any(len(p) != 512 for p in tile.planes):
+        raise ValueError('Fixed tile buffers have invalid dimensions')
+    if not 0 <= tile.base <= 248 or not 0 <= tile.rare_count <= 4096:
+        raise ValueError('Invalid base or exception count')
+    if len(tile.rare_exponents) != (tile.rare_count + 15) // 16 * 16:
+        raise ValueError('Rare byte buffer must have exact 16-byte padding')
+    if any(tile.rare_exponents[tile.rare_count:]):
+        raise ValueError('Padding bytes must be canonical zero')
+    planes = [np.frombuffer(p, dtype='<u8') for p in tile.planes]
+    ordered = np.empty(4096, dtype='<u2')
+    rare_index = 0
+    for bitmap_index in range(64):
+        if bitmap_index % 16 == 0:
+            if tile.warp_rare_offsets[bitmap_index // 16] != rare_index:
+                raise ValueError('Warp exception offset differs from the decoded prefix')
+        for position in range(64):
+            code = sum(((int(planes[shift][bitmap_index]) >> position) & 1) << shift
+                       for shift in range(3))
+            if code:
+                exponent = tile.base + code
+            else:
+                if rare_index >= tile.rare_count:
+                    raise ValueError('Exception read exceeds the declared valid region')
+                exponent = tile.rare_exponents[rare_index]
+                rare_index += 1
+            index = bitmap_index * 64 + position
+            mantissa = tile.sign_mantissa[index]
+            ordered[index] = ((mantissa & 128) << 8) | (exponent << 7) | (mantissa & 127)
+    if rare_index != tile.rare_count:
+        raise ValueError('Unused declared exception bytes')
+    return matrix_order(ordered)
+
+
+def main() -> None:
+    """Check every BF16 bit pattern, mixed exceptions, order, bounds and payload arithmetic."""
+    # A loop-defined coordinate map independently checks the vectorized layout.
+    ids = np.arange(4096, dtype='<u2').reshape(64, 64)
+    reference = [ids[warp * 16 + rh * 8 + r, kg * 16 + ch * 8 + c]
+                 for warp in range(4) for kg in range(4) for ch in range(2)
+                 for rh in range(2) for r in range(8) for c in range(8)]
+    assert np.array_equal(native_order(ids), reference)
+    assert np.array_equal(matrix_order(native_order(ids)), ids)
+    patterns = np.arange(65536, dtype='<u2').reshape(16, 64, 64)
+    tested, digest = 0, hashlib.sha256()
+    for base in (0, 64, 120, 248):
+        for bits in patterns:
+            result = unpack(pack(bits, base))
+            assert np.array_equal(result, bits)
+            digest.update(result.tobytes())
+            tested += 1
+    rng = np.random.default_rng(1729)
+    count_cases = (0, 1, 7, 8, 9, 15, 16, 17, 1023, 1024, 2048, 4095, 4096)
+    for count in count_cases:
+        exponents = rng.integers(121, 128, size=4096, dtype=np.uint16)
+        chosen = rng.permutation(4096)[:count]
+        exponents[chosen] = rng.integers(0, 121, size=count, dtype=np.uint16)
+        low = rng.integers(0, 128, size=4096, dtype=np.uint16)
+        signs = rng.integers(0, 2, size=4096, dtype=np.uint16)
+        bits = ((signs << 15) | (exponents << 7) | low).reshape(64, 64).astype('<u2')
+        tile = pack(bits, 120)
+        assert tile.rare_count == count and np.array_equal(unpack(tile), bits)
+        tested += 1
+    # For a 4096-word tile, the old streams pad common bytes to 16 and rare
+    # BF16 words to eight. The new fixed bytes plus rare U8 padding never grow.
+    delta_counts = {}
+    for rare in range(4097):
+        old = ((4096 - rare + 15) // 16 * 16) + ((rare + 7) // 8 * 8 * 2)
+        new = 4096 + (rare + 15) // 16 * 16
+        assert new <= old
+        delta_counts[str(new - old)] = delta_counts.get(str(new - old), 0) + 1
+    original = pack(patterns[0], 120)
+    rejected = []
+    mutations = {
+        'short_fixed_buffer': dataclasses.replace(original, sign_mantissa=original.sign_mantissa[:-1]),
+        'short_bitplane': dataclasses.replace(original, planes=(original.planes[0][:-1], *original.planes[1:])),
+        'short_exception_buffer': dataclasses.replace(original, rare_exponents=original.rare_exponents[:-1]),
+        'wrong_warp_offset': dataclasses.replace(original, warp_rare_offsets=(0, 0, 0, 0)),
+        'wrong_exception_count': dataclasses.replace(original, rare_count=original.rare_count - 1),
+    }
+    for name, bad in mutations.items():
+        try:
+            unpack(bad)
+        except ValueError:
+            rejected.append(name)
+        else:
+            raise AssertionError(f'Invalid layout accepted: {name}')
+    report = {
+        'status': 'CPU_oracle_passed',
+        'source_sha256': hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+        'GPU_experiment_run': False, 'runtime_changed': False,
+        'all_65536_BF16_patterns_checked_at_bases': [0, 64, 120, 248],
+        'tile_cases': tested, 'rare_count_stress_cases': list(count_cases),
+        'exhaustive_output_sha256': digest.hexdigest(),
+        'all_4097_rare_counts_payload_delta_histogram_bytes': delta_counts,
+        'fixed_buffer_bytes_per_tile': 4096, 'three_bitplane_bytes_per_tile': 1536,
+        'malformed_layouts_rejected': rejected,
+        'limits': [
+            'This is an independently authored representation oracle, not a GPU decoder or speed result.',
+            'All BF16 patterns include signed zeros, subnormals, infinities and NaN payloads; no floats are cast.',
+            'The payload comparison holds the bitplanes fixed and excludes metadata, which must be accounted separately.',
+            'Actual checkpoint conversion and complete independent GPU reconstruction remain untested.',
+            'The intended GPU change would retain original K accumulation; exact arithmetic requires execution proof.',
+            'A fixed mantissa address removes a variable common-stream address, but does not prove that dependency limits performance.',
+            'Require NCU attribution and unprofiled interleaved timing against the pinned kernel, with both cache conditions and original gates.',
+        ],
+    }
+    path = pathlib.Path(__file__).with_name('fixed-mantissa-oracle-review.json')
+    assert not path.exists()
+    path.write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report))
+
+
+if __name__ == '__main__':
+    main()

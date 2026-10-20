@@ -1,0 +1,63 @@
+"""Review all ordinary admission trials and request timing after independent verification."""
+from __future__ import annotations
+import hashlib,json,pathlib,statistics,math
+BASE=pathlib.Path(__file__).parent
+ROOT=BASE/'evidence'
+
+def sha(p):
+    with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+    proof=json.loads((BASE/'cross-host-verification.json').read_bytes())
+    assert proof['status']=='passed' and proof['measurement_complete']
+    hashes={r['path']:r['sha256'] for r in json.loads((ROOT/'evidence-inventory.json').read_bytes())['files']}
+    reviewed=json.loads((BASE/'compact-review.json').read_bytes())
+    trials=[]
+    for arm in ('control','candidate'):
+        path=ROOT/f'results/{arm}-c16-admission.json'
+        assert sha(path)==hashes[str(path.relative_to(ROOT))]
+        data=json.loads(path.read_bytes())
+        for trial in data['timing']:
+            measurement=trial['measurement'];requests=measurement['requests']
+            assert len(requests)==trial['concurrency']
+            assert measurement['stagger_between_requests_ms']==0
+            for index,r in enumerate(requests):
+                assert r['request_index']==index and r['usage']['prompt_tokens']==256
+                assert r['usage']['completion_tokens']==len(r['token_ids'])==64
+                assert math.isclose(r['arrivals'][0]['seconds'],r['ttft_seconds'],abs_tol=1e-9)
+                assert sum(a['tokens'] for a in r['arrivals'])==64
+            ttft=[r['ttft_seconds'] for r in requests]
+            assert math.isclose(statistics.median(ttft),measurement['median_ttft_seconds'],abs_tol=1e-9)
+            events=trial['admission']['events']
+            assert events and all(not e['deadline_extended'] and e['window_ms']==trial['window_ms'] for e in events)
+            trials.append({'arm':arm,'case':trial['case'],'repeat':trial['repeat'],'window_ms':trial['window_ms'],
+                'TPS':measurement['aggregate_tokens_per_second'],'median_TTFT_seconds':statistics.median(ttft),
+                'mean_TTFT_seconds':statistics.mean(ttft),'max_TTFT_seconds':max(ttft),
+                'request_start_offsets_seconds':[r['request_start_offset_seconds'] for r in requests],
+                'request_TTFT_seconds':ttft,'first_cohort_requests':events[0]['final_requests'],
+                'first_cohort_prompt_tokens':events[0]['final_prompt_tokens'],
+                'first_cohort_end_reason':events[0]['end_reason'],'admission_events':events})
+    assert len(trials)==72
+    assert sum(len(r['request_TTFT_seconds']) for r in trials)==792
+    summaries=[]
+    for expected in reviewed['summaries']:
+        selected=[r for r in trials if all(r[k]==expected[k] for k in ('arm','case','window_ms'))]
+        assert len(selected)==expected['trials']
+        assert statistics.median(r['TPS'] for r in selected)==expected['median_tps']
+        assert statistics.median(r['median_TTFT_seconds'] for r in selected)==expected['median_ttft_seconds']
+        summaries.append({**expected,'first_cohorts':[r['first_cohort_requests'] for r in selected],
+            'first_budget_filled_trials':sum(r['first_cohort_prompt_tokens']>=2048 for r in selected),
+            'median_trial_mean_TTFT_seconds':statistics.median(r['mean_TTFT_seconds'] for r in selected),
+            'minimum_trial_median_TTFT_seconds':min(r['median_TTFT_seconds'] for r in selected),
+            'maximum_trial_median_TTFT_seconds':max(r['median_TTFT_seconds'] for r in selected)})
+    out={'status':'complete','source_sha256':sha(pathlib.Path(__file__)),
+        'archive_sha256':proof['archive_sha256'],'all_trials_included':True,
+        'timed_groups':72,'timed_requests':792,'summaries':summaries,'trials':trials,
+        'limits':['First cohorts describe the observed idle collection, not causal proof of the TTFT change.',
+            'Request timings within a group and token arrivals within a request are dependent.',
+            'Profiles are separate from these ordinary timing trials.',
+            'Both arm loads have fixed stock-then-compressed order.']}
+    (BASE/'admission-latency-review.json').write_text(json.dumps(out,indent=2)+'\n')
+    print(json.dumps({'status':'complete','summaries':summaries}))
+
+if __name__=='__main__':main()

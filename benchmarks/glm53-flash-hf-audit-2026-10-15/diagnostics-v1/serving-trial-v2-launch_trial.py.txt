@@ -1,0 +1,21 @@
+"""Stage the finite controller and start the already authorized serving comparison."""
+from __future__ import annotations
+import hashlib,json,pathlib,shlex,subprocess,time
+
+b=pathlib.Path(__file__).parent
+root='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/serving-trial-v2'
+payload=(b/'control_trial.py').read_bytes();digest=hashlib.sha256(payload).hexdigest()
+program=r'''
+import hashlib,json,pathlib,subprocess,sys,time
+r=pathlib.Path(sys.argv[1]);data=sys.stdin.buffer.read();assert hashlib.sha256(data).hexdigest()==sys.argv[2]
+p=r/'control_trial.py';assert not p.exists()and not(r/'controller.json').exists()
+p.open('xb').write(data)
+prepared=json.loads((r/'prepared.json').read_bytes());assert prepared['status']=='passed'
+with(r/'controller.log').open('xb')as out:
+ child=subprocess.Popen(['python3','-S','-B','-u',str(p)],stdin=subprocess.DEVNULL,stdout=out,stderr=subprocess.STDOUT,start_new_session=True)
+receipt=dict(pid=child.pid,started_epoch=time.time(),controller_sha256=sys.argv[2],
+ prepared_sha256=hashlib.sha256((r/'prepared.json').read_bytes()).hexdigest())
+(r/'launch.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','spark',shlex.join(['python3','-S','-B','-c',program,root,digest])],input=payload,timeout=30)
+(b/'launch.json').write_bytes(raw);print(raw.decode())

@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "verified_payloads": 333,
+  "source_files": 169,
+  "controller_phase": "failed_restored",
+  "original_identities_restored": true,
+  "original_health": 200,
+  "quality_qualified": false,
+  "measurement_completed": false,
+  "retained_error": "RuntimeError('candidate engine exited during startup')",
+  "control_timed_requests": 10,
+  "control_timed_tokens": 640,
+  "control_workloads": [
+    {
+      "prompt_tokens": 256,
+      "median_tps": 16.76803457536886
+    },
+    {
+      "prompt_tokens": 2048,
+      "median_tps": 13.961098748705416
+    }
+  ],
+  "control_repeat": {
+    "reference": "control-a",
+    "candidate": "control-b",
+    "decode_steps": 48,
+    "expected_decode_steps": 48,
+    "all_generated_ids_match": true,
+    "mean_decode_kl": 1.1901962e-05,
+    "mean_decode_nll_difference": 2.29481e-05,
+    "passed": false
+  },
+  "archive_sha256": "cdfdeb55b386bd714d07707a5ba00e70b5a0ae941ab22c501a6e9194d465cdb2",
+  "spark_mac_reviews_byte_equal": true
+}

@@ -1,0 +1,24 @@
+"""Summarize all retained paired conditions; failed controls remain explicit."""
+import collections,hashlib,json,pathlib,statistics,time
+b=pathlib.Path(__file__).parent;r=b/'evidence';proof=json.loads((b/'cross-host-verification.json').read_bytes());assert proof['status']=='passed' and proof['all_decisions_identical'] and proof['diagnostic_complete']
+groups=collections.defaultdict(list);failed=[];telemetry={};peaks={};reports={}
+for rank in (0,1):
+ path=r/f'rank{rank}-timing-report.json';report=json.loads(path.read_bytes());reports[str(rank)]=hashlib.sha256(path.read_bytes()).hexdigest();peaks[str(rank)]=report['CUDA_peak_bytes'];bounds=[]
+ for case in report['cases']:
+  kind=case['name'].split('-')[1]
+  for row in case['measurements']:
+   for timing in row['timing']:
+    summary=timing['summary'];pairs=summary['pairs'];key=(kind,row['tokens'],row['split'],timing['cache'])
+    entry={'rank':rank,'name':case['name'],'tokens':row['tokens'],'split':row['split'],'cache':timing['cache'],'original':pairs['candidate_vs_original']['combined'],'rebuilt':pairs['candidate_vs_rebuilt']['combined'],'repeat_controls_passed':summary['repeat_controls_passed'],'rebuilt_original_equivalence_passed':summary['rebuilt_original_equivalence_passed'],'candidate_speed_passed':summary['candidate_speed_passed'],'timing_screen_passed':summary['timing_screen_passed']}
+    groups[key].append(entry)
+    if not entry['timing_screen_passed']:failed.append(entry)
+    for trial in timing['samples']:bounds.extend([trial['before'],trial['after']])
+ telemetry[str(rank)]={'boundaries':len(bounds),'SM_MHz_range':[min(t['SM_MHz'] for t in bounds),max(t['SM_MHz'] for t in bounds)],'temperature_C_range':[min(t['temperature_C'] for t in bounds),max(t['temperature_C'] for t in bounds)],'nonzero_sampled_throttle_flags':sum(bool(t['throttle_reasons']) for t in bounds),'unavailable_memory_clock_boundaries':sum(isinstance(t['memory_MHz'],dict) for t in bounds)}
+rows=[]
+for (kind,n,split,cache),entries in sorted(groups.items()):
+ values=[e['original'] for e in entries]
+ rows.append({'kind':kind,'tokens':n,'split':split,'cache':cache,'conditions':len(entries),'original_us_range':[min(v['reference_us'] for v in values),max(v['reference_us'] for v in values)],'candidate_us_range':[min(v['candidate_us'] for v in values),max(v['candidate_us'] for v in values)],'median_paired_ratio':statistics.median(v['ratio'] for v in values),'ratio_range':[min(v['ratio'] for v in values),max(v['ratio'] for v in values)],'median_saving_us':-statistics.median(v['extra_us'] for v in values),'repeat_failures':sum(not e['repeat_controls_passed'] for e in entries),'rebuilt_equivalence_failures':sum(not e['rebuilt_original_equivalence_passed'] for e in entries),'candidate_speed_failures':sum(not e['candidate_speed_passed'] for e in entries),'strict_passes':sum(e['timing_screen_passed'] for e in entries)})
+out={'status':'analyzed_independently_verified_evidence','archive_sha256':proof['archive_sha256'],'parent_archive_sha256':'e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b','report_sha256':reports,'conditions':sum(len(v) for v in groups.values()),'events':884736,'failed_conditions':failed,'groups':rows,'telemetry':telemetry,'CUDA_peak_bytes':peaks,'parent_exact_word_screen_passed':False,'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False,'automatic_promotion_allowed':False,'limitations':['Component graph timing includes logical input padding and output cropping.','Pressure is a controlled cache stress condition, not measured DRAM bandwidth.','All timing conditions and all failed controls are retained; descriptive medians are not qualified API gains.','Previous exact-word failures remain failed; relative-L2 improvement is not a model-KL result.'],'finished_epoch':time.time()}
+(b/'final-findings.json').write_text(json.dumps(out,indent=2)+'\n')
+print(json.dumps({k:v for k,v in out.items() if k not in ('failed_conditions','groups')}))
+for row in rows:print(json.dumps(row))

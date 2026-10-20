@@ -1,0 +1,54 @@
+"""Independently observe original service identity and terminal experiment handles."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import shlex
+import subprocess
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+REMOTE = r'''
+import hashlib,json,pathlib,subprocess,sys,time
+root=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+source=root/'full-warmedmodelv1-src'
+assert hashlib.sha256((source/'full_model_control.py').read_bytes()).hexdigest()=='d08220b0e0e503461308d4f5356db3e7a4b947e37cf7dc8a0969da3ee0898791'
+sys.path.insert(0,str(source))
+import full_model_control as c
+state=json.loads((root/'quality-model-controller-warmedmodelv1.json').read_bytes())
+receipt=json.loads((root/'warmed-model-v1-evidence-check.json').read_bytes())
+assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+assert receipt['status']=='complete' and receipt['restored_health']==200
+rows=[]
+for rank in (0,1):
+ info=c.inspect(rank,c.ORIGINAL_IDS[rank]);identity=c.identity(info)
+ assert info['State']['Running'] and identity==state['originals'][rank]
+ active=c.run(rank,['docker','ps','--format','{{.Names}}','--filter','name=warmedmodelv1']).splitlines()
+ assert not active,active
+ rows.append({'rank':rank,'running':True,'identity':identity,'active_current_experiment_containers':active})
+assert c.health(8000)
+jobs=[]
+for role,pid,needle in [('controller',3129756,'run_warmed_model.py'),('collector',3129755,'collect-warmed-model-v1.py'),('watchdog',3134792,'run_warmed_model.py')]:
+ p=subprocess.run(['ps','-p',str(pid),'-o','stat=,args='],capture_output=True,text=True)
+ raw=p.stdout.strip();matching=p.returncode==0 and not raw.startswith('Z') and needle in raw
+ jobs.append({'role':role,'pid':pid,'matching_experiment_process_live':matching})
+ assert not matching,jobs[-1]
+print(json.dumps({'status':'passed','checked_epoch':time.time(),'controller_phase':state['phase'],'service_paused':False,'original_health':200,'originals':rows,'jobs':jobs,'archive_sha256':receipt['archive_sha256'],'read_only':True,'source_identity_helper_sha256':hashlib.sha256((source/'full_model_control.py').read_bytes()).hexdigest()}))
+'''
+
+
+def main():
+    raw = subprocess.check_output(
+        ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+         'python3 -S -c '+shlex.quote(REMOTE)], timeout=60)
+    result = json.loads(raw)
+    result['executed_checker_sha256'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    proof = json.loads((BASE/'cross-host-verification.json').read_bytes())
+    assert proof['status'] == 'passed' and proof['archive_sha256'] == result['archive_sha256']
+    with (BASE/'final-service-check.json').open('x') as stream:
+        json.dump(result, stream, indent=2);stream.write('\n')
+    print(json.dumps(result))
+
+
+if __name__ == '__main__':
+    main()

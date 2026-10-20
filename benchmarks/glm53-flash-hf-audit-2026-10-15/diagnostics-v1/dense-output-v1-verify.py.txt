@@ -1,0 +1,65 @@
+"""Independently recompute the storage screen from frozen CPU evidence."""
+from __future__ import annotations
+import argparse,ast,hashlib,json,pathlib,struct,sys
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def packed_file(path,case):
+ data=path.read_bytes();size=struct.unpack('<Q',data[:8])[0];assert 0<size<1024**2
+ header=json.loads(data[8:8+size]);payload=data[8+size:];entries=[v for k,v in header.items() if k!='__metadata__'];assert len(entries)==7
+ spans=[];digests=[]
+ for v in entries:
+  assert v['dtype']=='U8' and len(v['shape'])==1
+  a,b=v['data_offsets'];assert 0<=a<=b<=len(payload) and b-a==v['shape'][0]
+  spans.append((a,b));digests.append(hashlib.sha256(payload[a:b]).hexdigest())
+ position=0
+ for a,b in sorted(spans):assert a==position;position=b
+ assert position==len(payload)==case['packed_bytes'] and sorted(digests)==sorted(case['buffer_sha256'])
+
+def main():
+ p=argparse.ArgumentParser();p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);a=p.parse_args();r=a.root
+ inv=json.loads((r/'inventory.json').read_bytes())['files'];assert len({x['path'] for x in inv})==len(inv)
+ for row in inv:
+  rel=pathlib.PurePosixPath(row['path']);assert not rel.is_absolute() and '..' not in rel.parts
+  f=r/rel;assert f.is_file() and not f.is_symlink() and f.stat().st_size==row['bytes'] and sha(f)==row['sha256'],row['path']
+ prepared=json.loads((r/'prepared.json').read_bytes());plan=json.loads((r/'plan.json').read_bytes())
+ actual={str(f.relative_to(r/'source')):sha(f) for f in (r/'source').rglob('*') if f.is_file() and f.suffix in ('.py','.toml')}
+ assert actual==prepared['bindings'][0]['code']==prepared['bindings'][1]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']}
+ assert len(actual)==plan['expected_source_files']==213
+ sys.path.insert(0,str(r/'source'));from dense_output_probe import assess,protocol,select_cases
+ assert prepared['protocol']==plan['protocol']==protocol()
+ assert sha(r/'parent-candidate.json')==plan['selection_parent_sha256']
+ selected=select_cases(json.loads((r/'parent-candidate.json').read_bytes()));assert selected==plan['selected_cases']
+ state=json.loads((r/'controller.json').read_bytes());post=json.loads((r/'post-restoration-check.json').read_bytes())
+ assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+ assert post['health']==200 and post['originals']==prepared['originals'] and post['controller_terminal'] and post['watchdog_terminal']
+ assert state['restoration']['status']=='complete' and state['restoration']['health']==200
+ assert state['preflight']['prepared_sha256']==sha(r/'prepared.json')
+ checks=[]
+ for entry in state['runs']:
+  rank=entry['rank'];assert entry['stage']=='timing';path=r/f'rank{rank}-timing-report.json'
+  if not path.exists():checks.append({'rank':rank,'diagnostic_complete':False,'error':'report absent'});continue
+  report=json.loads(path.read_bytes());assert report==json.loads((r/f'rank{rank}/timing.json').read_bytes())
+  assert report['source_sha256']==actual['benchmark_dense_output.py'] and report['protocol']==protocol()
+  assert report['plan_sha256']==sha(r/'plan.json') and report['selection_parent_sha256']==plan['selection_parent_sha256']
+  assert report['qualified_library_sha256']==prepared['bindings'][rank]['libraries']['libmxwave_kda_zipserv.so']
+  constants={n.targets[0].id:ast.literal_eval(n.value) for n in ast.parse((r/'source/prepare_bf16_attention.py').read_text()).body if isinstance(n,ast.Assign) and isinstance(n.targets[0],ast.Name) and n.targets[0].id in ('RUNTIME_SHA','LIBRARY_SHA')}
+  assert report['runtime_sha256']==constants['RUNTIME_SHA'] and report['qualified_library_sha256']==constants['LIBRARY_SHA']
+  if report['status']!='complete':checks.append({'rank':rank,'diagnostic_complete':False,'error':report.get('error')});continue
+  expected=[x for x in selected if x['rank']==rank]
+  assert len(report['cases'])==len(expected)
+  for case,wanted in zip(report['cases'],expected,strict=True):
+   assert all(case[k]==v for k,v in wanted.items()) and case['artifact']==case['name']+'.safetensors'
+   artifact=r/f'rank{rank}'/case['artifact'];assert sha(artifact)==case['artifact_sha256'];packed_file(artifact,case)
+  result=assess(report);assert result==report['assessment']
+  assert {k:v for k,v in result.items() if k!='summaries'}==entry['independent_assessment']
+  checks.append({'rank':rank,'exit_code':entry['exit_code'],'OOMKilled':entry['OOMKilled'],**result,'CUDA_peak_bytes':report['CUDA_peak_bytes']})
+ unchanged=state.get('source_after')==prepared['bindings'] and state.get('input_bindings_after')==prepared['input_bindings']
+ complete=len(checks)==2 and {x['rank'] for x in checks}=={0,1} and unchanged and all(x['diagnostic_complete'] and not x.get('exit_code') and not x.get('OOMKilled') for x in checks)
+ out={'status':'complete','diagnostic_complete':complete,'payloads':len(inv),'source_files':len(actual),'processes':checks,'source_and_fixture_bindings_unchanged':unchanged,'original_service_restored':True,
+  'component_screen_passed_on_both_GPUs':complete and all(x['component_screen_passed'] for x in checks),
+  'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False,'automatic_promotion_allowed':False,
+  'limits':['Three rank-specific output matrices per GPU; compression extremes do not cover all layers or activations.','Unchanged 2% repeat gates apply to both operations in both bracket directions.','The absolute decode-cost screening budget does not qualify model API speed.','All failed controls and all timed events remain.','Dense replacement memory estimates need fresh full-model validation.']}
+ a.output.write_text(json.dumps(out,indent=2,allow_nan=False)+'\n');print(json.dumps({k:v for k,v in out.items() if k not in ('processes','limits')}))
+if __name__=='__main__':main()

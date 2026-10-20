@@ -1,0 +1,123 @@
+"""Collect the complete pinned GSM8K set once per fresh model arm."""
+
+from __future__ import annotations
+
+import argparse
+import concurrent.futures
+import hashlib
+import json
+import time
+import urllib.request
+from pathlib import Path
+
+from gsm8k_benchmark import body, score, summarize
+
+ROOT = Path(__file__).parent
+BASE = "http://127.0.0.1:8015"
+
+
+def write(path, value):
+    temporary = path.with_suffix(".incomplete")
+    temporary.write_text(json.dumps(value, indent=2, allow_nan=False) + "\n")
+    temporary.replace(path)
+
+
+def request(path, payload=None):
+    key = Path("/home/kirya/local-spark/runtime/secrets/llm_api_key").read_text().strip()
+    query = urllib.request.Request(
+        BASE + path, data=None if payload is None else json.dumps(payload).encode(),
+        headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(query, timeout=300) as response:
+        return json.load(response)
+
+
+def case_request(case, protocol, directory):
+    path = directory / f"case-{case['source_index']:04d}.json"
+    if path.exists():
+        raise FileExistsError("Never overwrite or retry a GSM8K answer")
+    payload = body(case, protocol)
+    row = {
+        "source_index": case["source_index"], "expected": case["expected"],
+        "prompt_sha256": hashlib.sha256(case["prompt"].encode()).hexdigest(),
+        "request_sha256": hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest(),
+        "request": payload, "started_epoch": time.time(),
+        "answer_exact_match": False, "strict_format_match": False,
+    }
+    started = time.perf_counter()
+    try:
+        row["response"] = request("/v1/chat/completions", payload)
+        row.update(score(row["response"], case["expected"]), api_error=False)
+    except Exception as exc:  # noqa: BLE001 -- retain failed requests in the denominator.
+        row.update(api_error=True, error=repr(exc))
+    row.update(elapsed_seconds=time.perf_counter() - started, finished_epoch=time.time())
+    write(path, row)
+    compact = {k: v for k, v in row.items() if k not in ("request", "response", "final_answer")}
+    compact.update(file=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+    return compact
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--arm", choices=("control", "candidate"), required=True)
+    args = parser.parse_args()
+    plan_bytes = (ROOT / "plan.json").read_bytes()
+    plan = json.loads(plan_bytes)
+    protocol = plan["protocol"]
+    assert len(protocol["cases"]) == 1319 and protocol["concurrency"] == 4
+    assert not protocol["speculative_decoding"] and protocol["max_tokens"] == 1024
+    assert protocol["temperature"] == 0 and protocol["seed"] == 42
+    path = ROOT / f"{args.arm}-measurement.json"
+    assert not path.exists()
+    directory = ROOT / args.arm / "gsm8k"
+    directory.mkdir(parents=True, exist_ok=False)
+    state = {
+        "status": "running", "arm": args.arm, "mode": plan["modes"][args.arm],
+        "started_epoch": time.time(), "cases": [], "speculation": False,
+        "plan_sha256": hashlib.sha256(plan_bytes).hexdigest(),
+        "client_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "full_model_KL_qualified": False, "endpoint": BASE,
+    }
+
+    def save(phase):
+        state.update(phase=phase, updated_epoch=time.time(), summary=summarize(state["cases"]))
+        write(path, state)
+
+    save("initializing")
+    try:
+        state["models"] = request("/v1/models")
+        assert any(
+            m["id"] == "mxwave-glm53-pilot" and m["max_model_len"] == 8192
+            for m in state["models"]["data"]
+        )
+        state["benchmark_started_epoch"] = time.time()
+        save("gsm8k_full_test")
+        consecutive_errors = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            jobs = [pool.submit(case_request, case, protocol, directory) for case in protocol["cases"]]
+            try:
+                for job in concurrent.futures.as_completed(jobs):
+                    row = job.result()
+                    state["cases"].append(row)
+                    consecutive_errors = consecutive_errors + 1 if row["api_error"] else 0
+                    if len(state["cases"]) % 8 == 0 or consecutive_errors:
+                        save("gsm8k_full_test")
+                    if consecutive_errors >= 4:
+                        raise RuntimeError("Four consecutive API errors; preserve attempt without retries")
+            except BaseException:
+                for job in jobs:
+                    job.cancel()
+                raise
+        state["cases"].sort(key=lambda r: r["source_index"])
+        assert [r["source_index"] for r in state["cases"]] == list(range(1319))
+        state.update(status="complete", benchmark_finished_epoch=time.time(), finished_epoch=time.time())
+        save("complete")
+        print(json.dumps(state["summary"]), flush=True)
+    except BaseException as exc:
+        state.update(status="failed", error=repr(exc), finished_epoch=time.time())
+        save("failed")
+        raise
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,132 @@
+from __future__ import annotations
+import copy,hashlib,json,pathlib,shutil,sys
+import numpy as np
+base=pathlib.Path("/private/tmp/mxwave-fp32-input-model-v1")
+sys.path[:0]=[str(base/"cpu-source")]
+import measure_warmed_model as client
+import analyze_fp32_input_model as analyzer
+root=base/"cpu-simulation-v2";root.mkdir()
+protocol=pathlib.Path("/private/tmp/mxwave-matched-c8-v1/evidence/results/protocol.json").read_bytes()
+(root/"protocol.json").write_bytes(protocol);(root/"source-audit.json").write_text("{}")
+plan={"source_protocol_sha256":hashlib.sha256(protocol).hexdigest(),"numerical_limits":{"mean_decode_KL":1e-5,"absolute_mean_NLL":1e-4},
+"timing_cases":[[f"c{count}-{label}",count,length] for count in (1,8,16) for label,length in (("short",256),("long",2048))],"profile_mixed_prompt_lengths":[32,64,128,256,512,1024,1536,2048]*2,"input_component_evidence_sha256":"76b00c670bf2747448afe35ca9e7f011747b5c3d17ac0b6fca9caa930936b34c","quality_pairs":[list(p)for p in analyzer.warmed.quality_pairs()]}
+plan.update(fp32_input_policy=analyzer.policy(),fp32_input_integration_archive_sha256=analyzer.INTEGRATION_ARCHIVE_SHA256)
+(root/"warmed-model-plan.json").write_text(json.dumps(plan))
+state={"enabled":False,"events":[],"arm":"control"}
+def single_events(contexts):
+ events=[]
+ for ids in contexts:
+  digest=hashlib.sha256(json.dumps(ids,separators=(",",":")).encode()).hexdigest()
+  for step in range(4):
+   n=len(ids)if step==0 else 1
+   events.append({"sequence":len(events),"total_scheduled_tokens":n,"status":"complete","prepared":{
+   "num_reqs":1,"num_tokens":n,"num_tokens_after_padding":n,"has_prefill":step==0,
+   "prefill_lengths":[len(ids)]if step==0 else[],"descriptor":{"mode":"NONE"if step==0 else"FULL"},
+   "row_order":[{"prompt_sha256":digest,"prompt_tokens":len(ids),"scheduled_tokens":n}]}})
+ return events
+def collect(baseurl,contexts,destination,label,vocabulary,concurrency=8):
+ data={"status":"complete","label":label,"vocabulary":vocabulary,"generated_tokens":4,"contexts":[]}
+ for i,ids in enumerate(contexts):
+  row={"index":i,"prompt_sha256":hashlib.sha256(json.dumps(ids,separators=(",",":")).encode()).hexdigest(),"token_ids":[0,1,2,3],"steps":[]}
+  for j in range(4):
+   file=destination/f"{label}-ctx{i:02d}-step{j}.f32";raw=np.zeros(vocabulary,dtype="<f4").tobytes();file.write_bytes(raw)
+   row["steps"].append({"position":j,"kind":"prefill"if j==0 else"decode","conditioning_token_ids":list(range(j)),
+   "file":file.name,"sha256":hashlib.sha256(raw).hexdigest()})
+  data["contexts"].append(row)
+ (destination/f"{label}-decode-quality.json").write_text(json.dumps(data))
+ state["events"]=single_events(contexts)if concurrency==1 else cohort_events(contexts)
+ return data
+def synthetic_startup(rank):
+ from stable_dispatch_warmup import specializations
+ from startup_preparation import validate_startup_report
+ cases=[{**c,"guards_and_metadata_exact":True,"sorted_integer_ids_exact":True,"scratch_pointers_aligned_to_256_bytes":True,"first_call_seconds":0.0001,"repeat_seconds":[0.0001]*3} for c in specializations()]
+ run={"status":"complete","specializations":cases,"max_tokens":2048,"specialization_count":34,"source_sha256":{"kernel":"synthetic"},"existing_kernel_implementation_changed":False,"model_weights_or_live_routing_touched":False,"cuda_allocated_before":1000000,"cuda_allocated_after":1000000}
+ cache=[{"path":f"variant{i}/_canonicalize.json","sha256":str(i)} for i in range(34)]
+ report={"status":"complete","rank":rank,"warmup":copy.deepcopy(run),"warmup_after_trim":copy.deepcopy(run),"cache_after_warmup":copy.deepcopy(cache),"cache_after_trim_probe":copy.deepcopy(cache),"CUDA_allocated_before":1000000,"CUDA_allocated_after":1000000,"trim":{"returned":1},"model_quality_or_serving_speed_qualified":False}
+ report["checks"]=validate_startup_report(report)
+ return report
+def rpc(baseurl,name,args=None):
+ if name=="mxwave_c8_trace":
+  enabled,label=args
+  state["enabled"]=enabled
+  if enabled:state["events"]=[]
+  return [{"rank":rank,"events":copy.deepcopy(state["events"]),"enabled":enabled}for rank in(0,1)]
+ if name=="mxwave_prepare_dispatch_startup":return [synthetic_startup(rank) for rank in (0,1)]
+ if name=="mxwave_dispatch_startup_snapshot":return [{"rank":rank,"cache_unchanged":True,"cache":synthetic_startup(rank)["cache_after_trim_probe"]} for rank in (0,1)]
+ if name=="mxwave_checkpoint_check":return[{"status":"passed"}for _ in(0,1)]
+ if name=="mxwave_native_mhc_policy":return[{"native_mhc_unchanged":True}for _ in(0,1)]
+ if name=="mxwave_stable_sparse_policy":return[{"patched_aliases":["synthetic"],"actual_decode_context_parallel_size":1}for _ in(0,1)]
+ if name=="mxwave_gpu_telemetry":return[{"sm_MHz":1000,"temperature_C":50,"synthetic":True}for _ in(0,1)]
+ return[{}for _ in(0,1)]
+def measured(baseurl,ids,tokens):
+ requests=[{"token_ids":[0]*tokens,"arrivals":[{"tokens":1,"seconds":.1+i*.01}for i in range(tokens)],
+ "elapsed_seconds":1.0}for _ in ids]
+ if state["enabled"]:state["events"]=single_events([ids[0]])
+ return {"requests":requests,"wall_seconds":2.,"aggregate_tokens_per_second":len(ids)*tokens/2.,"median_ttft_seconds":.1}
+def source_check(arm,audit):
+ return[{"status":"passed","candidate":arm=="candidate","tp_rank":rank,
+ "source_scale_hashes":[{"shape":[32],"sha256":"0"*64}for _ in range(84)]}for rank in(0,1)]
+client.rpc=rpc;client.collect_concurrent=collect
+import controlled_quality_cohort as cohort
+def cohort_events(contexts):
+ rows=[];pending=[len(ids) for ids in contexts]
+ def add(scheduled,prefill):
+  own=[(i,n) for i,n in enumerate(scheduled) if n]
+  order=[{"prompt_sha256":hashlib.sha256(json.dumps(contexts[i],separators=(",",":")).encode()).hexdigest(),"prompt_tokens":len(contexts[i]),"scheduled_tokens":n} for i,n in own]
+  total=sum(scheduled)
+  rows.append({"sequence":len(rows),"total_scheduled_tokens":total,"status":"complete","prepared":{"num_reqs":len(own),"num_tokens":total,"num_tokens_after_padding":total,"has_prefill":prefill,"prefill_lengths":[len(contexts[i]) for i,n in own] if prefill else [],"descriptor":{"mode":"NONE" if prefill else "FULL"},"row_order":order}})
+ while any(pending):
+  budget=2048;scheduled=[0]*len(contexts)
+  for i,n in enumerate(pending):
+   take=min(n,budget);scheduled[i]=take;pending[i]-=take;budget-=take
+  add(scheduled,True)
+ for step in range(3):add([1]*len(contexts),False)
+ return rows
+def controlled(body):
+ prompts=body["prompt"];assert len(prompts) in (8,16)
+ offset=len(state["events"]);events=cohort_events(prompts)
+ for event in events:event["sequence"]+=offset
+ state["events"].extend(events)
+ top={f"token_id:{i}":0. for i in range(4)}
+ response={"choices":[{"index":i,"token_ids":[0,1,2,3],"logprobs":{"top_logprobs":[top.copy() for _ in range(4)]}} for i in range(len(prompts))]}
+ return response,{"synthetic":True,"queued_requests":len(prompts)}
+cohort.controlled_request=controlled
+client.source_check=source_check;client.batch=measured;client.request=lambda *args,**kwargs:{"synthetic":True}
+client.configure=lambda value:None
+client.admission=lambda *args,**kwargs:{"window_ms":3,"only_idle_fresh_text_prefills":True}
+def snapshot():
+ candidate=state["arm"]=="candidate"
+ return [{"rank":rank,"fp32_input_policy":{**analyzer.policy(),"enabled":candidate},"cuda_allocated_bytes":(16 if not candidate else 8)*1024**3,"focused_row16_policy":{"compressed":candidate,"global_fused_limit":8,"resident_BF16_weight_cache_bytes":0,"input_exact_rows":[16] if candidate else [],"output_exact_rows":[16] if candidate else [],"component_evidence_sha256":plan["input_component_evidence_sha256"]}} for rank in (0,1)]
+client.snapshot=snapshot
+for arm in("control","candidate"):
+ state["arm"]=arm
+ sys.argv=["measure_warmed_model.py","--root",str(root),"--label",arm,"--vocabulary","4","--data",str(root),"--cpu-audit",str(root/"source-audit.json"),"--profile"]
+ client.main()
+review=analyzer.review(root)
+assert review["timed_token_sequence_pairs"]==300 and review["all_timed_generated_ids_match"]
+assert review["compression_numerical_gate_passed"]and review["all_quality_groupings_matched"]
+assert not review["observed_speed_gate_passed"]and len(review["numerical_comparisons"])==46
+bad=base/"cpu-simulation-v2-mismatched-grouping";shutil.copytree(root,bad)
+p=bad/"candidate-warmed-model.json";data=json.loads(p.read_bytes())
+group=next(g for g in data["quality"]if g["label"]=="candidate-c16-r1")
+for worker in group["worker_trace"]:
+ rows=worker["events"][0]["prepared"]["row_order"];rows[0],rows[1]=rows[1],rows[0]
+p.write_text(json.dumps(data))
+rejected=analyzer.review(bad)
+assert not rejected["all_quality_groupings_matched"]and not rejected["compression_numerical_gate_passed"]
+bad2=base/"cpu-simulation-v2-numerical-failure";shutil.copytree(root,bad2)
+p=bad2/"candidate-c16-r1-decode-quality.json";data=json.loads(p.read_bytes());row=data["contexts"][0]["steps"][1]
+bits=np.array([8.,-8.,-8.,-8.],dtype="<f4").tobytes();(bad2/row["file"]).write_bytes(bits);row["sha256"]=hashlib.sha256(bits).hexdigest();p.write_text(json.dumps(data))
+rejected2=analyzer.review(bad2)
+assert rejected2["all_quality_groupings_matched"]and not rejected2["compression_numerical_gate_passed"]
+bad3=base/"cpu-simulation-v2-new-compilation";shutil.copytree(root,bad3)
+p=bad3/"candidate-warmed-model.json";data=json.loads(p.read_bytes());data["timing"][0]["dispatch_cache_after"][0]["cache"][0]["sha256"]="unexpected recompilation";p.write_text(json.dumps(data))
+try:analyzer.review(bad3)
+except AssertionError:pass
+else:raise AssertionError("New model-path compilation was accepted")
+proof={"status":"passed","synthetic_protocol_simulation_only":True,"GPU_initialized":False,"model_loaded":False,
+ "quality_groups":20,"timed_groups":72,"numerical_comparisons":46,"controlled_collector_counts_tested":[8,16],"equal_speed_rejected":True,
+ "mismatched_actual_grouping_rejected":True,"matched_grouping_nonzero_KL_rejected":True,
+ "new_compilation_rejected":True,"C8_C16_mixed_profiles_per_arm":2,"model_quality_claimed":False,"source_sha256":{p.name:hashlib.sha256(p.read_bytes()).hexdigest()for p in(base/"cpu-source").glob("*_fp32_input_model.py")}}
+(base/"cpu-protocol-check.json").write_text(json.dumps(proof,indent=2)+"\n")
+print(json.dumps(proof))

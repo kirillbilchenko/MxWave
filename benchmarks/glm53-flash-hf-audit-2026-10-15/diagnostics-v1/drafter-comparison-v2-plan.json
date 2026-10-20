@@ -1,0 +1,21 @@
+{
+  "revision": "drafter-comparison-v2",
+  "requested_order": [
+    "complete_speed",
+    "complete_full_GSM8K",
+    "drafter_audit"
+  ],
+  "wait_for_independent_verification": true,
+  "initial_audit": "read_only_CPU_and_retained_artifacts",
+  "new_GPU_experiment_queued": false,
+  "scope": [
+    "checkpoint_weights_and_config",
+    "effective_shared_head_and_embedding",
+    "runtime_flags_and_context_dtype",
+    "acceptance_by_position",
+    "final_draft_and_target_profiles"
+  ],
+  "later_if_unresolved": "matched_token_replay_on_fixed_history_and_shapes",
+  "predecessor": "drafter-comparison-v1",
+  "reason": "Follow corrected GSM8K v2 after v1 CPU-only preparation failure. Audit scope and sequencing unchanged."
+}

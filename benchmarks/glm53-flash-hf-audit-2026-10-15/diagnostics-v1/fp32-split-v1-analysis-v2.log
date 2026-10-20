@@ -1,0 +1,23 @@
+{
+  "status": "complete",
+  "archive_sha256": "e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b",
+  "cross_host_verification_passed": true,
+  "all_preliminary_reports_match_archive": true,
+  "source_files": 217,
+  "payloads": 2227,
+  "candidate_checks": 576,
+  "all_relative_l2_below_0_001": true,
+  "basis_checks": 144,
+  "all_basis_exact": true,
+  "frozen_gate_failures": 216,
+  "splits_passed_on_both_GPUs": {
+    "2": false,
+    "4": false,
+    "8": false
+  },
+  "performance_measured": false,
+  "model_KL_measured": false,
+  "model_integrated": false,
+  "conclusion": "FP32 partials remove the large legacy split error; changed accumulation order still fails all random M4/M8 exact-word gates. Preserve failures; no speed or full-model quality qualification follows."
+}
+{"groups": [{"tokens": 1, "random_checks": 108, "failed_frozen_gate": 0, "all_relative_l2_below_0_001": true, "original_bitwise_to_stock": 0, "candidate_bitwise_to_stock": 7, "candidate_l2_range": [0.0, 0.0002653009620729659], "legacy_l2_range": [0.00226367536333268, 0.0030685337818022757], "median_paired_error_reduction_excluding_exact_candidate_cases": 61.45307234951804, "different_words": 576, "total_words": 900288}, {"tokens": 4, "random_checks": 108, "failed_frozen_gate": 108, "all_relative_l2_below_0_001": true, "original_bitwise_to_stock": 108, "candidate_bitwise_to_stock": 0, "candidate_l2_range": [3.7320056901599096e-05, 0.0002428132877790073], "legacy_l2_range": [0.0024645997745101397, 0.0031813387921298996], "median_paired_error_reduction_excluding_exact_candidate_cases": 25.555114930612845, "different_words": 6333, "total_words": 3601152}, {"tokens": 8, "random_checks": 108, "failed_frozen_gate": 108, "all_relative_l2_below_0_001": true, "original_bitwise_to_stock": 108, "candidate_bitwise_to_stock": 0, "candidate_l2_range": [6.0811505530302506e-05, 0.00021839423402165075], "legacy_l2_range": [0.0025439944524479267, 0.0030286136324076214], "median_paired_error_reduction_excluding_exact_candidate_cases": 22.393693396801424, "different_words": 12760, "total_words": 7202304}, {"tokens": 16, "random_checks": 108, "failed_frozen_gate": 0, "all_relative_l2_below_0_001": true, "original_bitwise_to_stock": 108, "candidate_bitwise_to_stock": 0, "candidate_l2_range": [6.9732325018975e-05, 0.00017919780208214926], "legacy_l2_range": [0.002554076383637898, 0.0029827362101237796], "median_paired_error_reduction_excluding_exact_candidate_cases": 21.769400123400715, "different_words": 25352, "total_words": 14404608}], "M4_M8_different_words": 19093, "one_BF16_step_words": 17834, "largest_BF16_steps": 25925}

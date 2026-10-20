@@ -1,0 +1,20 @@
+"""Exercise actual frozen runtime dependencies, excluding unrelated current-worktree edits."""
+import hashlib,json,pathlib,shutil,subprocess,sys
+b=pathlib.Path(__file__).parent;p=json.loads((b/'plan.json').read_bytes());old=pathlib.Path('/private/tmp/mxwave-fp32-speed-v1/evidence/source');dest=b/'cpu-frozen-source';dest.mkdir()
+for rel,h in p['parent_source_sha256'].items():
+ src=old/rel;assert hashlib.sha256(src.read_bytes()).hexdigest()==h
+ q=dest/rel;q.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(src,q)
+for rel,h in p['source_sha256'].items():
+ src=b/'overlay/src'/rel;assert hashlib.sha256(src.read_bytes()).hexdigest()==h and not (dest/rel).exists();shutil.copyfile(src,dest/rel)
+code='''import hashlib,json,pathlib,sys
+sys.path.insert(0,sys.argv[1]);import kda_runtime,fp32_input_runtime,fp32_input_policy,fp32_input_probe,run_fp32_input,zipserv_contract,torch,pytest
+assert hashlib.sha256(pathlib.Path(kda_runtime.__file__).read_bytes()).hexdigest()==fp32_input_policy.RUNTIME_SHA256
+assert not torch.cuda.is_initialized()
+status=pytest.main(['-q','-o','addopts=',sys.argv[2],sys.argv[3]])
+assert not torch.cuda.is_initialized()
+raise SystemExit(status)
+'''
+w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+result=subprocess.run([sys.executable,'-B','-c',code,str(dest),str(w/'tests/test_glm53_fp32_input.py'),str(w/'tests/test_glm53_kda_capture_pool.py')],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+(b/'frozen-dependency-check.log').write_bytes(result.stdout);print(result.stdout.decode());result.check_returncode()
+proof={'status':'passed','source_files':227,'qualified_runtime_sha256':p['parent_source_sha256']['kda_runtime.py'],'GPU_initialized':False,'checks':'Eight FP32 adapter tests and two pool lifecycle tests executed with exact frozen runtime modules preloaded.','script_sha256':hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()};(b/'frozen-dependency-check.json').write_text(json.dumps(proof,indent=2)+'\n')

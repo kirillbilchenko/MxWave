@@ -1,0 +1,227 @@
+"""Run three bounded diagnostic arms and restore the exact live candidate on every exit."""
+from __future__ import annotations
+
+import argparse
+import fcntl
+import hashlib
+import importlib.util
+import json
+import os
+import pathlib
+import re
+import signal
+import subprocess
+import sys
+import time
+import urllib.request
+
+ROOT = pathlib.Path(__file__).parent
+sys.path.insert(0, str(ROOT.parent / 'full-c16admissionv1-src'))
+import full_model_control as c
+
+spec = importlib.util.spec_from_file_location('serving_control', ROOT.parent / 'serving-trial-v2' / 'control_trial.py')
+serving = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(serving)
+STATE = ROOT / 'controller.json'
+TERMINAL = ('complete_restored', 'failed_restored', 'preparation_failed')
+
+
+def save(state, phase=None):
+    if phase is not None:
+        state['phase'] = phase
+    state['updated_epoch'] = time.time()
+    c.write(STATE, state)
+
+
+def ticks(pid):
+    return serving.process_identity(pid)
+
+
+def logs(arm, entries):
+    import shlex
+    for entry in entries:
+        rank, name = entry['rank'], entry['name']
+        argv = ['docker', 'logs', name]
+        if rank:
+            argv = [*c.SSH, shlex.join(argv)]
+        run = subprocess.run(argv, capture_output=True, timeout=30)
+        (ROOT / f'{arm}-r{rank}.log').write_bytes(run.stdout + b'\n' + run.stderr)
+
+
+def restore():
+    with (ROOT / 'restore.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        state = json.loads(STATE.read_bytes())
+        if state['phase'] in TERMINAL:
+            return
+        prepared = json.loads((ROOT / 'prepared.json').read_bytes())
+        serving.stop_client(state)
+        save(state, 'restoring_live_candidate')
+        for arm, entries in prepared['launches'].items():
+            for entry in entries:
+                rank, name = entry['rank'], entry['name']
+                if c.run(rank, ['docker', 'ps', '-q', '--filter', f'name=^/{name}$']).strip():
+                    c.run(rank, ['docker', 'stop', '--timeout', '20', name], timeout=70)
+        for rank in (1, 0):
+            identity = prepared['live'][rank]
+            current = c.inspect(rank, identity['id'])
+            assert c.identity(current) == identity
+            if not current['State']['Running']:
+                c.run(rank, ['docker', 'start', identity['id']], timeout=120)
+        deadline = time.monotonic() + 1200
+        while not c.health(8000):
+            assert time.monotonic() < deadline, 'Live candidate restoration timed out'
+            assert all(c.inspect(rank, prepared['live'][rank]['id'])['State']['Running']
+                       for rank in (0, 1)), 'Live candidate exited during restoration'
+            time.sleep(5)
+        state['restoration'] = dict(
+            health_200=True, epoch=time.time(),
+            live=[c.identity(c.inspect(rank, prepared['live'][rank]['id'])) for rank in (0, 1)],
+            originals=[c.identity(c.inspect(rank, c.ORIGINAL_IDS[rank])) for rank in (0, 1)],
+            originals_stopped=all(not c.inspect(rank, c.ORIGINAL_IDS[rank])['State']['Running']
+                                  for rank in (0, 1)))
+        assert state['restoration']['live'] == prepared['live']
+        assert state['restoration']['originals'] == prepared['originals']
+        assert state['restoration']['originals_stopped']
+        state.update(service_paused=False, finished_epoch=time.time())
+        save(state, 'failed_restored' if 'error' in state else 'complete_restored')
+
+
+def watch(pid, start):
+    c.write(ROOT / 'watchdog.json', dict(pid=os.getpid(), parent=pid, start_ticks=start))
+    while True:
+        state = json.loads(STATE.read_bytes())
+        if state['phase'] in TERMINAL:
+            return
+        dead = ticks(pid) != start
+        expired = time.time() > state.get('outage_deadline_epoch', float('inf'))
+        if state.get('service_paused') and (dead or expired):
+            if not dead:
+                os.kill(pid, signal.SIGTERM)
+            state['error'] = 'Controller exited or bounded outage expired'
+            save(state)
+            restore()
+            return
+        if dead:
+            return
+        time.sleep(5)
+
+
+def quiet():
+    for _ in range(2):
+        with urllib.request.urlopen('http://127.0.0.1:8000/metrics', timeout=10) as response:
+            metrics = response.read().decode()
+        values = [float(line.rsplit(' ', 1)[1]) for line in metrics.splitlines()
+                  if re.match(r'vllm:num_requests_(running|waiting)(\{| )', line)]
+        assert values and not any(values), 'User service is busy; preserve it'
+        time.sleep(3)
+
+
+def control():
+    assert not STATE.exists()
+    prepared = json.loads((ROOT / 'prepared.json').read_bytes())
+    assert prepared['status'] == 'passed'
+    assert hashlib.sha256((ROOT / 'plan.json').read_bytes()).hexdigest() == prepared['plan_sha256']
+    for name, digest in json.loads((ROOT / 'source-manifest.json').read_bytes()).items():
+        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+    plan = json.loads((ROOT / 'plan.json').read_bytes())
+    state = dict(phase='prepared', pid=os.getpid(), start_ticks=ticks(os.getpid()),
+                 started_epoch=time.time(), service_paused=False, measurements={}, resources={})
+    save(state)
+
+    def terminated(signum, frame):
+        raise RuntimeError(f'Diagnostic interrupted by signal {signum}')
+
+    signal.signal(signal.SIGTERM, terminated)
+    signal.signal(signal.SIGINT, terminated)
+    with (ROOT / 'watchdog.log').open('xb') as output:
+        watcher = subprocess.Popen(['python3', '-S', '-B', '-u', str(pathlib.Path(__file__)),
+                                    '--watch', str(os.getpid()), ticks(os.getpid())],
+                                   stdin=subprocess.DEVNULL, stdout=output,
+                                   stderr=subprocess.STDOUT, start_new_session=True)
+    state['watchdog_pid'] = watcher.pid
+    save(state)
+    try:
+        deadline = time.monotonic() + 30
+        while not (ROOT / 'watchdog.json').exists():
+            assert watcher.poll() is None and time.monotonic() < deadline
+            time.sleep(.2)
+        assert [c.identity(c.inspect(rank, prepared['live'][rank]['id']))
+                for rank in (0, 1)] == prepared['live']
+        assert c.health(8000)
+        quiet()
+        assert __import__('shutil').disk_usage(ROOT).free > 768 * 1024 ** 2
+        state.update(service_paused=True, outage_deadline_epoch=time.time() + plan['outage_seconds'])
+        save(state, 'stopping_live_candidate')
+        for rank in (0, 1):
+            c.run(rank, ['docker', 'stop', '--timeout', '30', prepared['live'][rank]['id']], timeout=90)
+        for arm in plan['arms']:
+            entries = prepared['launches'][arm]
+            save(state, 'starting_' + arm)
+            for rank in (1, 0):
+                c.run(rank, entries[rank]['argv'], timeout=120)
+            deadline = time.monotonic() + 1500
+            while not c.health(8010):
+                assert time.monotonic() < deadline and time.time() < state['outage_deadline_epoch']
+                assert all(c.inspect(e['rank'], e['name'])['State']['Running'] for e in entries)
+                time.sleep(5)
+            startup = [c.remote_json(rank, ROOT / f'{arm}-r{rank}' / f'trial-startup-r{rank}.json')
+                       for rank in (0, 1)]
+            assert all(s['status'] == 'complete' and s['trial']['shared_head']
+                       and s['trial']['shared_embedding'] for s in startup)
+            c.write(ROOT / (arm + '-startup.json'), startup)
+            pairs = [(e['rank'], e['name']) for e in entries]
+            state['resources'][arm] = {'before': serving.resource_snapshot(pairs), 'during': []}
+            with (ROOT / (arm + '-client.log')).open('xb') as output:
+                client = subprocess.Popen(['python3', '-S', '-B', '-u', str(ROOT / 'measure_serving.py'),
+                                           '--arm', arm], stdin=subprocess.DEVNULL, stdout=output,
+                                          stderr=subprocess.STDOUT, start_new_session=True)
+            state['client'] = dict(pid=client.pid, start_ticks=ticks(client.pid), arm=arm)
+            save(state, 'measuring_' + arm)
+            deadline = time.monotonic() + 600
+            while client.poll() is None:
+                assert time.monotonic() < deadline and time.time() < state['outage_deadline_epoch']
+                state['resources'][arm]['during'].append(serving.resource_snapshot(pairs))
+                save(state)
+                time.sleep(3)
+            assert client.returncode == 0, (arm, 'Client failed', client.returncode)
+            report = json.loads((ROOT / (arm + '-measurement.json')).read_bytes())
+            assert report['status'] == 'complete' and len(report['trials']) == 14
+            state['measurements'][arm] = dict(summary=report['summary'],
+                sha256=hashlib.sha256((ROOT / (arm + '-measurement.json')).read_bytes()).hexdigest())
+            state['resources'][arm]['after'] = serving.resource_snapshot(pairs)
+            state.pop('client', None)
+            save(state, 'retaining_' + arm)
+            logs(arm, entries)
+            for rank, name in pairs:
+                assert c.remote_json(rank, ROOT / f'{arm}-r{rank}' / f'phase-trace-r{rank}.json')['events']
+                c.run(rank, ['docker', 'stop', '--timeout', '30', name], timeout=90)
+        assert [c.preflight(rank, ROOT.parent / 'full-c16admissionv1-src') for rank in (0, 1)] == prepared['bindings']
+        save(state, 'measurements_complete')
+    except BaseException as exc:
+        state['error'] = repr(exc)
+        save(state, 'failed')
+        for arm, entries in prepared['launches'].items():
+            try:
+                logs(arm, entries)
+            except Exception:
+                pass
+        if not state['service_paused']:
+            save(state, 'preparation_failed')
+        raise
+    finally:
+        if state.get('service_paused'):
+            restore()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--watch', nargs=2)
+    parser.add_argument('--restore', action='store_true')
+    args = parser.parse_args()
+    if args.watch:
+        watch(int(args.watch[0]), args.watch[1])
+    elif args.restore:
+        restore()
+    else:
+        control()

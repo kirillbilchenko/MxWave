@@ -1,0 +1,24 @@
+{
+  "status": "complete_offline",
+  "archive": {
+    "name": "mxwave-glm53-gap-ownership-v2.tar.gz",
+    "bytes": 52761,
+    "sha256": "4652e7d1283ed46f00fb219a3dfe4fb1e69527b9f62a935a0b96382e583d6526",
+    "spark_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/mxwave-glm53-gap-ownership-v2.tar.gz"
+  },
+  "manifest_sha256": "8d0aabbb00aae5c33d6ea3b06a8a8e4cc8c1a554618c422a74b5cdc05a53c18b",
+  "payload_files": 6,
+  "analysis_dependency_sha256": {
+    "compare_full_model.py": "06793a3177d81c1f9691305c5a21cd9eed94a5cb4c29d76cc5f6a844ed328fef",
+    "analyze_full_profiles.py": "490ec06d037499418f400d525ef042c466dd81b957a26b9723c3f05e4fb07cf1"
+  },
+  "original_trace_archive": "combineddispatchv1-evidence-v1.tar.gz",
+  "reproduction": "python3 analysis/gap-ownership-v2/analyze_gap_owners_v2.py --integration \"$MXWAVE_RUN_ROOT/full-combineddispatchv1-src\" --root \"$MXWAVE_RUN_ROOT/run-combineddispatchv1\" --output /tmp/mxwave-gap-owners.json",
+  "no_new_model_run": true,
+  "no_production_pause": true,
+  "raw_nsight_probe_paths": [
+    "nsys-cpu-smoke-v1",
+    "nsys-cpu-smoke-v2"
+  ],
+  "validation": "Optimized sweep exactly matched the exhaustive reference on all twenty complete M4 forwards; no runtime implementation changed."
+}

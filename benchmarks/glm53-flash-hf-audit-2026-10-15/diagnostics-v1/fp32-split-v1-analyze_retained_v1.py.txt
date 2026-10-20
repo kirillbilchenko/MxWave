@@ -1,0 +1,55 @@
+"""Bind precision conclusions and BF16 disagreement sizes to the independently verified archive."""
+from __future__ import annotations
+import array,collections,hashlib,json,pathlib,statistics,sys
+b=pathlib.Path(__file__).resolve().parent;r=b/'evidence'
+proof=json.loads((b/'cross-host-verification.json').read_bytes());assert proof['status']=='passed' and proof['diagnostic_complete']
+rows=[];ranks=[];steps=collections.Counter();groups=[]
+for rank in (0,1):
+ p=r/f'rank{rank}-precision-report.json';j=json.loads(p.read_bytes());early=b/f'preliminary-rank{rank}.json'
+ assert hashlib.sha256(p.read_bytes()).hexdigest()==hashlib.sha256(early.read_bytes()).hexdigest()
+ selected=[]
+ for c in j['cases']:
+  for row in c['checks']:
+   item={'rank':rank,'name':c['name'],**row};rows.append(item);selected.append(item)
+   if row['tokens'] not in (4,8) or row['activation']=='basis':continue
+   values=[]
+   for name in ('candidate','stock'):
+    meta=row['artifacts'][name];data=(r/f'rank{rank}'/meta['path']).read_bytes();assert hashlib.sha256(data).hexdigest()==meta['sha256']
+    a=array.array('H');a.frombytes(data)
+    if sys.byteorder!='little':a.byteswap()
+    values.append(a)
+   for a,c in zip(*values,strict=True):
+    if a==c:continue
+    oa=65535-a if a&32768 else a+32768
+    oc=65535-c if c&32768 else c+32768
+    steps[abs(oa-oc)]+=1
+ ranks.append({'rank':rank,'checks':len(selected),'report_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),
+  'CUDA_peak_bytes':j['CUDA_peak_bytes'],'max_relative_l2':max(x['stock_comparison']['relative_l2'] for x in selected),
+  'failed_checks':sum(not x['stock_comparison']['passed'] for x in selected),
+  'telemetry':{'SM_MHz':[min(x['telemetry']['SM_MHz'] for x in selected),max(x['telemetry']['SM_MHz'] for x in selected)],
+    'temperature_C':[min(x['telemetry']['temperature_C'] for x in selected),max(x['telemetry']['temperature_C'] for x in selected)],
+    'throttle_reasons':sorted(set(x['telemetry']['throttle_reasons'] for x in selected))}})
+for n in (1,4,8,16):
+ a=[x for x in rows if x['tokens']==n and x['activation']!='basis']
+ reductions=[x['legacy_stock_comparison']['relative_l2']/x['stock_comparison']['relative_l2'] for x in a if x['stock_comparison']['relative_l2']>0]
+ groups.append({'tokens':n,'random_checks':len(a),'failed_frozen_gate':sum(not x['stock_comparison']['passed'] for x in a),
+  'all_relative_l2_below_0_001':all(x['stock_comparison']['relative_l2']<=.001 for x in a),
+  'original_bitwise_to_stock':sum(x['original_stock_comparison']['bits_exact'] for x in a),
+  'candidate_bitwise_to_stock':sum(x['stock_comparison']['bits_exact'] for x in a),
+  'candidate_l2_range':[min(x['stock_comparison']['relative_l2'] for x in a),max(x['stock_comparison']['relative_l2'] for x in a)],
+  'legacy_l2_range':[min(x['legacy_stock_comparison']['relative_l2'] for x in a),max(x['legacy_stock_comparison']['relative_l2'] for x in a)],
+  'median_paired_error_reduction_excluding_exact_candidate_cases':statistics.median(reductions),
+  'different_words':sum(x['stock_comparison']['different_words'] for x in a),
+  'total_words':sum(x['artifacts']['stock']['bytes']//2 for x in a)})
+result={'status':'complete','archive_sha256':proof['archive_sha256'],'cross_host_verification_passed':True,
+ 'all_preliminary_reports_match_archive':True,'source_files':proof['source_files'],'payloads':proof['payloads'],
+ 'candidate_checks':len(rows),'all_relative_l2_below_0_001':all(x['stock_comparison']['relative_l2']<=.001 for x in rows),
+ 'basis_checks':sum(x['activation']=='basis' for x in rows),'all_basis_exact':all(x['stock_comparison']['bits_exact'] for x in rows if x['activation']=='basis'),
+ 'frozen_gate_failures':sum(not x['stock_comparison']['passed'] for x in rows),
+ 'splits_passed_on_both_GPUs':proof['splits_passed_on_both_GPUs'],'ranks':ranks,'groups':groups,
+ 'M4_M8_disagreement_BF16_step_histogram':dict(sorted(steps.items())),
+ 'performance_measured':False,'model_KL_measured':False,'model_integrated':False,
+ 'conclusion':'FP32 partials remove the large legacy split error; changed accumulation order still fails all random M4/M8 exact-word gates. Preserve failures; no speed or full-model quality qualification follows.'}
+(b/'final-findings.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps({k:v for k,v in result.items() if k not in ('ranks','groups','M4_M8_disagreement_BF16_step_histogram')},indent=2))
+print(json.dumps({'groups':groups,'M4_M8_different_words':sum(steps.values()),'one_BF16_step_words':steps[1],'largest_BF16_steps':max(steps,default=0)}))

@@ -1,0 +1,713 @@
+{
+  "status": "component_gates_passed",
+  "whole_model_qualification": "kda8_measured_quality_unqualified_unstable_saved_control",
+  "mxfp8": {
+    "cases": 48,
+    "partitions": 12,
+    "all_basis_bits_exact": true,
+    "maximum_random_relative_l2": 8.361797919850883e-05,
+    "cuda_peak_bytes": 152568320,
+    "seconds": 54.98578095436096
+  },
+  "moe": {
+    "cases": 8,
+    "experts": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "layer": 23,
+    "maximum_relative_l2": 0.004740303813942844,
+    "non_bit_exact_repeat_cases": [
+      [
+        0,
+        64
+      ],
+      [
+        0,
+        512
+      ],
+      [
+        1,
+        64
+      ],
+      [
+        1,
+        512
+      ]
+    ],
+    "cuda_peak_bytes": 111238656,
+    "seconds": 95.029137134552,
+    "limitation": "CPU reference and stock use different arithmetic; 1% component error gate. Large-row repeats are not bit-exact. Not model-quality qualification."
+  },
+  "mhc": {
+    "cold_257_seconds": 5.473926957987715,
+    "warm_257_seconds": 0.00022726500174030662,
+    "selected_sizes": [
+      1,
+      2,
+      4,
+      7,
+      8,
+      16,
+      17,
+      32,
+      64,
+      65,
+      128,
+      129,
+      193,
+      256,
+      257,
+      321,
+      385,
+      512,
+      513,
+      577,
+      769,
+      1024,
+      1025,
+      1537,
+      2048
+    ],
+    "split_variants": {
+      "1": 1537,
+      "2": 1025,
+      "3": 769,
+      "4": 577,
+      "5": 513,
+      "6": 385,
+      "8": 321,
+      "9": 257,
+      "12": 193,
+      "16": 129,
+      "24": 65,
+      "48": 1
+    },
+    "validated_sizes": 100,
+    "zero_monitored_jit_after_warmup": true,
+    "output_bits_exact_before_after": true,
+    "maximum_validation_seconds": 0.008514276007190347,
+    "cuda_peak_bytes": 400624640,
+    "seconds": 67.90587854385376,
+    "limitation": "Same installed CUDA implementations called directly; full-model integration follows separately. Does not monitor every DeepGEMM compilation entry."
+  },
+  "artifacts": {
+    "mhc-warmup-v2.json": "13df5d2fdf8e9e8e8d19740cc62b5131b9d22744f38119797f679661323b688c",
+    "mxfp8-correctness-v2.json": "75cea385040727624ff9dfcdf05897b95aa803390f536662bebe79f7a4abb2fe",
+    "moe-cpu-reference-v1.json": "5cc433a53d2062b2257791eb51b1769ddf08489c77415562009f4b526a1ed637",
+    "attention-dispatch-v1.json": "bc7b0c389a6076ed9adfe9f04a5d6b311388af67a9d5238aca2e4ab85d1b597f",
+    "bf16-targets-imported-v1.json": "7694e61a7f88f3e7793189b8f98894392d95d18edb93ab723a5184309e17f9dc",
+    "bf16-targets-working-v1.json": "bf5915ee4aa04306bdc63799f2c9556137cc041388ced28e7f51f24392c8bd7e"
+  },
+  "full_model_code_archive_sha256": "7d0ef0409b22e2f372ac57235fdc908994c1ef3504fe1b1a00094e0ff74c67ca",
+  "checker_regression": {
+    "status": "passed",
+    "cases": 27,
+    "cuda_peak_bytes": 19269120,
+    "code_sha256": "25c1316857cd75c288ea401e6f0062c29930067795b407497bfea4606959811b",
+    "report": "checker-regression-v1.json"
+  },
+  "full_model_diagv1": {
+    "status": "harness_failed_restored",
+    "inference_compared": false,
+    "report": "full-diagv1-failure.json"
+  },
+  "full_model_diagv2": {
+    "status": "loader_and_warmup_passed_dispatch_harness_failed_restored",
+    "full_model_qualification": "pending",
+    "controller": "full-controller-diagv2.json",
+    "source_archive_sha256": "0a72113571f0e0dd95f0e6cf657e9e52eea6a46a987d67f66356a7915cd7ebcf",
+    "inference_compared": false,
+    "selected_tensors_bits_exact_per_rank": [
+      658,
+      658
+    ],
+    "mhc_warmup_seconds": [
+      48.40740237000864,
+      48.626963404996786
+    ],
+    "failure": "GPUModelRunner has no cudagraph_dispatcher; new runner uses cudagraph_manager",
+    "archive_sha256": "6beb69eda0cfac3930c10f9990bb6b6b4963104bdf3a7d1de0707eb5bafb4bd2",
+    "report": "full-model-diagv2-review.json"
+  },
+  "dispatch_fixture": {
+    "status": "passed",
+    "controller": "controller-dispatchv1.json",
+    "source_archive_sha256": "7d0ef0409b22e2f372ac57235fdc908994c1ef3504fe1b1a00094e0ff74c67ca",
+    "actual_graph_replays": [
+      3,
+      0,
+      3
+    ],
+    "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner",
+    "greedy_token_ids_identical": true,
+    "checker_cases": 27,
+    "worker_sha256": "b9d7f20d5cb8f1ddddfcc81ee59eabf1943eff64475f29cb3b20244e31752696",
+    "report": "dispatch-qualification-v1.json",
+    "sha256": "043ab980429b37f3e3bf5c2aefae455d9e7133abf965ade5ce7b883a936edbd2"
+  },
+  "full_model_diagv3": {
+    "status": "complete_stock_sanity_failed_restored",
+    "controller": "full-controller-diagv3.json",
+    "source_archive_sha256": "7d0ef0409b22e2f372ac57235fdc908994c1ef3504fe1b1a00094e0ff74c67ca",
+    "model_quality_qualified": false,
+    "report": "full-model-diagv3-review.json",
+    "archive_bytes": 2034018,
+    "archive_sha256": "34a86fa136055b5f52773abca2a8e9c8ac48fbc9fdfe1fb890a493605a26939d",
+    "selected_tensors_bits_exact_per_rank": [
+      658,
+      658
+    ],
+    "passed_sanity_checks": 0,
+    "total_sanity_checks": 9,
+    "dispatch_modes": [
+      "FULL",
+      "NONE",
+      "FULL"
+    ]
+  },
+  "working_nvfp4_sanity": {
+    "status": "passed",
+    "cases": 3,
+    "report": "production-nvfp4-sanity-client-v1.json",
+    "scope": "Different checkpoint and DFlash serving configuration; sanity only"
+  },
+  "attention_mapping": {
+    "status": "cpu_selector_and_selected_gpu_weights_passed_both_ranks",
+    "report": "attention-dispatch-v1.json",
+    "sha256": "bc7b0c389a6076ed9adfe9f04a5d6b311388af67a9d5238aca2e4ab85d1b597f",
+    "fused_counts": {
+      "in_proj_qkvbfg_a": 34,
+      "fused_qkv_a_proj": 11
+    },
+    "wrong_selectors_before": 45,
+    "wrong_selectors_after": 0,
+    "unchanged_controls": 8,
+    "model_output_after_fix": "Coherent prompt-specific reasoning; all nine final answers truncated by 32-token cap",
+    "enable_private_plugin": "MXWAVE_GLM53_ATTENTION_MAPPING=1",
+    "model_quality_qualified": false,
+    "next_gate": "Corrected final-answer protocol and matched compression quality/performance during the next necessary full-model comparison"
+  },
+  "bf16_target_screen": {
+    "status": "cpu_samples_complete_gpu_integration_pending",
+    "reports": {
+      "imported": {
+        "file": "bf16-targets-imported-v1.json",
+        "sha256": "7694e61a7f88f3e7793189b8f98894392d95d18edb93ab723a5184309e17f9dc",
+        "summary": {
+          "attention": {
+            "matrices": 405,
+            "source_bytes": 12106596352,
+            "sample_bytes": 286326784,
+            "flat": {
+              "matrices": 405,
+              "sample_saving_fraction": 0.2960422906157463,
+              "sample_encoded_bytes": 201561947,
+              "estimated_saved_source_bytes": 3585459242.3333335,
+              "minimum_matrix_sample_saving": 0.28263346354166663,
+              "maximum_matrix_sample_saving": 0.29790496826171875
+            },
+            "rows": {
+              "matrices": 337,
+              "sample_saving_fraction": 0.29550767408713274,
+              "sample_encoded_bytes": 200537697,
+              "estimated_saved_source_bytes": 3534635274.0,
+              "minimum_matrix_sample_saving": 0.28705851236979163,
+              "maximum_matrix_sample_saving": 0.29694366455078125
+            }
+          },
+          "head": {
+            "matrices": 1,
+            "source_bytes": 1268776960,
+            "sample_bytes": 786432,
+            "flat": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.2923800150553385,
+              "sample_encoded_bytes": 556495,
+              "estimated_saved_source_bytes": 370965026.6666666,
+              "minimum_matrix_sample_saving": 0.2923800150553385,
+              "maximum_matrix_sample_saving": 0.2923800150553385
+            },
+            "rows": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.29529571533203125,
+              "sample_encoded_bytes": 554202,
+              "estimated_saved_source_bytes": 374664400.0,
+              "minimum_matrix_sample_saving": 0.29529571533203125,
+              "maximum_matrix_sample_saving": 0.29529571533203125
+            }
+          },
+          "embedding": {
+            "matrices": 1,
+            "source_bytes": 1268776960,
+            "sample_bytes": 786432,
+            "flat": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.16196187337239587,
+              "sample_encoded_bytes": 659060,
+              "estimated_saved_source_bytes": 205493493.33333337,
+              "minimum_matrix_sample_saving": 0.16196187337239587,
+              "maximum_matrix_sample_saving": 0.16196187337239587
+            },
+            "rows": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.29525883992513025,
+              "sample_encoded_bytes": 554231,
+              "estimated_saved_source_bytes": 374617613.3333334,
+              "minimum_matrix_sample_saving": 0.29525883992513025,
+              "maximum_matrix_sample_saving": 0.29525883992513025
+            }
+          },
+          "router": {
+            "matrices": 42,
+            "source_bytes": 99090432,
+            "sample_bytes": 33030144,
+            "flat": {
+              "matrices": 42,
+              "sample_saving_fraction": 0.2956525106278677,
+              "sample_encoded_bytes": 23264699,
+              "estimated_saved_source_bytes": 29296335.0,
+              "minimum_matrix_sample_saving": 0.292761484781901,
+              "maximum_matrix_sample_saving": 0.2971979777018229
+            },
+            "rows": {
+              "matrices": 42,
+              "sample_saving_fraction": 0.2953705257839627,
+              "sample_encoded_bytes": 23274013,
+              "estimated_saved_source_bytes": 29268393.0,
+              "minimum_matrix_sample_saving": 0.2941500345865885,
+              "maximum_matrix_sample_saving": 0.2962760925292969
+            }
+          }
+        },
+        "peak_rss_bytes": 177979392
+      },
+      "working": {
+        "file": "bf16-targets-working-v1.json",
+        "sha256": "bf5915ee4aa04306bdc63799f2c9556137cc041388ced28e7f51f24392c8bd7e",
+        "summary": {
+          "attention": {
+            "matrices": 123,
+            "source_bytes": 676069376,
+            "sample_bytes": 26181632,
+            "flat": {
+              "matrices": 123,
+              "sample_saving_fraction": 0.29456884123953775,
+              "sample_encoded_bytes": 18469339,
+              "estimated_saved_source_bytes": 198149048.33333334,
+              "minimum_matrix_sample_saving": 0.28263346354166663,
+              "maximum_matrix_sample_saving": 0.297570546468099
+            },
+            "rows": {
+              "matrices": 55,
+              "sample_saving_fraction": 0.2947536611302014,
+              "sample_encoded_bytes": 17285915,
+              "estimated_saved_source_bytes": 154815454.66666666,
+              "minimum_matrix_sample_saving": 0.28705851236979163,
+              "maximum_matrix_sample_saving": 0.296624501546224
+            }
+          },
+          "head": {
+            "matrices": 1,
+            "source_bytes": 1268776960,
+            "sample_bytes": 786432,
+            "flat": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.2923800150553385,
+              "sample_encoded_bytes": 556495,
+              "estimated_saved_source_bytes": 370965026.6666666,
+              "minimum_matrix_sample_saving": 0.2923800150553385,
+              "maximum_matrix_sample_saving": 0.2923800150553385
+            },
+            "rows": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.29529571533203125,
+              "sample_encoded_bytes": 554202,
+              "estimated_saved_source_bytes": 374664400.0,
+              "minimum_matrix_sample_saving": 0.29529571533203125,
+              "maximum_matrix_sample_saving": 0.29529571533203125
+            }
+          },
+          "embedding": {
+            "matrices": 1,
+            "source_bytes": 1268776960,
+            "sample_bytes": 786432,
+            "flat": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.16196187337239587,
+              "sample_encoded_bytes": 659060,
+              "estimated_saved_source_bytes": 205493493.33333337,
+              "minimum_matrix_sample_saving": 0.16196187337239587,
+              "maximum_matrix_sample_saving": 0.16196187337239587
+            },
+            "rows": {
+              "matrices": 1,
+              "sample_saving_fraction": 0.29525883992513025,
+              "sample_encoded_bytes": 554231,
+              "estimated_saved_source_bytes": 374617613.3333334,
+              "minimum_matrix_sample_saving": 0.29525883992513025,
+              "maximum_matrix_sample_saving": 0.29525883992513025
+            }
+          },
+          "router": {
+            "matrices": 42,
+            "source_bytes": 99090432,
+            "sample_bytes": 33030144,
+            "flat": {
+              "matrices": 42,
+              "sample_saving_fraction": 0.2956525106278677,
+              "sample_encoded_bytes": 23264699,
+              "estimated_saved_source_bytes": 29296335.0,
+              "minimum_matrix_sample_saving": 0.292761484781901,
+              "maximum_matrix_sample_saving": 0.2971979777018229
+            },
+            "rows": {
+              "matrices": 42,
+              "sample_saving_fraction": 0.2953705257839627,
+              "sample_encoded_bytes": 23274013,
+              "estimated_saved_source_bytes": 29268393.0,
+              "minimum_matrix_sample_saving": 0.2941500345865885,
+              "maximum_matrix_sample_saving": 0.2962760925292969
+            }
+          }
+        },
+        "peak_rss_bytes": 196837376
+      }
+    },
+    "scope": "Exact reconstruction of deterministic row samples; source-size extrapolation, no GPU allocation or speed result"
+  },
+  "full_model_diagv4": {
+    "status": "complete_selected_attention_checks_passed_restored",
+    "report": "full-model-diagv4-review.json",
+    "report_sha256": "adf85e36029377976c73e8d614016756f344c38882ba0ccc96818e8ea77e842d",
+    "source_report_sha256": "54683ab2909aadc3698c6e1e66b0b19e45aec629c3d05125a92c9871ce762272",
+    "source_archive_sha256": "5d75070ade951847b5ef45cb28b86cbd586b70886aa59ee533a7d4f90b3bce74",
+    "evidence_archive": {
+      "archive": "diagv4-evidence-v1.tar.gz",
+      "bytes": 2029901,
+      "sha256": "d3d2cd9a1c0b9a8870dd05d924c530a70cf56319ad54d392b0d411f72066a1d5",
+      "health": 200
+    },
+    "selected_tensors_bits_exact_per_rank": [
+      1110,
+      1110
+    ],
+    "attention_comparisons_per_rank": [
+      452,
+      452
+    ],
+    "fused_attention_layers_per_rank": [
+      45,
+      45
+    ],
+    "passed_final_answer_sanity_checks": 0,
+    "total_sanity_checks": 9,
+    "all_chat_finish_reasons": "length",
+    "mean_nll_by_phase": {
+      "graphs_before": 0.747036227336829,
+      "eager": 0.7427339044106419,
+      "graphs_after": 0.7445058458071139
+    },
+    "repeat_prefill_mean_kl": 3.407431456880868e-05,
+    "repeat_greedy_tokens_exact": true,
+    "model_quality_qualified": false,
+    "throughput_benchmark_run": false,
+    "chat_protocol_correction": "Future requests use reasoning_effort=low, glm45 parser, max_tokens=256, raw message retained, natural stop required",
+    "additional_full_load_for_chat_protocol_run": false
+  },
+  "bf16_attention_component": {
+    "status": "passed",
+    "report": "bf16-attention-kernel-v1.json",
+    "sha256": "8ac6c7ad2682088a0a40746020c74ffbf0089ed1f3baba3cfbd963fd678e3896",
+    "fixtures": "bf16-attention-prepared-v1.json",
+    "three_full_projection_gpu_decodes_bits_exact": true,
+    "raw_bytes": 153354240,
+    "retained_bytes": 109086808,
+    "maximum_gemm_relative_l2": 0.00411961181089282,
+    "seconds": 12.397291528992355,
+    "paired_comparison_peak_cuda_bytes": 1129478144,
+    "guard": {
+      "phase": "complete_idle",
+      "attempts": 1,
+      "production_stopped": false,
+      "interrupted_attempts": 0
+    },
+    "scope": "Component only; full GPU decode exact, GEMM arithmetic can differ; no whole-model speed or quality qualification",
+    "decision": "Decode-focused path promising; existing fused large-prefill path regresses; test bounded decode-to-scratch plus stock GEMM and profile before full-model integration"
+  },
+  "bf16_prefill_component": {
+    "status": "passed",
+    "report": "bf16-attention-prefill-v1.json",
+    "sha256": "8b5634f86b3b666c230dc4b60f59f1d009681496e650a923f730a3c205316887",
+    "all_12_stock_gemm_outputs_bits_exact": true,
+    "weight_scratch_bytes_by_case": [
+      103284736,
+      16777216,
+      33554432
+    ],
+    "six_gpu_traces_archived": true,
+    "evidence_archive": {
+      "bytes": 72311,
+      "sha256": "bdd8cf182a1a1c49e23496201fefde9e48da354c91bcd022dcd23733f72687b0",
+      "spark2_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/diagnostics-v1/bf16prefillv1-evidence.tar.gz"
+    },
+    "guard": {
+      "phase": "complete_idle",
+      "attempts": 1,
+      "production_stopped": false,
+      "interrupted_attempts": 0
+    },
+    "seconds": 5.128096546017332,
+    "decision": "Decompression plus stock GEMM improves large-prefill cost over the fused path but still adds 28-39% graph latency at M2048; profile confirms fused GEMM is the larger bottleneck. Test bounded asynchronous prefill decode before whole-model integration."
+  },
+  "bf16_prefill_overlap": {
+    "status": "correctness_passed_performance_not_recommended",
+    "report": "bf16-attention-overlap-v3.json",
+    "sha256": "671946bd30617a3708db6dce5ad5f534657d8060c3b481d7cd765a34bec42f96",
+    "three_decoded_weight_hashes_exact": true,
+    "all_eight_shape_cache_cases_intermediate_outputs_exact": true,
+    "all_graph_replay_allocation_growth_bytes": 0,
+    "cold_pool_bytes": 206569472,
+    "cached_first_pool_bytes": 170393600,
+    "paired_comparison_peak_cuda_bytes": 1032655872,
+    "eager_M2048": [
+      {
+        "first_weight_primed": false,
+        "async_vs_dense_ratio": 1.334217458491937,
+        "async_vs_serial_ratio": 1.0048387342723464
+      },
+      {
+        "first_weight_primed": true,
+        "async_vs_dense_ratio": 1.1125362202675497,
+        "async_vs_serial_ratio": 1.0039548319208687
+      }
+    ],
+    "decision": "Do not integrate this async prefill variant: no useful net improvement over serial decoding with these kernels",
+    "guard": {
+      "phase": "complete_idle",
+      "attempts": 1,
+      "production_stopped": false,
+      "interrupted_attempts": 0
+    },
+    "evidence_archive": {
+      "archive": "bf16overlap-evidence-v1.tar.gz",
+      "bytes": 275287,
+      "sha256": "6f8e1dc3a9c25d3c500934b547708a50c5ea687df23bf917d2aec746e56c3144"
+    }
+  },
+  "kda_adapter_fixture": {
+    "status": "passed",
+    "report": "kda-adapter-fixture-v3.json",
+    "report_sha256": "6479dc297af19fc7b15dc3c8a690f7f101cfe2a5b8330e0a0ba9735edb665d28",
+    "cases": 12,
+    "max_single_token_relative_l2": 0.000207921679248102,
+    "timing_summed_latency_ratios": {
+      "input": {
+        "graph_timing": 0.7201312066068435,
+        "eager_timing": 0.8079539996286126
+      },
+      "output": {
+        "graph_timing": 0.8539705927449773,
+        "eager_timing": 1.0974315438513318
+      }
+    },
+    "all_fallback_outputs_bits_exact": true,
+    "pool_bytes": 206569472,
+    "paired_comparison_peak_cuda_bytes": 625506304,
+    "production_stopped": false,
+    "whole_model_qualification": "pending",
+    "evidence_archive": {
+      "archive": "kdaadapterv3-evidence-v1.tar.gz",
+      "bytes": 230058,
+      "sha256": "677b85c7d05dba5ff1336f0fede04b021d299a4cde3932635bd88fdf5e68e4e5"
+    }
+  },
+  "full_model_kda_v2": {
+    "status": "complete_measured_quality_unqualified",
+    "report": "full-model-kda-v2-review.json",
+    "report_sha256": "aaba66edf01f488a79cf0ec793083f0e3f3f956c3e8e40069e7c90fab19391fb",
+    "trace_review": "full-model-kda-trace-review-v2.json",
+    "saved_cuda_bytes_global": 2285474816,
+    "saved_allocation_fraction": 0.012103057681842746,
+    "quality_gates": {
+      "status": "unqualified_unstable_control",
+      "raw_repeat_kl_limit": 1e-05,
+      "raw_repeat_absolute_nll_difference_limit": 0.0001,
+      "raw_repeat_stable": false,
+      "mean_kl_limit": null,
+      "absolute_mean_nll_difference_limit": null,
+      "passed": false
+    },
+    "candidate_mean_kl": 7.126306774409942e-05,
+    "stock_repeat_mean_kl": 7.960831936681888e-05,
+    "sanity": {
+      "stock": {
+        "total": 9,
+        "passed": 9,
+        "phase_passed": [
+          true,
+          true,
+          true
+        ]
+      },
+      "kda": {
+        "total": 9,
+        "passed": 9,
+        "phase_passed": [
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "restoration_health": 200,
+    "throughput_ratios": [
+      {
+        "batch": 1,
+        "prompt_tokens": 256,
+        "ratio": 1.1259630558521248
+      },
+      {
+        "batch": 4,
+        "prompt_tokens": 256,
+        "ratio": 0.7522948809368285
+      },
+      {
+        "batch": 1,
+        "prompt_tokens": 2048,
+        "ratio": 1.1110297533698958
+      }
+    ],
+    "evidence_archive": {
+      "archive": "kdamodelv2-evidence-v1.tar.gz",
+      "bytes": 51116668,
+      "sha256": "0920a9bed5b447fdf9673cb60fc6fbceb89fb5548e5c41404a790d054dfd980c"
+    }
+  },
+  "kda_small_batch": {
+    "native_report": "kda-small-batch-native-v1.json",
+    "adapter_report": "kda-small-batch-adapter-v1.json",
+    "status": "component_passed_full_model_candidate_complete_restored",
+    "actual_vllm_cases": 12,
+    "fused_2_to_8_shape_cases": 60,
+    "all_fused_2_to_8_outputs_bits_exact": true,
+    "adapter_seconds": 124.26953624599264,
+    "adapter_peak_cuda_bytes": 625506304,
+    "summed_actual_adapter_latency_ratios_vs_dense": {
+      "2": {
+        "input": {
+          "graph_timing": 0.9747864253215177,
+          "eager_timing": 1.0793832864853852
+        },
+        "output": {
+          "graph_timing": 1.124958973709896,
+          "eager_timing": 1.4397709815846027
+        }
+      },
+      "3": {
+        "input": {
+          "graph_timing": 0.9817201636485631,
+          "eager_timing": 1.101092991888534
+        },
+        "output": {
+          "graph_timing": 1.089182479080623,
+          "eager_timing": 1.4389957781039022
+        }
+      },
+      "4": {
+        "input": {
+          "graph_timing": 0.9457246432832236,
+          "eager_timing": 1.0633842687839983
+        },
+        "output": {
+          "graph_timing": 1.0778147332368937,
+          "eager_timing": 1.4475878649247234
+        }
+      },
+      "7": {
+        "input": {
+          "graph_timing": 0.9404003467599151,
+          "eager_timing": 1.0570735074110704
+        },
+        "output": {
+          "graph_timing": 1.0685387792413015,
+          "eager_timing": 1.4410412480565922
+        }
+      },
+      "8": {
+        "input": {
+          "graph_timing": 0.946851500185376,
+          "eager_timing": 1.0675752292932768
+        },
+        "output": {
+          "graph_timing": 1.0555301402083959,
+          "eager_timing": 1.3748342870569066
+        }
+      }
+    },
+    "full_model_revision": "kda8modelv1",
+    "reuses_stock_run": "kdamodelv2",
+    "evidence_archive": {
+      "archive": "kda-small-batch-evidence-v1.tar.gz",
+      "bytes": 636092,
+      "sha256": "d9422d75508a96481a784ce2d2618c2bc49cf9e760f3fe3974d9c1dc723eedfb"
+    }
+  },
+  "full_model_kda8_v1": {
+    "status": "complete_measured_quality_unqualified",
+    "report": "full-model-kda8-v1-review.json",
+    "report_sha256": "7268a7eeeb695ebade256f7e0927fe3d698d1711c0526a8af426742d609fe42e",
+    "trace_review": "full-model-kda8-trace-review-v2.json",
+    "saved_cuda_bytes_global": 2293863424,
+    "saved_allocation_fraction": 0.012147480751300174,
+    "quality_gates": {
+      "status": "unqualified_unstable_control",
+      "raw_repeat_kl_limit": 1e-05,
+      "raw_repeat_absolute_nll_difference_limit": 0.0001,
+      "raw_repeat_stable": false,
+      "mean_kl_limit": null,
+      "absolute_mean_nll_difference_limit": null,
+      "passed": false
+    },
+    "sanity": {
+      "passed": 9,
+      "total": 9
+    },
+    "candidate_mean_kl": 0.00010900228083319257,
+    "reused_stock_run": "kdamodelv2",
+    "restoration_health": 200,
+    "throughput_ratios": [
+      {
+        "batch": 1,
+        "prompt_tokens": 256,
+        "ratio": 1.0693591515226113
+      },
+      {
+        "batch": 4,
+        "prompt_tokens": 256,
+        "ratio": 0.9646339225728614
+      },
+      {
+        "batch": 1,
+        "prompt_tokens": 2048,
+        "ratio": 1.0586377483529168
+      }
+    ],
+    "evidence_archive": {
+      "archive": "kda8modelv1-evidence-v1.tar.gz",
+      "bytes": 48963239,
+      "sha256": "854e7d0db05dd61b6ceb6d997fce74ee480a8f9dbf21321e5de9120680d3a6d1"
+    },
+    "analysis_evidence_archive": {
+      "archive": "mxwave-glm53-kda8-review-evidence-v1.tar.gz",
+      "bytes": 55266,
+      "sha256": "536a0d087356d80d211365514f699ae3fa2bc5a451b7f407e0343ada9dbcd25f"
+    }
+  }
+}

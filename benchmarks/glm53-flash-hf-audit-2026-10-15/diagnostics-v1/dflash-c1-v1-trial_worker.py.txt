@@ -1,0 +1,50 @@
+"""Add read-only startup evidence to the frozen warmed exact16 worker."""
+from __future__ import annotations
+import os
+from warmed_model_worker import WarmedModelWorker
+
+
+class TrialWorker(WarmedModelWorker):
+    """Retain target arithmetic and record actual DFlash sharing before serving."""
+
+    def mxwave_trial_snapshot(self):
+        import torch
+        import model_plugin
+        import kda_runtime
+        import vocab_runtime
+        from vllm.distributed import get_tensor_model_parallel_rank
+        r=self.model_runner;target=r.model
+        language=getattr(target,'language_model',target)
+        speculator=r.speculator
+        assert speculator is not None and speculator.model is not None
+        draft=speculator.model
+        assert draft.model._fused_kv_weight.dtype==torch.bfloat16
+        same_head=draft.lm_head is language.lm_head
+        same_embedding=draft.model.embed_tokens is language.model.embed_tokens
+        assert same_head and same_embedding
+        candidate=os.environ['MXWAVE_TRIAL_ARM']=='candidate'
+        if candidate:
+            assert language.lm_head.weight is None
+            assert language.model.embed_tokens.weight is None
+            assert model_plugin.report()['layers_seen']==42
+            assert vocab_runtime.report()['resident_layers']==2
+            assert len(kda_runtime.report()['layers'])==68
+        return dict(arm=os.environ['MXWAVE_TRIAL_ARM'],rank=get_tensor_model_parallel_rank(),
+            target_class=type(target).__name__,draft_class=type(draft).__name__,
+            shared_head=same_head,shared_embedding=same_embedding,
+            head_method=type(language.lm_head.quant_method).__name__,
+            draft_context_buffer_dtype=str(draft.model._fused_kv_weight.dtype),
+            draft_context_buffer_numel=draft.model._fused_kv_weight.numel(),
+            draft_quant_method=type(draft.model.quant_config).__name__,
+            physical_graph_token_counts=sorted({d.num_tokens for d in r.cudagraph_manager.graphs}),
+            max_model_len=r.vllm_config.model_config.max_model_len,
+            max_num_seqs=r.vllm_config.scheduler_config.max_num_seqs,
+            max_num_batched_tokens=r.vllm_config.scheduler_config.max_num_batched_tokens,
+            kv_cache_memory_bytes=r.vllm_config.cache_config.kv_cache_memory_bytes,
+            cuda_allocated_bytes=torch.cuda.memory_allocated(),
+            cuda_reserved_bytes=torch.cuda.memory_reserved(),
+            cuda_peak_allocated_bytes=torch.cuda.max_memory_allocated(),
+            compressed_vocabulary=vocab_runtime.report(),compressed_kda=kda_runtime.report(),
+            compressed_experts=model_plugin.report(),
+            native_mhc=self.mxwave_native_mhc_policy(),
+            complete_stack_KL_qualified=False)

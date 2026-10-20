@@ -1,0 +1,121 @@
+"""Freeze a model experiment from the verified adapter and unchanged warmed workload."""
+from __future__ import annotations
+import hashlib,json,pathlib,shutil,sys,tarfile,time
+
+BASE=pathlib.Path(__file__).parent
+PARENT=pathlib.Path('/private/tmp/mxwave-fp32-input-v1')
+WARM=pathlib.Path('/private/tmp/mxwave-warmed-model-v1')
+sys.path.insert(0,str(BASE/'cpu-source'))
+from fp32_input_policy import policy
+
+def sha(path):
+    with path.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def write(path,value):path.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
+
+def replace(text,old,new):
+    assert old in text,old
+    return text.replace(old,new)
+
+def main():
+    overlay=BASE/'overlay';overlay.mkdir(exist_ok=True);(overlay/'src').mkdir(exist_ok=True)
+    parent=json.loads((PARENT/'prepared.json').read_bytes())
+    proof=json.loads((PARENT/'cross-host-verification.json').read_bytes())
+    assert proof['status']=='passed' and proof['integration_invariants_passed_on_both_GPUs']
+    assert sha(PARENT/'evidence.tar.gz')==proof['archive_sha256']
+    assert proof['source_files']==227 and len(parent['bindings'][0]['code'])==227
+    cpu=json.loads((BASE/'cpu-protocol-check.json').read_bytes())
+    assert cpu['status']=='passed' and cpu['equal_speed_rejected'] and cpu['matched_grouping_nonzero_KL_rejected']
+    new={}
+    for name in ('run_fp32_input_model.py','analyze_fp32_input_model.py'):
+        source=BASE/'cpu-source'/name;shutil.copyfile(source,overlay/'src'/name);new[name]=sha(source)
+    assert new==cpu['source_sha256']
+    for name,h in parent['bindings'][0]['code'].items():assert sha(BASE/'cpu-source'/name)==h
+    for source,name in [(PARENT/'cross-host-verification.json','fp32-input-integration-proof.json'),
+                        (WARM/'evidence/component-cross-host-verification.json','component-proof.json'),
+                        (WARM/'evidence/warmup-component-cross-host-verification.json','warmup-component-proof.json')]:
+        shutil.copyfile(source,overlay/name)
+    plan=json.loads((WARM/'plan.json').read_bytes())
+    plan.update(revision='fp32inputmodelv1',
+        purpose='Measure whether the verified input-only FP32 adapter improves ordinary C1/C8/C16 serving while preserving the unchanged matched model quality gates; retain TTFT/admission, CPU/CUDA memory and actual kernel traces.',
+        parent_revision='fp32inputv1',parent_evidence_archive_sha256=proof['archive_sha256'],
+        parent_source_sha256=parent['bindings'][0]['code'],source_sha256=new,expected_source_files=229,
+        fp32_input_policy=policy(),fp32_input_integration_archive_sha256=proof['archive_sha256'],
+        fp32_input_integration_proof_sha256=sha(overlay/'fp32-input-integration-proof.json'),
+        CPU_protocol_check=cpu,frozen_epoch=time.time(),
+        historical_warmed_model_archive_sha256='0fc867240d04e1770e2970143f48f630551feb35f53b739403c4fb6b8bde64e0',
+        fp32_parent_exact_word_screen_passed=False,fp32_parent_input_timing_screen_passed=False,
+        TTFT_improvement_claimed=False,model_CPU_saving_demonstrated=False)
+    assert sha(overlay/'component-proof.json')==plan['input_component_proof_sha256']
+    assert sha(overlay/'warmup-component-proof.json')==plan['warmup_component_proof_sha256']
+    assert plan['numerical_limits']=={'mean_decode_KL':1e-5,'absolute_mean_NLL':1e-4}
+    assert plan['primary_min_compression_tps_ratio']==1.05 and plan['max_compression_ttft_ratio']==1.05
+    write(BASE/'plan.json',plan);write(overlay/'plan.json',plan)
+    checks={'status':'passed','ruff_passed':(BASE/'ruff.log').read_text().strip()=='All checks passed!',
+        'mypy_passed':'Success: no issues found in 35 source files' in (BASE/'mypy.log').read_text(),
+        'pytest_passed':'781 passed, 1 skipped' in (BASE/'pytest.log').read_text(),
+        'tests_passed':781,'tests_skipped':1,'CPU_protocol_simulation_passed':True,
+        'sources':new,'plan_sha256':sha(BASE/'plan.json'),'GPU_initialized':False,
+        'logs_sha256':{n:sha(BASE/n) for n in ('ruff.log','mypy.log','pytest.log','simulation.log')}}
+    assert checks['ruff_passed'] and checks['mypy_passed'] and checks['pytest_passed']
+    write(BASE/'local-checks.json',checks)
+    for name in ('prepare.py','collect.py','verify.py','launch.py'):
+        original=WARM/name if name!='verify.py' else WARM/'recovery-v2/verify-recovery-v2.py'
+        s=original.read_text()
+        s=s.replace('warmed-model-v1','fp32-input-model-v1').replace('warmedmodelv1','fp32inputmodelv1')
+        s=s.replace('run_warmed_model','run_fp32_input_model').replace('analyze_warmed_model','analyze_fp32_input_model')
+        s=s.replace('full-matchedrow16v1-src','fp32-input-v1-src')
+        s=s.replace('matched-row16-v1-cross-host-verification.json','fp32-input-model-v1-integration-proof.json')
+        s=s.replace('matched-row16-v1-prepared.json','fp32-input-v1-prepared.json')
+        s=s.replace('15feabeb92479432ba548f85137da090b6a7ab5c6f25dacf8f3472559ac4c0d2',proof['archive_sha256'])
+        s=s.replace('==207','==229').replace('source_files=207','source_files=229').replace('"source_files":207','"source_files":229')
+        assert 'restored["health"]==229' not in s
+        if name=='prepare.py':
+            s=replace(s,'ROOT/"run-matchedrow16v1/results"','ROOT/"run-warmedmodelv1/results"')
+            s=replace(s,'"parent_revision":"matchedrow16v1"','"parent_revision":"fp32inputv1"')
+            s=replace(s,"plan['source_sha256'][n]==v for n,v in plan['qualified_warmup_sources'].items()",
+                        "plan['parent_source_sha256'][n]==v for n,v in plan['qualified_warmup_sources'].items()")
+            s=replace(s,'native==parent["native"]','native==json.loads((ROOT/"warmed-model-v1-prepared.json").read_bytes())["native"]')
+            s=s.replace('warmed_model_worker.WarmedModelWorker','fp32_input_worker.FP32InputWorker')
+            s=s.replace('model.controller.cli_check','model.warmed.controller.cli_check')
+            s=replace(s,'assert command[command.index("--worker-extension-cls")+1]=="fp32_input_worker.FP32InputWorker"',
+                'assert command[command.index("--worker-extension-cls")+1]=="fp32_input_worker.FP32InputWorker"\n    assert env["MXWAVE_GLM53_KDA_INPUT_FP32_SPLIT2"]==expected\n    if arm=="candidate":assert env["MXWAVE_GLM53_FP32_LIBRARY"]==model.LIBRARY')
+            s=replace(s,'"startup_warmup_both_arms":True,','"fp32_input_policy":plan["fp32_input_policy"],"fp32_input_integration_archive_sha256":plan["fp32_input_integration_archive_sha256"],\n   "startup_warmup_both_arms":True,')
+        elif name=='collect.py':
+            start=s.index('  names.update(');end=s.index('  for name,target in names.items():',start)
+            s=s[:start]+'''  names.update({"fp32-input-model-v1-mechanism-CPU-check.json":"mechanism-CPU-check.json",
+   "fp32-input-model-v1-cpu-protocol-check.json":"cpu-protocol-check.json",
+   "fp32-input-model-v1-overlay/component-proof.json":"component-cross-host-verification.json",
+   "fp32-input-model-v1-overlay/warmup-component-proof.json":"warmup-component-cross-host-verification.json",
+   "fp32-input-model-v1-overlay/fp32-input-integration-proof.json":"fp32-input-integration-proof.json"})
+  for suffix in("","-v2","-v3"):
+   names["fp32-input-model-v1-storage-relocation"+suffix+".json"]="storage-relocation"+suffix+".json"
+   names["relocate-evidence-fp32-input-model-v1"+suffix+".py"]="storage-relocation"+suffix+".py"
+''' + s[end:]
+            s=s.replace('latest_warmed_model=progress','latest_fp32_input_model=progress')
+        elif name=='verify.py':
+            assert 'restored["health"]==200' in s
+            start=s.index('def verify_decode_mechanism(');end=s.index('def main():',start)
+            s=s[:start]+'''def verify_decode_mechanism(profiles):
+ from analyze_fp32_input_model import verify_decode_mechanism as check
+ return check(profiles)
+''' +s[end:]
+            s=replace(s,' assert sources==prepared',' integration=root/"fp32-input-integration-proof.json"\n assert sha(integration)==plan["fp32_input_integration_proof_sha256"]\n integration_proof=json.loads(integration.read_bytes())\n assert integration_proof["status"]=="passed" and integration_proof["integration_invariants_passed_on_both_GPUs"]\n assert integration_proof["archive_sha256"]==plan["fp32_input_integration_archive_sha256"]\n assert sources==prepared')
+        else:
+            s=replace(s,'"model_loads":2,','"model_loads":2,"input_FP32_split2_candidate_only":True,')
+            s=s.replace('with identical qualified startup warmup and one-time heap trimming launched.',
+                        'with candidate-only FP32 input split two and identical startup preparation launched.')
+        compile(s,name,'exec');(BASE/name).write_text(s)
+    files=[p for p in sorted(overlay.rglob('*')) if p.is_file()]
+    write(overlay/'inventory.json',{'files':[{'path':str(p.relative_to(overlay)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in files]})
+    archive=BASE/'source-only.tar.gz'
+    with tarfile.open(archive,'x:gz',compresslevel=1) as tf:
+        for p in [*files,overlay/'inventory.json']:tf.add(p,arcname=str(p.relative_to(overlay)),recursive=False)
+    write(BASE/'source-freeze.json',{'source_files':229,'all_227_parent_sources_unchanged':True,
+          'new_sources':new,'source_archive_sha256':sha(archive),'plan_sha256':sha(BASE/'plan.json'),
+          'corrected_parent_verifier_sha256':sha(WARM/'recovery-v2/verify-recovery-v2.py'),
+          'operations_sha256':{n:sha(BASE/n) for n in ('prepare.py','collect.py','verify.py','launch.py')},
+          'GPU_model_run_started':False})
+    print(json.dumps({'status':'frozen','source_files':229,'archive_sha256':sha(archive),'plan_sha256':sha(BASE/'plan.json')}))
+
+if __name__=='__main__':main()

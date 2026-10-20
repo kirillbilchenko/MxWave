@@ -1,0 +1,38 @@
+"""Stage immutable source only; do not start a GPU job or touch serving containers."""
+from __future__ import annotations
+import json
+import pathlib
+import shlex
+import subprocess
+
+base = pathlib.Path(__file__).parent
+root = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+freeze = json.loads((base/'actual-source-freeze.json').read_bytes())
+archive = root+'/moe-native-actual-v3-source.tar.gz'
+subprocess.run(['scp','-q',str(base/'actual-source.tar.gz'),'spark:'+archive],check=True,timeout=45)
+script = r'''
+import hashlib,json,pathlib,subprocess,sys
+root=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(root/'full-prefillbudgetv3-src'))
+import full_model_control as c
+archive=root/'moe-native-actual-v3-source.tar.gz';expected=sys.argv[2]
+assert hashlib.sha256(archive.read_bytes()).hexdigest()==expected
+subprocess.run(['scp','-q','-i','/home/kirya/.ssh/id_glm_cluster',str(archive),'kirya@192.168.192.2:'+str(archive)],check=True,timeout=45)
+code="""import hashlib,json,pathlib,sys,tarfile
+p=pathlib.Path(sys.argv[1]);assert hashlib.sha256(p.read_bytes()).hexdigest()==sys.argv[2]
+dest=p.parent/'moe-native-actual-v3-src';dest.mkdir()
+with tarfile.open(p)as tf:
+ members=tf.getmembers();assert sum(m.size for m in members)<16*1024**2
+ assert all(m.isfile()and not pathlib.PurePosixPath(m.name).is_absolute()and '..'not in pathlib.PurePosixPath(m.name).parts for m in members)
+ assert len({m.name for m in members})==len(members)
+ tf.extractall(dest,filter='data')
+manifest=json.loads((dest/'source-manifest.json').read_bytes())
+assert all(hashlib.sha256((dest/n).read_bytes()).hexdigest()==s for n,s in manifest.items())
+print(json.dumps({'source_files':len(manifest),'source_manifest_sha256':hashlib.sha256((dest/'source-manifest.json').read_bytes()).hexdigest()}))
+"""
+results=[json.loads(c.run(rank,['python3','-S','-B','-c',code,str(archive),expected]))for rank in (0,1)]
+assert results[0]==results[1]
+print(json.dumps({'status':'staged','ranks':results,'GPU_job_started':False,'service_modified':False}))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','spark',shlex.join(['python3','-S','-B','-c',script,root,freeze['archive_sha256']])],timeout=120)
+(base/'actual-source-staged.json').write_bytes(raw)
+print(raw.decode())

@@ -1,0 +1,1162 @@
+{
+  "status": "complete",
+  "quality_qualified": false,
+  "scale_storage_lossless": true,
+  "default_dispatch": "graph",
+  "decode_modes": {
+    "graph": {
+      "control_repeat_stable": true,
+      "candidate_repeat_stable": true,
+      "numerical_gate_passed": true,
+      "control_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 7.375989665145098e-06,
+        "mean_decode_nll_difference": 3.4542894395669446e-06
+      },
+      "candidate": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 7.2221506528120575e-06,
+        "mean_decode_nll_difference": -7.172653500405534e-06
+      },
+      "candidate_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 8.89274190260289e-06,
+        "mean_decode_nll_difference": 4.806010951588196e-06
+      }
+    },
+    "eager": {
+      "control_repeat_stable": true,
+      "candidate_repeat_stable": true,
+      "numerical_gate_passed": true,
+      "control_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 6.237737996506576e-06,
+        "mean_decode_nll_difference": 1.180751730019178e-05
+      },
+      "candidate": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 6.042995671421733e-06,
+        "mean_decode_nll_difference": 4.498837156941426e-06
+      },
+      "candidate_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 8.827689950165661e-06,
+        "mean_decode_nll_difference": -8.684447919943239e-07
+      }
+    }
+  },
+  "full_logprob_arrays_bitwise_equal": {
+    "graph": {
+      "control_repeat": false,
+      "candidate": false,
+      "candidate_repeat": false
+    },
+    "eager": {
+      "control_repeat": false,
+      "candidate": false,
+      "candidate_repeat": false
+    }
+  },
+  "end_to_end_bitwise_losslessness_demonstrated": false,
+  "heldout": {
+    "measurements": {
+      "control": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4597806875933124,
+        "perplexity": 4.305015281544249
+      },
+      "control-repeat": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4597806875933124,
+        "perplexity": 4.305015281544249
+      },
+      "candidate": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4597806875933124,
+        "perplexity": 4.305015281544249
+      },
+      "candidate-repeat": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4597806875933124,
+        "perplexity": 4.305015281544249
+      }
+    },
+    "control_repeat_nll_delta": 0.0,
+    "candidate_nll_delta": 0.0,
+    "candidate_repeat_nll_delta": 0.0,
+    "candidate_perplexity_change_percent": 0.0,
+    "absolute_candidate_nll_limit": 1e-05,
+    "gate_passed": true
+  },
+  "practical": {
+    "scores": {
+      "control": [
+        {
+          "name": "json",
+          "kind": "json",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b4216428ec1fc1348158f98bf7fc3a2e095e8d7fc2efc0a97a1bf27d3229db04",
+          "error": null
+        },
+        {
+          "name": "json_types",
+          "kind": "json",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a4545f24078d4f0e8251476a7a81c3d42ffa8c26fcbab1a8950b63c63d68058b",
+          "error": "JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+        },
+        {
+          "name": "constraints",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f52f7fad9159972befbfab0531b8d56b216cb1df5b4bf183f15908fd4f694eb7",
+          "error": null
+        },
+        {
+          "name": "unicode_copy",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "23d18920a425f89c76485a81237ef7ab3462ffba66741943243170d797138e23",
+          "error": null
+        },
+        {
+          "name": "slugify",
+          "kind": "code",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": true,
+          "answer_sha256": "f3a73a930c8544460f4c4071de3d54fe308a46fca8a24fe41fd4b4d89337e37c",
+          "error": null
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "code",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": true,
+          "answer_sha256": "b2a52258ff6f17754060d25f8d36cb803486f7a6e6807bbc4aa9855ffbc9f59f",
+          "error": null
+        },
+        {
+          "name": "retrieval_120",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f90b664918a0c69aa03e5e8e4c605577b6b5277342628f05fc50c97a9b97feac",
+          "error": null
+        },
+        {
+          "name": "retrieval_400",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d36831b2c7a9c451b8da30d99bc60e4524d0877b5db611ee187409d43d3b1717",
+          "error": null
+        },
+        {
+          "name": "tool_berlin",
+          "kind": "tool",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": null
+        },
+        {
+          "name": "tool_boston",
+          "kind": "tool",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0062",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "36063ca25704dd2304427b77eeddafc8470e36c2ee2e7acc0ae03c164d4e09a9",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0176",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "502929c3112208e187b2a654d84b7736159e5a4ace3fd2c9bf0a2d78d0650000",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0248",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "7a7e80092c98b67531c132d2aa586429c788e21388a24b02c2710bb06c7fb47e",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0335",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "fe677928f371e4fb667143d3976aaa9b7451a8195db2e56f54b61ba9159860fa",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0361",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "dacd0b1b237a278dd0684bf4dce8e5be6637b9de92bc4d3780a4920c0a97b8db",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0365",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a8c4f351a8a2c6539fe65426b166f4100a68e55e98ed1f156fe6757a559d90db",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0374",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e0999637897e2c37fedebc99850632f3a70db3d04a6ceccb64d293cb27baad23",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0379",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "ed381e31a778fc8cc872d1161440f8fcb9e64e298211bdd5b78a81554403fe77",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0517",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3892538dd84ce676c74d6d8bde78785a4cf5286ef6dbed58640e5a99e6880b7d",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0574",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "0e5ddbd0808ee6223670a0a4bcbfe4eb4a1d675ff14ba2f3b46a630ff2201c00",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0675",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "ab5f844ce638f2026e2e1db60804dd66ed7d2716ab276119ecc8cfab5775d5ba",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0812",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "1c6ff50ac0ce65498310f90b9961bd1ee29139dbfa501e51ad7fa0809abea20b",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0896",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "040625f259410aeaf9d479866da8b0ad15b9ef3fa03f5577eb2e7920c51945bc",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0978",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a639ae28f2944041e25c4f61c9f58bfb6c80f295d1bba23c47d10ee1c891fb33",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0992",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b31a3888fb95b03a385553abf2d2b52eaf49e9ad0ddea28e36ac4e4edf187530",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1050",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d768c3c099187f2c762da4205d0a55f1e975a5263db87febfc56d774faf8c5bd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1068",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "aba0d973eb3b16fec61dce558bee1b917c985532276d30db249ae4d24bc4b404",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1072",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "9ad51fb6934225ab36400adbe4f9662021f8c85d45ce3ef08e2728f8216ce9f1",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1086",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "8f21ccc5513605782d9da7ac40651e6b04233d0fce9bd52efb86d01675de3cfd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1126",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b8d347b85f6848fc429729954c35857e74541f3bc245c1dab34b7a8a7be89d97",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1133",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3570bd069004dfa107693de3af7cdbbfb87ef1d29e3e6d49869bb5d521b6ce65",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1136",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "dcff46f12a935021d6d63961bacf756a87e4407eb7ef1c257f67590874422ed3",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1153",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "7983bd921f7011a27bdc76559adc663b3fb5f4c34679028bdcfc3bfe9b2a1af7",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1202",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "6b20f72c01aca2eadf2cfec7d0d84574befb9571619f9c28272c1eb7b20e944d",
+          "error": null
+        }
+      ],
+      "candidate": [
+        {
+          "name": "json",
+          "kind": "json",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b4216428ec1fc1348158f98bf7fc3a2e095e8d7fc2efc0a97a1bf27d3229db04",
+          "error": null
+        },
+        {
+          "name": "json_types",
+          "kind": "json",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a4545f24078d4f0e8251476a7a81c3d42ffa8c26fcbab1a8950b63c63d68058b",
+          "error": "JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+        },
+        {
+          "name": "constraints",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f52f7fad9159972befbfab0531b8d56b216cb1df5b4bf183f15908fd4f694eb7",
+          "error": null
+        },
+        {
+          "name": "unicode_copy",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "23d18920a425f89c76485a81237ef7ab3462ffba66741943243170d797138e23",
+          "error": null
+        },
+        {
+          "name": "slugify",
+          "kind": "code",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": false,
+          "answer_sha256": "3de16923604ab4b0ef24fa61c2622669470010a3bba7de705e70eff57ebd03c0",
+          "error": null
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "code",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": true,
+          "answer_sha256": "b2a52258ff6f17754060d25f8d36cb803486f7a6e6807bbc4aa9855ffbc9f59f",
+          "error": null
+        },
+        {
+          "name": "retrieval_120",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f90b664918a0c69aa03e5e8e4c605577b6b5277342628f05fc50c97a9b97feac",
+          "error": null
+        },
+        {
+          "name": "retrieval_400",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d36831b2c7a9c451b8da30d99bc60e4524d0877b5db611ee187409d43d3b1717",
+          "error": null
+        },
+        {
+          "name": "tool_berlin",
+          "kind": "tool",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": null
+        },
+        {
+          "name": "tool_boston",
+          "kind": "tool",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0062",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "36063ca25704dd2304427b77eeddafc8470e36c2ee2e7acc0ae03c164d4e09a9",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0176",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "aeb93e28d5ddb5e1dbc6aee780d20d69cf15768418bcb9edef28e6e45b98300c",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0248",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "7a7e80092c98b67531c132d2aa586429c788e21388a24b02c2710bb06c7fb47e",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0335",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "61a623971f453f87ee6ee211b83081b26d92181e9f5bc3363e1721593290717b",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0361",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "55558d3f17e2a4bb1c42288d19125fddf0b148fe019db981ad07a1b638c61839",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0365",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a8c4f351a8a2c6539fe65426b166f4100a68e55e98ed1f156fe6757a559d90db",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0374",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3e3abf3546d56dc7b17131b0d301f6bd0b1f7bdebc24de5c0d991f92a634d3c9",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0379",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "6fbb1a4d1a8b4208e677074ade0e20290e5a4fef060e645a25cb057967ecdf83",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0517",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3892538dd84ce676c74d6d8bde78785a4cf5286ef6dbed58640e5a99e6880b7d",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0574",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e4dcd80b1934adc2200c61705f6ed3d42d4c6b7de0e083b0fd4e1a91d22a756a",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0675",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "8e8cf692f256aca65ef83e9b580857911bceb5adaa72b79406d7796d4c976615",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0812",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "76d34bafa39068c6d7347ce06d0aee7610c5d71f1ba602584e42181899944daf",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0896",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "040625f259410aeaf9d479866da8b0ad15b9ef3fa03f5577eb2e7920c51945bc",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0978",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "df30f390956596df8fe95b9f0254221310f065e41c3d9a242c0d8ba6a7b6ba9f",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0992",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b31a3888fb95b03a385553abf2d2b52eaf49e9ad0ddea28e36ac4e4edf187530",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1050",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "4ddfd144b1ca71ca81abc2f56df5be4c5b97e40bf766c39122c706399e7da41c",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1068",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "673dd018defd9b56ce803c4564697a8d0ef8004cb7df7b3ee8cb9d611844aff8",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1072",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "9ad51fb6934225ab36400adbe4f9662021f8c85d45ce3ef08e2728f8216ce9f1",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1086",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "8f21ccc5513605782d9da7ac40651e6b04233d0fce9bd52efb86d01675de3cfd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1126",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f848174dd1eac46a5a821843fe46f1552cca00ded94770e38280ded56c2f086f",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1133",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "540fc927432cdc7bf5b758fbce199498f57144dd6fdbd52c4b4b2cfe94b3b28f",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1136",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "dcff46f12a935021d6d63961bacf756a87e4407eb7ef1c257f67590874422ed3",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1153",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b28a42c13e1aa51030ae8a79d6fea67807573ab3e2c6257e850775c11e7e324a",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1202",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "fd89aa5f667599c019c08b2847e7ae63a1078b56c6fe2dece6530997db5fd57f",
+          "error": null
+        }
+      ]
+    },
+    "categories": {
+      "control": {
+        "code": {
+          "passed": 2,
+          "total": 2
+        },
+        "exact": {
+          "passed": 4,
+          "total": 4
+        },
+        "json": {
+          "passed": 1,
+          "total": 2
+        },
+        "math": {
+          "passed": 21,
+          "total": 24
+        },
+        "tool": {
+          "passed": 2,
+          "total": 2
+        }
+      },
+      "candidate": {
+        "code": {
+          "passed": 1,
+          "total": 2
+        },
+        "exact": {
+          "passed": 4,
+          "total": 4
+        },
+        "json": {
+          "passed": 1,
+          "total": 2
+        },
+        "math": {
+          "passed": 22,
+          "total": 24
+        },
+        "tool": {
+          "passed": 2,
+          "total": 2
+        }
+      }
+    },
+    "reference_passed_candidate_failed": [
+      "slugify",
+      "gsm8k_0978"
+    ],
+    "reference_failed_candidate_passed": [
+      "gsm8k_1068",
+      "gsm8k_1133"
+    ],
+    "no_reference_pass_lost": false,
+    "all_inference_requests_completed": true,
+    "inference_failures": {
+      "control": [],
+      "candidate": []
+    }
+  },
+  "allocated_cuda_bytes_after_inference": {
+    "control": 188834497536,
+    "candidate": 178776583680
+  },
+  "combined_cuda_saving_bytes": 10057913856,
+  "repeat_fingerprints": {
+    "control": null,
+    "candidate": null
+  },
+  "quality_protocol_sha256": "183608ad7e4dc9ebd0046f34997f2d0f76fa041dbb42027946c0eadcf7d03f60",
+  "limits": [
+    "Sampled WikiText test windows, not full-corpus standard PPL.",
+    "24 fixed GSM8K test questions, not the full benchmark.",
+    "Reference is already quantized MXFP4; pre-existing quantization error remains.",
+    "Strict numerical repeat floors remain KL <= 1e-5 and absolute NLL <= 1e-4.",
+    "Unstable reference repeats prevent qualification even if practical tasks pass.",
+    "Hooks in optional eager fingerprints synchronize the GPU and can alter drift.",
+    "The quality client itself did not time throughput; the separately bound performance supplement reused the same two loaded engines.",
+    "The original qualitybestv2 failure remains unchanged; this is a new matched experiment with canonical expert ordering.",
+    "End-to-end logits are not bitwise identical; exact storage reconstruction is separate from floating-point arithmetic."
+  ],
+  "independent_verification": {
+    "status": "passed",
+    "verifier_sha256": "b6443c3c5cd037b6d21405438985d542f869d145dda60842eedc5c63fae89a2a",
+    "archive_check_sha256": "6335a55b7f05686a56becea27c75549184e902ce9adc24522ad832eb814b2133",
+    "full_archives": [
+      {
+        "status": "passed",
+        "rank": 0,
+        "archive_sha256": "bc31a0873700218e72b986cde6df1ae4e7612a9b7743f1f5206473e63d8b3461",
+        "archive_bytes": 181914553,
+        "payloads_verified": 829,
+        "payload_bytes_verified": 354286097,
+        "manifest_sha256": "cd88ce6e981538f2ed1bc20afeea20df682e7b76ff1e5c664d1d878fdda52d6f",
+        "verifier_sha256": "c6440b239c13a02bf1e7ad0ea48131d9e1e49b793d31e6f46db06d0c3d6de575",
+        "checked_epoch": 1792234538.0644572
+      },
+      {
+        "status": "passed",
+        "rank": 1,
+        "archive_sha256": "0bd9efb86edbe906c15d4c8563306f7d751da27b703da5133acf9b7ae3f447a6",
+        "archive_bytes": 14586610,
+        "payloads_verified": 130,
+        "payload_bytes_verified": 22560226,
+        "manifest_sha256": "4d3823e89b643b07326d47b84f5c3e776f2c1fb0ddfd3dfb398be38b1dd05707",
+        "verifier_sha256": "c6440b239c13a02bf1e7ad0ea48131d9e1e49b793d31e6f46db06d0c3d6de575",
+        "checked_epoch": 1792234538.4955351
+      }
+    ],
+    "source_groups_checked": 672,
+    "code_files_checked": 114,
+    "source_audit_sha256": "a83ec4b65d4520ead1e63f99ddd8cb1e10424664afb65f2763f9fe0c25cee927",
+    "original_review_sha256": "fee692ae568977a71e62bea1fc637216d15edc425c832b4f36e153224f519e44",
+    "independent_logaddexp_decode_metrics": {
+      "graph_control_repeat": {
+        "steps": 48,
+        "mean_kl": 7.375989665074795e-06,
+        "mean_nll_difference": 3.454289439496548e-06
+      },
+      "graph_candidate": {
+        "steps": 48,
+        "mean_kl": 7.2221506528339685e-06,
+        "mean_nll_difference": -7.172653500383634e-06
+      },
+      "graph_candidate_repeat": {
+        "steps": 48,
+        "mean_kl": 8.892741902644254e-06,
+        "mean_nll_difference": 4.806010951629538e-06
+      },
+      "eager_control_repeat": {
+        "steps": 48,
+        "mean_kl": 6.2377379964491974e-06,
+        "mean_nll_difference": 1.1807517300134427e-05
+      },
+      "eager_candidate": {
+        "steps": 48,
+        "mean_kl": 6.042995671363263e-06,
+        "mean_nll_difference": 4.498837156883053e-06
+      },
+      "eager_candidate_repeat": {
+        "steps": 48,
+        "mean_kl": 8.827689950256609e-06,
+        "mean_nll_difference": -8.684447919034152e-07
+      }
+    },
+    "all_task_scores_recomputed": true,
+    "review_recompute_max_absolute_error": 2.220005592117741e-15,
+    "decode_absolute_tolerance": 1e-10,
+    "heldout_all_four_runs_have_identical_float32_bytes": true,
+    "dispatch_coverage_checked": true,
+    "original_service_restored": true
+  },
+  "performance_supplement": {
+    "status": "complete",
+    "protocol_sha256": "f7cd768f3ade29b2454c0621e25d20a8956bb13b095ebda9b05f1c2733f1f63c",
+    "trials_per_case": 5,
+    "generated_tokens": 64,
+    "cases": [
+      {
+        "batch": 1,
+        "prompt_tokens": 256,
+        "reference_tps": 14.992791859363724,
+        "candidate_tps": 16.772339375529985,
+        "tps_change_percent": 11.869353839224072,
+        "reference_ttft_seconds": 0.3727698470465839,
+        "candidate_ttft_seconds": 0.3994029179448262,
+        "ttft_change_percent": 7.144641957833575,
+        "reference_trial_tps": [
+          14.992791859363724,
+          15.00374546819837,
+          15.020797285413412,
+          14.928803782610387,
+          14.933906754575359
+        ],
+        "candidate_trial_tps": [
+          16.571061133589183,
+          16.68687461516525,
+          16.830982676631844,
+          16.84784417544478,
+          16.772339375529985
+        ]
+      },
+      {
+        "batch": 4,
+        "prompt_tokens": 256,
+        "reference_tps": 38.77212729372124,
+        "candidate_tps": 39.01626669468607,
+        "tps_change_percent": 0.6296776009098837,
+        "reference_ttft_seconds": 1.065906362986425,
+        "candidate_ttft_seconds": 1.1316758440225385,
+        "ttft_change_percent": 6.170286933257674,
+        "reference_trial_tps": [
+          38.77212729372124,
+          38.89426855544878,
+          30.353039839334663,
+          37.5218140155627,
+          38.91887716323344
+        ],
+        "candidate_trial_tps": [
+          30.752546758611725,
+          39.006156090749386,
+          39.01626669468607,
+          39.58755898366354,
+          39.11845597981489
+        ]
+      },
+      {
+        "batch": 1,
+        "prompt_tokens": 2048,
+        "reference_tps": 12.501365971991447,
+        "candidate_tps": 13.93238698021185,
+        "tps_change_percent": 11.446917172303571,
+        "reference_ttft_seconds": 1.1726445620297454,
+        "candidate_ttft_seconds": 1.1992737149703316,
+        "ttft_change_percent": 2.2708631244998445,
+        "reference_trial_tps": [
+          12.485632711677077,
+          12.548664242026925,
+          12.501365971991447,
+          12.440117937268795,
+          12.553499013798037
+        ],
+        "candidate_trial_tps": [
+          13.93238698021185,
+          13.88577174393613,
+          14.043224724040781,
+          13.902755886120017,
+          14.026659896186011
+        ]
+      }
+    ],
+    "after_all_quality_scoring": true,
+    "both_c4_profiles_complete": true,
+    "limits": [
+      "Only batch one is CUDA graph captured; concurrency four is eager.",
+      "Near-parity throughput changes are not a statistical significance claim.",
+      "Source snapshot, arrays and native archive bytes independently verified."
+    ]
+  },
+  "strict_failure_analysis": {
+    "remaining_failures": {
+      "slugify": "Function passes isolated execution tests but violates the required bare-code format by adding Markdown fences.",
+      "gsm8k_0978": "Arithmetic and numeric answer are correct (160); #### occurs after the answer, leaving the required final numeric field empty."
+    },
+    "original_gate_unchanged": true,
+    "strict_qualification_passed": false,
+    "manual_review_is_not_a_replacement_grade": true,
+    "gained_cases": {
+      "gsm8k_1068": "Correct numeric answer in both; candidate obeys the required final-answer marker.",
+      "gsm8k_1133": "Reference answers 60, candidate answers the correct 50."
+    }
+  },
+  "experiment": "stablequalityv1",
+  "source_repository": "INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound",
+  "source_revision": "35d1b0d5cb4a0db075fd2749c897e970dc15bfa5",
+  "runtime_image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+  "reference_uses_same_stable_dispatch_patch": true,
+  "analysis_bundles": [
+    {
+      "status": "passed",
+      "rank": 0,
+      "archive_sha256": "4a4d14ba735f053fc622300eefe633bf0bee05f753f3bd84441b7a329d86f652",
+      "files_verified": 816,
+      "checked_epoch": 1792234482.9158049
+    },
+    {
+      "status": "passed",
+      "rank": 1,
+      "archive_sha256": "728202614953bbc97b377f39bf7c324fa499abd5ab003c082e72ecf2d6a34222",
+      "files_verified": 4,
+      "checked_epoch": 1792234482.952405
+    }
+  ],
+  "allocated_cuda_gib_after_inference": {
+    "control": 175.86583042144775,
+    "candidate": 166.49866819381714
+  },
+  "combined_cuda_saving_percent": 5.326311657689839,
+  "combined_cuda_saving_gib": 9.367162227630615,
+  "component_payload_accounting": {
+    "totals": {
+      "u8_expert_scales": {
+        "raw_bytes": 9512681472,
+        "retained_bytes": 2384481712
+      },
+      "bf16_kda": {
+        "raw_bytes": 9287237632,
+        "retained_bytes": 6596544432
+      },
+      "bf16_vocabulary": {
+        "raw_bytes": 2537553920,
+        "retained_bytes": 1788921568
+      }
+    },
+    "added_kda_and_scale_pool_bytes": 488636416,
+    "interpretation": "Gross payload savings are not independent whole-model CUDA deltas; the measured net reduction includes pools and allocator differences. Scales are U8 before compression."
+  }
+}

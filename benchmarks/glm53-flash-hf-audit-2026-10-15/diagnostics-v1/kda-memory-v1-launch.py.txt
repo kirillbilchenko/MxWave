@@ -1,0 +1,39 @@
+"""Launch only the authorized, frozen two-GPU startup-warmup component."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='kda-memory-v1';sys.path.insert(0,str(ROOT/(DIR+'-src-v2')))
+import full_model_control as c
+from run_kda_memory import preflight
+
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ receipt=ROOT/(DIR+'-launch.json');assert not receipt.exists()
+ assert not (ROOT/(DIR+'-controller.json')).exists() and not (ROOT/DIR).exists()
+ assert sha(ROOT/(DIR+'-source-v2.tar.gz'))=='a3a72d6f11940824fd10c223dc56ac9e63fb165e3a988cc9d64078f00a354b37'
+ state=json.loads((ROOT/(DIR+'-preparation-v3.json')).read_bytes())
+ assert state['status']=='passed' and state['source_files']==210
+ prepared=ROOT/(DIR+'-prepared-v2.json')
+ assert sha(prepared)==state['prepared_sha256']=='3fcd31fc9611720aac1aa2a0ac164829847d7b0d3515ef0352c99d59a1a86203'
+ assert sha(ROOT/('collect-'+DIR+'.py'))=='87e259ac4939edc150715ad695dd9b8b8a9610ba38e2c2fc04cd16bad861de99'
+ assert sha(ROOT/('verify-'+DIR+'.py'))=='73a93dba15717a0a84cc2f07b92a1e43cf9023baea7c811ba7bb129ab5ad0f3d'
+ bound=preflight();assert c.health(8000)
+ originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+ assert all(v['State']['Running'] for v in originals)
+ assert [c.identity(v) for v in originals]==bound['originals']
+ collect=subprocess.Popen(['python3','-S','-u',str(ROOT/('collect-'+DIR+'.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-collector.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ run=subprocess.Popen(['python3','-S','-u',str(ROOT/(DIR+'-src-v2/run_kda_memory.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-controller.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ result={'controller_pid':run.pid,'collector_pid':collect.pid,'started_epoch':time.time(),'source_files':210,
+ 'prepared_sha256':sha(prepared),'plan_sha256':state['plan_sha256'],
+ 'collector_sha256':sha(ROOT/('collect-'+DIR+'.py')),'verifier_sha256':sha(ROOT/('verify-'+DIR+'.py')),
+ 'launcher_sha256':sha(pathlib.Path(__file__)),'protocol':bound['protocol'],'automatic_promotion_allowed':False}
+ c.write(receipt,result)
+ current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+ current.update(active_experiment='kdamemoryv1',launch=result,updated_epoch=time.time(),
+  state='Bounded two-GPU KDA reconstruction/copy/GEMM timing and separate hardware counters; no serving policy change or automatic promotion.',
+  user_resumed_work=True,work_paused_by_user=False)
+ c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',current)
+ print(json.dumps({k:v for k,v in result.items() if k!='protocol'}))
+if __name__=='__main__':main()

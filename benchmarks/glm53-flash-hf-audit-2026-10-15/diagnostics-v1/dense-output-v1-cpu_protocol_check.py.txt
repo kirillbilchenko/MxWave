@@ -1,0 +1,40 @@
+from __future__ import annotations
+import pathlib,sys,json,copy,hashlib,importlib.util,struct
+b=pathlib.Path('/private/tmp/mxwave-dense-output-v1');sys.path.insert(0,str(b/'overlay/src'));from dense_output_probe import protocol,assess,summarize,PAIRS
+p=protocol();plan=json.loads((b/'plan.json').read_bytes())
+def samples():
+ out=[]
+ for i in range(16):
+  order=['a','b','b','a'] if i%2==0 else ['b','a','a','b'];pairs=list(PAIRS) if i%2==0 else list(reversed(PAIRS))
+  out.append({'trial':i,'pair_order':pairs,'pairs':{n:[{'arm':a,'us':([80.] if n=='dense_repeat' or n=='dense_vs_parent' and a=='b' else [100.])*8} for a in order] for n in pairs}})
+ return out
+cases=[]
+for case in [x for x in plan['selected_cases'] if x['rank']==0]:
+ entry={**case,'weight_bits_exact':True,'destination_guards_unchanged':True,'packed_bytes':case['expected_packed_bytes'],'packed_buffers_unchanged':True,'dense_weight_sha256_after':case['logical_weight_sha256'],'measurements':[]}
+ for tokens in p['tokens']:
+  entry['measurements'].append({'tokens':tokens,'arithmetic':{'finite':True,'relative_l2':0.,'passed':True},'dense_source_bits_exact':True,'parent_source_bits_exact':True,'parent_eager_graph_bits_exact':True,'dense_eager_graph_bits_exact':True,'repeats_bits_exact':True,'graph_replay_retained_allocation_bytes':0,'timing':[]})
+  for mode in p['execution_modes']:
+   for cache in p['cache_regimes']:
+    rows=samples();entry['measurements'][-1]['timing'].append({'mode':mode,'cache':cache,'samples':rows,'summary':summarize(rows,tokens)})
+ cases.append(entry)
+r={'status':'complete','protocol':p,'rank':0,'cases':cases,'CUDA_peak_bytes':1024};review=assess(r)
+assert review['component_screen_passed'] and review['events']==110592 and len(review['summaries'])==72
+bad=copy.deepcopy(r);bad['cases'][0]['measurements'][0]['timing'][0]['samples'][0]['pairs']['parent_repeat'][0]['us'].pop()
+try:assess(bad)
+except ValueError:pass
+else:raise AssertionError('Missing event accepted')
+bad=copy.deepcopy(r);bad['cases'][0]['dense_weight_sha256_after']='changed'
+try:assess(bad)
+except ValueError:pass
+else:raise AssertionError('Changed dense storage accepted')
+spec=importlib.util.spec_from_file_location('v',b/'verify.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+payload=b'';header={};digests=[]
+for i in range(7):
+ data=bytes([i])*i;header[str(i)]={'dtype':'U8','shape':[len(data)],'data_offsets':[len(payload),len(payload)+len(data)]};payload+=data;digests.append(hashlib.sha256(data).hexdigest())
+h=json.dumps(header).encode();path=b/'synthetic-packed.safetensors';path.write_bytes(struct.pack('<Q',len(h))+h+payload);case={'packed_bytes':len(payload),'buffer_sha256':digests};v.packed_file(path,case)
+path2=b/'synthetic-packed-corrupt.safetensors';path2.write_bytes(path.read_bytes()[:-1]+b'X')
+try:v.packed_file(path2,case)
+except AssertionError:pass
+else:raise AssertionError('Changed packed byte accepted')
+result={'status':'passed','complete_cases':3,'complete_conditions':72,'events':110592,'missing_event_rejected':True,'changed_dense_weight_rejected':True,'packed_zero_length_buffer_accepted':True,'changed_packed_payload_rejected':True,'model_speed_qualified':False,'source_sha256':{n:hashlib.sha256((b/'overlay/src'/n).read_bytes()).hexdigest() for n in ['dense_output_probe.py','benchmark_dense_output.py','run_dense_output.py']},'verifier_sha256':hashlib.sha256((b/'verify.py').read_bytes()).hexdigest()}
+(b/'cpu-protocol-check.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

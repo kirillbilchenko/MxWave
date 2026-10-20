@@ -1,0 +1,1065 @@
+{
+  "status": "complete",
+  "experiment": "gsm8kfullv1",
+  "date": "2026-10-17",
+  "model": {
+    "repository": "INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound",
+    "revision": "35d1b0d5cb4a0db075fd2749c897e970dc15bfa5",
+    "runtime_image_sha256": "39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+    "hardware": "2 x DGX Spark GB10 / SM121, TP2",
+    "fixed_fp8_kv_bytes_per_rank": 4294967296,
+    "same_canonical_dispatch_both_arms": true,
+    "fp4_weight_codes_unchanged": true
+  },
+  "protocol": {
+    "version": 1,
+    "dataset": "GSM8K main/test",
+    "source_sha256": "3730d312f6e3440559ace48831e51066acaca737f6eabec99bccb9e4b3c39d14",
+    "questions_per_arm": 1319,
+    "arms_in_order": [
+      "control",
+      "candidate"
+    ],
+    "concurrency": 4,
+    "fewshot": 0,
+    "seed": 42,
+    "temperature": 0,
+    "max_tokens": 1024,
+    "reasoning_effort": "low",
+    "capture_sizes": [
+      1,
+      4
+    ],
+    "speculative_decoding": false,
+    "primary_score": "Natural stop and final numeric answer match; last-number extraction",
+    "secondary_score": "Original strict bare-number / ####-tail instruction contract",
+    "all_questions_and_errors_counted": true,
+    "retries": 0,
+    "qualification_attempted": false,
+    "previous_failed_gates_preserved": true,
+    "known_reference_repeat_kl": 1.1791085357822653e-05,
+    "limits": [
+      "Zero-shot chat protocol, not a published few-shot leaderboard setting.",
+      "Natural variable-length request groups; admission may differ between arms.",
+      "Reference floating-point repeatability remains unresolved; compare answer outcomes.",
+      "This benchmark cannot amend earlier strict qualification failures.",
+      "Same imported MXFP4 weights in both arms; BF16-source quantization cost unmeasured."
+    ]
+  },
+  "scores": {
+    "control": {
+      "completed_questions": 1319,
+      "answer_exact_matches": 1246,
+      "accuracy": 0.9446550416982562,
+      "accuracy_wilson95": [
+        0.9309746362170733,
+        0.9557529396223797
+      ],
+      "strict_format_matches": 1228,
+      "strict_accuracy": 0.931008339651251,
+      "truncations": 0,
+      "api_errors": 0
+    },
+    "candidate": {
+      "completed_questions": 1319,
+      "answer_exact_matches": 1244,
+      "accuracy": 0.9431387414708112,
+      "accuracy_wilson95": [
+        0.9293064173382487,
+        0.9543973645511977
+      ],
+      "strict_format_matches": 1230,
+      "strict_accuracy": 0.9325246398786959,
+      "truncations": 0,
+      "api_errors": 0
+    }
+  },
+  "accuracy_change_percentage_points": -0.15163002274449777,
+  "paired_answers": {
+    "reference_correct_candidate_wrong": 22,
+    "reference_wrong_candidate_correct": 20,
+    "discordant_pairs": 42,
+    "mcnemar_exact_two_sided_p": 0.8776143287523155,
+    "strict_passes_lost": 29,
+    "strict_passes_gained": 31,
+    "question_differences": [
+      {
+        "source_index": 0,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 5,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 7,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 10,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 63,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 70,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 79,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 93,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 111,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 122,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 126,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 145,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 158,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 187,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 212,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 224,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 238,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 244,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 270,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 308,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 309,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 347,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 361,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 371,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 398,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 439,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 443,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 462,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 544,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 551,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 584,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 594,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 627,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 640,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 754,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 769,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 778,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 814,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 847,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 851,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 852,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 863,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 870,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 882,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 904,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 923,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 944,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 954,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 960,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 973,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 979,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 1033,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 1038,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 1041,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 1062,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 1111,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 1183,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 1207,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 1215,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 1240,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      },
+      {
+        "source_index": 1265,
+        "control": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        },
+        "candidate": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        }
+      },
+      {
+        "source_index": 1275,
+        "control": {
+          "answer_exact_match": true,
+          "strict_format_match": true
+        },
+        "candidate": {
+          "answer_exact_match": false,
+          "strict_format_match": false
+        }
+      }
+    ]
+  },
+  "timing": {
+    "control": {
+      "benchmark_wall_seconds": 2260.98725438118,
+      "questions_per_minute": 35.00240872505944,
+      "completion_tokens": 94441,
+      "prompt_tokens": 116049,
+      "output_tokens_per_second": 41.76980644937249,
+      "mean_completion_tokens_per_question": 71.60045489006824,
+      "mean_request_seconds": 6.849841444147336,
+      "median_request_seconds": 6.531285375007428,
+      "p95_request_seconds": 11.11620502541191,
+      "p99_request_seconds": 14.639121239180676,
+      "max_request_seconds": 23.29914588300744,
+      "scores": {
+        "completed_questions": 1319,
+        "answer_exact_matches": 1246,
+        "accuracy": 0.9446550416982562,
+        "accuracy_wilson95": [
+          0.9309746362170733,
+          0.9557529396223797
+        ],
+        "strict_format_matches": 1228,
+        "strict_accuracy": 0.931008339651251,
+        "truncations": 0,
+        "api_errors": 0
+      }
+    },
+    "candidate": {
+      "benchmark_wall_seconds": 2257.414770126343,
+      "questions_per_minute": 35.057801980967234,
+      "completion_tokens": 94993,
+      "prompt_tokens": 116049,
+      "output_tokens_per_second": 42.08043699239349,
+      "mean_completion_tokens_per_question": 72.01895375284306,
+      "mean_request_seconds": 6.839944509260625,
+      "median_request_seconds": 6.504520810034592,
+      "p95_request_seconds": 11.062206792586949,
+      "p99_request_seconds": 14.54013522331952,
+      "max_request_seconds": 31.729299567989074,
+      "scores": {
+        "completed_questions": 1319,
+        "answer_exact_matches": 1244,
+        "accuracy": 0.9431387414708112,
+        "accuracy_wilson95": [
+          0.9293064173382487,
+          0.9543973645511977
+        ],
+        "strict_format_matches": 1230,
+        "strict_accuracy": 0.9325246398786959,
+        "truncations": 0,
+        "api_errors": 0
+      }
+    }
+  },
+  "output_tokens_per_second_change_percent": 0.7436724500926362,
+  "questions_per_minute_change_percent": 0.1582555541902897,
+  "request_latency_median_change_percent": -0.4097901628254297,
+  "assistant_output_agreement": {
+    "valid_response_pairs": 1319,
+    "assistant_message_text_equal": 506,
+    "final_answer_text_equal": 604,
+    "extracted_numeric_answer_equal": 1264,
+    "both_numeric_answers_unextractable": 10,
+    "same_primary_correctness": 1277,
+    "both_primary_correct": 1224,
+    "both_primary_wrong": 53,
+    "same_strict_score": 1259
+  },
+  "memory": {
+    "control": {
+      "per_rank_allocated_bytes": [
+        94417274368,
+        94417274368
+      ],
+      "allocated_bytes": 188834548736,
+      "per_rank_reserved_bytes": [
+        94866767872,
+        94864670720
+      ],
+      "per_rank_peak_allocated_bytes": [
+        94585581056,
+        94585581056
+      ],
+      "adapter_component_counters": {
+        "scale_raw_bytes": 0,
+        "scale_retained_bytes": 0,
+        "moe_scratch_bytes": 0,
+        "kda_raw_bytes": 0,
+        "kda_packed_bytes": 0,
+        "kda_pool_bytes": 0,
+        "vocabulary_raw_bytes": 0,
+        "vocabulary_retained_bytes": 0
+      }
+    },
+    "candidate": {
+      "per_rank_allocated_bytes": [
+        89389112832,
+        89387522048
+      ],
+      "allocated_bytes": 178776634880,
+      "per_rank_reserved_bytes": [
+        90527760384,
+        90525663232
+      ],
+      "per_rank_peak_allocated_bytes": [
+        90024551936,
+        90022961152
+      ],
+      "adapter_component_counters": {
+        "scale_raw_bytes": 9512681472,
+        "scale_retained_bytes": 2384481712,
+        "moe_scratch_bytes": 75497472,
+        "kda_raw_bytes": 9287237632,
+        "kda_packed_bytes": 6596544432,
+        "kda_pool_bytes": 413138944,
+        "vocabulary_raw_bytes": 2537553920,
+        "vocabulary_retained_bytes": 1788921568
+      }
+    }
+  },
+  "combined_cuda_saving_bytes": 10057913856,
+  "combined_cuda_saving_gib": 9.367162227630615,
+  "combined_cuda_saving_percent": 5.326310213530607,
+  "quality_qualified": false,
+  "qualification_attempted": false,
+  "previous_failed_qualifications_preserved": true,
+  "candidate_telemetry_brief": {
+    "status": "observed",
+    "recorded_epoch": 1792254478.4828658,
+    "experiment": "gsm8kfullv1",
+    "phase": "candidate_gsm8k",
+    "method": "Read-only /proc/stat 1-second CPU sample and nvidia-smi query/dmon, three one-second GPU samples per rank; both ranks queried concurrently.",
+    "ranks": [
+      {
+        "rank": 0,
+        "cpu_count": 20,
+        "loadavg_1m_5m_15m": [
+          3.86,
+          3.62,
+          3.38
+        ],
+        "cpu_busy_percent": 26.609657947686117,
+        "mem_available_kib": 22534284,
+        "swap_used_kib": 0,
+        "gpu_active_percent_samples": [
+          95,
+          96,
+          96
+        ],
+        "gpu_power_watt_samples": [
+          48,
+          48,
+          47
+        ],
+        "gpu_temperature_c_samples": [
+          76,
+          76,
+          76
+        ],
+        "gpu_sm_clock_mhz_samples": [
+          2476,
+          2476,
+          2457
+        ],
+        "reported_memory_utilization_percent": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "rank": 1,
+        "cpu_count": 20,
+        "loadavg_1m_5m_15m": [
+          2.71,
+          2.68,
+          2.6
+        ],
+        "cpu_busy_percent": 13.604417670682734,
+        "mem_available_kib": 24052520,
+        "swap_used_kib": 0,
+        "gpu_active_percent_samples": [
+          96,
+          96,
+          96
+        ],
+        "gpu_power_watt_samples": [
+          55,
+          54,
+          55
+        ],
+        "gpu_temperature_c_samples": [
+          79,
+          80,
+          80
+        ],
+        "gpu_sm_clock_mhz_samples": [
+          2470,
+          2470,
+          2463
+        ],
+        "reported_memory_utilization_percent": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "limits": [
+      "Brief telemetry snapshot, not a sustained utilization profile.",
+      "GPU active time includes active kernels waiting on memory or communication; it does not measure achieved FLOPS or GB/s.",
+      "nvidia-smi reports 0 percent memory utilization and no memory clock/size on this device; this snapshot cannot establish actual memory bandwidth saturation.",
+      "Linux load average is not GPU utilization.",
+      "No reference-arm telemetry comparison was captured."
+    ]
+  },
+  "evidence": {
+    "archives": {
+      "status": "passed",
+      "payloads_verified": 2960,
+      "archives": [
+        {
+          "rank": 0,
+          "files": 2810,
+          "source_files": 139,
+          "archive_sha256": "3ff4fd2f047a653d0650d892d7ab8b525b66d341223a0d6fdae74d857cb213d5",
+          "manifest_sha256": "cb564d516bcbb26b78e882c8e592ea1dad7f04c2b02938fe48dd85ba6553c789"
+        },
+        {
+          "rank": 1,
+          "files": 150,
+          "source_files": 139,
+          "archive_sha256": "7b793191463ef8695f7e187bee588501306f590d210e17243fe2c972d331a90a",
+          "manifest_sha256": "1395b4e68bc51c8c490e4c2bda92c3c3a60d832a8fd7671417128d5b57a08020"
+        }
+      ],
+      "verifier_sha256": "59b92f8cee357d1768a78f47c9fc09f10c52e461cd0106f9618d1a63cf5a667c"
+    },
+    "raw_responses_independently_regraded": 2638,
+    "source_scale_groups_verified": 672,
+    "source_inventory_sha256": "fbc30821a34cd4270889bc04466869a5968b474f079535adec1c3c0caa073bdc",
+    "qualified_component_sources": {
+      "moe_runtime.py": "960e5febe55af6b1e998b55e3665a59b0d0ac34b0d46a0fb5912e237f928cb62",
+      "scale_tiles.py": "64238eefcd862059c0b3569981a480739603cf4d97308973537d158bb3257d97",
+      "kda_runtime.py": "a3ddf07e196c7a13f6fcc3798fc54e4d311275283436ad103abab00126a93449",
+      "stable_dispatch.py": "7742a95db9975d40e1049e85f95bddec68daaa51e37bd6eb7ea9ccbae21d0b85",
+      "stable_dispatch_gpu.py": "5749762758ac8cb821d8e3df6b781fe22c6414153fa1872f1c972f2ecb44c1eb"
+    },
+    "prepared_sha256": "cd2cea32824b40445aac57c3155250a99656695c25c05b54ac074b9d8acf51ee",
+    "cpu_preflight_sha256": "45a5377575cc04ae6ec6e084c036ba43fd200138e45fecdd8942f171ca330b61",
+    "frozen_verifier_sha256": "6f781425f70740c4ba10585b838359a7d370263a2c199fabcb83919e8ccd2333",
+    "independent_review_sha256": "261cf4c12822f0f48c1b8fbcfcfa0c8543d43d80e70eb0513bf8b6e409278dfa",
+    "workload_review_sha256": "4218b9be85dc49c36d394433a27ec42373eaa338c37f4152c00c23c274c61213",
+    "postprocessing_script_sha256": "59b7ccc867270a225e99d897614e8b047ae3e5a0f418a5a6e999f57eceb27025"
+  },
+  "restoration": {
+    "status": "complete",
+    "started_epoch": 1792256106.3944504,
+    "health": 200,
+    "containers": [
+      {
+        "rank": 1,
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "rank": 0,
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ],
+    "finished_epoch": 1792256253.9120185
+  },
+  "limits": [
+    "Zero-shot chat protocol, not a published few-shot leaderboard setting.",
+    "Natural variable-length request groups; admission may differ between arms.",
+    "Reference floating-point repeatability remains unresolved; compare answer outcomes.",
+    "This benchmark cannot amend earlier strict qualification failures.",
+    "Same imported MXFP4 weights in both arms; BF16-source quantization cost unmeasured.",
+    "Wilson bounds describe question-level sampling uncertainty, not repeat-run noise.",
+    "Matched-pair score significance does not prove exact arithmetic or causal attribution.",
+    "Generated completion lengths vary, so report both questions/minute and output tokens/second.",
+    "Assistant text comparisons omit ids/timestamps/usage and include available reasoning fields.",
+    "Text agreement is not full-logit equality; strict qualification failures remain unchanged.",
+    "One full-test run per arm, reference first; no temporal speed confidence interval.",
+    "No TTFT or profiler capture in this GSM8K batch.",
+    "Telemetry is a brief candidate-only observation, not bandwidth/compute roofline evidence.",
+    "Storage bytes are restored exactly; complete inference is not claimed bit-identical."
+  ]
+}

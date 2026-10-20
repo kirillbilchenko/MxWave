@@ -1,0 +1,38 @@
+"""Stage a small frozen trial beside the existing service, then run CPU-only checks."""
+from __future__ import annotations
+import hashlib,io,json,pathlib,shlex,subprocess,tarfile,time
+
+b=pathlib.Path(__file__).parent
+assert (b/'plan.json').is_file()
+names=['plan.json','trial_boot.py','trial_plugin.py','trial_worker.py','prepare_remote.py','measure_serving.py','revision.json']
+manifest={n:hashlib.sha256((b/n).read_bytes()).hexdigest()for n in names}
+(b/'source-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');names.append('source-manifest.json')
+buf=io.BytesIO()
+with tarfile.open(fileobj=buf,mode='w:gz')as tf:
+    for n in names:tf.add(b/n,arcname=n,recursive=False)
+data=buf.getvalue();(b/'source-v1.tar.gz').write_bytes(data)
+root='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/serving-trial-v2'
+unpack=r'''
+import io,pathlib,sys,tarfile,hashlib
+r=pathlib.Path(sys.argv[1]);r.mkdir(exist_ok=False)
+data=sys.stdin.buffer.read();assert hashlib.sha256(data).hexdigest()==sys.argv[2]
+with tarfile.open(fileobj=io.BytesIO(data))as tf:
+ for m in tf.getmembers():
+  assert m.isfile()and pathlib.Path(m.name).name==m.name
+  (r/m.name).open('xb').write(tf.extractfile(m).read())
+'''
+relay=r'''
+import subprocess,sys,shlex
+data=sys.stdin.buffer.read();script,root,digest=sys.argv[1:]
+subprocess.run(['python3','-S','-c',script,root,digest],input=data,check=True)
+subprocess.run(['ssh','-o','BatchMode=yes','-i','/home/kirya/.ssh/id_glm_cluster','kirya@192.168.192.2',
+ shlex.join(['python3','-S','-c',script,root,digest])],input=data,check=True)
+print('both_nodes_staged')
+'''
+ssh=['ssh','-o','BatchMode=yes','spark']
+subprocess.run([*ssh,shlex.join(['python3','-S','-c',relay,unpack,root,hashlib.sha256(data).hexdigest()])],input=data,check=True,timeout=60)
+(b/'staging.json').write_text(json.dumps(dict(source_archive_sha256=hashlib.sha256(data).hexdigest(),
+    files=manifest,staged_epoch=time.time(),remote=root),indent=2)+'\n')
+result=subprocess.run([*ssh,shlex.join(['python3','-S','-B','-u',root+'/prepare_remote.py'])],capture_output=True,text=True,timeout=600)
+(b/'preparation-v1.log').write_text(result.stdout+'\n'+result.stderr)
+print(result.stdout);print(result.stderr[-2500:]);raise SystemExit(result.returncode)

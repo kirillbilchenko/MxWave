@@ -1,0 +1,362 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+WORK = Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+BASE = Path('/private/tmp/mxwave-fp32-input-model-v1')
+DIAG = WORK / 'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+LINK = '../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/'
+stamp = datetime.now(timezone.utc).strftime('%d October %Y, %H:%M UTC')
+findings = json.loads((BASE / 'final-findings.json').read_text())
+assert findings['status'] == 'complete'
+table = '| Workload, 64 output tokens | Stock tok/s | Input-FP32 tok/s | Change | Median TTFT, stock -> input-FP32 | Added TTFT |\n|---|---:|---:|---:|---:|---:|\n'
+for row in findings['timing']:
+    concurrency, length = row['case'].split('-')
+    prompt = '256' if length == 'short' else '2,048'
+    table += f"| {concurrency.upper()} / {prompt} prompt tokens | {row['stock_tps']:.3f} | {row['candidate_tps']:.3f} | {row['tps_change_percent']:+.2f}% | {row['stock_ttft_seconds']:.3f} -> {row['candidate_ttft_seconds']:.3f} s | {row['ttft_change_ms']:+.1f} ms |\n"
+
+report = f'''# Input-only FP32 model result: C16 numerical gate fails
+
+Updated **{stamp}**. `fp32inputmodelv1` is complete and independently
+verified on Spark and Mac: **1,634 payloads, 229 source bindings, 12 worker
+traces**. Keep the preceding warmed exact16 route as the numerically qualified
+experimental fallback. The new FP32 route is not qualified or promoted.
+No experiment is running; original GLM is restored healthy.
+
+The input change modestly reduces decode kernel time, but its C16 probability
+distributions exceed the frozen KL limit. Both arms repeat exactly under matched
+grouping, so this failure is a reproducible cross-arm difference. It does not
+invalidate the previous warmed exact16 qualification.
+
+| Matched quality | Mean decode KL | Mean NLL difference | Decision at KL <=1e-5 and absolute mean NLL <=1e-4 |
+|---|---:|---:|---|
+| C1 | 5.390468235e-6 | -4.842326919e-6 | Pass |
+| C8 | 3.791330145e-6 | -2.700732479e-6 | Pass |
+| C16 | **1.601802484e-5** | -1.203978271e-6 | **Fail** |
+
+All nine ordinary C16 cross-arm combinations and the profile pair reproduce
+the same failure: **10 of 46 comparisons fail**. Every mean-NLL check passes.
+All C1/C8/C16 within-arm repeats have zero KL/NLL differences. Conditioning,
+generated IDs and actual grouping match; all **300 paired timed output
+sequences** also match. Matching sampled tokens does not make the full
+probability distributions equal. No PPL, task accuracy or SQNR was measured.
+
+A separately hashed comparison with the preceding warmed run finds the new
+stock output **640/640 full-vocabulary rows bitwise equal** to previous stock;
+the new candidate matches its predecessor on **290/640 rows**. All ten groups
+match prompts, conditioning, generated IDs and both-rank grouping. The review
+rehashes 2,608 inputs. This supports a real arithmetic difference in the new
+candidate; it does not locate the first differing layer or establish a kernel
+implementation bug. One C16 row accounts for about 54% of total KL; it is retained.
+
+{table}
+These are six-trial medians per case/arm from 72 ordinary timing groups,
+600 requests and 38,400 generated tokens. Loads run in fixed stock-then-candidate
+order. They establish the observed result, not statistical significance or a
+clean isolated comparison against the preceding compressed kernel. The original
+>=5% throughput / <=5% TTFT gate remains failed. The extra C1 throughput over
+the preceding compressed run is only roughly 1-2% in raw measurements.
+
+First-token latency is not solved. The candidate still pays prefill
+reconstruction. Short-C16 first cohorts vary: stock **4/6/1/7/3/5**, candidate
+**7/5/6/7/2/1**. All stop at the existing 3 ms deadline. Therefore the smaller
++132 ms gap, compared with the preceding run's +442 ms, is admission-confounded
+and cannot be attributed to the FP32 kernel. For C1, all-trial median token
+arrivals favor the new candidate from token **7 short / 6 long** onward; this is
+descriptive, not a per-request guarantee.
+
+The fallback's measured short-prompt TTFT remains **0.384 -> 0.422 s at C1**
+and **1.838 -> 2.280 s at C16**. Its throughput is +11.82-13.28% at C1 and
+near parity at C8/C16, with all 46 numerical comparisons passing. The failed
+FP32 run's smaller C16 latency gap must not be transferred to that fallback.
+
+The mixed traces show the intended decode route on both GPUs: 34 FP32 inputs,
+34 original outputs and 34 FP32 reducers per covered M8/M16 graph, with graph
+replay and zero reconstruction. Verification covers 56 M16 and 50 M8 ranges
+across both arms. In candidate mixed profiles, per-rank full-size-step medians
+are approximately **13.60-14.11 ms input**, **6.61-6.82 ms output** and
+**0.084-0.128 ms reduction**. Median total KDA sums are **20.36-20.95 ms**,
+versus about 22 ms in the preceding run. Expert kernel sums remain roughly
+**60-61 ms at C8 / 97-98 ms at C16**. This explains why a small KDA component
+gain has limited concurrent serving impact. Profiles are separate from timing;
+kernel sums are not API wall time or measured memory bandwidth.
+
+Startup dispatch caches remain unchanged and no recognized compilation event
+overlaps an ordinary timing envelope. Boundary telemetry has 144 samples/arm:
+stock **2,437-2,496 MHz / 66-76 C**, candidate **2,457-2,496 MHz / 68-79 C**.
+No trial is filtered or clock-corrected; boundary samples cannot rule out
+transient throttling.
+
+CUDA allocation is **10,057,913,856 bytes / 9.367162 GiB lower across TP2**
+at every measured stage, unchanged from the fallback. Candidate CPU RSS is
+**242.18 MiB higher before quality / 250.52 MiB higher after ordinary timing**
+across TP2. Its lower post-profile RSS is profiler-influenced and does not
+establish CPU-memory savings. CPU and CUDA counters overlap on Spark and must
+not be added. The proposed early memory observer skipped both-arm capture
+under its original timing guard; anonymous-memory attribution remains open.
+
+Both arms use native mHC, deterministic sparse/expert ordering, matched quality
+cohorts, identical 34-variant startup warmup/heap trim, graph sizes 1/2/4/8/16,
+4 GiB KV per rank, max 16 sequences and a 2,048-token budget, without MTP.
+Only candidate input physical rows 1/4/8/16 use FP32 split 2. Output and other
+input routes retain their parent behavior. The existing 206,569,472-byte/rank
+two-slot pool is reused, without separate FP32 scratch or a resident BF16 cache.
+
+Independent verification initially failed on a checker error: expected input
+grid Y=197 omitted the split multiplier. The frozen native API gives
+**12,608 * 2 / 64 = 394**, matching all six candidate traces. A separate offline
+verifier corrects only this expectation; the original checker, failure logs,
+all 229 experiment sources and every numerical/performance gate are preserved.
+Seven negative fixtures reject wrong split/output geometry, missing reducers,
+graphs or rank, and reconstruction. The edited worktree reviewer passes 14
+focused tests and targeted Ruff. No GPU experiment was rerun. All 216 prior
+exact-word failures and two input timing repeat failures remain failed.
+
+Spark/Mac numerical decisions agree, with maximum float64 difference
+**1.5543e-15**. Original service identities/configuration are restored, health
+200 rechecked at about 07:39 UTC. Controller, collector, watchdog and retention
+have finished; the owned awake lease and completed SSH transport are released.
+No configuration is promoted and no new experiment has started.
+
+Per user scope, stop compression-kernel optimization and retain the qualified
+warmed exact16 fallback. The proposed last compression follow-up is **3 versus
+10 ms admission** in both arms, with a short-C1 delay control, then MTP. The
+3 ms window is already enabled. Sixteen 256-token prompts still need at least
+two prefill forwards under the unchanged token budget. The three local admission
+modules are unfinished/unvalidated and not frozen or launched. The latest
+authorization covered observing this run's outcome; the broader goal remains
+paused. See [admission evidence](GLM53_PREFILL_ADMISSION.md).
+
+Evidence is linked from the [final retention manifest]({LINK}fp32-input-model-v1-final-retention.json),
+[cross-host proof]({LINK}fp32-input-model-v1-cross-host-verification.json),
+and [final findings]({LINK}fp32-input-model-v1-final-findings.json).
+Large full reviews are retained as lossless gzip files in that manifest.
+Local archive: `/private/tmp/mxwave-fp32-input-model-v1/evidence.tar.gz`.
+Remote archive: `ROOT/evidence-fp32-input-model-v1-recovery-v2.tar.gz`, where
+`ROOT=/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.
+Archive: **465,586,181 bytes**, SHA256
+`bfbbafa8f53bdbd2c82bd2e6cc3d6f48b678433b015beb0ff7863bce9ebca8c2`.
+Frozen source archive SHA256:
+`aecf6a332294e165dc6a60b4c7e3731e87944c41075d2304dbec82b6e8305cdc`.
+Corrected verifier SHA256:
+`d89d085a72172e09a6ec6f75c2c563ab0ccac33a9abf73499583197109639827`.
+'''
+with (WORK / 'docs/GLM53_FP32_INPUT_MODEL.md').open('x') as stream:
+    stream.write(report)
+
+handoff = f'''# GLM compression experiment handoff
+
+Snapshot: **{stamp}**. Input-only FP32 model analysis and retention are complete.
+
+**Decision: retain the preceding warmed exact16 route as the numerically
+qualified experimental fallback.** The new `fp32inputmodelv1` fails C16:
+mean decode KL **1.601802484e-5 > 1e-5**, reproduced in all ten C16 cross-arm
+comparisons. C1/C8 pass at **5.390468235e-6 / 3.791330145e-6**. All mean-NLL
+checks pass. Both arms self-repeat exactly, actual grouping matches and all
+300 timed output sequences match. This is a reproducible cross-arm difference;
+matching sampled tokens is not equality of probability distributions.
+
+**Verified on Spark and Mac:** 1,634 payloads / 229 sources / 12 worker traces;
+all decisions agree, maximum float64 difference 1.5543e-15. All 20 quality
+captures, 46 comparisons and 72 timing groups are complete. Ten numerical
+comparisons fail. Original speed/TTFT gates and all prior failures remain.
+No configuration is promoted. See the [complete result](GLM53_FP32_INPUT_MODEL.md),
+[final findings]({LINK}fp32-input-model-v1-final-findings.json), and
+[retention manifest]({LINK}fp32-input-model-v1-final-retention.json).
+
+Final six-trial throughput changes, short/long prompts: C1 **+14.78/+12.24%**,
+C8 **+3.13/-1.47%**, C16 **+0.84/-2.03%**. Short TTFT is C1
+**0.391 -> 0.432 s (+41 ms)** and C16 **2.079 -> 2.211 s (+132 ms)**;
+long-C16 adds 519 ms. CUDA saving stays **9.367162 GiB across TP2**. CPU RSS
+is 242.18 MiB higher before quality / 250.52 MiB higher after ordinary timing;
+post-profile RSS is unsuitable for a CPU-saving claim.
+
+Trace analysis verifies 34 FP32 inputs + 34 original outputs + 34 reducers,
+graph replay and zero decode reconstruction on both candidate ranks. Mixed
+KDA kernel sums fall to about **20.36-20.95 ms**, versus ~22 ms previously;
+expert work still takes ~60-61 ms at C8 / ~97-98 ms at C16. No recognized JIT
+event overlaps timing and caches stay unchanged. All 640 current stock output
+rows equal previous stock bitwise; only 290/640 candidate rows equal previous
+candidate, under matched inputs/grouping. The first divergent layer is not
+localized; no implementation-bug diagnosis is established.
+
+**Operational state:** original GLM restored with exact identities/configuration,
+health 200 rechecked ~07:39 UTC. Controller 1258389, collector 1258388, watchdog
+1262165 and recovery 1893667 have exited; Mac retention finished successfully.
+The original failed watcher is retained, not restarted. Owned awake lease
+75605 and completed SSH transport 41123 are released. No GPU experiment or
+retention watcher is running. The broader goal remains paused after “but wait”;
+“let's see the outcome” authorized observation/review of this completed run.
+
+The initial verifier/collector failed on an expected-grid error: split 2 needs
+**12,608 * 2 / 64 = 394**, not 197. The separate offline recovery changes only
+that checker expectation. Original failures and all 229 frozen experiment
+sources/gates are preserved. Seven negative fixtures pass; the worktree reviewer
+fix passes 14 focused tests and targeted Ruff. No model rerun occurred.
+
+**Next scope:** the user ended compression-kernel optimization and accepts
+measured concurrency parity. Proposed final compression follow-up: **3 versus
+10 ms admission**, using the qualified warmed exact16 fallback in the compressed
+arm, with short-C1 controls; then MTP. Neither has started. Three local modules
+(`c16_admission_protocol.py`, `measure_c16_admission.py`,
+`analyze_c16_admission.py`) are unfinished/unvalidated, absent from the 229-file
+freeze and not launchable. The earlier 781-test/Ruff/mypy pass applies to the
+completed frozen preparation, not those drafts. No launcher/source freeze exists
+for the follow-up. Finish and review only when that phase resumes.
+
+TTFT remains open: all previous/current timing already uses 3 ms. Current
+short-C16 first cohorts are stock 4/6/1/7/3/5, candidate 7/5/6/7/2/1.
+The smaller gap does not prove an FP32 latency gain. The retained fallback's
+short-C1/C16 measurements stay **0.384 -> 0.422 s / 1.838 -> 2.280 s**.
+Sixteen 256-token prompts need at least two forwards under a 2,048-token budget.
+The qualified fallback crosses stock's C1 median arrivals at token 8 short /
+4 long; this failed FP32 candidate crosses at 7 / 6. No per-request guarantee.
+V6's 256-row fused route already failed its full screen. A 2 GiB/rank BF16
+cache would leave ~5.37 GiB TP2 saving arithmetically, but is unimplemented and
+unmeasured. Do not claim near-zero TTFT penalty or repeat naive failed overlap.
+
+The historical prefill resource review covers 28 forwards / 1,904
+reconstructions. At 2,048 rows, expert blocks use all 102,400 shared-memory
+bytes/SM and cannot co-reside with a decoder block; smaller observed rows leave
+capacity only, not proof of useful overlap. CPU-memory observer skipped its
+stock capture under its original guard and no candidate-only capture was made.
+Memory attribution, broader quality and calibrated roofline claims remain open.
+
+Preserve storage relocation: 14 completed directories / 10,457 files /
+7,409,394,725 logical bytes are verified on the worker under
+`ROOT/retained-fp32-input-model-v1-v3/<original-directory>/<relative-path>`.
+Canonical head archives, sources, model inputs and protected fixtures remain.
+`ROOT=/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.
+Do not redo cleanup or overwrite the frozen KDA parent with editable worktree code.
+
+Local evidence: `/private/tmp/mxwave-fp32-input-model-v1/evidence.tar.gz`;
+remote `ROOT/evidence-fp32-input-model-v1-recovery-v2.tar.gz` (465,586,181 bytes).
+Archive SHA256: `bfbbafa8f53bdbd2c82bd2e6cc3d6f48b678433b015beb0ff7863bce9ebca8c2`.
+Frozen source SHA256: `aecf6a332294e165dc6a60b4c7e3731e87944c41075d2304dbec82b6e8305cdc`.
+Plan SHA256: `aa8af27edbf5fe1d3addacdb1775df3ce4eb38b6de553b993aef5f2fd8cf138c`.
+Prepared SHA256: `0be6b5f3787e43324c08307e2321fbc44589884ea42b05cac899e3119c7151f5`.
+Corrected verifier SHA256: `d89d085a72172e09a6ec6f75c2c563ab0ccac33a9abf73499583197109639827`.
+The pre-final live handoff/current-state snapshots are retained byte-for-byte in
+the final manifest. Older checkpoints below are historical and superseded by
+this snapshot where they describe pending work.
+
+'''
+path = WORK / 'docs/GLM53_HANDOFF.md'
+old = path.read_text()
+marker = '**Completed input-only FP32 integration, 18 October 2026, 22:50 UTC / 19 October 00:50 Berlin:**'
+assert old.count(marker) == 1
+tail = old[old.index(marker):]
+path.write_text(handoff + tail)
+assert path.read_text().endswith(tail)
+
+current = f'''# GLM lossless experiment: current state and next steps
+
+Updated **{stamp}**. All current measurements, independent reviews and
+retention are finished. [Handoff](GLM53_HANDOFF.md) / [full result](GLM53_FP32_INPUT_MODEL.md).
+
+**Keep the preceding warmed exact16 candidate. The new input-FP32 route fails
+C16 qualification:** KL **1.601802484e-5 > 1e-5**, reproducible in all ten C16
+cross-arm comparisons. C1/C8 pass; all within-arm repeats are exact and all 300
+timed output pairs match. This is an arithmetic difference between candidates,
+not the earlier repeatability noise. Spark/Mac agree after independently checking
+1,634 payloads / 229 sources / 12 traces. No configuration is promoted.
+
+The failed new candidate measures C1 +12.24-14.78% throughput, C8/C16 -2.03%
+to +3.13%, with the same **9.367162 GiB TP2 CUDA saving**. Short-C1 TTFT rises
+**41 ms**, short-C16 **132 ms**; the latter remains admission-confounded.
+These latency numbers do not replace the qualified fallback's +38 ms / +442 ms.
+Mixed KDA kernel sums improve modestly to ~20-21 ms, while expert work remains
+~60-61 ms at C8 / ~97-98 ms at C16. No CPU-memory gain is established.
+
+The original GLM is restored healthy. Controllers, recovery and Mac retention
+have finished; the owned awake lease is released. An offline checker correction
+accounts for split-2 grid geometry (394 blocks, not 197); all original sources,
+failed logs and numerical/performance gates remain preserved. No GPU rerun.
+
+The qualified fallback below still passes all 46 numerical checks, gives C1
++11.82-13.28%, near-parity C8/C16 and the same CUDA saving. This is finite
+qualification, not universal zero-loss inference. Its original speed/TTFT gates
+remain failed. User scope ends further compression-kernel optimization; next
+proposed test is **3 versus 10 ms admission** with the fallback and short-C1
+controls, then MTP. Both are unlaunched. Three local admission modules remain
+unfinished/unvalidated; the broader goal is still paused pending the next phase.
+
+Historical checkpoints below retain their original evidence and failures;
+forward-looking statements in them are superseded by this snapshot.
+
+'''
+path = WORK / 'docs/GLM53_CURRENT_STATE.md'
+old = path.read_text()
+marker = '**18 October 2026, 22:50 UTC integration follow-up:**'
+assert old.count(marker) == 1
+tail = old[old.index(marker):]
+path.write_text(current + tail)
+assert path.read_text().endswith(tail)
+
+readme = WORK / 'README.md'
+old = readme.read_text()
+start = old.index('A fresh stock-versus-input-FP32 full-model comparison is now running')
+end = old.index('The separate FP32 split-K precision prototype', start)
+new = f'''**Input-only FP32 follow-up, 19 October: completed, C16 numerical gate fails.**
+Spark/Mac independently verify 1,634 payloads / 229 source bindings / 12 traces.
+C1/C8 KL pass at 5.390e-6 / 3.791e-6; C16 is **1.602e-5 > 1e-5** in all ten
+cross-arm repeat/profile comparisons. Both arms repeat exactly and all 300
+timed output pairs match. The preceding warmed exact16 result above remains the
+numerically qualified fallback. No configuration is promoted.
+
+{table}
+Six trials/case/arm, fixed stock-then-candidate order; original throughput/TTFT
+gates still fail. CUDA saving stays **9.367162 GiB across TP2**; CPU RSS rises
+242-251 MiB before profiles. KDA decode improves modestly to ~20-21 ms, while
+expert computation dominates concurrency. The smaller C16 TTFT gap is
+admission-confounded and is not transferred to the qualified fallback. PPL,
+task accuracy and SQNR are unmeasured. GLM is restored healthy; verification
+and retention are complete, with all original failures preserved. See the
+[complete result and evidence](docs/GLM53_FP32_INPUT_MODEL.md).
+
+The earlier FP32 integration fixture passed 120 retained-output and 66 fallback
+comparisons, compiled graphs and six two-stream stress fixtures while reusing
+the fixed pool. Component timing showed ~7-8% input improvement but retained two
+repeat-control failures. Those component passes did not establish the full-model
+qualification, which now fails above. Further compression-kernel optimization
+stops per user scope. The proposed next test is 3 versus 10 ms admission on the
+qualified fallback, with a C1 delay control, followed by MTP; neither has started.
+
+'''
+readme.write_text(old[:start] + new + old[end:])
+
+notice = f'''**{stamp}: full-model input-FP32 result is complete and fails C16.**
+Spark/Mac verify 1,634 payloads / 229 sources / 12 traces. C16 KL is
+1.6018e-5 > 1e-5 despite exact self-repeats and matched grouping; C1/C8 pass.
+The preceding warmed exact16 route remains the qualified experimental fallback.
+Original GLM is restored healthy, retention is complete and the awake lease is
+released. No new experiment or configuration promotion. Next proposed phase is
+3 versus 10 ms admission with the fallback, then MTP; neither has started.
+See the [full result](GLM53_FP32_INPUT_MODEL.md) and [current handoff](GLM53_HANDOFF.md).
+Older entries below describe historical checkpoints, superseded where pending.
+
+'''
+for name in ['GLM53_LOSSLESS_RUNTIME_HANDOFF.md', 'GLM53_SPEED_OPTIONS.md']:
+    path = WORK / 'docs' / name
+    old = path.read_text()
+    heading, rest = old.split('\n\n', 1)
+    path.write_text(heading + '\n\n' + notice + rest)
+path = WORK / 'docs/GLM53_PREFILL_ADMISSION.md'
+old = path.read_text()
+heading, rest = old.split('\n\n', 1)
+path.write_text(heading + '\n\n' + notice + rest)
+
+changed = ['README.md', 'docs/GLM53_FP32_INPUT_MODEL.md', 'docs/GLM53_HANDOFF.md',
+           'docs/GLM53_CURRENT_STATE.md', 'docs/GLM53_LOSSLESS_RUNTIME_HANDOFF.md',
+           'docs/GLM53_SPEED_OPTIONS.md', 'docs/GLM53_PREFILL_ADMISSION.md']
+receipt = {'status': 'complete', 'timestamp': stamp, 'documents': [
+    {'path': name, 'sha256': hashlib.sha256((WORK / name).read_bytes()).hexdigest()}
+    for name in changed], 'historical_tails_preserved': True}
+with (DIAG / 'fp32-input-model-v1-final-docs.json').open('x') as stream:
+    json.dump(receipt, stream, indent=2)
+with (DIAG / 'fp32-input-model-v1-update_final_docs.py.txt').open('xb') as stream:
+    stream.write(Path(__file__).read_bytes())
+print(json.dumps(receipt, indent=2))

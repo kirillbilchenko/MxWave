@@ -1,0 +1,174 @@
+"""Match BF16 linear launch sequences in the retained controlled C8 traces."""
+
+from __future__ import annotations
+
+import collections
+import gzip
+import hashlib
+import json
+import pathlib
+import re
+import statistics
+
+BASE = pathlib.Path('/private/tmp/mxwave-matched-c8-v1')
+ROOT = BASE / 'evidence'
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def signature(event):
+    args = event.get('args', {})
+    return event['name'], tuple(args['grid']), tuple(args['block'])
+
+
+def fused(event):
+    return 'BF16TripleBitmap_MM_Kernel' in event['name']
+
+
+def dense(event):
+    name = event['name'].lower()
+    return 'cutlass' in name and 'bf16' in name
+
+
+def extract(meta, hashes):
+    path = ROOT / meta['path']
+    assert sha(path) == hashes[meta['path']]
+    with gzip.open(path, 'rt') as stream:
+        events = json.load(stream)['traceEvents']
+    pattern = re.compile(r'^mxwave_c8_(.+)_step_(\d+)$')
+    wanted = {s['sequence']: s for s in meta['steps']
+              if s['batch']['num_tokens'] == 8
+              and s['batch']['num_tokens_after_padding'] == 8
+              and not s['batch']['has_prefill']}
+    ranges = {}
+    for event in events:
+        match = pattern.match(event.get('name', ''))
+        if event.get('cat') == 'user_annotation' and match:
+            seq = int(match[2])
+            if seq in wanted:
+                assert seq not in ranges
+                ranges[seq] = event
+    assert set(ranges) == set(wanted)
+    correlations = {}
+    for event in events:
+        if event.get('cat') not in ('cuda_runtime', 'cuda_driver'):
+            continue
+        corr = event.get('args', {}).get('correlation')
+        if corr is None:
+            continue
+        owners = [seq for seq, r in ranges.items()
+                  if (r['pid'], r['tid']) == (event['pid'], event['tid'])
+                  and r['ts'] <= event['ts'] <= r['ts'] + r['dur']]
+        assert len(owners) <= 1
+        if owners:
+            assert corr not in correlations
+            correlations[corr] = owners[0]
+    linears = collections.defaultdict(list)
+    for event in events:
+        if event.get('cat') != 'kernel' or not (dense(event) or fused(event)):
+            continue
+        seq = correlations.get(event.get('args', {}).get('correlation'))
+        if seq is not None:
+            linears[seq].append(event)
+    assert set(linears) == set(wanted)
+    for seq, ops in linears.items():
+        ops.sort(key=lambda e: e['ts'])
+        # A replay can overlap graph nodes despite sharing a logical stream.
+        # Require chronological order to agree with unique graph-node order;
+        # retain overlaps instead of treating duration sums as elapsed time.
+        assert len({e['args']['stream'] for e in ops}) == 1
+        nodes = [e['args']['graph node id'] for e in ops]
+        assert len(set(nodes)) == len(nodes)
+        assert nodes == sorted(nodes)
+        assert len(ops) == 308
+    return linears
+
+
+def main():
+    inventory = json.loads((ROOT / 'evidence-inventory.json').read_bytes())
+    hashes = {item['path']: item['sha256'] for item in inventory['files']}
+    review = json.loads((BASE / 'mac-independent-review.json').read_bytes())
+    traces = {}
+    inputs = {}
+    for meta in review['profiles']:
+        if 'mixed' in meta['labels'][0]:
+            continue
+        arm = 'candidate' if meta['labels'][0].startswith('candidate-') else 'control'
+        key = arm, meta['rank']
+        assert key not in traces
+        traces[key] = extract(meta, hashes)
+        inputs[str(key)] = {'path': meta['path'], 'sha256': hashes[meta['path']]}
+    forwards = []
+    for rank in (0, 1):
+        control, candidate = traces['control', rank], traces['candidate', rank]
+        assert set(control) == set(candidate)
+        for seq in sorted(control):
+            pairs, unchanged = [], 0
+            for index, (stock, compressed) in enumerate(zip(control[seq], candidate[seq])):
+                if not fused(compressed):
+                    assert signature(stock) == signature(compressed), (rank, seq, index)
+                    unchanged += 1
+                    continue
+                assert dense(stock)
+                cgrid = tuple(compressed['args']['grid'])
+                assert cgrid in ((1, 197, 1), (1, 64, 1))
+                projection = 'input' if cgrid[1] == 197 else 'output'
+                expected_stock_grid = (8, 99, 1) if projection == 'input' else (8, 32, 1)
+                assert tuple(stock['args']['grid']) == expected_stock_grid
+                pairs.append({'linear_sequence_index': index, 'projection': projection,
+                              'control_us': stock['dur'], 'candidate_us': compressed['dur'],
+                              'control_signature': signature(stock),
+                              'candidate_signature': signature(compressed)})
+            assert unchanged == 240 and len(pairs) == 68
+            assert [p['projection'] for p in pairs] == ['input', 'output'] * 34
+            totals = {}
+            for projection in ('input', 'output'):
+                selected = [p for p in pairs if p['projection'] == projection]
+                totals[projection] = {
+                    'calls': len(selected),
+                    'control_us': sum(p['control_us'] for p in selected),
+                    'candidate_us': sum(p['candidate_us'] for p in selected),
+                }
+            overlaps = {}
+            for arm, ops in [('control', control[seq]), ('candidate', candidate[seq])]:
+                overlaps[arm] = [{'first_index': index,
+                                  'overlap_us': a['ts'] + a['dur'] - b['ts']}
+                                 for index, (a, b) in enumerate(zip(ops, ops[1:]))
+                                 if a['ts'] + a['dur'] > b['ts'] + 0.1]
+            forwards.append({'rank': rank, 'sequence': seq, 'matched_unchanged_linears': unchanged,
+                             'adjacent_linear_overlaps': overlaps,
+                             'KDA_pairs': pairs, 'projection_totals': totals})
+    summaries = []
+    for rank in (0, 1):
+        fs = [f for f in forwards if f['rank'] == rank]
+        for projection in ('input', 'output'):
+            values = [f['projection_totals'][projection] for f in fs]
+            summaries.append({'rank': rank, 'projection': projection, 'samples': len(values),
+                              'median_control_us': statistics.median(v['control_us'] for v in values),
+                              'median_candidate_us': statistics.median(v['candidate_us'] for v in values),
+                              'median_paired_saved_us': statistics.median(
+                                  v['control_us'] - v['candidate_us'] for v in values)})
+    out = {'status': 'complete', 'source_sha256': sha(pathlib.Path(__file__)),
+           'parent_archive_sha256': json.loads((BASE / 'cross-host-verification.json').read_bytes())['archive_sha256'],
+           'inputs': inputs, 'GPU_experiment_run': False, 'original_measurements_changed': False,
+           'forwards': forwards, 'summary': summaries,
+           'limits': [
+               'Alignment uses linear launch order checked against graph-node order: all 240 unchanged signatures '
+               'must match, and all 68 replacement slots must have the expected stock and fused grids.',
+               'Projection identity is inferred from this checked sequence and native geometry; '
+               'no tensor-pointer or per-layer annotation was recorded in these graph traces.',
+               'Kernel durations are profiled device work, not API latency or measured DRAM bandwidth.',
+               'Four short controlled decode forwards per rank are not a representative traffic benchmark.',
+               'The original unprofiled timing and numerical gates are unchanged.',
+           ]}
+    destination = BASE / 'linear-alignment-review.json'
+    assert not destination.exists()
+    destination.write_text(json.dumps(out, indent=2) + '\n')
+    print(json.dumps({'status': 'complete', 'summary': summaries}))
+
+
+if __name__ == '__main__':
+    main()

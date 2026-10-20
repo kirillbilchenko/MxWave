@@ -1,0 +1,112 @@
+"""Download, hash-check and independently regrade both complete GSM8K arms."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import subprocess
+import tarfile
+import time
+from pathlib import Path
+
+ROOT = Path("/private/tmp/mxwave-kda-mxfp8-gsm8k-v1-final")
+REMOTE = "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/kda-mxfp8-gsm8k-v1"
+
+
+def digest(path):
+    """Hash an artifact without retaining its full contents in memory."""
+    value = hashlib.sha256()
+    with path.open("rb") as stream:
+        while chunk := stream.read(8 * 1024**2):
+            value.update(chunk)
+    return value.hexdigest()
+
+
+def main():
+    """Wait for retention and independently reproduce every aggregate."""
+    ROOT.mkdir(exist_ok=True)
+    deadline = time.time() + 8 * 3600
+    script = (
+        "import json,pathlib;r=pathlib.Path(" + repr(REMOTE) + ");"
+        "print(json.dumps({'retained':(r/'archive-receipt.json').exists(),"
+        "'queue':json.loads((r/'queue.json').read_bytes())}))"
+    )
+    while True:
+        run = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
+             "spark", "python3", "-S", "-"],
+            input=script, text=True, capture_output=True, timeout=30, check=False,
+        )
+        if run.returncode == 0:
+            state = json.loads(run.stdout)
+            if state["retained"]:
+                break
+            if state["queue"]["phase"] == "failed":
+                (ROOT / "failed.json").write_text(json.dumps(state, indent=2) + "\n")
+                raise RuntimeError("Queued quality experiment failed before evidence retention")
+        assert time.time() < deadline, "Quality collector deadline exceeded"
+        time.sleep(20)
+    for name in ("archive-receipt.json", "evidence-v1.tar.gz"):
+        subprocess.run(
+            ["scp", "-q", f"spark:{REMOTE}/{name}", str(ROOT / name)], check=True,
+        )
+    receipt = json.loads((ROOT / "archive-receipt.json").read_bytes())
+    archive = ROOT / "evidence-v1.tar.gz"
+    assert digest(archive) == receipt["sha256"] and archive.stat().st_size == receipt["bytes"]
+    evidence = ROOT / "evidence"
+    evidence.mkdir(exist_ok=False)
+    with tarfile.open(archive) as tar:
+        for member in tar.getmembers():
+            path = Path(member.name)
+            assert member.isfile() and not path.is_absolute() and ".." not in path.parts
+        tar.extractall(evidence, filter="data")
+    files = json.loads((evidence / "evidence-manifest.json").read_bytes())["files"]
+    assert len(files) == receipt["payloads"]
+    for entry in files:
+        path = evidence / entry["path"]
+        assert path.stat().st_size == entry["bytes"] and digest(path) == entry["sha256"]
+    controller = json.loads((evidence / "controller.json").read_bytes())
+    proof = {
+        "status": "payloads_verified", "payloads": len(files),
+        "archive_sha256": receipt["sha256"], "controller_phase": controller["phase"],
+    }
+    if controller["phase"] == "complete_restored":
+        subprocess.run([
+            "python3", str(evidence / "analyze.py"), "--root", str(evidence),
+            "--output", str(ROOT / "mac-review.json"),
+        ], check=True)
+        left = json.loads((evidence / "spark-review.json").read_bytes())
+        right = json.loads((ROOT / "mac-review.json").read_bytes())
+        count = 0
+        maximum = 0.0
+
+        def compare(a, b):
+            nonlocal count, maximum
+            if isinstance(a, dict):
+                assert a.keys() == b.keys()
+                for key in a:
+                    compare(a[key], b[key])
+            elif isinstance(a, list):
+                assert len(a) == len(b)
+                for x, y in zip(a, b, strict=True):
+                    compare(x, y)
+            elif type(a) in (int, float):
+                assert math.isclose(a, b, rel_tol=1e-10, abs_tol=1e-10)
+                count += 1
+                maximum = max(maximum, abs(a - b))
+            else:
+                assert a == b
+
+        compare(left, right)
+        proof.update(
+            status="verified", independently_regraded_answers=2638,
+            independent_numeric_fields=count, maximum_numeric_difference=maximum,
+        )
+    (ROOT / "independent-verification.json").write_text(json.dumps(proof, indent=2) + "\n")
+    (ROOT / "complete.json").write_text(json.dumps(proof, indent=2) + "\n")
+    print(json.dumps(proof), flush=True)
+
+
+if __name__ == "__main__":
+    main()

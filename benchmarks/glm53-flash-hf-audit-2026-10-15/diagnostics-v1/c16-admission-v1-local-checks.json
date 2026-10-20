@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "ruff_passed": true,
+  "mypy_passed": true,
+  "pytest_passed": true,
+  "CPU_protocol_simulation_passed": true,
+  "sources": {
+    "c16_admission_protocol.py": "05eeb0f4f517e68b3e7aa97ae9a2c8487fdf6e58c3adba79d3c312c50ef6b5dc",
+    "measure_c16_admission.py": "519a25cb024f080dbe07e34057d19b87b4592dbaca729afe7c2efa54a0acc78e",
+    "analyze_c16_admission.py": "9b2201b9b683c9163e7c6d860f0aaf8df96080ba26cb7a712f8de796ef550583",
+    "run_c16_admission.py": "a0344edd9c534d08ef7b4cc0e5ed29f214229354d95bc16f86da7371d887506d"
+  },
+  "plan_sha256": "b85013c785af0cd230f4739bb2faf527e495018f390dd4464b30e6a68716c9a4",
+  "local_test_receipt_sha256": "51346a230c306337bce4d02762b244146a66e2926e97829da86cac5afdddd930",
+  "tests": {
+    "checks": [
+      {
+        "name": "ruff",
+        "command": [
+          "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.venv/bin/python",
+          "-B",
+          "-m",
+          "ruff",
+          "check",
+          "."
+        ],
+        "exit_code": 0,
+        "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "tail": "All checks passed!\n"
+      },
+      {
+        "name": "mypy",
+        "command": [
+          "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.venv/bin/python",
+          "-B",
+          "-m",
+          "mypy",
+          "mxwave"
+        ],
+        "exit_code": 0,
+        "log_sha256": "32c1f154f636757bc9df6843701b18b495673a7cf2e0f68b592d2055d6ae6c07",
+        "tail": "Success: no issues found in 35 source files\n"
+      },
+      {
+        "name": "pytest",
+        "command": [
+          "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.venv/bin/python",
+          "-B",
+          "-m",
+          "pytest"
+        ],
+        "exit_code": 0,
+        "log_sha256": "1427e5ec698ce3db72a8372a289dfb02ff76a86de0fe5079262164affc3f2e4c",
+        "tail": "........................................................................ [  9%]\n........................................................................ [ 18%]\n........................................................................ [ 27%]\n........................................................................ [ 36%]\n........................................................................ [ 45%]\n........................................................................ [ 54%]\n........................................................................ [ 63%]\n........................................................................ [ 72%]\n........................................................................ [ 81%]\n..........................................s............................. [ 90%]\n........................................................................ [ 99%]\n.....                                                                    [100%]\n796 passed, 1 skipped in 5.66s\n"
+      },
+      {
+        "name": "simulation",
+        "command": [
+          "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.venv/bin/python",
+          "-B",
+          "/private/tmp/mxwave-c16-admission-v1/simulate.py"
+        ],
+        "exit_code": 0,
+        "log_sha256": "3a86b078eefd24d5e4a5d651b09015dbcf6d40a0f9ef44f008deecd025ed3e19",
+        "tail": "{\"status\": \"passed\", \"synthetic_protocol_simulation_only\": true, \"GPU_initialized\": false, \"model_loaded\": false, \"quality_groups\": 20, \"timed_groups\": 72, \"numerical_comparisons\": 94, \"controlled_collector_counts_tested\": [16], \"equal_speed_rejected\": true, \"mismatched_actual_grouping_rejected\": true, \"matched_grouping_nonzero_KL_rejected\": true, \"new_compilation_rejected\": true, \"C16_ordinary_profiles_per_arm\": 2, \"C16_quality_profiles_per_arm\": 2, \"model_quality_claimed\": false, \"source_sha256\": {\"run_c16_admission.py\": \"a0344edd9c534d08ef7b4cc0e5ed29f214229354d95bc16f86da7371d887506d\", \"measure_c16_admission.py\": \"519a25cb024f080dbe07e34057d19b87b4592dbaca729afe7c2efa54a0acc78e\", \"analyze_c16_admission.py\": \"9b2201b9b683c9163e7c6d860f0aaf8df96080ba26cb7a712f8de796ef550583\", \"c16_admission_protocol.py\": \"05eeb0f4f517e68b3e7aa97ae9a2c8487fdf6e58c3adba79d3c312c50ef6b5dc\"}}\n"
+      }
+    ]
+  },
+  "GPU_initialized": false
+}

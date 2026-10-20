@@ -1,0 +1,45 @@
+"""Confirm exact restoration and terminal experiment ownership before releasing the awake lease."""
+from __future__ import annotations
+import hashlib,json,pathlib,shlex,signal,subprocess,time
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+proof=json.loads((BASE/'cross-host-verification.json').read_bytes())
+assert proof['status']=='passed' and proof['measurement_complete']
+assert json.loads((BASE/'final-findings.json').read_bytes())['status']=='complete'
+program=r'''
+import json,pathlib,subprocess,sys,time
+r=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(r/'full-prefillbudgetv3-src'))
+import full_model_control as c
+prepared=json.loads((r/'prefill-budget-v3-prepared.json').read_bytes())
+state=json.loads((r/'quality-model-controller-prefillbudgetv3.json').read_bytes())
+launch=json.loads((r/'prefill-budget-v3-launch.json').read_bytes())
+receipt=json.loads((r/'prefill-budget-v3-evidence-check.json').read_bytes())
+assert state['phase']=='complete' and not state['service_paused'] and receipt['status']=='complete'
+originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+assert all(x['State']['Running'] for x in originals)
+assert [c.identity(x) for x in originals]==prepared['originals'] and c.health(8000)
+processes=[]
+owned=[('controller',launch['controller_pid']),('collector',launch['collector_pid']),('watchdog',state['watchdog_pid'])]
+recovery=r/'prefill-budget-v3-recovery-launch.json'
+if recovery.exists():owned.append(('recovery_collector',json.loads(recovery.read_bytes())['recovery_collector_pid']))
+for name,pid in owned:
+ result=subprocess.run(['ps','-p',str(pid),'-o','stat='],capture_output=True,text=True)
+ assert result.returncode!=0 or result.stdout.strip().startswith('Z'),(name,pid,result.stdout)
+ processes.append({'role':name,'pid':pid,'terminal':True})
+print(json.dumps({'status':'passed','checked_epoch':time.time(),'health':200,'original_identities_equal':True,'processes':processes,'archive_sha256':receipt['archive_sha256']}))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['python3','-B','-c',program,ROOT])],timeout=45)
+remote=json.loads(raw);assert remote['archive_sha256']==proof['archive_sha256']
+(BASE/'final-service-check.json').write_bytes(raw)
+lease=json.loads((BASE/'awake-lease.json').read_bytes())
+current=subprocess.run(['ps','-p',str(lease['pid']),'-o','pid=,lstart=,command='],capture_output=True,text=True)
+if current.returncode==0:
+    assert current.stdout.strip()==lease['identity']
+    __import__('os').kill(lease['pid'],signal.SIGTERM)
+    action='TERM_after_verified_completion'
+else:action='already_absent'
+cleanup={'status':'released','checked_epoch':time.time(),'awake_pid':lease['pid'],'awake_action':action,
+    'service_health':200,'original_identities_equal':True,
+    'proof_sha256':hashlib.sha256((BASE/'cross-host-verification.json').read_bytes()).hexdigest()}
+(BASE/'terminal-cleanup.json').write_text(json.dumps(cleanup,indent=2))
+print(json.dumps({'service':remote,'cleanup':cleanup}))

@@ -1,0 +1,1350 @@
+{
+  "sources": {
+    "bf16_repository": "zai-org/GLM-5.3-Flash-BF16",
+    "bf16_revision": "f9fed3bbc82291073373d67452e9f25317ef7577",
+    "upstream_repository": "INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound",
+    "upstream_revision": "35d1b0d5cb4a0db075fd2749c897e970dc15bfa5",
+    "bf16_index_sha256": "e6007bd58fb7e07f9fe69544257ee2713f252ef5855bbf685b48c991d524ef0f",
+    "upstream_index_sha256": "6d1364a27eef78675390422b1b5230601817fb7460ce816951b2cd515934c85d"
+  },
+  "cases": [
+    {
+      "module": "model.language_model.layers.3.mlp.experts.0.gate_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.3.mlp.experts.0.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "925d77da96e4660415b68a99d06aff25247796ec1c0be4311600467f83925b9e",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.3.mlp.experts.0.gate_proj.weight-0-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.3.mlp.experts.0.gate_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "e2d4dc3b8cca1c996b7756067b5f121f69a351c41b8cd16159d0a2a8761cbec0",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.3.mlp.experts.0.gate_proj.weight_packed-0-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.3.mlp.experts.0.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "7e3fa23d2bf9147ee525dc4bafab4e4e541db63e2def76aac83404cb931bccb8",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.3.mlp.experts.0.gate_proj.weight_scale-0-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.3.mlp.experts.0.up_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.3.mlp.experts.0.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "cbb31d205e062b156f2c4846a49b9f7724236fd154faabef71be4b0cb6bb4202",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.3.mlp.experts.0.up_proj.weight-0-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.3.mlp.experts.0.up_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "fa7b5eb62adff469753c2e8d4dbffb4e9bd2211d55a7ff0a10ea185cd5ef09a6",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.3.mlp.experts.0.up_proj.weight_packed-0-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.3.mlp.experts.0.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "eeb1ccf3903c24abdb557f10c5323dc6aabd76fb554dfecfb568afdc42f844c4",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.3.mlp.experts.0.up_proj.weight_scale-0-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.3.mlp.experts.0.down_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.3.mlp.experts.0.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "6503b8066c475155c6bea19f2a41a93adad39b39c7a78a8500ca7cf6aeb302fc",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.3.mlp.experts.0.down_proj.weight-0-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.3.mlp.experts.0.down_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          1024
+        ],
+        "full_shape": [
+          4096,
+          1024
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 32768,
+        "sha256": "88d87b0508b19d0c4175f6e99c0d192b55012e8fda902a9c7c5cb1ef673bb5d6",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.3.mlp.experts.0.down_proj.weight_packed-0-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.3.mlp.experts.0.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          64
+        ],
+        "full_shape": [
+          4096,
+          64
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 2048,
+        "sha256": "1ae4a50114796fd469f942c76bac9588292243213c8928cd2d00269928f73db9",
+        "shard": "model-00057-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.3.mlp.experts.0.down_proj.weight_scale-0-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.mlp.experts.143.gate_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.23.mlp.experts.143.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "0386ad9f3ba49f4fcc3e82de86e38a4863f4d289b9dfb59138b75b8d4157582d",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.mlp.experts.143.gate_proj.weight-1008-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.mlp.experts.143.gate_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "d6146ffeaa8ecb3ba3c3743b70fcabd4062d81fa78c83311edf6c9757c4175ae",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.experts.143.gate_proj.weight_packed-1008-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.23.mlp.experts.143.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "8b26fba6a106b31dd7733147a8067d560ca19af777245ac8f96fd65a7c3aa496",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.experts.143.gate_proj.weight_scale-1008-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.mlp.experts.143.up_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.23.mlp.experts.143.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "d9b56e0872a037cc3a6ff8f3a9fd8ca38543decdc90bb570baa6f3020e5a8581",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.mlp.experts.143.up_proj.weight-1008-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.mlp.experts.143.up_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "5c323cf65e2a9d3ff7a0fec73789d6ecb7328d822e85a215e5e6983e4a31012f",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.experts.143.up_proj.weight_packed-1008-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.23.mlp.experts.143.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "f58c527cfa7450dca04a0094e5d7d281c9ce7d7ed2d12f5eacfc4751268eee54",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.experts.143.up_proj.weight_scale-1008-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.mlp.experts.143.down_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.23.mlp.experts.143.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "f9dba16085e297f2f3a9a630704536428a17624238b1f2dd6730014e8cac4b7a",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.mlp.experts.143.down_proj.weight-2032-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.mlp.experts.143.down_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          1024
+        ],
+        "full_shape": [
+          4096,
+          1024
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 32768,
+        "sha256": "4600c1f9abda8de8ebb79a17cb80ab59cc2e71e237595848a9743840d8215e83",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.experts.143.down_proj.weight_packed-2032-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.23.mlp.experts.143.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          64
+        ],
+        "full_shape": [
+          4096,
+          64
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 2048,
+        "sha256": "9e7226b8e4276d19754b542c990b4f7e3cc3826621016f5b7b325c4b2195f9b2",
+        "shard": "model-00038-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.experts.143.down_proj.weight_scale-2032-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.44.mlp.experts.287.gate_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.44.mlp.experts.287.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 2016,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "2801c3aa6a0ba710f954e4b70586307a437d9e9a6938767282d682524adb1a8a",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.44.mlp.experts.287.gate_proj.weight-2016-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.44.mlp.experts.287.gate_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 2016,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "2c922631d7e1bd92efa563e33269a5e00cc3ccce9a015aa0693fc1fef48ad2f2",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.44.mlp.experts.287.gate_proj.weight_packed-2016-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.44.mlp.experts.287.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 2016,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "c0e1487ace2a88b365d5e9c35947f15d627207cd9421c31c3ebbd600ae461f11",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.44.mlp.experts.287.gate_proj.weight_scale-2016-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.44.mlp.experts.287.up_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.44.mlp.experts.287.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 2016,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "1eee79401fbe614abd9d8e8d927f1a76c75d3e0d8428765c4720b2ba97a15bdd",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.44.mlp.experts.287.up_proj.weight-2016-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.44.mlp.experts.287.up_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 2016,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "b339c9e14e818e58a02f7b2a8220c58a8aa26243eea7be62036ccea3338f8160",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.44.mlp.experts.287.up_proj.weight_packed-2016-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.44.mlp.experts.287.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 2016,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "e39b84fa4e7cae630b031e066a425648baf55a42793d1aa109445e9e48298149",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.44.mlp.experts.287.up_proj.weight_scale-2016-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.44.mlp.experts.287.down_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.44.mlp.experts.287.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 4064,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "ac52dd408807a84d30e109e5ffef5d12bed2c6eb16b3be7282082528c6637c05",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.44.mlp.experts.287.down_proj.weight-4064-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.44.mlp.experts.287.down_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          1024
+        ],
+        "full_shape": [
+          4096,
+          1024
+        ],
+        "first_row": 4064,
+        "rows": 32,
+        "bytes": 32768,
+        "sha256": "e33048ceeb02e6f533bbc7cafde01ea016ddaf6f951d758794ca2366d6dd0758",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.44.mlp.experts.287.down_proj.weight_packed-4064-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.44.mlp.experts.287.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          64
+        ],
+        "full_shape": [
+          4096,
+          64
+        ],
+        "first_row": 4064,
+        "rows": 32,
+        "bytes": 2048,
+        "sha256": "38f799c4e83bb63233ebe81b48cc88e83187695f956987127de82ec1530d5331",
+        "shard": "model-00103-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.44.mlp.experts.287.down_proj.weight_scale-4064-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.45.mlp.experts.0.gate_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.45.mlp.experts.0.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "9d26cd70a0fb8be5fac560474da93143f7347b53ff6eb99c5ada6bcdd8aaf4a2",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.45.mlp.experts.0.gate_proj.weight-0-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.45.mlp.experts.0.gate_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "4548a7228012c9e60ed3a8ff0bfb37d81241533d0e6f1d1a1bda011ba23356d3",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.experts.0.gate_proj.weight_packed-0-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.45.mlp.experts.0.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "5db958683d91b4fc423a88d1baf10077d4d2490de656882126ed9fe2b39832f9",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.experts.0.gate_proj.weight_scale-0-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.45.mlp.experts.0.up_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.45.mlp.experts.0.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "35502f92d1d43730f1119f26404f11b5423b37b22eaa82ca4e977b9afb4fe7a1",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.45.mlp.experts.0.up_proj.weight-0-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.45.mlp.experts.0.up_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          2048,
+          2048
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "ed488f59f93a48df76186366b3b499aa5ddc65b20adb51989aa6e4a36beaf25b",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.experts.0.up_proj.weight_packed-0-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.45.mlp.experts.0.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "d42cae07613d7e7cfa56bd5c3e46489268f0627729ebe0ac2b25148b26c48435",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.experts.0.up_proj.weight_scale-0-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.45.mlp.experts.0.down_proj",
+      "format": "MXFP4",
+      "bf16": {
+        "name": "model.language_model.layers.45.mlp.experts.0.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "1e0f4d5d3435b9053f6be206662660fdcc32e74d0c3e587b2a786227eceb12de",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.45.mlp.experts.0.down_proj.weight-0-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.45.mlp.experts.0.down_proj.weight_packed",
+        "dtype": "U8",
+        "shape": [
+          32,
+          1024
+        ],
+        "full_shape": [
+          4096,
+          1024
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 32768,
+        "sha256": "1d3181d3396a253b6fa70d7f6e81dba5d75c175aad595f072d1cafba12023908",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.experts.0.down_proj.weight_packed-0-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.45.mlp.experts.0.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          64
+        ],
+        "full_shape": [
+          4096,
+          64
+        ],
+        "first_row": 0,
+        "rows": 32,
+        "bytes": 2048,
+        "sha256": "f4e3a69f92712fd99f18e0f01cddf88a453f38b351b72d0b75705de8f102ce6b",
+        "shard": "model-00104-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.experts.0.down_proj.weight_scale-0-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.0.mlp.gate_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          12288,
+          4096
+        ],
+        "first_row": 6128,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "0f70de12843330bd052cf6e8475b89d98f8d0f87f5f349d2b9d28cb428517f87",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.0.mlp.gate_proj.weight-6128-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          12288,
+          4096
+        ],
+        "first_row": 6128,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "63e4f853f142ea11486b89801180ff3988ec8c5a5eb4b303aedd7b6a78681cda",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.0.mlp.gate_proj.weight-6128-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.0.mlp.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          12288,
+          128
+        ],
+        "first_row": 6128,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "a2532d2061484268a96525e040022bb360f1342cefd64cffc7c9d4056f8c16bb",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.0.mlp.gate_proj.weight_scale-6128-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.0.mlp.up_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.0.mlp.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          12288,
+          4096
+        ],
+        "first_row": 6128,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "86ddd84afb5eae2ae1caa58900eabcc1bd2f4f95dcea83051a9263048087e738",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.0.mlp.up_proj.weight-6128-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.0.mlp.up_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          12288,
+          4096
+        ],
+        "first_row": 6128,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "bdaea65ff41105bc1f287be8518c5e95287e9cdc7ab57836bab560ae6f67c892",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.0.mlp.up_proj.weight-6128-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.0.mlp.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          12288,
+          128
+        ],
+        "first_row": 6128,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "09235f7a1016f2a4567402d7e6d24a264b86e87661c221e600e1fc0ad06534e7",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.0.mlp.up_proj.weight_scale-6128-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.0.mlp.down_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.0.mlp.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          12288
+        ],
+        "full_shape": [
+          4096,
+          12288
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 786432,
+        "sha256": "a240431eb7ad0fb323d3b8d40f87a0b6733870830c39eb2335d1919039a40ee3",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.0.mlp.down_proj.weight-2032-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.0.mlp.down_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          12288
+        ],
+        "full_shape": [
+          4096,
+          12288
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 393216,
+        "sha256": "f7a461c485ef5cb72bb8e641460ab3ceb5176a603800f1c7deefb5cb032105cb",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.0.mlp.down_proj.weight-2032-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.0.mlp.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          384
+        ],
+        "full_shape": [
+          4096,
+          384
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 12288,
+        "sha256": "6406f8983f26fca07bf252b65b7fa9da7e9d6600b0f420195113b3430ea1f720",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.0.mlp.down_proj.weight_scale-2032-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.mlp.shared_experts.gate_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "fed752bb74a7223e085e6e87550a99a46c23f79e07a97168b8bad13f348fde86",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.mlp.shared_experts.gate_proj.weight-1008-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.gate_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "2aca682f9628527815caf72c8fe949e50ac3a63950f88bdc547b1a7c069149b7",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.shared_experts.gate_proj.weight-1008-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "c61ed1359a6e05c6e2fec04ce7358ab2f993f7cb027bbfa78f686c04786167e2",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.shared_experts.gate_proj.weight_scale-1008-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.mlp.shared_experts.up_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "4125ebfcf7c022b14b0df448cc4b7043f460d3d8ed732540690c1eb4aabf52b5",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.mlp.shared_experts.up_proj.weight-1008-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.up_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "c8ed3b1438df61063d07fc40957996add630c666845254546dcb4b92dcf78684",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.shared_experts.up_proj.weight-1008-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "9f9098957a5008cf6a5d101839b6fa6e34b92b9f29d248aadc784ac1ceae35ed",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.shared_experts.up_proj.weight_scale-1008-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.mlp.shared_experts.down_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "59955aac552a62e547d80e3a42aecff36a29b4b67b714c6954fed0bd800997a8",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.mlp.shared_experts.down_proj.weight-2032-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.down_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "2ad8ab6a84265b337c56670f360bd66fcc26abb0e77f6f8cb04c3c2bffd3be9d",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.shared_experts.down_proj.weight-2032-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.23.mlp.shared_experts.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          64
+        ],
+        "full_shape": [
+          4096,
+          64
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 2048,
+        "sha256": "595e9a47311b3670f33d104e95060578a2c4ce87e03f2c1f640d6599002eabab",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.mlp.shared_experts.down_proj.weight_scale-2032-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.45.mlp.shared_experts.gate_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.gate_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "128b7e0acb265b8d647831f985d2055b031fb977fc0e13e250b1b820674c2c5f",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.45.mlp.shared_experts.gate_proj.weight-1008-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.gate_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "88d2deb52aa313a801194b0c1f3c8ec7fba49830600562eb918cbe6e3b5e3f81",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.shared_experts.gate_proj.weight-1008-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.gate_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "5046075b2c079742f4f5b373440501eed19f5f0562390e8ca51aceb30ea24dd1",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.shared_experts.gate_proj.weight_scale-1008-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.45.mlp.shared_experts.up_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.up_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "20de88f8fb2c7b6bd60aa9df66de2d878264d08a9e91fa44e839e2a65f280345",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.45.mlp.shared_experts.up_proj.weight-1008-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.up_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          2048,
+          4096
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "795fede32720ea7e0082a2cfe75e2f69f3d407a9c6d422b2dedf0adfb7dfb385",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.shared_experts.up_proj.weight-1008-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.up_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          128
+        ],
+        "full_shape": [
+          2048,
+          128
+        ],
+        "first_row": 1008,
+        "rows": 32,
+        "bytes": 4096,
+        "sha256": "ec1c36a6f820b70edea4b5473dbc035314739d3d1df08e30a643d670cbe086e2",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.shared_experts.up_proj.weight_scale-1008-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.45.mlp.shared_experts.down_proj",
+      "format": "MXFP8",
+      "bf16": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.down_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 131072,
+        "sha256": "3a8e9c2c1ae0d4e2e12617d04e32ee14e2345ac962591dd56cde082bd9b9cf52",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.45.mlp.shared_experts.down_proj.weight-2032-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.down_proj.weight",
+        "dtype": "F8_E4M3",
+        "shape": [
+          32,
+          2048
+        ],
+        "full_shape": [
+          4096,
+          2048
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 65536,
+        "sha256": "19d769a3520b4497c6e4538c540b5c9811196dc829d69702d3e4a991ae6538d2",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.shared_experts.down_proj.weight-2032-32.bin"
+      },
+      "scales": {
+        "name": "model.language_model.layers.45.mlp.shared_experts.down_proj.weight_scale",
+        "dtype": "U8",
+        "shape": [
+          32,
+          64
+        ],
+        "full_shape": [
+          4096,
+          64
+        ],
+        "first_row": 2032,
+        "rows": 32,
+        "bytes": 2048,
+        "sha256": "78f7f9b4bddd7d69e9276736e8f070a839f1fc1e59759d83240106aa185b174d",
+        "shard": "model-00106-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.45.mlp.shared_experts.down_proj.weight_scale-2032-32.bin"
+      }
+    },
+    {
+      "module": "lm_head",
+      "format": "BF16",
+      "bf16": {
+        "name": "lm_head.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          154880,
+          4096
+        ],
+        "first_row": 77424,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "52bdb97e3d11cdb5146c8e9b38bfacfe9e7399703260e028ba1d97763a259b35",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/bf16-lm_head.weight-77424-32.bin"
+      },
+      "upstream": {
+        "name": "lm_head.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          154880,
+          4096
+        ],
+        "first_row": 77424,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "52bdb97e3d11cdb5146c8e9b38bfacfe9e7399703260e028ba1d97763a259b35",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-lm_head.weight-77424-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.embed_tokens",
+      "format": "BF16",
+      "bf16": {
+        "name": "model.language_model.embed_tokens.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          154880,
+          4096
+        ],
+        "first_row": 77424,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "830f47f4bd43d054adfe5db103a4c834b5c92e9f3576bf039cf15f5cd48ce8f6",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.embed_tokens.weight-77424-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.embed_tokens.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          154880,
+          4096
+        ],
+        "first_row": 77424,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "830f47f4bd43d054adfe5db103a4c834b5c92e9f3576bf039cf15f5cd48ce8f6",
+        "shard": "model-00001-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.embed_tokens.weight-77424-32.bin"
+      }
+    },
+    {
+      "module": "model.language_model.layers.23.self_attn.q_a_proj",
+      "format": "BF16",
+      "bf16": {
+        "name": "model.language_model.layers.23.self_attn.q_a_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          1536,
+          4096
+        ],
+        "first_row": 752,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "330ca245afab0d6a10c38ee9f0399f03bc24da74fb3d085d2139491106143929",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/bf16-model.language_model.layers.23.self_attn.q_a_proj.weight-752-32.bin"
+      },
+      "upstream": {
+        "name": "model.language_model.layers.23.self_attn.q_a_proj.weight",
+        "dtype": "BF16",
+        "shape": [
+          32,
+          4096
+        ],
+        "full_shape": [
+          1536,
+          4096
+        ],
+        "first_row": 752,
+        "rows": 32,
+        "bytes": 262144,
+        "sha256": "330ca245afab0d6a10c38ee9f0399f03bc24da74fb3d085d2139491106143929",
+        "shard": "model-00040-of-00120.safetensors",
+        "path": "samples/upstream-model.language_model.layers.23.self_attn.q_a_proj.weight-752-32.bin"
+      }
+    }
+  ]
+}

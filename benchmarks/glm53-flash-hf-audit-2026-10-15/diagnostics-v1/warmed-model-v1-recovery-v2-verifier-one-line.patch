@@ -1,0 +1,11 @@
+--- original/verify.py
++++ recovery/verify-recovery-v2.py
+@@ -120,7 +120,7 @@
+   assert f.stat().st_size==row["bytes"]and sha(f)==row["sha256"],row["path"]
+  prepared=json.loads((root/"prepared.json").read_bytes());state=json.loads((root/"controller.json").read_bytes())
+  restored=json.loads((root/"post-restoration-check.json").read_bytes())
+- assert not state["service_paused"]and restored["health"]==207 and restored["originals"]==prepared["originals"]
++ assert not state["service_paused"]and restored["health"]==200 and restored["originals"]==prepared["originals"]
+  sources={row["path"][7:]:sha(root/row["path"])for row in inventory if row["path"].startswith("source/")}
+  plan=json.loads((root/"results/warmed-model-plan.json").read_bytes())
+  component=root/"component-cross-host-verification.json"

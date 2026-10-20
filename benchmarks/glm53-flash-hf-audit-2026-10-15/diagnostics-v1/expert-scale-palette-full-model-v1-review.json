@@ -1,0 +1,1772 @@
+{
+  "status": "complete",
+  "scale_storage_lossless": true,
+  "control_repeat_stable": false,
+  "numerical_window_gate_passed": false,
+  "full_logprob_arrays_bitwise_equal": {
+    "control_repeat": false,
+    "candidate": false,
+    "candidate_repeat": false
+  },
+  "end_to_end_bitwise_losslessness_demonstrated": false,
+  "practical_tasks": {
+    "control": [
+      {
+        "name": "json",
+        "passed": true
+      },
+      {
+        "name": "constraints",
+        "passed": true
+      },
+      {
+        "name": "slugify",
+        "passed": true
+      },
+      {
+        "name": "merge_intervals",
+        "passed": false
+      },
+      {
+        "name": "retrieval",
+        "passed": true
+      },
+      {
+        "name": "tool",
+        "passed": false
+      }
+    ],
+    "candidate": [
+      {
+        "name": "json",
+        "passed": true
+      },
+      {
+        "name": "constraints",
+        "passed": true
+      },
+      {
+        "name": "slugify",
+        "passed": true
+      },
+      {
+        "name": "merge_intervals",
+        "passed": false
+      },
+      {
+        "name": "retrieval",
+        "passed": true
+      },
+      {
+        "name": "tool",
+        "passed": false
+      }
+    ]
+  },
+  "all_practical_tasks_passed": false,
+  "allocated_cuda_bytes_after_inference": {
+    "control": 181160413696,
+    "candidate": 178776583680
+  },
+  "additional_cuda_saving_bytes": 2383830016,
+  "actual_decode_comparisons": {
+    "control_repeat": {
+      "steps": [
+        {
+          "index": 0,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 8.576338367178895e-06,
+          "nll_difference": -1.4563509559752672e-05
+        },
+        {
+          "index": 0,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.6256100146988397e-05,
+          "nll_difference": -7.450167215039349e-05
+        },
+        {
+          "index": 0,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 9.971570034225844e-06,
+          "nll_difference": -3.0783364188991403e-06
+        },
+        {
+          "index": 0,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.272423233000621e-05,
+          "nll_difference": -0.0001821725663612271
+        },
+        {
+          "index": 1,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.0544241722191825e-06,
+          "nll_difference": 4.251816904090011e-06
+        },
+        {
+          "index": 1,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.4167577285532636e-06,
+          "nll_difference": 6.423592410097502e-06
+        },
+        {
+          "index": 1,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.5211331025554803e-05,
+          "nll_difference": -4.489483880078936e-05
+        },
+        {
+          "index": 1,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.001442280631917111,
+          "nll_difference": -0.000255871266821183
+        },
+        {
+          "index": 2,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.00032533871404500845,
+          "nll_difference": 0.0009323066904493135
+        },
+        {
+          "index": 2,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.860284286095357e-06,
+          "nll_difference": -5.060145422127122e-06
+        },
+        {
+          "index": 2,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.36070102671155e-06,
+          "nll_difference": 4.7323881688022445e-06
+        },
+        {
+          "index": 2,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.929632602488327e-05,
+          "nll_difference": -4.455337699421904e-06
+        },
+        {
+          "index": 3,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 3.927441356467662e-07,
+          "nll_difference": 1.397921374364095e-06
+        },
+        {
+          "index": 3,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.586128810582845e-05,
+          "nll_difference": -0.00010715211500365385
+        },
+        {
+          "index": 3,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.7195908502576792e-05,
+          "nll_difference": -0.00011654592504101657
+        },
+        {
+          "index": 3,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.1854563534573994e-06,
+          "nll_difference": 2.848357668433801e-06
+        },
+        {
+          "index": 4,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.001359669825627862,
+          "nll_difference": 0.006894663533917577
+        },
+        {
+          "index": 4,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.00035490680653276147,
+          "nll_difference": 0.0009820995882594856
+        },
+        {
+          "index": 4,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.77456864108089e-05,
+          "nll_difference": 7.560921450967383e-06
+        },
+        {
+          "index": 4,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.5264674376517925e-06,
+          "nll_difference": 4.836379898075921e-07
+        },
+        {
+          "index": 5,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.1360682004941512e-07,
+          "nll_difference": 6.117275541244099e-07
+        },
+        {
+          "index": 5,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.299604329125027e-05,
+          "nll_difference": -0.0003802782246326575
+        },
+        {
+          "index": 5,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.6209825351060503e-05,
+          "nll_difference": 5.314208029876997e-05
+        },
+        {
+          "index": 5,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 9.614312237869606e-07,
+          "nll_difference": 3.8896694191401487e-07
+        },
+        {
+          "index": 6,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 6.5268860837549975e-06,
+          "nll_difference": 2.6013388509120623e-05
+        },
+        {
+          "index": 6,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.2102608666035373e-05,
+          "nll_difference": 3.8526000343013897e-05
+        },
+        {
+          "index": 6,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.102135269840318e-06,
+          "nll_difference": 9.684283334655147e-06
+        },
+        {
+          "index": 6,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.4548177693356814e-06,
+          "nll_difference": 9.51659857229013e-06
+        },
+        {
+          "index": 7,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 2.141428835067687e-05,
+          "nll_difference": -3.8464370353133865e-05
+        },
+        {
+          "index": 7,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.9678045321127477e-05,
+          "nll_difference": 4.112549383800881e-05
+        },
+        {
+          "index": 7,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.5612905105184376e-05,
+          "nll_difference": 5.665809050305019e-05
+        },
+        {
+          "index": 7,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.6689312251304307e-05,
+          "nll_difference": 3.7760781014268427e-05
+        },
+        {
+          "index": 8,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 4.200445350514699e-06,
+          "nll_difference": -1.742436893250644e-05
+        },
+        {
+          "index": 8,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.502713439782496e-05,
+          "nll_difference": 7.362499929613447e-05
+        },
+        {
+          "index": 8,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.00014350596359040892,
+          "nll_difference": -3.707845224127944e-05
+        },
+        {
+          "index": 8,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.3983130648754e-06,
+          "nll_difference": 1.6666603882474295e-05
+        },
+        {
+          "index": 9,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.5622427496412206e-05,
+          "nll_difference": 1.8123233765340536e-05
+        },
+        {
+          "index": 9,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.264047682433451e-06,
+          "nll_difference": -2.729132075713627e-06
+        },
+        {
+          "index": 9,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.666110393435453e-06,
+          "nll_difference": 2.3903926434052253e-06
+        },
+        {
+          "index": 9,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.4531434336973256e-06,
+          "nll_difference": 1.2212080444068532e-05
+        },
+        {
+          "index": 10,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 9.64772406569665e-06,
+          "nll_difference": 1.8042715195490058e-05
+        },
+        {
+          "index": 10,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.750381861185195e-05,
+          "nll_difference": 4.1964130312236066e-05
+        },
+        {
+          "index": 10,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.8272629555353545e-05,
+          "nll_difference": 2.5684161445930646e-05
+        },
+        {
+          "index": 10,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.3869001806339423e-05,
+          "nll_difference": 2.818940853870861e-05
+        },
+        {
+          "index": 11,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.0878064038709667e-06,
+          "nll_difference": 6.245183354180585e-06
+        },
+        {
+          "index": 11,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.1853044739502903e-05,
+          "nll_difference": 1.4359053290932942e-06
+        },
+        {
+          "index": 11,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.051663319206781e-06,
+          "nll_difference": 4.167315284973858e-06
+        },
+        {
+          "index": 11,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.4892942959177924e-06,
+          "nll_difference": 1.6842062159685696e-06
+        },
+        {
+          "index": 12,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 7.654139327135747e-07,
+          "nll_difference": -1.5110164751198384e-06
+        },
+        {
+          "index": 12,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.015652242911286e-05,
+          "nll_difference": 6.228263409290696e-05
+        },
+        {
+          "index": 12,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.2894620654918827e-06,
+          "nll_difference": 5.956934326832186e-06
+        },
+        {
+          "index": 12,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.0926893523233844e-06,
+          "nll_difference": 6.429093615683919e-06
+        },
+        {
+          "index": 13,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 3.628381256572375e-06,
+          "nll_difference": -1.4451671467663929e-05
+        },
+        {
+          "index": 13,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.329425012710338e-06,
+          "nll_difference": -2.2803337518938937e-05
+        },
+        {
+          "index": 13,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.2700292580658643e-05,
+          "nll_difference": -6.319846305528125e-05
+        },
+        {
+          "index": 13,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.2405658035799503e-06,
+          "nll_difference": -1.1652595309536004e-05
+        },
+        {
+          "index": 14,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 5.8924256523467555e-05,
+          "nll_difference": 8.65458336298112e-06
+        },
+        {
+          "index": 14,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.3644874769053498e-05,
+          "nll_difference": 4.356294070615647e-05
+        },
+        {
+          "index": 14,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.2460051898282795e-05,
+          "nll_difference": -1.9364643899256193e-06
+        },
+        {
+          "index": 14,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.093605320723282e-06,
+          "nll_difference": 6.127372676971806e-06
+        },
+        {
+          "index": 15,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.0004382386692050509,
+          "nll_difference": -0.00126910660257916
+        },
+        {
+          "index": 15,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.9394714309297496e-05,
+          "nll_difference": -4.432417226622493e-05
+        },
+        {
+          "index": 15,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.6674600179289005e-06,
+          "nll_difference": 1.298263995484494e-05
+        },
+        {
+          "index": 15,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.2499581658289784e-05,
+          "nll_difference": 9.68125501579123e-06
+        }
+      ],
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_decode_conditioning_matches": true,
+      "all_generated_ids_match": true,
+      "mean_decode_kl": 5.496937671292584e-05,
+      "mean_decode_nll_difference": 5.172079361822433e-06
+    },
+    "candidate": {
+      "steps": [
+        {
+          "index": 0,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 5.317065377386715e-05,
+          "nll_difference": -0.00017186839319126377
+        },
+        {
+          "index": 0,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.424940836543294e-05,
+          "nll_difference": -0.0001630451730373812
+        },
+        {
+          "index": 0,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.4751323955285964e-05,
+          "nll_difference": -4.2747051442890884e-05
+        },
+        {
+          "index": 0,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.193191024486952e-05,
+          "nll_difference": -0.0002263992738343564
+        },
+        {
+          "index": 1,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 9.208323760504457e-07,
+          "nll_difference": 1.170838420256118e-06
+        },
+        {
+          "index": 1,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.6182466870174513e-06,
+          "nll_difference": 1.129278763895067e-06
+        },
+        {
+          "index": 1,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.780712126145838e-06,
+          "nll_difference": -2.855596107626107e-05
+        },
+        {
+          "index": 1,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.0004707136702833213,
+          "nll_difference": -0.00019141425202215374
+        },
+        {
+          "index": 2,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.00020186617005625226,
+          "nll_difference": 0.0006637081201241273
+        },
+        {
+          "index": 2,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 9.774576434866077e-06,
+          "nll_difference": 3.254676861096193e-05
+        },
+        {
+          "index": 2,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.7919598423911966e-06,
+          "nll_difference": 1.1879226970057792e-05
+        },
+        {
+          "index": 2,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.4980269614420527e-05,
+          "nll_difference": -2.542134423943504e-06
+        },
+        {
+          "index": 3,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.511510008085284e-06,
+          "nll_difference": -2.737033564232489e-06
+        },
+        {
+          "index": 3,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.409101608545521e-05,
+          "nll_difference": 0.000308515736897447
+        },
+        {
+          "index": 3,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.8693831270099455e-05,
+          "nll_difference": 0.00013332969839852994
+        },
+        {
+          "index": 3,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.0069867640905976e-06,
+          "nll_difference": 1.003576488482912e-05
+        },
+        {
+          "index": 4,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.00043026014289033316,
+          "nll_difference": 0.0019989660490796254
+        },
+        {
+          "index": 4,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.0010509760092594017,
+          "nll_difference": 0.003339480211827656
+        },
+        {
+          "index": 4,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.00011113030521034765,
+          "nll_difference": 0.00010801285927569768
+        },
+        {
+          "index": 4,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.2687448698952484e-06,
+          "nll_difference": -3.663010298489426e-06
+        },
+        {
+          "index": 5,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 2.0659926702451747e-07,
+          "nll_difference": -1.2229155232734217e-07
+        },
+        {
+          "index": 5,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.0003198474996548849,
+          "nll_difference": 0.0021100191312786957
+        },
+        {
+          "index": 5,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.0002571658058475977,
+          "nll_difference": 0.0008960190852821545
+        },
+        {
+          "index": 5,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.411778786360377e-06,
+          "nll_difference": 2.8997217082652144e-06
+        },
+        {
+          "index": 6,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.2878707884673882e-05,
+          "nll_difference": 6.526028326911816e-05
+        },
+        {
+          "index": 6,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.8058148752793105e-05,
+          "nll_difference": 6.599783240975202e-05
+        },
+        {
+          "index": 6,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.2624575381141583e-05,
+          "nll_difference": 3.328703304463929e-05
+        },
+        {
+          "index": 6,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.4925985401950736e-06,
+          "nll_difference": 1.0496384332494177e-05
+        },
+        {
+          "index": 7,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.00013910194363067423,
+          "nll_difference": -0.00015187658648562667
+        },
+        {
+          "index": 7,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.5395569130648655e-05,
+          "nll_difference": 4.447399196236921e-05
+        },
+        {
+          "index": 7,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.793217959705298e-05,
+          "nll_difference": -4.668452711068633e-05
+        },
+        {
+          "index": 7,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.538807967160754e-06,
+          "nll_difference": 3.4246853303004574e-07
+        },
+        {
+          "index": 8,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 3.7771048681345314e-06,
+          "nll_difference": 2.4189150320082426e-06
+        },
+        {
+          "index": 8,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.2799059166990903e-05,
+          "nll_difference": 2.090223797797266e-05
+        },
+        {
+          "index": 8,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.0001442799134402563,
+          "nll_difference": -3.458525654174044e-05
+        },
+        {
+          "index": 8,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.0255920953159546e-05,
+          "nll_difference": 2.3819712023737198e-05
+        },
+        {
+          "index": 9,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 9.442773004549148e-06,
+          "nll_difference": -7.143015530041326e-06
+        },
+        {
+          "index": 9,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.4585048483218255e-06,
+          "nll_difference": -1.1829280983040517e-05
+        },
+        {
+          "index": 9,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.7172656802180473e-06,
+          "nll_difference": -9.969983984503618e-07
+        },
+        {
+          "index": 9,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.4475544895954192e-05,
+          "nll_difference": -4.412831469362201e-05
+        },
+        {
+          "index": 10,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.4376334432121698e-05,
+          "nll_difference": 6.017313906968622e-05
+        },
+        {
+          "index": 10,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.8180767314297088e-05,
+          "nll_difference": 5.153886496723673e-05
+        },
+        {
+          "index": 10,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.0560759051295672e-05,
+          "nll_difference": 2.3601145754636733e-05
+        },
+        {
+          "index": 10,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.7479258219225665e-05,
+          "nll_difference": 3.288114548220632e-05
+        },
+        {
+          "index": 11,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 9.053658638296201e-07,
+          "nll_difference": 4.5759785032002356e-06
+        },
+        {
+          "index": 11,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.5091749727619323e-06,
+          "nll_difference": 1.0180877688930995e-05
+        },
+        {
+          "index": 11,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.798369578448697e-06,
+          "nll_difference": 1.0310094574452207e-05
+        },
+        {
+          "index": 11,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.3893558738500335e-05,
+          "nll_difference": -2.837852450502017e-05
+        },
+        {
+          "index": 12,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 7.118104252042444e-06,
+          "nll_difference": 2.82882421356569e-05
+        },
+        {
+          "index": 12,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.6039190493247665e-05,
+          "nll_difference": 0.00014316376501073193
+        },
+        {
+          "index": 12,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.1937293036327901e-06,
+          "nll_difference": 6.595275440196307e-06
+        },
+        {
+          "index": 12,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.0011008665288342e-05,
+          "nll_difference": 2.516385916832894e-05
+        },
+        {
+          "index": 13,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.5548704703298103e-07,
+          "nll_difference": -4.222702349407516e-07
+        },
+        {
+          "index": 13,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.0961416855194654e-05,
+          "nll_difference": 6.040794160816189e-05
+        },
+        {
+          "index": 13,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.7133827889797901e-06,
+          "nll_difference": 1.2862254895841562e-05
+        },
+        {
+          "index": 13,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 9.545440719684474e-06,
+          "nll_difference": -3.730900683084381e-05
+        },
+        {
+          "index": 14,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 7.149409909411794e-05,
+          "nll_difference": 1.80090207032811e-05
+        },
+        {
+          "index": 14,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.452979589652707e-05,
+          "nll_difference": 1.3834624633120296e-05
+        },
+        {
+          "index": 14,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.918758068134997e-05,
+          "nll_difference": -8.317819448681087e-05
+        },
+        {
+          "index": 14,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.4208726160309128e-05,
+          "nll_difference": -3.047337627581906e-05
+        },
+        {
+          "index": 15,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.00018440921393993013,
+          "nll_difference": 0.0008888991237880686
+        },
+        {
+          "index": 15,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 9.971675229531407e-06,
+          "nll_difference": -2.752813306619551e-06
+        },
+        {
+          "index": 15,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.326873332333269e-06,
+          "nll_difference": 2.3001897466809587e-05
+        },
+        {
+          "index": 15,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.509074730801065e-05,
+          "nll_difference": 0.00011904460246972275
+        }
+      ],
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_decode_conditioning_matches": true,
+      "all_generated_ids_match": true,
+      "mean_decode_kl": 6.405028331175823e-05,
+      "mean_decode_nll_difference": 0.000139731048834884
+    },
+    "candidate_repeat": {
+      "steps": [
+        {
+          "index": 0,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 2.9030082950583365e-05,
+          "nll_difference": 7.572980562261085e-05
+        },
+        {
+          "index": 0,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.525055307734796e-05,
+          "nll_difference": 0.00016137472052126764
+        },
+        {
+          "index": 0,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.1412841494464198e-05,
+          "nll_difference": 5.221402807612184e-05
+        },
+        {
+          "index": 0,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.5211774055893085e-05,
+          "nll_difference": 0.00010046028462368619
+        },
+        {
+          "index": 1,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 2.2518790707968785e-06,
+          "nll_difference": 3.577755128192489e-06
+        },
+        {
+          "index": 1,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.562787808148988e-06,
+          "nll_difference": -7.0942535564913245e-06
+        },
+        {
+          "index": 1,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.812462410519418e-05,
+          "nll_difference": -2.491351339451992e-05
+        },
+        {
+          "index": 1,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.00015284912959510194,
+          "nll_difference": 7.09629256067989e-05
+        },
+        {
+          "index": 2,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.00016468333168819725,
+          "nll_difference": -0.0004071844675232689
+        },
+        {
+          "index": 2,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.4091479893894425e-06,
+          "nll_difference": 1.1634039501086488e-06
+        },
+        {
+          "index": 2,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.7803909215961897e-06,
+          "nll_difference": -5.5264762148768865e-06
+        },
+        {
+          "index": 2,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.9280498221653418e-06,
+          "nll_difference": -3.929597259207026e-07
+        },
+        {
+          "index": 3,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 6.506705104282199e-07,
+          "nll_difference": 1.4687205330999048e-06
+        },
+        {
+          "index": 3,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.00010854485566282327,
+          "nll_difference": -0.000505817740121991
+        },
+        {
+          "index": 3,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.8357522914560805e-05,
+          "nll_difference": -0.00022152141333709168
+        },
+        {
+          "index": 3,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.6210754631131588e-06,
+          "nll_difference": -1.2697465851029875e-05
+        },
+        {
+          "index": 4,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.000378614882070853,
+          "nll_difference": 0.00214339008350542
+        },
+        {
+          "index": 4,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 0.000920884915526761,
+          "nll_difference": -0.0016598647834419871
+        },
+        {
+          "index": 4,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.493970421190364e-05,
+          "nll_difference": -0.00031514761562720026
+        },
+        {
+          "index": 4,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.615551024068628e-06,
+          "nll_difference": 4.141690716683322e-06
+        },
+        {
+          "index": 5,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.898337163082657e-07,
+          "nll_difference": -1.2047926052378063e-06
+        },
+        {
+          "index": 5,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.091362044318379e-05,
+          "nll_difference": 0.0006557597005484254
+        },
+        {
+          "index": 5,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.363112947005985e-05,
+          "nll_difference": -0.00017560619815939343
+        },
+        {
+          "index": 5,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.1113584077391618e-07,
+          "nll_difference": -1.460533472524139e-06
+        },
+        {
+          "index": 6,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 8.182439720435257e-06,
+          "nll_difference": -2.925662729312377e-05
+        },
+        {
+          "index": 6,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.2331630597109665e-05,
+          "nll_difference": -5.477611037299302e-05
+        },
+        {
+          "index": 6,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.202417042862864e-05,
+          "nll_difference": -2.5008230707487574e-05
+        },
+        {
+          "index": 6,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.381634543086341e-06,
+          "nll_difference": -6.943992831096827e-06
+        },
+        {
+          "index": 7,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 5.091787356556861e-05,
+          "nll_difference": 0.00010556950213838498
+        },
+        {
+          "index": 7,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.24903128306087e-05,
+          "nll_difference": -3.97536276338912e-05
+        },
+        {
+          "index": 7,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.508174178539804e-05,
+          "nll_difference": 9.426853321646482e-05
+        },
+        {
+          "index": 7,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.7439016067243703e-06,
+          "nll_difference": 1.1420038234544175e-05
+        },
+        {
+          "index": 8,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.639743398366945e-05,
+          "nll_difference": 0.00010554794207893358
+        },
+        {
+          "index": 8,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.3517010324425438e-05,
+          "nll_difference": 5.759736555492152e-06
+        },
+        {
+          "index": 8,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.4456862179282244e-06,
+          "nll_difference": 2.867182296227722e-05
+        },
+        {
+          "index": 8,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.953997829282632e-07,
+          "nll_difference": 3.562660321314396e-06
+        },
+        {
+          "index": 9,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 2.435852305753662e-05,
+          "nll_difference": 1.718583145146234e-05
+        },
+        {
+          "index": 9,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 9.771483760059098e-07,
+          "nll_difference": -6.850563216325903e-07
+        },
+        {
+          "index": 9,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.32596005904647e-06,
+          "nll_difference": 5.187997575199383e-07
+        },
+        {
+          "index": 9,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.7416518198537035e-06,
+          "nll_difference": -4.797544062564276e-06
+        },
+        {
+          "index": 10,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 7.80300694651895e-06,
+          "nll_difference": -3.4431959069516265e-05
+        },
+        {
+          "index": 10,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.2769550238707847e-05,
+          "nll_difference": -3.1000495151275445e-05
+        },
+        {
+          "index": 10,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.981781630316783e-06,
+          "nll_difference": 2.218650734271601e-06
+        },
+        {
+          "index": 10,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.208746187768504e-06,
+          "nll_difference": -1.086332163913943e-05
+        },
+        {
+          "index": 11,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.3230299791313944e-06,
+          "nll_difference": 9.499460359048047e-06
+        },
+        {
+          "index": 11,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.788796649938966e-06,
+          "nll_difference": -8.075735711621446e-07
+        },
+        {
+          "index": 11,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.880463623041286e-06,
+          "nll_difference": -1.0828631199671962e-05
+        },
+        {
+          "index": 11,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.159061114459538e-05,
+          "nll_difference": 2.8339496699465284e-05
+        },
+        {
+          "index": 12,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 7.17557090134571e-06,
+          "nll_difference": -2.2520811847037887e-05
+        },
+        {
+          "index": 12,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.056313264816894e-05,
+          "nll_difference": -4.854054453068261e-05
+        },
+        {
+          "index": 12,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.7528708086112573e-06,
+          "nll_difference": -3.2462014499044355e-06
+        },
+        {
+          "index": 12,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 1.8897364374012424e-05,
+          "nll_difference": -3.073946526304194e-05
+        },
+        {
+          "index": 13,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 1.0951678827058182e-06,
+          "nll_difference": -6.977939300547713e-06
+        },
+        {
+          "index": 13,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 8.197146279225936e-06,
+          "nll_difference": -4.783250857807119e-05
+        },
+        {
+          "index": 13,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.762470131141712e-06,
+          "nll_difference": -3.283920049296514e-05
+        },
+        {
+          "index": 13,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 2.6064618067087822e-05,
+          "nll_difference": 8.407125161947878e-05
+        },
+        {
+          "index": 14,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 2.9269196339168584e-06,
+          "nll_difference": -2.116518408139362e-05
+        },
+        {
+          "index": 14,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.714152666563204e-06,
+          "nll_difference": -1.7997277151511712e-05
+        },
+        {
+          "index": 14,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 5.485086077130556e-06,
+          "nll_difference": 3.90491456213657e-05
+        },
+        {
+          "index": 14,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 3.764694416191135e-06,
+          "nll_difference": -1.5258579122745197e-05
+        },
+        {
+          "index": 15,
+          "position": 0,
+          "kind": "prefill",
+          "matching_conditioning": true,
+          "kl": 0.0008707280254804178,
+          "nll_difference": -0.0022411844901802248
+        },
+        {
+          "index": 15,
+          "position": 1,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 6.595257456764029e-06,
+          "nll_difference": -1.608622535450999e-05
+        },
+        {
+          "index": 15,
+          "position": 2,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 4.091761939056512e-06,
+          "nll_difference": -1.5615963539500512e-05
+        },
+        {
+          "index": 15,
+          "position": 3,
+          "kind": "decode",
+          "matching_conditioning": true,
+          "kl": 7.590123286893273e-05,
+          "nll_difference": -0.00010428919865931863
+        }
+      ],
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_decode_conditioning_matches": true,
+      "all_generated_ids_match": true,
+      "mean_decode_kl": 4.085447489594892e-05,
+      "mean_decode_nll_difference": -4.383324605772721e-05
+    }
+  },
+  "limits": [
+    "Reference is the same already quantized MXFP4 checkpoint and existing codec.",
+    "Source storage exactness is distinct from identical GEMM rounding or log-probabilities.",
+    "Six authored tasks and sixteen short quality windows are not a standard accuracy benchmark.",
+    "This qualification diagnostic does not resolve the component prefill latency regression.",
+    "Do not relax the repeat-control stability floor or claim release qualification from these checks."
+  ],
+  "analysis_sha256": "29e795d5a79f2d35ffab8abc0bb683b199e8b76360cde9bf2f09bf5a9c64dbfd",
+  "inputs": {
+    "control-repeat-decode-quality.json": "6753f00d286b84b2fdbdb83b83ea44b6061aa3a0c1475e6a151de66688adfa66",
+    "candidate-measurement.json": "10e8a5725ca73cd1c983f5a545d6b90d0d0d173be7a19a9dbecab4a24bda2ae2",
+    "control-decode-quality.json": "87f80c0b40b8766ad6fd56d791142d69b76769022ecb0a7c76f9fbbf50c36d06",
+    "candidate-repeat-decode-quality.json": "40abc1568153dc9d4fe8eb6f15dc4a08ffbca422aa5db59811e82fb3019769ba",
+    "protocol.json": "f7cd768f3ade29b2454c0621e25d20a8956bb13b095ebda9b05f1c2733f1f63c",
+    "candidate-decode-quality.json": "cce5f60d02e1fe1a2fcebab05eff3e24923669d4762893b27be13a9fcf1ff4d3",
+    "control-measurement.json": "4024be2d64e57994137af08c9f8378178f834b31c4e70b22a2c1e18e4ce5264a",
+    "control-diagnostic/model-diagnostic.json": "c932ae9527ad48e23b4e2c1cfcab5ce4022ed33e38307161d6a5474c1d52db73",
+    "candidate/real-work.json": "74e3181adb0a99a71ac1ba42c287c5395223b0165e9c323e0b8b2e53ea98cdd4",
+    "control/real-work.json": "2af3c4f0c65b121b32672b0ac2d0fe7d1e951c3515bffd9b284ce2232eec1cc9",
+    "candidate-diagnostic/model-diagnostic.json": "10e0ed0d5a0f07d156675fa205c0f9df681dabbba5f5fe03cd026c2f9a87b85f"
+  },
+  "offline_verification": {
+    "all_json_input_hashes_verified": true,
+    "retained_full_vocab_f32_arrays": 256,
+    "cpu_recomputed_flags_and_metrics_match": true,
+    "original_review_sha256": "faea3f6358d43894c6b5c0c2b2f46b5ac475bcbf29b14f7e69350498a4212732",
+    "cross_platform_metric_tolerance": 1e-12
+  },
+  "practical_answer_comparison": [
+    {
+      "name": "json",
+      "control_passed": true,
+      "candidate_passed": true,
+      "both_reached_model": true,
+      "final_answers_equal": true,
+      "code_hashes_equal": null
+    },
+    {
+      "name": "constraints",
+      "control_passed": true,
+      "candidate_passed": true,
+      "both_reached_model": true,
+      "final_answers_equal": true,
+      "code_hashes_equal": null
+    },
+    {
+      "name": "slugify",
+      "control_passed": true,
+      "candidate_passed": true,
+      "both_reached_model": true,
+      "final_answers_equal": true,
+      "code_hashes_equal": true
+    },
+    {
+      "name": "merge_intervals",
+      "control_passed": false,
+      "candidate_passed": false,
+      "both_reached_model": true,
+      "final_answers_equal": true,
+      "code_hashes_equal": true
+    },
+    {
+      "name": "retrieval",
+      "control_passed": true,
+      "candidate_passed": true,
+      "both_reached_model": true,
+      "final_answers_equal": true,
+      "code_hashes_equal": null
+    },
+    {
+      "name": "tool",
+      "control_passed": false,
+      "candidate_passed": false,
+      "both_reached_model": false,
+      "final_answers_equal": null,
+      "code_hashes_equal": null
+    }
+  ],
+  "practical_task_interpretation": [
+    "Five requests produced final answers; all five final answers are text-identical between arms. The sixth was rejected by the API before model evaluation.",
+    "The strict merge_intervals check fails on tuples versus expected lists in both arms. The prompt did not explicitly require list-valued output; preserve the failure and record the contract ambiguity.",
+    "The slugify scorer removes Markdown fences before executing functional tests; both outputs contain fences despite the prompt asking for plain code.",
+    "The API rejected named tool choice because --tool-call-parser was unset; no model tool-call quality was measured."
+  ],
+  "latency_status": "No new full-model throughput claim; the latest component build fails the latency gate.",
+  "evidence_archive": {
+    "status": "complete",
+    "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/palette-model-evidence-v1.tar.gz",
+    "bytes": 81323921,
+    "sha256": "27d541993d4ae343dc252889a2df653111701929bb10bd28cfd36e8ab8bcbd87",
+    "manifest_payloads": 414,
+    "final_service_check_passed": true,
+    "all_manifest_payloads_verified_locally": true
+  },
+  "final_service_check": {
+    "controller_phase": "complete",
+    "epoch": 1792220939.7618425,
+    "identities": [
+      {
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ],
+    "identity_matches": true,
+    "running": [
+      true,
+      true
+    ],
+    "health_8000": true,
+    "active_owned_containers": [],
+    "passed": true
+  },
+  "tool_admission_diagnostic": {
+    "purpose": "Capture the API rejection body after all recorded quality and practical requests; original task evidence unchanged.",
+    "status": 400,
+    "body": "{\"error\":{\"message\":\"tool_choice=function \\\"get_weather\\\" requires --tool-call-parser to be set\",\"type\":\"BadRequestError\",\"param\":null,\"code\":400}}"
+  },
+  "user_acceptance_requirements": {
+    "quality_regression_allowed": false,
+    "future_service_pause_scope": "one pause across a planned batch of variants; restore after the batch",
+    "latency_memory_tradeoffs_must_be_reported": true
+  }
+}

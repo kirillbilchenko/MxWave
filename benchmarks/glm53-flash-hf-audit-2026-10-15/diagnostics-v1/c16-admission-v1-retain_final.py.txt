@@ -1,0 +1,53 @@
+"""Retain final reviews and operational evidence with byte verification and document hashes."""
+from __future__ import annotations
+import gzip,hashlib,json,pathlib,re,time
+BASE=pathlib.Path(__file__).parent
+WORK=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+DEST=WORK/'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+PREFIX='c16-admission-v1-'
+
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+
+def main():
+    proof=json.loads((BASE/'cross-host-verification.json').read_bytes())
+    assert proof['status']=='passed' and proof['measurement_complete']
+    assert json.loads((BASE/'terminal-cleanup.json').read_bytes())['status']=='released'
+    assert json.loads((BASE/'final-findings.json').read_bytes())['status']=='complete'
+    files=[p for p in sorted(BASE.iterdir()) if p.is_file() and p.suffix in ('.py','.json','.log','.txt','.md')]
+    records=[]
+    for source in files:
+        raw=source.read_bytes();name=source.name+('.txt' if source.suffix=='.py' else '')
+        target=DEST/(PREFIX+name)
+        compressed=False
+        if target.exists() and target.read_bytes()!=raw:
+            target=DEST/(PREFIX+'final-'+name)
+        if not target.exists() and source.suffix=='.json' and len(raw)>150_000:
+            compressed=True;target=target.with_name(target.name+'.gz')
+        stored=gzip.compress(raw,mtime=0) if compressed else raw
+        if target.exists():assert target.read_bytes()==stored,str(target)
+        else:
+            with target.open('xb') as stream:stream.write(stored)
+        retained=target.read_bytes()
+        assert (gzip.decompress(retained) if compressed else retained)==raw
+        records.append({'source':str(source),'retained':target.name,'source_bytes':len(raw),
+            'source_sha256':sha(raw),'retained_bytes':len(retained),'retained_sha256':sha(retained),'gzip':compressed})
+    docs=['README.md','docs/GLM53_C16_ADMISSION.md','docs/GLM53_HANDOFF.md','docs/GLM53_CURRENT_STATE.md',
+          'docs/GLM53_PREFILL_ADMISSION.md','docs/GLM53_SPEED_OPTIONS.md','docs/GLM53_LOSSLESS_RUNTIME_HANDOFF.md',
+          'docs/GLM53_FP32_INPUT_MODEL.md','docs/GLM53_BF16_KERNEL_DIAGNOSTIC.md']
+    document_records=[{'path':name,'sha256':sha((WORK/name).read_bytes())} for name in docs]
+    manifest={'status':'complete','created_epoch':time.time(),'artifacts':records,'documents':document_records,
+        'archive_local':str(BASE/'evidence.tar.gz'),
+        'archive_remote':'/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/evidence-c16-admission-v1.tar.gz',
+        'archive_sha256':proof['archive_sha256'],'archive_bytes':proof['archive_bytes'],
+        'source_files':211,'qualified_parent_sources_unchanged':207,'GPU_experiments_run':1,
+        'original_service_restored':True,'configuration_promoted':False,'all_previous_failures_preserved':True}
+    path=DEST/(PREFIX+'final-retention.json')
+    with path.open('x') as stream:json.dump(manifest,stream,indent=2)
+    report=WORK/'docs/GLM53_C16_ADMISSION.md'
+    links=re.findall(r'\]\(([^)]+)\)',report.read_text())
+    for link in links:assert (report.parent/link).resolve().exists(),link
+    for row in records:
+        raw=(DEST/row['retained']).read_bytes();assert sha(raw)==row['retained_sha256']
+    print(json.dumps({'status':'complete','artifacts':len(records),'retained_bytes':sum(r['retained_bytes'] for r in records),'documents':len(docs),'report_links_verified':len(links)}))
+
+if __name__=='__main__':main()

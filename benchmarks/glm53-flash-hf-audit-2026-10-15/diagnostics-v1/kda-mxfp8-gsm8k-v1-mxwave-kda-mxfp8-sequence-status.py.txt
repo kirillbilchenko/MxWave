@@ -1,0 +1,153 @@
+"""Keep the handoff current across speed and the following full GSM8K comparison."""
+
+from __future__ import annotations
+
+import datetime
+import json
+import subprocess
+import time
+from pathlib import Path
+
+REPO = Path("/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4")
+BASE = "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1"
+BEGIN = "<!-- KDA_MXFP8_SPEED_LIVE_BEGIN -->"
+END = "<!-- KDA_MXFP8_SPEED_LIVE_END -->"
+
+
+def update(path, text):
+    """Replace only the owned live-status block."""
+    source = path.read_text()
+    section = BEGIN + "\n" + text + "\n" + END
+    if BEGIN in source:
+        first = source.index(BEGIN)
+        last = source.index(END, first) + len(END)
+        source = source[:first] + section + source[last:]
+    else:
+        first = source.index("\n") + 1
+        source = source[:first] + "\n" + section + "\n" + source[first:]
+    temporary = path.with_suffix(".status-tmp")
+    temporary.write_text(source)
+    temporary.replace(path)
+
+
+def main():
+    """Poll small progress records without injecting any inference requests."""
+    program = """
+import json,pathlib
+base=pathlib.Path(BASE)
+out={}
+for tag in ('speed','gsm8k'):
+ r=base/('kda-mxfp8-'+tag+'-v1')
+ p=r/'controller.json'
+ s={}
+ if p.exists():
+  d=json.loads(p.read_bytes())
+  s={k:d.get(k) for k in ('phase','pid','watchdog_pid','service_paused','error',
+    'started_epoch','updated_epoch','outage_deadline_epoch')}
+  s['completed_loads']=list(d['measurements'])
+  s['restoration']=d.get('restoration')
+ for p in r.glob('*-measurement.json'):
+  m=json.loads(p.read_bytes())
+  if m['status']=='running':
+   s['active_measurement']={'arm':m['arm'],'phase':m['phase'],
+     'completed':len(m.get('trials',m.get('cases',[])))}
+ if (r/'queue.json').exists():s['queue']=json.loads((r/'queue.json').read_bytes())
+ out[tag]=s
+print(json.dumps(out))
+""".replace("BASE", repr(BASE))
+    deadline = time.time() + 8 * 3600
+    while time.time() < deadline:
+        run = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
+             "spark", "python3", "-S", "-"],
+            input=program, text=True, capture_output=True, timeout=30, check=False,
+        )
+        if run.returncode:
+            print(f"Status fetch failed: {run.returncode}", flush=True)
+            time.sleep(30)
+            continue
+        state = json.loads(run.stdout)
+        speed, quality = state["speed"], state["gsm8k"]
+        stamp = datetime.datetime.now(datetime.UTC).strftime("%d %B %Y, %H:%M UTC")
+        text = (
+            f"**Live MXFP8 experiment status: {stamp}.** Speed phase `{speed['phase']}`; "
+            f"{len(speed['completed_loads'])}/9 model loads complete. "
+        )
+        if speed.get("active_measurement"):
+            m = speed["active_measurement"]
+            text += f"Current speed load `{m['arm']}`: {m['completed']}/12 timing groups. "
+        qphase = quality.get("phase", quality.get("queue", {}).get("phase", "not_started"))
+        text += f"\n\nFull GSM8K follow-up: `{qphase}`. "
+        if quality.get("active_measurement"):
+            m = quality["active_measurement"]
+            text += f"Current arm `{m['arm']}`: {m['completed']}/1,319 answers retained. "
+        text += (
+            "It runs both fresh CT arms with speculation off, after speed evidence is retained. "
+            "The historical uncompressed CT score is 1,246/1,319 (94.47%); "
+            "the new MXFP8 score remains pending until its full pass completes. "
+        )
+        active = quality if quality.get("service_paused") else speed
+        if active.get("service_paused"):
+            port = 8015 if quality.get("service_paused") else 8014
+            text += (
+                f"\n\nOriginal production is temporarily stopped. The active private experiment "
+                f"uses port {port} and 8,192 context. Its controller/watchdog restore the exact "
+                "original 500,000-context service on exit; no candidate is promoted. "
+            )
+        elif quality.get("restoration") or speed.get("restoration"):
+            text += (
+                "\n\nOriginal production was restored with 500,000 context at the most recent "
+                "controller checkpoint. The queued follow-up may pause it again. "
+            )
+        verified = {}
+        for tag in ("speed", "gsm8k"):
+            complete = Path(f"/private/tmp/mxwave-kda-mxfp8-{tag}-v1-final/complete.json")
+            if complete.exists():
+                proof = json.loads(complete.read_bytes())
+                verified[tag] = proof
+                text += (
+                    f"\n\n{tag.upper()} evidence: `{proof['status']}`, "
+                    f"{proof['payloads']} payloads retained and hash-checked locally. "
+                )
+        if "gsm8k" in verified and verified["gsm8k"]["status"] == "verified":
+            review = json.loads(Path(
+                "/private/tmp/mxwave-kda-mxfp8-gsm8k-v1-final/mac-review.json"
+            ).read_bytes())
+            a, b = (review["scores"][k] for k in ("control", "candidate"))
+            text += (
+                f"Fresh CT BF16 KDA: {a['answer_exact_matches']}/1,319; "
+                f"native MXFP8 KDA: {b['answer_exact_matches']}/1,319. "
+            )
+        for tag, part in state.items():
+            error = part.get("error") or part.get("queue", {}).get("error")
+            if error:
+                text += f"\n\nRetained {tag} error: `{error}`. "
+        text += (
+            "\n\nThe earlier **1e-5 KL gate remains failed**. Sampled PPL improved, "
+            "but task accuracy and timing must be measured separately. "
+            "See the [speed protocol](GLM53_KDA_MXFP8_SPEED.md) and "
+            "[full GSM8K protocol](GLM53_KDA_MXFP8_GSM8K.md). "
+            "This live block supersedes older service-state statements below."
+        )
+        for name in (
+            "GLM53_HANDOFF.md", "GLM53_CURRENT_STATE.md",
+            "GLM53_KDA_MXFP8_SPEED.md", "GLM53_KDA_MXFP8_GSM8K.md",
+        ):
+            update(REPO / "docs" / name, text)
+        output = REPO / (
+            "benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/"
+            "kda-mxfp8-sequence-live-status.json"
+        )
+        output.write_text(json.dumps(
+            {"checked_at": stamp, **state, "independent_verification": verified}, indent=2
+        ) + "\n")
+        print(json.dumps({"checked_at": stamp, "speed": speed["phase"], "gsm8k": qphase}),
+              flush=True)
+        if len(verified) == 2 or quality.get("queue", {}).get("phase") == "failed":
+            return
+        time.sleep(30)
+    raise TimeoutError("Sequence monitor expired; inspect retained controllers")
+
+
+if __name__ == "__main__":
+    main()

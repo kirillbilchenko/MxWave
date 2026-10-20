@@ -1,0 +1,65 @@
+{
+  "status": "complete",
+  "inputs": {
+    "results/control-matched-c8.json": "bdc068ccd68e22537e13760af7c9a81e928c889b0df01002eb1640711ee22d25",
+    "results/candidate-matched-c8.json": "5f8d099475b217bb38344d6b306684fa457d237b216029d3886b0df594ab9970"
+  },
+  "summed_process_counters_bytes": {
+    "control": {
+      "telemetry_before": {
+        "VmRSS": 13584781312,
+        "VmHWM": 16521732096,
+        "RssAnon": 6351925248,
+        "RssFile": 1766490112,
+        "RssShmem": 5466365952
+      },
+      "telemetry_after": {
+        "VmRSS": 14834814976,
+        "VmHWM": 16521732096,
+        "RssAnon": 7498694656,
+        "RssFile": 1778061312,
+        "RssShmem": 5558059008
+      }
+    },
+    "candidate": {
+      "telemetry_before": {
+        "VmRSS": 13845266432,
+        "VmHWM": 19066892288,
+        "RssAnon": 6581653504,
+        "RssFile": 1797222400,
+        "RssShmem": 5466390528
+      },
+      "telemetry_after": {
+        "VmRSS": 15055433728,
+        "VmHWM": 19066892288,
+        "RssAnon": 7689535488,
+        "RssFile": 1807839232,
+        "RssShmem": 5558059008
+      }
+    }
+  },
+  "candidate_minus_control_bytes": {
+    "telemetry_before": {
+      "VmRSS": 260485120,
+      "VmHWM": 2545160192,
+      "RssAnon": 229728256,
+      "RssFile": 30732288,
+      "RssShmem": 24576
+    },
+    "telemetry_after": {
+      "VmRSS": 220618752,
+      "VmHWM": 2545160192,
+      "RssAnon": 190840832,
+      "RssFile": 29777920,
+      "RssShmem": 0
+    }
+  },
+  "GPU_experiment_run": false,
+  "limits": [
+    "Anonymous RSS is not proof that allocations are free or owned by glibc; no model trim has been performed.",
+    "Summed per-process HWM values are not a simultaneous host-memory peak.",
+    "Process RSS, cgroup memory and CUDA counters overlap on Spark.",
+    "Full-vocabulary quality requests and profiling precede final telemetry, so before/after growth is not a production serving leak diagnosis."
+  ],
+  "next_action": "A separate bounded glibc probe may validate the reclamation interface. Actual model reclaim, CPU savings and latency must be measured in a separately frozen paired experiment."
+}

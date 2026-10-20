@@ -1,0 +1,115 @@
+"""Annotate the final diagnostic request only; preserve the unprofiled runtime."""
+
+from __future__ import annotations
+
+import functools
+import inspect
+import json
+import pathlib
+import time
+
+
+def attach(worker):
+    """Wrap existing bound methods after timing, without changing their arguments/results."""
+    import torch
+
+    runner = worker.model_runner
+    state = {"active": False, "events": [], "sources": {}}
+    worker._mxwave_dflash_trace = state
+
+    def wrap(obj, name, label, describe=None):
+        if obj is None or not hasattr(obj, name):
+            return
+        original = getattr(obj, name)
+        try:
+            source = inspect.getfile(original)
+        except (TypeError, OSError):
+            source = None
+        state["sources"][label] = source
+
+        @functools.wraps(original)
+        def observed(*args, **kwargs):
+            if not state["active"]:
+                return original(*args, **kwargs)
+            metadata = {} if describe is None else describe(args, kwargs)
+            index = len(state["events"])
+            event = {
+                "index": index,
+                "label": label,
+                "metadata": metadata,
+                "start_ns": time.perf_counter_ns(),
+            }
+            state["events"].append(event)
+            title = "mxwave.dflash/" + label + "/" + str(index)
+            with torch.profiler.record_function(title):
+                result = original(*args, **kwargs)
+            event["end_ns"] = time.perf_counter_ns()
+            return result
+
+        setattr(obj, name, observed)
+
+    def tensor_rows(args, kwargs):
+        value = args[0] if args else kwargs.get("hidden_states")
+        return {"shape": list(value.shape)} if hasattr(value, "shape") else {}
+
+    def graph(args, kwargs):
+        desc = args[0] if args else kwargs.get("desc")
+        return {
+            key: str(getattr(desc, key, None))
+            for key in ("num_tokens", "num_reqs", "cg_mode", "uniform_token_count")
+        }
+
+    def batch(args, kwargs):
+        value = args[0] if args else kwargs.get("input_batch")
+        return {
+            key: int(getattr(value, key))
+            for key in ("num_reqs", "num_tokens", "num_tokens_after_padding", "num_draft_tokens")
+            if hasattr(value, key)
+        }
+
+    wrap(runner.cudagraph_manager, "run_fullgraph", "target_graph", graph)
+    wrap(runner.model, "forward", "target_eager")
+    wrap(runner.model, "compute_logits", "target_logits", tensor_rows)
+    wrap(runner, "sample", "target_sample")
+    wrap(runner.speculator, "propose", "draft_propose", batch)
+    wrap(runner.speculator.model, "forward", "draft_eager")
+    wrap(runner.speculator.model, "compute_logits", "draft_logits", tensor_rows)
+    for name in ("cudagraph_manager", "draft_cudagraph_manager"):
+        manager = getattr(runner.speculator, name, None)
+        wrap(manager, "run_fullgraph", "draft_graph_" + name, graph)
+    state["speculator_class"] = (
+        type(runner.speculator).__module__ + "." + type(runner.speculator).__name__
+    )
+    state["speculator_attributes"] = sorted(vars(runner.speculator))
+
+
+def install(worker_type):
+    """Use vLLM's existing profiling lifecycle to enable scoped observation."""
+    original = worker_type.profile
+
+    @functools.wraps(original)
+    def profile(worker, is_start=True, profile_prefix=None):
+        if is_start:
+            if not hasattr(worker, "_mxwave_dflash_trace"):
+                attach(worker)
+            state = worker._mxwave_dflash_trace
+            state["events"] = []
+            state["telemetry_before"] = worker.mxwave_gpu_telemetry()
+            result = original(worker, is_start, profile_prefix)
+            state["active"] = True
+            return result
+        state = getattr(worker, "_mxwave_dflash_trace", None)
+        if state is not None:
+            state["active"] = False
+        result = original(worker, is_start, profile_prefix)
+        if state is not None:
+            from vllm.distributed import get_tensor_model_parallel_rank
+
+            state["telemetry_after"] = worker.mxwave_gpu_telemetry()
+            path = pathlib.Path("/traces") / (
+                "phase-trace-r" + str(get_tensor_model_parallel_rank()) + ".json"
+            )
+            path.write_text(json.dumps(state, indent=2) + "\n")
+        return result
+
+    worker_type.profile = profile

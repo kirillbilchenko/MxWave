@@ -1,0 +1,210 @@
+{
+  "status": "complete",
+  "layer": 23,
+  "rows": [
+    {
+      "activation": "MoEActivation.SILU",
+      "global_num_experts": 288,
+      "expert_map_is_none": true,
+      "apply_router_weight_on_input": false,
+      "implementation": "vllm.model_executor.layers.fused_moe.modular_kernel.FusedMoEKernel",
+      "tokens": 1,
+      "tensors": {
+        "hidden_states": {
+          "path": "m1-hidden_states.bin",
+          "shape": [
+            1,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 8192,
+          "sha256": "125c064158ad62dd41c581b18fbf28929b9f8dab38c8ea61db66bca828fc4d4a"
+        },
+        "topk_ids": {
+          "path": "m1-topk_ids.bin",
+          "shape": [
+            1,
+            8
+          ],
+          "dtype": "torch.int32",
+          "bytes": 32,
+          "sha256": "e85a7f0bd482a771f72a31d061879fd58b4edfaccba305d32e0f7403f3ea4c02"
+        },
+        "topk_weights": {
+          "path": "m1-topk_weights.bin",
+          "shape": [
+            1,
+            8
+          ],
+          "dtype": "torch.float32",
+          "bytes": 32,
+          "sha256": "d2fe7cfdd49e6da605c802b1f3a14606f6950baa7fe3fc6b2c346f2bba141789"
+        },
+        "output": {
+          "path": "m1-output.bin",
+          "shape": [
+            1,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 8192,
+          "sha256": "69943264224f2d03937798cfb9447bb66883151819b5f0d7b8290a938b82d410"
+        }
+      }
+    },
+    {
+      "activation": "MoEActivation.SILU",
+      "global_num_experts": 288,
+      "expert_map_is_none": true,
+      "apply_router_weight_on_input": false,
+      "implementation": "vllm.model_executor.layers.fused_moe.modular_kernel.FusedMoEKernel",
+      "tokens": 8,
+      "tensors": {
+        "hidden_states": {
+          "path": "m8-hidden_states.bin",
+          "shape": [
+            8,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 65536,
+          "sha256": "cee3d7074c4ed0dc21061ddbae260910472836b9c7a61f81247ca96f5df84192"
+        },
+        "topk_ids": {
+          "path": "m8-topk_ids.bin",
+          "shape": [
+            8,
+            8
+          ],
+          "dtype": "torch.int32",
+          "bytes": 256,
+          "sha256": "249aecd0da281a6176659462bb694ea00f69eef05b00abf0a96d48dd4470a58f"
+        },
+        "topk_weights": {
+          "path": "m8-topk_weights.bin",
+          "shape": [
+            8,
+            8
+          ],
+          "dtype": "torch.float32",
+          "bytes": 256,
+          "sha256": "d832223aa3c3d5dfc5641143630af1eb0e1d17c58df0fc540cab3a8147308e53"
+        },
+        "output": {
+          "path": "m8-output.bin",
+          "shape": [
+            8,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 65536,
+          "sha256": "c4e3686672d14b7db54d92239357982695a01ad1e3b41f45e479f0174627d164"
+        }
+      }
+    },
+    {
+      "activation": "MoEActivation.SILU",
+      "global_num_experts": 288,
+      "expert_map_is_none": true,
+      "apply_router_weight_on_input": false,
+      "implementation": "vllm.model_executor.layers.fused_moe.modular_kernel.FusedMoEKernel",
+      "tokens": 16,
+      "tensors": {
+        "hidden_states": {
+          "path": "m16-hidden_states.bin",
+          "shape": [
+            16,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 131072,
+          "sha256": "a5b4324582919e90b54cd34bd368f1827bc86a5e546a9bb57041dbbfc1ccb749"
+        },
+        "topk_ids": {
+          "path": "m16-topk_ids.bin",
+          "shape": [
+            16,
+            8
+          ],
+          "dtype": "torch.int32",
+          "bytes": 512,
+          "sha256": "a4ea72d94d4136fdeb4e71a80fb2384bbd6d4b4d26f5fd4221fb09a9381ffc0d"
+        },
+        "topk_weights": {
+          "path": "m16-topk_weights.bin",
+          "shape": [
+            16,
+            8
+          ],
+          "dtype": "torch.float32",
+          "bytes": 512,
+          "sha256": "2087565da244516db9a1f6f84faf19d967aa9b4fba470bf36b84c40807867295"
+        },
+        "output": {
+          "path": "m16-output.bin",
+          "shape": [
+            16,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 131072,
+          "sha256": "00414c1141a2204bd1cfa3d2d346322df423be52528bd8787140d74550d16d95"
+        }
+      }
+    },
+    {
+      "activation": "MoEActivation.SILU",
+      "global_num_experts": 288,
+      "expert_map_is_none": true,
+      "apply_router_weight_on_input": false,
+      "implementation": "vllm.model_executor.layers.fused_moe.modular_kernel.FusedMoEKernel",
+      "tokens": 256,
+      "tensors": {
+        "hidden_states": {
+          "path": "m256-hidden_states.bin",
+          "shape": [
+            256,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 2097152,
+          "sha256": "3c55ed628d5b68115144be8b9c0d1bf16eb8ab1fc4212bd92cf25eab75f31c43"
+        },
+        "topk_ids": {
+          "path": "m256-topk_ids.bin",
+          "shape": [
+            256,
+            8
+          ],
+          "dtype": "torch.int32",
+          "bytes": 8192,
+          "sha256": "8bd5eeb6b08b8cd044efde12ddf03ccb7a8f9e334c014b8dbf0751fbc8ff2580"
+        },
+        "topk_weights": {
+          "path": "m256-topk_weights.bin",
+          "shape": [
+            256,
+            8
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8192,
+          "sha256": "6cea3fa707c3336634de127b6f4902adf779317968af2aaaf6c609bc2e4ecbb5"
+        },
+        "output": {
+          "path": "m256-output.bin",
+          "shape": [
+            256,
+            4096
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 2097152,
+          "sha256": "eff622a43ff28a3aa674530a87b0a0e575ea9d223f1b5517855d1f2a953ef9f7"
+        }
+      }
+    }
+  ],
+  "payload_bytes": 4621888,
+  "mode": "actual eager forwards after all measured work",
+  "graph_operands_claimed": false,
+  "python_wrapper_removed": true
+}

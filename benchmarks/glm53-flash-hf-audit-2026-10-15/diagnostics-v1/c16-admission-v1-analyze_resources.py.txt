@@ -1,0 +1,152 @@
+"""Summarize only archive-bound startup and serving resource measurements."""
+from __future__ import annotations
+
+import hashlib
+import itertools
+import json
+from pathlib import Path
+from statistics import median
+
+BASE = Path('/private/tmp/mxwave-c16-admission-v1')
+ROOT = BASE / 'evidence'
+
+
+def digest(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def memory(sample):
+    """Convert recorded process KiB to bytes; retain overlapping counters separately."""
+    source = sample['process_memory_kib']
+    values = {key: source[key] * 1024 for key in ('VmRSS', 'RssAnon', 'RssFile', 'RssShmem')}
+    values['RSS_breakdown_residual'] = values['VmRSS'] - sum(
+        values[k] for k in ('RssAnon', 'RssFile', 'RssShmem'))
+    return values
+
+
+def summed(samples):
+    assert len(samples) == 2
+    values = [memory(sample) for sample in samples]
+    return {key: sum(v[key] for v in values) for key in values[0]}
+
+
+def main():
+    proof = json.loads((BASE / 'cross-host-verification.json').read_bytes())
+    assert proof['status'] == 'passed' and proof['measurement_complete']
+    assert proof['dispatch_startup_preparation_passed']
+    inventory = json.loads((ROOT / 'evidence-inventory.json').read_bytes())['files']
+    entries = {row['path']: row for row in inventory}
+    inputs, arms = [], {}
+    for arm in ('control', 'candidate'):
+        rel = f'results/{arm}-c16-admission.json'
+        p = ROOT / rel
+        assert digest(p) == entries[rel]['sha256'] and p.stat().st_size == entries[rel]['bytes']
+        inputs.append(entries[rel])
+        data = json.loads(p.read_bytes())
+        assert data['status'] == 'complete' and len(data['timing']) == 36
+        startup = data['dispatch_startup']
+        assert {row['rank'] for row in startup} == {0, 1}
+        ranks = []
+        for row in sorted(startup, key=lambda x: x['rank']):
+            before = memory(row['trim']['telemetry_before'])
+            after = memory(row['trim']['telemetry_after'])
+            stages = {key: memory(row[key]) for key in (
+                'telemetry_before', 'telemetry_after_warmup', 'telemetry_after')}
+            ranks.append({
+                'rank': row['rank'], 'warmup_seconds': row['warmup']['seconds'],
+                'trim_seconds': row['trim']['seconds'],
+                'trim_return': row['trim']['returned'], 'glibc': row['trim']['glibc'],
+                'process_memory_before_trim_bytes': before,
+                'process_memory_after_trim_bytes': after,
+                'process_bytes_reclaimed_by_trim': {key: before[key] - after[key] for key in before},
+                'process_memory_stages_bytes': stages,
+                'CUDA_allocated_before_bytes': row['CUDA_allocated_before'],
+                'CUDA_allocated_after_bytes': row['CUDA_allocated_after'],
+                'CUDA_reserved_before_bytes': row['CUDA_reserved_before'],
+                'CUDA_reserved_after_bytes': row['CUDA_reserved_after'],
+                'post_trim_all_variant_repeat_seconds': row['warmup_after_trim']['seconds'],
+                'startup_checks': row['checks'],
+            })
+        samples = [sample for trial in data['timing']
+                   for phase in ('telemetry_before', 'telemetry_after') for sample in trial[phase]]
+        assert len(samples) == 144
+        arms[arm] = {
+            'startup': ranks,
+            'summed_process_memory_bytes': {
+                'before_startup': summed([s['telemetry_before'] for s in startup]),
+                'after_startup_before_quality': summed(data['telemetry_before']),
+                'after_unprofiled_timing': summed(data['timing'][-1]['telemetry_after']),
+                'after_timing_and_profiles': summed(data['telemetry_after']),
+            },
+            'summed_RSS_reclaimed_by_trim_bytes': sum(r['process_bytes_reclaimed_by_trim']['VmRSS'] for r in ranks),
+            'CUDA_allocated_bytes': {
+                phase: sum(x['cuda_allocated_bytes'] for x in data[phase])
+                for phase in ('snapshot_before', 'snapshot_before_profiles', 'snapshot_after')
+            },
+            'timing_boundary_telemetry': {
+                'samples': len(samples),
+                'SM_clock_MHz_min': min(x['sm_MHz'] for x in samples),
+                'SM_clock_MHz_max': max(x['sm_MHz'] for x in samples),
+                'temperature_C_min': min(x['temperature_C'] for x in samples),
+                'temperature_C_max': max(x['temperature_C'] for x in samples),
+                'transient_throttling_excluded': False,
+            },
+            'timing_boundary_telemetry_by_case': [],
+            'unprofiled_trial_process_memory_bytes': [
+                {'case': trial['case'], 'repeat': trial['repeat'], 'window_ms': trial['window_ms'],
+                 'before': summed(trial['telemetry_before']),
+                 'after': summed(trial['telemetry_after'])}
+                for trial in data['timing']
+            ],
+        }
+        for case, window in itertools.product(sorted({trial['case'] for trial in data['timing']}), (3, 10)):
+            selected = [sample for trial in data['timing'] if trial['case'] == case and trial['window_ms'] == window
+                        for phase in ('telemetry_before', 'telemetry_after')
+                        for sample in trial[phase]]
+            assert len(selected) == (48 if case == 'c16-short' else 24)
+            arms[arm]['timing_boundary_telemetry_by_case'].append({
+                'case': case, 'window_ms': window, 'samples': len(selected),
+                'SM_clock_MHz_min': min(s['sm_MHz'] for s in selected),
+                'SM_clock_MHz_median': median(s['sm_MHz'] for s in selected),
+                'SM_clock_MHz_max': max(s['sm_MHz'] for s in selected),
+                'temperature_C_min': min(s['temperature_C'] for s in selected),
+                'temperature_C_median': median(s['temperature_C'] for s in selected),
+                'temperature_C_max': max(s['temperature_C'] for s in selected),
+            })
+    control, candidate = arms['control'], arms['candidate']
+    saving = {
+        'process_memory_bytes': {
+            stage: {key: control['summed_process_memory_bytes'][stage][key] - value
+                    for key, value in counters.items()}
+            for stage, counters in candidate['summed_process_memory_bytes'].items()
+        },
+        'CUDA_allocated_bytes': {key: control['CUDA_allocated_bytes'][key] - value
+                                 for key, value in candidate['CUDA_allocated_bytes'].items()},
+        'positive_means_candidate_uses_less': True,
+    }
+    result = {
+        'status': 'complete', 'source_sha256': digest(Path(__file__)),
+        'archive_sha256': proof['archive_sha256'], 'verified_inputs': inputs,
+        'new_GPU_experiment': False, 'original_measurements_or_gates_changed': False,
+        'arms': arms, 'control_minus_candidate': saving,
+        'limits': [
+            'RSS and CUDA counters overlap on unified-memory Spark; never add them.',
+            'Rank RSS totals are closely sampled process totals, not an independently measured physical-memory peak.',
+            'Trim before/after is a direct same-process observation; persistence is checked separately after inference.',
+            'Memory after ordinary timing is reported separately from the later profiler-influenced snapshot.',
+            'Model arms load sequentially with a time gap; all original speed and numerical gates remain unchanged.',
+            'Clock and thermal readings occur at timing boundaries and cannot exclude transient throttling within a trial.',
+            'No clock normalization or removal of temperature outliers is applied to throughput.',
+        ],
+    }
+    p = BASE / 'resource-review.json'
+    with p.open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], 'control_minus_candidate': saving,
+                      'trim_reclaimed_RSS_bytes': {a:v['summed_RSS_reclaimed_by_trim_bytes'] for a,v in arms.items()}}))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,70 @@
+{
+  "status": "preliminary",
+  "full_33_pair_and_cross_host_verification_pending": true,
+  "retained_reviews": [
+    {
+      "status": "preliminary_read_only_CPU_analysis",
+      "cross_comparisons": [
+        {
+          "concurrency": 1,
+          "mean_decode_kl": 5.8037782554345396e-06,
+          "mean_decode_nll_difference": -3.6509906652473342e-06,
+          "decode_steps": 48,
+          "expected_decode_steps": 48,
+          "all_generated_ids_match": true,
+          "all_decode_conditioning_matches": true,
+          "actual_model_grouping_equal": true,
+          "passed": true,
+          "bitwise_equal_rows": {
+            "prefill": 0,
+            "decode": 0
+          }
+        }
+      ],
+      "source_before_memory_per_rank": {
+        "control": [
+          {
+            "cuda_allocated_bytes": 94439704064,
+            "cuda_reserved_bytes": 94908710912,
+            "cuda_peak_allocated_bytes": 94520285696
+          },
+          {
+            "cuda_allocated_bytes": 94439704064,
+            "cuda_reserved_bytes": 94906613760,
+            "cuda_peak_allocated_bytes": 94520285696
+          }
+        ],
+        "candidate": [
+          {
+            "cuda_allocated_bytes": 89411542528,
+            "cuda_reserved_bytes": 89865060352,
+            "cuda_peak_allocated_bytes": 89491698176
+          },
+          {
+            "cuda_allocated_bytes": 89409951744,
+            "cuda_reserved_bytes": 89865060352,
+            "cuda_peak_allocated_bytes": 89490107392
+          }
+        ]
+      },
+      "full_33_comparison_verdict_pending": true
+    },
+    {
+      "status": "preliminary_read_only_CPU_analysis",
+      "concurrency": 8,
+      "mean_decode_kl": 1.1944449231536572e-06,
+      "mean_decode_nll_difference": 2.582247064008554e-06,
+      "decode_steps": 48,
+      "expected_decode_steps": 48,
+      "all_generated_ids_match": true,
+      "all_decode_conditioning_matches": true,
+      "actual_model_grouping_equal": true,
+      "passed": true,
+      "bitwise_equal_rows": {
+        "prefill": 16,
+        "decode": 46
+      },
+      "full_33_comparison_verdict_pending": true
+    }
+  ]
+}

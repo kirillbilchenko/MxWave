@@ -1,0 +1,178 @@
+{
+  "status": "complete_independently_verified",
+  "revision": "mlaworkspacev1",
+  "qualified": false,
+  "root_cause_resolved": false,
+  "model_loads": 0,
+  "cases": 6,
+  "graph_invocations": 30,
+  "raw_outputs_independently_verified": 36,
+  "archive_payloads_verified": 380,
+  "all_graph_replays_exact": true,
+  "all_graph_outputs_equal_eager": true,
+  "CPU_reconstructions_exact": true,
+  "workspace_snapshot_bytes_per_process": 142606336,
+  "rows": [
+    {
+      "case": {
+        "kv_dtype": "fp8_e4m3",
+        "plan_history": "same",
+        "workspace_policy": "untouched"
+      },
+      "all_outputs_exact": true,
+      "all_graph_outputs_equal_eager": true,
+      "plan_info_equal": true,
+      "peak_cuda_allocated_bytes": 380441088,
+      "max_workspace_changed_bytes": {
+        "float_workspace": 0,
+        "int_workspace": 0
+      }
+    },
+    {
+      "case": {
+        "kv_dtype": "fp8_e4m3",
+        "plan_history": "same",
+        "workspace_policy": "restore_private"
+      },
+      "all_outputs_exact": true,
+      "all_graph_outputs_equal_eager": true,
+      "plan_info_equal": true,
+      "peak_cuda_allocated_bytes": 380441088,
+      "max_workspace_changed_bytes": {
+        "float_workspace": 0,
+        "int_workspace": 0
+      }
+    },
+    {
+      "case": {
+        "kv_dtype": "fp8_e4m3",
+        "plan_history": "long_then_replan",
+        "workspace_policy": "untouched"
+      },
+      "all_outputs_exact": true,
+      "all_graph_outputs_equal_eager": true,
+      "plan_info_equal": true,
+      "peak_cuda_allocated_bytes": 380441088,
+      "max_workspace_changed_bytes": {
+        "float_workspace": 0,
+        "int_workspace": 0
+      }
+    },
+    {
+      "case": {
+        "kv_dtype": "fp8_e4m3",
+        "plan_history": "long_then_replan",
+        "workspace_policy": "restore_private"
+      },
+      "all_outputs_exact": true,
+      "all_graph_outputs_equal_eager": true,
+      "plan_info_equal": true,
+      "peak_cuda_allocated_bytes": 380441088,
+      "max_workspace_changed_bytes": {
+        "float_workspace": 0,
+        "int_workspace": 0
+      }
+    },
+    {
+      "case": {
+        "kv_dtype": "bf16",
+        "plan_history": "same",
+        "workspace_policy": "untouched"
+      },
+      "all_outputs_exact": true,
+      "all_graph_outputs_equal_eager": true,
+      "plan_info_equal": true,
+      "peak_cuda_allocated_bytes": 379922944,
+      "max_workspace_changed_bytes": {
+        "float_workspace": 0,
+        "int_workspace": 0
+      }
+    },
+    {
+      "case": {
+        "kv_dtype": "bf16",
+        "plan_history": "same",
+        "workspace_policy": "restore_private"
+      },
+      "all_outputs_exact": true,
+      "all_graph_outputs_equal_eager": true,
+      "plan_info_equal": true,
+      "peak_cuda_allocated_bytes": 379922944,
+      "max_workspace_changed_bytes": {
+        "float_workspace": 0,
+        "int_workspace": 0
+      }
+    }
+  ],
+  "shape": {
+    "rows": 4,
+    "heads": 32,
+    "latent_width": 512,
+    "kv_length": 259,
+    "topk_width": 2176,
+    "maximum_tokens": 2048
+  },
+  "synthetic_inputs": true,
+  "restoration": {
+    "status": "complete",
+    "started_epoch": 1792265871.0030503,
+    "health": 200,
+    "containers": [
+      {
+        "rank": 1,
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "rank": 0,
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ],
+    "finished_epoch": 1792266008.1406646
+  },
+  "bindings": {
+    "source_inventory_sha256": "69c5b3d4bf065e3c8dcaa3082833873710766a39a3eac1e04e6ccc25e9bf3643",
+    "source_archive_sha256": "d2dad9be15f7be1e9805986a42fad7ea29750c290ce07aa36799d76877ed8352",
+    "prepared_sha256": "3d18b614b942e3c229f896362cad839f14b3eb6411d393bc431ad3706c5974d4",
+    "plan_sha256": "5f931ad8bbe6b23b46b9b3d5e1642bd8e1028029e98dba870490751e63bdf0b2",
+    "verifier_sha256": "6db5de6f137e1f56e132d939d9ed0d732903680a9c84e12d1189a1b0e19de57c",
+    "archives": [
+      {
+        "rank": 0,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/mla-workspace-v1-evidence-rank0.tar.gz",
+        "bytes": 507318,
+        "sha256": "2a36adeaef453bf6e7e043578cb33ec6cf327bbecd9a50c6a1c73ee7a716a616",
+        "files": 177,
+        "manifest_sha256": "b7bdaae61905753cedd58fad1e6f7ac15506b3f862b449cb2fbbf0cdfaee6db7",
+        "finished_epoch": 1792266009.4716096
+      },
+      {
+        "rank": 1,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/mla-workspace-v1-evidence-rank1.tar.gz",
+        "bytes": 4192398,
+        "sha256": "d37ccc9aec92b2ce468211a6527eb462c46671c415d0a03bbf2f98a26b14a054",
+        "files": 203,
+        "manifest_sha256": "8a1c460663cf123847938bcdeaca759abadca36c7dbcdc46fa030ae82b2792ab",
+        "finished_epoch": 1792266009.937591
+      }
+    ]
+  },
+  "previous_failed_gates_preserved": true,
+  "new_quality_or_throughput_qualification": false,
+  "analysis_note": "An initial local file check ran before its transfer completed; it performed no extraction. Its failed log is retained; the same verifier passed after transfer, without inference rerun.",
+  "next_step": "Proceed to matched C1/C4/C8 speed and latency plus separate paired C4 profiles; keep full MLA-module numerical cause open.",
+  "limits": [
+    "Synthetic fixed-cache component, not a full-model reproduction or throughput benchmark.",
+    "Opaque workspace comparisons are source-bound worker observations; raw output metrics are independently recomputed.",
+    "The 1e-10/1e-12 comparison is CPU reduction agreement only; existing numerical quality limits are unchanged.",
+    "Long-capture and actual-length plans had equal scalar plan_info in this fixture; this does not qualify arbitrary graph replanning.",
+    "The real module includes projections, KV writes and multi-layer interactions absent here."
+  ]
+}

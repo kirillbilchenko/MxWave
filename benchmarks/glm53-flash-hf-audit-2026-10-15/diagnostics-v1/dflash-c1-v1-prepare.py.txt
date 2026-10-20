@@ -1,0 +1,98 @@
+"""Freeze three diagnostic launches and CPU-check all before touching the live service."""
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+import pathlib
+import subprocess
+import sys
+import time
+
+ROOT = pathlib.Path(__file__).parent
+OLD = ROOT.parent / 'serving-trial-v2'
+CODE = ROOT.parent / 'full-c16admissionv1-src'
+sys.path.insert(0, str(CODE))
+import full_model_control as c
+
+
+def main():
+    assert not (ROOT / 'prepared.json').exists()
+    previous = json.loads((OLD / 'prepared.json').read_bytes())
+    assert json.loads((OLD / 'controller.json').read_bytes())['phase'] == 'complete_live'
+    bindings = [c.preflight(rank, CODE) for rank in (0, 1)]
+    assert bindings == previous['bindings']
+    live = [c.inspect(rank, f'mxwave-serving-trial-v2-candidate-r{rank}') for rank in (0, 1)]
+    assert all(x['State']['Running'] for x in live) and c.health(8000)
+    originals = [c.inspect(rank, c.ORIGINAL_IDS[rank]) for rank in (0, 1)]
+    assert [c.identity(x) for x in originals] == previous['originals']
+    assert not any(x['State']['Running'] for x in originals)
+    plan = json.loads((ROOT / 'plan.json').read_bytes())
+    result = dict(status='preparing', started_epoch=time.time(), bindings=bindings,
+                  live=[c.identity(x) for x in live], originals=previous['originals'],
+                  launches={}, cpu_checks={}, plan_sha256=hashlib.sha256(
+                      (ROOT / 'plan.json').read_bytes()).hexdigest())
+    for arm in plan['arms']:
+        base = 'current' if arm == 'current' else 'candidate'
+        entries = copy.deepcopy(previous['launches'][base])
+        for rank, entry in enumerate(entries):
+            env = entry['environment']
+            env.update(MXWAVE_TRIAL_ARM=arm, VLLM_SERVER_DEV_MODE='1')
+            if arm == 'ct_stock':
+                env.update(MXWAVE_GLM53_KDA_MODE='stock', MXWAVE_GLM53_VOCAB_MODE='stock',
+                           MXWAVE_MOE_MODE='stock', MXWAVE_PALETTE_MODEL='0',
+                           MXWAVE_GLM53_KDA_OUTPUT_FUSED_16='0',
+                           MXWAVE_GLM53_KDA_INPUT_FUSED_16='0')
+            command = entry['command']
+            command[command.index('--port') + 1] = '8010'
+            command[command.index('--master-port') + 1] = '29681'
+            command += ['--profiler-config', json.dumps(dict(
+                profiler='torch', torch_profiler_dir='/traces', ignore_frontend=True,
+                torch_profiler_with_stack=False, torch_profiler_record_shapes=False,
+                torch_profiler_use_gzip=True, max_iterations=32))]
+            for mount in entry['mounts']:
+                if mount[1] == '/trial':
+                    mount[0] = str(ROOT)
+                if mount[1] == '/traces':
+                    mount[0] = str(ROOT / f'{arm}-r{rank}')
+                    c.run(rank, ['mkdir', '-p', mount[0]])
+            name = f'mxwave-dflash-c1-v1-{arm}-r{rank}'
+            assert not c.run(rank, ['docker', 'ps', '-aq', '--filter', f'name=^/{name}$']).strip()
+            argv = ['docker', 'run', '-d', '--name', name, '--gpus', 'all', '--network', 'host',
+                    '--ipc', 'host', '--memory', '112g', '--memory-swap', '112g', '--cap-add',
+                    'IPC_LOCK', '--security-opt', 'label=disable', '--device', '/dev/infiniband',
+                    '--ulimit', 'memlock=-1', '--ulimit', 'stack=67108864',
+                    '--ulimit', 'nofile=1048576']
+            for source, target, access in entry['mounts']:
+                argv += ['-v', f'{source}:{target}:{access}']
+            for key, value in env.items():
+                argv += ['-e', key + '=' + value]
+            argv += ['--entrypoint', '/usr/bin/python3', c.IMAGE, '-u',
+                     '/trial/trial_boot.py', *command]
+            entry.update(name=name, argv=argv)
+        result['launches'][arm] = entries
+        entry = entries[0]
+        argv = ['docker', 'run', '--rm', '--network', 'none', '--cpus', '2', '--memory', '3g',
+                '--memory-swap', '3g', '-e', 'CUDA_VISIBLE_DEVICES=', '-e',
+                'NVIDIA_VISIBLE_DEVICES=void', '-e', 'MXWAVE_VALIDATE_ONLY=1',
+                '-e', 'UV_CACHE_DIR=/tmp/mxwave-uv-cache']
+        for source, target, access in entry['mounts']:
+            if target != '/run/secrets/llm_api_key':
+                argv += ['-v', f'{source}:{target}:{access}']
+        for key, value in entry['environment'].items():
+            argv += ['-e', key + '=' + value]
+        argv += ['--entrypoint', '/usr/bin/python3', c.IMAGE, '-u',
+                 '/trial/trial_boot.py', *entry['command']]
+        run = subprocess.run(argv, capture_output=True, text=True, timeout=240)
+        log = ROOT / (arm + '-cpu-check.log')
+        log.write_text(run.stdout + '\n' + run.stderr)
+        assert run.returncode == 0, (arm, run.returncode, run.stderr[-1500:])
+        result['cpu_checks'][arm] = hashlib.sha256(log.read_bytes()).hexdigest()
+    assert len({json.dumps(result['launches'][a][0]['command']) for a in plan['arms']}) == 1
+    result.update(status='passed', finished_epoch=time.time())
+    c.write(ROOT / 'prepared.json', result)
+    print(json.dumps(dict(status='passed', arms=plan['arms'], runtime_bindings=len(bindings[0]['code']))))
+
+
+if __name__ == '__main__':
+    main()

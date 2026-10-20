@@ -1,0 +1,63 @@
+{
+  "status": "source_order_attribution_complete",
+  "method": "For every recurrent KDA core, select the third preceding non-expert GEMM (merged input; the following two are f_b and g_b) and first following non-expert GEMM (output after gated norm). Check 34 cores, common stream, and full coverage of all 68 compressed KDA GEMMs in each candidate graph.",
+  "scope": "Primary GEMM kernel durations only; auxiliary quantization, copies and reductions excluded. Existing common-settings 8-row DFlash C1 profiles, one per arm; this is source-order inference rather than module-labelled trace scopes.",
+  "native_source_sha256": "a0ceff81bd196afa57dfcd5bb49582687029438d1e42c88a6720dbd1a7f6966f",
+  "arms": {
+    "current_r0": {
+      "trace_sha256": "be44b3c1dda98c93d000c607b7f97217055784bc88ff65da40bc874fb8881498",
+      "graph_replays": 9,
+      "means": {
+        "input_gemm_ms": 8.521236555555555,
+        "output_gemm_ms": 4.379260777777778,
+        "other_linear_gemm_ms": 9.85254
+      }
+    },
+    "current_r1": {
+      "trace_sha256": "3d445fae366adea53668a22bda4d18fd5d2dc9fb47af7cf4f1d6662370076f5d",
+      "graph_replays": 9,
+      "means": {
+        "input_gemm_ms": 8.878614222222222,
+        "output_gemm_ms": 4.357130111111111,
+        "other_linear_gemm_ms": 10.366218333333332
+      }
+    },
+    "ct_stock_r0": {
+      "trace_sha256": "8c543ab1e03a4f58ff5c082d2f4ed83ccd2d8183f8dc9d1d0d53160622c94bbd",
+      "graph_replays": 9,
+      "means": {
+        "input_gemm_ms": 16.469618222222223,
+        "output_gemm_ms": 7.205030333333333,
+        "other_linear_gemm_ms": 13.671447222222222
+      }
+    },
+    "ct_stock_r1": {
+      "trace_sha256": "376d2201e3e5be2608f1156222210484b8f6e082f51b810a72fa4ebc29afcfc1",
+      "graph_replays": 9,
+      "means": {
+        "input_gemm_ms": 16.55800511111111,
+        "output_gemm_ms": 7.295055555555556,
+        "other_linear_gemm_ms": 13.655753444444445
+      }
+    },
+    "candidate_r0": {
+      "trace_sha256": "540be99a809901d643e7e9886c58dcd555fa53f2c630414c2e58a292aa84fc76",
+      "graph_replays": 9,
+      "means": {
+        "input_gemm_ms": 15.188071555555556,
+        "output_gemm_ms": 6.7874799999999995,
+        "other_linear_gemm_ms": 13.105693444444444
+      }
+    },
+    "candidate_r1": {
+      "trace_sha256": "447dc0513f1e90308d35e3ade4ff3687f9a0d4391dc82e9017ecdd4e5b48d8f6",
+      "graph_replays": 9,
+      "means": {
+        "input_gemm_ms": 16.00824811111111,
+        "output_gemm_ms": 7.165415111111111,
+        "other_linear_gemm_ms": 13.76155411111111
+      }
+    }
+  },
+  "raw_review_sha256": "87a98e3bd6e0598788d4d5bf1c62d179515309c98afd92007ca6f79e6e8a3dd5"
+}

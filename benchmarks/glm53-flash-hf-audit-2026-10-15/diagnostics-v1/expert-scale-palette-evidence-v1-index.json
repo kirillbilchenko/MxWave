@@ -1,0 +1,112 @@
+{
+  "status": "verified",
+  "archive": {
+    "spark_head_relative_path": "scale-palette-evidence-v1.tar.gz",
+    "bytes": 16502461,
+    "sha256": "70251f23c195d39cd5ffc2a394b915e4356cbb1b610f5010e235b794c750cb72",
+    "manifest_payloads": 686,
+    "all_manifest_payloads_verified": true,
+    "worker_archive": {
+      "files": 446,
+      "bytes": 14359642,
+      "sha256": "b422a0ddf031ab596e9f8b39c18bbf8ad2ed69f96e116d0fa12660a3dc5ac384"
+    }
+  },
+  "latest_component": {
+    "revision": "sparsescalesv8",
+    "native_build": "scale-sparse-native-v6",
+    "review_sha256": "143d844280b85f680b0997245ae92ae3d22a739cb611db87dc17a6932f0cfc30",
+    "current_codec_bits_exact": true,
+    "incremental_scale_memory_gate_passed": true,
+    "latency_nonregression_gate_passed": false,
+    "incremental_component_gate_passed": false,
+    "cases_per_process": [
+      28,
+      28
+    ],
+    "concentrated_graph_latency_ratios": [
+      {
+        "tokens": 1,
+        "min_median_paired_ratio": 0.9933849174453965,
+        "max_median_paired_ratio": 1.0008249745634976
+      },
+      {
+        "tokens": 4,
+        "min_median_paired_ratio": 0.9816253806478911,
+        "max_median_paired_ratio": 1.0015915779746996
+      },
+      {
+        "tokens": 32,
+        "min_median_paired_ratio": 1.017101450201301,
+        "max_median_paired_ratio": 1.0319952709965157
+      },
+      {
+        "tokens": 128,
+        "min_median_paired_ratio": 1.1347574828307696,
+        "max_median_paired_ratio": 1.2161550248977089
+      },
+      {
+        "tokens": 512,
+        "min_median_paired_ratio": 1.1041425685724224,
+        "max_median_paired_ratio": 1.1112268835758465
+      },
+      {
+        "tokens": 2048,
+        "min_median_paired_ratio": 1.0401747962720274,
+        "max_median_paired_ratio": 1.0604859355190204
+      }
+    ],
+    "native_manifest": {
+      "format": "mxwave-grouped-marlin-scales-build-v1",
+      "source": {
+        "revision": "db9527a46873454610df6dbedf79a36d6bf1a7f6",
+        "license": "Apache-2.0",
+        "upstream": "https://github.com/vllm-project/vllm",
+        "files": {
+          "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "csrc/libtorch_stable/moe/marlin_moe_wna16/kernel.h": "f6991bdd8bf5d2c180ebcb8f20c23f58e8de2d1a60507475d41f61eed2ca1de6",
+          "csrc/libtorch_stable/moe/marlin_moe_wna16/marlin_template.h": "20972ba8eed8d6b3d3ff258dae7c495a5085197482fcd237bf72b3e5ff748c41",
+          "csrc/libtorch_stable/moe/marlin_moe_wna16/ops.cu": "edbfdfdeed22baf84547311f3e1922bb914cf56cdddc29eba3ac25f9c6fe1bf0",
+          "csrc/core/scalar_type.hpp": "8d3671759c43a0219f51e3a1f32c94ef5d70ecc99e264100f4015a781d94bb99",
+          "csrc/libtorch_stable/quantization/marlin/marlin.cuh": "edaa19c541dfbe5e06e547c0be5bcdc1b78b4bbc68d596b72c41a932e2366926",
+          "csrc/libtorch_stable/quantization/marlin/marlin_dtypes.cuh": "15b90a65eadb200a3f7165e2e0d7d899f36d4993b20dbd89093ef2cea274da71",
+          "csrc/libtorch_stable/quantization/marlin/dequant.h": "39c4640d2de39374ef5d96e7fa27701a675922113c3f5b05d45369321090e728",
+          "csrc/libtorch_stable/quantization/marlin/marlin_mma.h": "bf863d252bfc468eaff42b2c1bda583c5e6ab97ceacf0ac248c164564ddcce9b"
+        }
+      },
+      "architecture": "SM121",
+      "activations": "BF16",
+      "weights": "MXFP4, E8M0 scales, group32",
+      "kernel_configurations_per_variant": 15,
+      "variants": [
+        "aligned",
+        "sparse"
+      ],
+      "sparse_palette_policy": "affine_only",
+      "staged_files_sha256": {
+        "staged/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "staged/core/scalar_type.hpp": "8d3671759c43a0219f51e3a1f32c94ef5d70ecc99e264100f4015a781d94bb99",
+        "staged/host.cu": "6ec52023ee33d5cabcf414f882b1e45ac28df3632d6e22bb57d4ddf43618af9d",
+        "staged/libtorch_stable/moe/marlin_moe_wna16/kernel.h": "f6991bdd8bf5d2c180ebcb8f20c23f58e8de2d1a60507475d41f61eed2ca1de6",
+        "staged/libtorch_stable/moe/marlin_moe_wna16/kernel_selector.h": "a65ab6682f60e2fa7743b62268aa8e40e436f49f3643dba3f059996dd3b7d46a",
+        "staged/libtorch_stable/moe/marlin_moe_wna16/marlin_template.h": "16f1425ed77bce247adfe3d497aa4e4bcefa7b98e3915309d83149f8e45c431d",
+        "staged/libtorch_stable/moe/marlin_moe_wna16/ops.cu": "edbfdfdeed22baf84547311f3e1922bb914cf56cdddc29eba3ac25f9c6fe1bf0",
+        "staged/libtorch_stable/quantization/marlin/dequant.h": "39c4640d2de39374ef5d96e7fa27701a675922113c3f5b05d45369321090e728",
+        "staged/libtorch_stable/quantization/marlin/marlin.cuh": "edaa19c541dfbe5e06e547c0be5bcdc1b78b4bbc68d596b72c41a932e2366926",
+        "staged/libtorch_stable/quantization/marlin/marlin_dtypes.cuh": "15b90a65eadb200a3f7165e2e0d7d899f36d4993b20dbd89093ef2cea274da71",
+        "staged/libtorch_stable/quantization/marlin/marlin_mma.h": "bf863d252bfc468eaff42b2c1bda583c5e6ab97ceacf0ac248c164564ddcce9b",
+        "staged/moe_scale_decode.cuh": "83aaf867c5190fd36206c99d41f31392a0f6fd1cb84853ea64dad8120ac86c71",
+        "staged/moe_sparse_scales.cuh": "59a946603170e1d0374399d97a775ca357a26b508357546355b8b6625740a9bf"
+      },
+      "libraries_sha256": {
+        "libmxwave_moe_aligned.so": "7d002d15facb3daece2c8b32b40a97cb40afd23424a033f6720b5ba445dd5bfc",
+        "libmxwave_moe_sparse.so": "038b2f605fb7a042a1c9935b62b4bdc125790ae43e2eecffb2276a3326618160"
+      }
+    }
+  },
+  "limits": [
+    "Preserves failed attempts, source licenses, native binaries, raw timing samples, Nsight Compute reports and offline SASS; no model weights.",
+    "Component memory saving and exact current-codec outputs do not establish full-model arithmetic or throughput equivalence.",
+    "The existing expert-scale-palette-v2-review.json contains v6 timing plus its matching NCU attribution; v8 uses a later native build."
+  ]
+}

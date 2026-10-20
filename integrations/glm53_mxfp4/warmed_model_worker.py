@@ -1,0 +1,80 @@
+"""Prepare deterministic expert dispatch before a fresh matched full-model comparison."""
+
+from __future__ import annotations
+
+import ctypes
+import gc
+import os
+import time
+from pathlib import Path
+from typing import Any
+
+from benchmark_stable_warmup import cache_inventory
+from matched_row16_worker import MatchedRow16Worker
+from stable_dispatch_warmup import warmup
+from startup_preparation import validate_startup_report
+
+
+class WarmedModelWorker(MatchedRow16Worker):
+    """Preserve the qualified native-mHC/exact16 runtime and add startup-only preparation."""
+
+    def mxwave_prepare_dispatch_startup(self) -> dict[str, Any]:
+        """Warm supported variants, trim free CPU heap once and verify reuse before serving."""
+        import torch
+        from vllm.distributed import get_tensor_model_parallel_rank
+
+        if getattr(self, "_mxwave_dispatch_startup_attempted", False):
+            raise RuntimeError("Preserve the single declared startup-preparation attempt")
+        self._mxwave_dispatch_startup_attempted = True
+        if torch.cuda.is_current_stream_capturing():
+            raise RuntimeError("Startup preparation must run outside graph capture")
+        cache = Path(os.environ["TRITON_CACHE_DIR"])
+        torch.cuda.synchronize()
+        report: dict[str, Any] = {
+            "status": "running", "rank": get_tensor_model_parallel_rank(),
+            "started_epoch": time.time(), "CUDA_allocated_before": torch.cuda.memory_allocated(),
+            "CUDA_reserved_before": torch.cuda.memory_reserved(),
+            "telemetry_before": self.mxwave_gpu_telemetry(),
+            "cache_before": cache_inventory(cache),
+            "model_quality_or_serving_speed_qualified": False,
+        }
+        report["warmup"] = warmup(2048)
+        report["cache_after_warmup"] = cache_inventory(cache)
+        report["telemetry_after_warmup"] = self.mxwave_gpu_telemetry()
+        libc = ctypes.CDLL(None)
+        libc.gnu_get_libc_version.argtypes = []
+        libc.gnu_get_libc_version.restype = ctypes.c_char_p
+        libc.malloc_trim.argtypes = [ctypes.c_size_t]
+        libc.malloc_trim.restype = ctypes.c_int
+        gc.collect()
+        before = self.mxwave_gpu_telemetry()
+        started = time.perf_counter()
+        returned = libc.malloc_trim(0)
+        report["trim"] = {"returned": returned, "seconds": time.perf_counter() - started,
+                          "glibc": libc.gnu_get_libc_version().decode(),
+                          "telemetry_before": before,
+                          "telemetry_after": self.mxwave_gpu_telemetry()}
+        report["warmup_after_trim"] = warmup(2048)
+        report["cache_after_trim_probe"] = cache_inventory(cache)
+        report["telemetry_after"] = self.mxwave_gpu_telemetry()
+        torch.cuda.synchronize()
+        report.update(CUDA_allocated_after=torch.cuda.memory_allocated(),
+                      CUDA_reserved_after=torch.cuda.memory_reserved(), finished_epoch=time.time())
+        report["checks"] = validate_startup_report(report)
+        report["status"] = "complete"
+        self._mxwave_dispatch_startup_report = report
+        return report
+
+    def mxwave_dispatch_startup_snapshot(self) -> dict[str, Any]:
+        """Detect any later canonicalization compilation between benchmark groups."""
+        from vllm.distributed import get_tensor_model_parallel_rank
+
+        report = getattr(self, "_mxwave_dispatch_startup_report", None)
+        if report is None or report["status"] != "complete":
+            raise RuntimeError("Complete startup preparation before checking cache reuse")
+        current = cache_inventory(Path(os.environ["TRITON_CACHE_DIR"]))
+        unchanged = current == report["cache_after_trim_probe"]
+        if not unchanged:
+            raise RuntimeError("A model request created or rewrote a dispatch specialization")
+        return {"rank": get_tensor_model_parallel_rank(), "cache_unchanged": unchanged,
+                "cache": current, "telemetry": self.mxwave_gpu_telemetry()}

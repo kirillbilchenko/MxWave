@@ -1,0 +1,110 @@
+"""Read only draft files and selected original-production settings after restoration."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import struct
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+
+def digest(path):
+    """Hash files in bounded, paced chunks without importing a GPU framework."""
+    h = hashlib.sha256()
+    with path.open("rb") as stream:
+        while data := stream.read(4 * 1024**2):
+            h.update(data)
+            time.sleep(0.02)
+    return h.hexdigest()
+
+
+def main():
+    """Audit only known mounted draft paths, never secrets or unrelated model payloads."""
+    os.nice(10)
+    request = json.load(sys.stdin)
+    inspect = json.loads(subprocess.check_output([
+        "docker", "inspect", request["original_id"],
+    ]))[0]
+    assert inspect["Id"] == request["original_id"] and inspect["State"]["Running"]
+    paths = list(request["draft_paths"])
+    production_mounts = [
+        {"source": m["Source"], "destination": m["Destination"]}
+        for m in inspect["Mounts"] if "draft" in m["Destination"].lower()
+        and Path(m["Source"]).is_dir()
+    ]
+    paths.extend(m["source"] for m in production_mounts)
+    environment = dict(x.split("=", 1) for x in inspect["Config"]["Env"] if "=" in x)
+    safe_environment = {
+        k: v for k, v in environment.items()
+        if k.startswith(("GLM_LV_", "GLM_DFLASH_", "GLM_DRAFT_"))
+        or k in ("VLLM_TEST_FORCE_FP8_MARLIN", "QMIX_FP8_BLOCK", "VLLM_DISABLED_KERNELS")
+    }
+    command = inspect["Config"].get("Cmd") or []
+    selected = {}
+    for flag in ("--speculative-config", "--seed", "--dtype", "--kv-cache-dtype",
+                 "--max-num-seqs", "--max-num-batched-tokens"):
+        if flag in command:
+            selected[flag] = command[command.index(flag) + 1]
+    draft_model = None
+    if "--speculative-config" in selected:
+        config = json.loads(selected["--speculative-config"])
+        draft_model = config.get("model")
+        if draft_model and Path(draft_model).is_absolute():
+            for mount in sorted(inspect["Mounts"],
+                                key=lambda m: len(m["Destination"]), reverse=True):
+                destination = Path(mount["Destination"])
+                if Path(draft_model).is_relative_to(destination):
+                    host = Path(mount["Source"]) / Path(draft_model).relative_to(destination)
+                    if host.is_dir():
+                        paths.append(str(host))
+                    break
+    report = {
+        "rank": request["rank"], "original_running": True,
+        "production_draft_mounts": production_mounts,
+        "production_selected_environment": safe_environment,
+        "production_selected_command": selected, "checkpoints": [],
+        "production_declared_draft_model": draft_model,
+        "CUDA_imported": False,
+    }
+    for value in sorted(set(paths)):
+        root = Path(value)
+        assert root.is_dir()
+        checkpoint = {"path": str(root), "resolved_path": str(root.resolve()), "files": []}
+        files = [
+            p for p in sorted(root.rglob("*")) if p.is_file()
+            and (p.suffix == ".safetensors" or p.name in (
+                "config.json", "model.safetensors.index.json", "generation_config.json",
+                "tokenizer_config.json", "special_tokens_map.json",
+            ))
+        ]
+        assert 0 < len(files) <= 256
+        for path in files:
+            before = path.stat()
+            entry = {
+                "name": str(path.relative_to(root)), "bytes": before.st_size,
+                "mtime_ns": before.st_mtime_ns, "sha256": digest(path),
+            }
+            if path.name in ("config.json", "generation_config.json"):
+                entry["config"] = json.loads(path.read_bytes())
+            if path.suffix == ".safetensors":
+                with path.open("rb") as stream:
+                    size = struct.unpack("<Q", stream.read(8))[0]
+                    assert 0 < size <= 32 * 1024**2
+                    header = json.loads(stream.read(size))
+                entry["tensors"] = {
+                    n: {"shape": s["shape"], "dtype": s["dtype"]}
+                    for n, s in header.items() if n != "__metadata__"
+                }
+            after = path.stat()
+            assert before.st_size == after.st_size and before.st_mtime_ns == after.st_mtime_ns
+            checkpoint["files"].append(entry)
+        report["checkpoints"].append(checkpoint)
+    print(json.dumps(report))
+
+
+if __name__ == "__main__":
+    main()

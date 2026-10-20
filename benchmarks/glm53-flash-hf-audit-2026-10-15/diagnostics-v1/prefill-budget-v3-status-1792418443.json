@@ -1,0 +1,159 @@
+{
+  "epoch": 1792418443.4870844,
+  "phase": "measuring_candidate",
+  "service_paused": true,
+  "error": null,
+  "arms": [
+    {
+      "arm": "control",
+      "status": "complete",
+      "phase": "complete",
+      "error": null,
+      "quality_complete": 10,
+      "timing_complete": 36,
+      "profiles_complete": 2,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "operand_capture": {
+        "armed": [
+          {
+            "status": "complete",
+            "rank": 0,
+            "armed": true,
+            "after_measured_work": true
+          },
+          {
+            "status": "complete",
+            "rank": 1,
+            "armed": true,
+            "after_measured_work": true
+          }
+        ],
+        "retained": [
+          {
+            "rank": 0,
+            "status": "complete",
+            "error": null,
+            "shapes": [
+              1,
+              8,
+              16,
+              256
+            ]
+          },
+          {
+            "rank": 1,
+            "status": "complete",
+            "error": null,
+            "shapes": [
+              1,
+              8,
+              16,
+              256
+            ]
+          }
+        ]
+      },
+      "startup_passed": true,
+      "cuda_allocated_TP2": 189487090688,
+      "ordinary_profile_prefill_rows": [
+        {
+          "budget_tokens": 2048,
+          "rows": [
+            2048,
+            2048,
+            23
+          ]
+        },
+        {
+          "budget_tokens": 4096,
+          "rows": [
+            4096
+          ]
+        }
+      ],
+      "timing_cells": [
+        {
+          "case": "c1-short",
+          "budget": 2048,
+          "trials": 6,
+          "median_TPS": 14.894943629285255,
+          "median_TTFT": 0.38643191405571997,
+          "mean_request_TTFT": 0.3911252236963871
+        },
+        {
+          "case": "c1-short",
+          "budget": 4096,
+          "trials": 6,
+          "median_TPS": 14.936683294070074,
+          "median_TTFT": 0.3819215100375004,
+          "mean_request_TTFT": 0.3829829541888709
+        },
+        {
+          "case": "c16-short",
+          "budget": 2048,
+          "trials": 12,
+          "median_TPS": 80.99611317477938,
+          "median_TTFT": 1.7934788222191855,
+          "mean_request_TTFT": 1.8551062019226567
+        },
+        {
+          "case": "c16-short",
+          "budget": 4096,
+          "trials": 12,
+          "median_TPS": 84.22846947393231,
+          "median_TTFT": 2.0587894005002454,
+          "mean_request_TTFT": 2.0318047370352965
+        }
+      ]
+    },
+    {
+      "arm": "candidate",
+      "status": "running",
+      "phase": "candidate-c16-b4096-r0",
+      "error": null,
+      "quality_complete": 6,
+      "timing_complete": 0,
+      "profiles_complete": 0,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "startup_passed": true,
+      "cuda_allocated_TP2": 179438816768,
+      "ordinary_profile_prefill_rows": [],
+      "timing_cells": []
+    }
+  ],
+  "watchdog_pid": 154619,
+  "collection": {
+    "status": "waiting",
+    "started_epoch": 1792416088.9734623
+  }
+}

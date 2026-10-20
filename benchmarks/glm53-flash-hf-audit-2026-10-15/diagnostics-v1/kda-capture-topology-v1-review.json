@@ -1,0 +1,297 @@
+{
+  "status": "complete",
+  "diagnostic_only": true,
+  "prior_performance_failures_preserved": true,
+  "controller_source_sha256": {
+    "diagnose_kda_graph_topology.py": "e359d5a14c2cdbb5602d31527ef7bdf5f9165760d262900a5f03e9c8c790e355",
+    "kda_direct_dispatch.py": "4923a93a4881740b57127ca854a153e41fd8bb21fcfc72120d97413cc928e5d7",
+    "kda_runtime.py": "a3ddf07e196c7a13f6fcc3798fc54e4d311275283436ad103abab00126a93449",
+    "benchmark_kda_direct_dispatch.py": "8321b1aa99986da9886ead231496dc489760cd351097f513cf1678a073625daf"
+  },
+  "cases": [
+    {
+      "fixture": "kda-input-l0-r0",
+      "stages": [
+        {
+          "shared_pool": false,
+          "native_and_logical_output_addresses_identical": false,
+          "node_count": 4,
+          "edge_count": 3,
+          "topology_signature": {
+            "unique_node_labels": true,
+            "nodes": [
+              "{\"block\": [128, 1, 1], \"grid\": [1, 197, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 25120}",
+              "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+              "{\"block\": [128, 1, 1], \"grid\": [99, 1, 1], \"kernel_name\": \"_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_\", \"node_type\": 0, \"shared_memory\": 0}",
+              "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+            ],
+            "edges": [
+              [
+                "{\"block\": [128, 1, 1], \"grid\": [1, 197, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 25120}",
+                "{\"block\": [128, 1, 1], \"grid\": [99, 1, 1], \"kernel_name\": \"_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_\", \"node_type\": 0, \"shared_memory\": 0}"
+              ],
+              [
+                "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+              ],
+              [
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}",
+                "{\"block\": [128, 1, 1], \"grid\": [1, 197, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 25120}"
+              ]
+            ]
+          },
+          "capture_and_replay_output_bits_exact": true,
+          "blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 417.4304008483887,
+                "reference_b": 418.34239959716797,
+                "direct": 417.88320541381836
+              },
+              "identical_control_max_min_ratio": 1.0021847923556255,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 1.0010847426649074,
+                "reference_b": 0.9989023484499975
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 455.3296089172363,
+                "reference_b": 445.4480171203613,
+                "direct": 453.38799953460693
+              },
+              "identical_control_max_min_ratio": 1.0221834903671936,
+              "identical_controls_stable": false,
+              "direct_reference_ratios": {
+                "reference_a": 0.9957358156715385,
+                "reference_b": 1.0178247115467576
+              },
+              "performance_gate_passed": false
+            }
+          ]
+        },
+        {
+          "shared_pool": true,
+          "native_and_logical_output_addresses_identical": true,
+          "node_count": 4,
+          "edge_count": 3,
+          "topology_signature": {
+            "unique_node_labels": true,
+            "nodes": [
+              "{\"block\": [128, 1, 1], \"grid\": [1, 197, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 25120}",
+              "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+              "{\"block\": [128, 1, 1], \"grid\": [99, 1, 1], \"kernel_name\": \"_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_\", \"node_type\": 0, \"shared_memory\": 0}",
+              "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+            ],
+            "edges": [
+              [
+                "{\"block\": [128, 1, 1], \"grid\": [1, 197, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 25120}",
+                "{\"block\": [128, 1, 1], \"grid\": [99, 1, 1], \"kernel_name\": \"_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_\", \"node_type\": 0, \"shared_memory\": 0}"
+              ],
+              [
+                "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+              ],
+              [
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}",
+                "{\"block\": [128, 1, 1], \"grid\": [1, 197, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 25120}"
+              ]
+            ]
+          },
+          "capture_and_replay_output_bits_exact": true,
+          "blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 420.10960578918457,
+                "reference_b": 419.88799571990967,
+                "direct": 419.66559886932373
+              },
+              "identical_control_max_min_ratio": 1.0005277837698001,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9989431164778373,
+                "reference_b": 0.999470342441668
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 418.59920024871826,
+                "reference_b": 418.3176040649414,
+                "direct": 418.7119960784912
+              },
+              "identical_control_max_min_ratio": 1.0006731635987596,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 1.0002694602132682,
+                "reference_b": 1.0009428052028349
+              },
+              "performance_gate_passed": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fixture": "kda-output-l0-r0",
+      "stages": [
+        {
+          "shared_pool": false,
+          "native_and_logical_output_addresses_identical": false,
+          "node_count": 3,
+          "edge_count": 2,
+          "topology_signature": {
+            "unique_node_labels": true,
+            "nodes": [
+              "{\"block\": [128, 1, 1], \"grid\": [1, 64, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 16160}",
+              "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+              "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+            ],
+            "edges": [
+              [
+                "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+              ],
+              [
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}",
+                "{\"block\": [128, 1, 1], \"grid\": [1, 64, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 16160}"
+              ]
+            ]
+          },
+          "capture_and_replay_output_bits_exact": true,
+          "blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 141.72880053520203,
+                "reference_b": 141.71119928359985,
+                "direct": 141.7520046234131
+              },
+              "identical_control_max_min_ratio": 1.0001242050853507,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 1.0001637217567878,
+                "reference_b": 1.0002879471772133
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 142.78720021247864,
+                "reference_b": 142.68479943275452,
+                "direct": 142.67839789390564
+              },
+              "identical_control_max_min_ratio": 1.000717671259526,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9992380107011617,
+                "reference_b": 0.9999551351028678
+              },
+              "performance_gate_passed": true
+            }
+          ]
+        },
+        {
+          "shared_pool": true,
+          "native_and_logical_output_addresses_identical": true,
+          "node_count": 3,
+          "edge_count": 2,
+          "topology_signature": {
+            "unique_node_labels": true,
+            "nodes": [
+              "{\"block\": [128, 1, 1], \"grid\": [1, 64, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 16160}",
+              "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+              "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+            ],
+            "edges": [
+              [
+                "{\"block\": [128, 1, 1], \"grid\": [32, 1, 1], \"kernel_name\": \"_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_\", \"node_type\": 0, \"shared_memory\": 0}",
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}"
+              ],
+              [
+                "{\"block\": null, \"grid\": null, \"kernel_name\": null, \"node_type\": 1, \"shared_memory\": null}",
+                "{\"block\": [128, 1, 1], \"grid\": [1, 64, 1], \"kernel_name\": \"_Z26BF16TripleBitmap_MM_KernelI28TilingConfigBF16TripleBitmapILi4ELi1ELi1ELi1EEEvPKhPK13__nv_bfloat16PKmS8_S8_PKiSA_iihS6_PS4_iiii\", \"node_type\": 0, \"shared_memory\": 16160}"
+              ]
+            ]
+          },
+          "capture_and_replay_output_bits_exact": true,
+          "blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 142.6151990890503,
+                "reference_b": 142.66560077667236,
+                "direct": 142.4239993095398
+              },
+              "identical_control_max_min_ratio": 1.0003534103513791,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9986593309778216,
+                "reference_b": 0.9983065191201153
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 142.6360011100769,
+                "reference_b": 142.59999990463257,
+                "direct": 142.6520049571991
+              },
+              "identical_control_max_min_ratio": 1.0002524628714475,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 1.0001122006155363,
+                "reference_b": 1.0003646918134734
+              },
+              "performance_gate_passed": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Same addresses plus parity support an allocation/measurement explanation; one diagnostic does not prove which memory subsystem caused earlier timing gaps.",
+    "This diagnostic does not supersede either failed direct-wrapper performance gate."
+  ]
+}

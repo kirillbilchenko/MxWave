@@ -1,0 +1,56 @@
+{
+  "status": "source_audit_complete",
+  "source_retention": {
+    "status": "passed",
+    "origin": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/bf16-kernels-n8compactv1/build",
+    "archive_sha256": "830a7c114c9a450ecf432ac953552519fa97d3a8702a3cdfdff163d33b6a90b5",
+    "manifest_sha256": "d12d3fc8f1ce43b2225ff24c3b786584250935069a92b2d519bc447138cae052",
+    "bridge_sha256": "273fc868b14a2a358728cb4764626bde67133adb0a51a426d434bc90512ac0e9",
+    "source_sha256": {
+      "utils.h": "0522460334d63c0548e11b2941b00e0b254cc0a11d87250fbedc3c038dc81830",
+      "Reduction_Kernel.cuh": "4f649091c288eecf9464a01bf4a0d711b4d001b2ca347cf3ccba073bc9e7fabf",
+      "MMA_PTX.cuh": "73fa705c9c96ed5093494b1c66569fbb1cccbdcdb2d516abdbe5086b8acd7ff2",
+      "L_API.cu": "51d24ec5f8fea750bd5cd683ebbb3bb4ec792d3a22d126f63fdd2e0351c43851",
+      "MatMulUtilities.cuh": "c324b1ab193ddef76f785804cfae6ff60185efedbd82f339d81def5e30015632",
+      "L_Kernel.cuh": "0a08e93c88d0d2eeac3be0e8ed222b6384dbb608ca45d923be8cd761fa166239",
+      "TilingConfig.h": "181fcb52c2e5c496b00f84eecec57ef0e322406ae6dcd92f825b97c7766461f6",
+      "AsyncCopy_PTX.cuh": "0facc996c67607a7b6701e5f0939d9397094b0e015dfd7a5c1daa4bdbecc3a4c",
+      "LICENSE": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
+    },
+    "GPU_experiment_run": false,
+    "source_changed": false,
+    "license_preserved": true
+  },
+  "observations": [
+    {
+      "file": "control/L_Kernel.cuh",
+      "line": 508,
+      "finding": "The epilogue writes each split FP32 accumulator through a BF16 output pointer; line 514 rounds to BF16 before any cross-split reduction."
+    },
+    {
+      "file": "control/Reduction_Kernel.cuh",
+      "line": 49,
+      "finding": "The reduction reads BF16 partials, sums them in FP32, then converts the final sum to BF16. FP32 summation cannot recover prior partial rounding."
+    },
+    {
+      "file": "control/L_API.cu",
+      "line": 38,
+      "finding": "API and OutputPTR currently type the partial workspace as BF16."
+    },
+    {
+      "file": "bridge.cu",
+      "line": 92,
+      "finding": "The bridge casts the workspace to BF16; changing only the reducer is insufficient."
+    }
+  ],
+  "hypothesis": "An isolated split-K prototype retaining partials in FP32 could remove extra partial rounding while preserving the MMA inner loop. Changed summation order still requires unchanged numerical qualification.",
+  "required_changes": [
+    "Separate or explicitly version the workspace ABI and use FP32 element sizes throughout allocation and offsets.",
+    "Preserve split1 behavior and output dtype; validate bounds, canaries, graph replay and lifetimes.",
+    "Retain the prior split-K numerical failures and stricter original diagnostic thresholds; do not substitute the weaker dense-output screen.",
+    "Preserve licensed source notices externally and record any adaptation in CONTRIBUTING before implementation."
+  ],
+  "kernel_modified": false,
+  "GPU_experiment_run": false,
+  "performance_or_quality_claim": false
+}

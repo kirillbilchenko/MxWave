@@ -1,0 +1,194 @@
+"""Independently recompute KDA rounding quality from fixed-history raw logits."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+
+
+def summary(values):
+    array = np.asarray(values, dtype=np.float64)
+    return {
+        "count": len(values), "mean": float(array.mean()),
+        "p95": float(np.quantile(array, .95)), "maximum": float(array.max()),
+    }
+
+
+def load(root):
+    plan_path = root / "plan.json"
+    plan = json.loads(plan_path.read_bytes())
+    data = json.loads((root / "measurement.json").read_bytes())
+    assert data["status"] == "complete"
+    assert data["plan_sha256"] == hashlib.sha256(plan_path.read_bytes()).hexdigest()
+    rows = {}
+    for label in plan["legs"]:
+        leg = data["legs"][label]
+        assert leg["status"] == "complete" and leg["mode"] == plan["mode_by_leg"][label]
+        assert len(leg["contexts"]) == len(plan["cases"])
+        rows[label] = {}
+        for case, record in zip(plan["cases"], leg["contexts"], strict=True):
+            assert case["name"] == record["name"]
+            assert record["prompt_sha256"] == hashlib.sha256(
+                json.dumps(case["tokens"], separators=(",", ":")).encode()
+            ).hexdigest()
+            assert record["token_ids"] == data["forced_sequences"][case["name"]]
+            captures = record["captured_unmodified_logits"]
+            assert {r["rank"] for r in captures} == {0, 1}
+            cap = next(r for r in captures if r["rank"] == 0)
+            assert cap["mode"] == leg["mode"] and cap["prompt"] == case["tokens"]
+            assert cap["count"] == len(cap["steps"]) == plan["decode_tokens"]
+            if label != "a1":
+                assert cap["forced"] == record["token_ids"]
+            expected = case["tokens"] + record["token_ids"]
+            seen = []
+            for batch in cap["batches"]:
+                assert len(batch["positions"]) == len(batch["input_ids"])
+                for at, token in zip(batch["positions"], batch["input_ids"], strict=True):
+                    assert expected[at] == token
+                    seen.append(at)
+            assert seen == list(range(len(case["tokens"]) + plan["decode_tokens"] - 1))
+            values = []
+            for position, step in enumerate(cap["steps"]):
+                assert step["position"] == position and step["raw_before_forcing"]
+                assert Path(step["file"]).name == step["file"]
+                raw = (root / "engine-r0" / step["file"]).read_bytes()
+                assert hashlib.sha256(raw).hexdigest() == step["sha256"]
+                logits = np.frombuffer(raw, dtype="<f4").astype(np.float64)
+                assert logits.size == 154880 and np.isfinite(logits).all()
+                assert int(logits.argmax()) == step["argmax"]
+                logp = logits - (logits.max() + np.log(np.exp(logits - logits.max()).sum()))
+                values.append(logp)
+            rows[label][case["name"]] = values
+        assert len(leg["heldout"]) == len(plan["wiki_windows"])
+        for index, row in enumerate(leg["heldout"]):
+            assert row["index"] == index and row["tokens"] == 1024
+            raw = (root / row["file"]).read_bytes()
+            assert hashlib.sha256(raw).hexdigest() == row["sha256"]
+            response = json.loads(raw)
+            probs = response["choices"][0]["prompt_logprobs"]
+            ids = plan["wiki_windows"][index]
+            assert response["usage"]["prompt_tokens"] == len(ids)
+            assert len(probs) == len(ids)
+            logp = [
+                float(p[str(token)]["logprob"])
+                for token, p in zip(ids[1:], probs[1:], strict=True)
+            ]
+            assert logp == row["logprobs"] and np.isfinite(logp).all()
+    return plan, data, rows
+
+
+def analyze(root):
+    plan, data, rows = load(root)
+    result = {
+        "status": "complete", "scope": plan["scope"], "limitations": plan["limitations"],
+        "mean_KL_gate": plan["existing_mean_KL_gate"], "quality_gate_relaxed": False,
+        "comparisons": {}, "heldout": {}, "short_tasks": {},
+        "native_MXFP8_runtime_qualified": False,
+    }
+    for left, right in (("a1", "a2"), ("a1", "a3"), ("b1", "b2"),
+                        ("a1", "b1"), ("a2", "b2"), ("a3", "b1")):
+        all_rows = []
+        for case in plan["cases"]:
+            name = case["name"]
+            for position, (p, q) in enumerate(zip(rows[left][name], rows[right][name], strict=True)):
+                token = data["forced_sequences"][name][position]
+                all_rows.append({
+                    "name": name, "prompt_tokens": len(case["tokens"]), "position": position,
+                    "kind": case["kind"], "phase": "prefill" if position == 0 else "decode",
+                    "kl": max(0.0, float((np.exp(p) * (p - q)).sum())),
+                    "nll_difference_on_fixed_token": float(p[token] - q[token]),
+                    "argmax_equal": int(p.argmax()) == int(q.argmax()),
+                    "logprobs_bits_equal": bool(np.array_equal(p, q)),
+                })
+        report = {"rows": all_rows}
+        for phase in ("all", "prefill", "decode", "short_task", "long_heldout"):
+            selected = [
+                x for x in all_rows
+                if phase == "all" or x["phase"] == phase or x["kind"] == phase
+            ]
+            stats = summary([x["kl"] for x in selected])
+            stats.update(
+                mean_KL_below_existing_gate=stats["mean"] <= plan["existing_mean_KL_gate"],
+                argmax_changes=sum(not x["argmax_equal"] for x in selected),
+                nonidentical_distributions=sum(not x["logprobs_bits_equal"] for x in selected),
+            )
+            report[phase] = stats
+        result["comparisons"][left + "_vs_" + right] = report
+    means = {}
+    for label in plan["legs"]:
+        values = np.asarray([r["logprobs"] for r in data["legs"][label]["heldout"]])
+        assert values.size == plan["wiki_scored_tokens"]
+        means[label] = -values.mean(axis=1)
+        result["heldout"][label] = {
+            "scored_tokens": int(values.size),
+            "mean_NLL": float(-values.mean()), "sampled_PPL": float(np.exp(-values.mean())),
+        }
+    result["heldout_differences"] = {}
+    for left, right in (("a1", "a2"), ("a1", "a3"), ("b1", "b2"),
+                        ("a1", "b1"), ("a2", "b2"), ("a3", "b1")):
+        difference = means[right] - means[left]
+        rng = np.random.default_rng(20261020)
+        draws = rng.choice(difference, size=(10000, len(difference)), replace=True).mean(axis=1)
+        result["heldout_differences"][left + "_vs_" + right] = {
+            "mean_NLL_difference": float(difference.mean()),
+            "PPL_relative_change_percent": float(np.expm1(difference.mean()) * 100),
+            "paired_window_bootstrap_95pct_NLL": np.quantile(draws, [.025, .975]).tolist(),
+            "interval_scope": "32 sampled windows, not runtime noise or whole-model equivalence",
+        }
+    for label in plan["natural_task_legs"]:
+        scored = []
+        assert len(data["legs"][label]["tasks"]) == len(plan["tasks"])
+        for task, record in zip(plan["tasks"], data["legs"][label]["tasks"], strict=True):
+            assert task["name"] == record["name"]
+            choice = record["response"]["choices"][0]
+            text = (choice["message"].get("content") or "").strip()
+            stopped = choice["finish_reason"] == "stop"
+            passed = None
+            if task["kind"] in ("exact", "math"):
+                passed = stopped and text == task["expected"]
+            elif task["kind"] == "json":
+                try:
+                    passed = stopped and json.loads(text) == task["expected"]
+                except (ValueError, TypeError):
+                    passed = False
+            scored.append({
+                "name": task["name"], "kind": task["kind"], "text": text,
+                "finish_reason": choice["finish_reason"], "passed": passed,
+                "needs_code_sandbox": task["kind"] == "code",
+            })
+        result["short_tasks"][label] = scored
+    for rank in (0, 1):
+        report = next(x for x in data["quantization"] if x["rank"] == rank)
+        restore = next(x for x in data["weight_restore"] if x["rank"] == rank)
+        assert len(report["layers"]) == len(restore["layers"]) == 68
+        assert all(x["restored_bits_exact"] for x in restore["layers"])
+        signal = sum(x["signal_squared_sum"] for x in report["layers"])
+        error = sum(x["error_squared_sum"] for x in report["layers"])
+        result[f"weight_error_rank{rank}"] = {
+            "elements": sum(x["elements"] for x in report["layers"]),
+            "changed": sum(x["changed"] for x in report["layers"]),
+            "new_zeros": sum(x["new_zeros"] for x in report["layers"]),
+            "SQNR_dB": 10 * math.log10(signal / error),
+            "relative_L2": math.sqrt(error / signal), "original_weights_restored_exactly": True,
+        }
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", required=True, type=Path)
+    parser.add_argument("--output", required=True, type=Path)
+    args = parser.parse_args()
+    result = analyze(args.root)
+    args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+    print(json.dumps({
+        "status": result["status"],
+        "reference_repeats": {k: v["all"] for k, v in result["comparisons"].items() if k in ("a1_vs_a2", "a1_vs_a3")},
+        "quantization": result["comparisons"]["a1_vs_b1"]["all"],
+        "heldout": result["heldout_differences"]["a1_vs_b1"],
+    }, indent=2))

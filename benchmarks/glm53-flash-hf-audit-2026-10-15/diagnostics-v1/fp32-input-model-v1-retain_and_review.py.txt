@@ -1,0 +1,68 @@
+"""Retain and independently recompute the finished paired evidence on Mac."""
+from __future__ import annotations
+import hashlib,json,math,pathlib,shlex,subprocess,sys,tarfile
+BASE=pathlib.Path("/private/tmp/mxwave-fp32-input-model-v1")
+ROOT="/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1"
+def sha(p):
+ with p.open("rb")as f:return hashlib.file_digest(f,"sha256").hexdigest()
+def main():
+ receipt=json.loads(subprocess.check_output(["ssh","-o","BatchMode=yes","-o","ConnectTimeout=10","spark",shlex.join(["cat",ROOT+"/fp32-input-model-v1-evidence-check.json"])],text=True,timeout=30))
+ if receipt["status"]!="complete":
+  print(json.dumps({"status":"waiting","remote":receipt}));return
+ assert receipt["verified_after_pack"]and receipt["restored_health"]==200 and receipt["source_files"]==229
+ archive=BASE/"evidence.tar.gz";assert not archive.exists()
+ with archive.open("xb")as f:subprocess.run(["ssh","-o","BatchMode=yes","-o","ConnectTimeout=10","spark",shlex.join(["cat",receipt["archive"]])],stdout=f,check=True,timeout=240)
+ assert sha(archive)==receipt["archive_sha256"]and archive.stat().st_size==receipt["archive_bytes"]
+ root=BASE/"evidence";root.mkdir()
+ with tarfile.open(archive)as tf:
+  seen=set();size=0
+  for m in tf.getmembers():
+   p=pathlib.PurePosixPath(m.name)
+   assert m.isfile()and not p.is_absolute()and".."not in p.parts and m.name not in seen
+   seen.add(m.name);size+=m.size
+  assert size<4*1024**3
+  tf.extractall(root,filter="data")
+ verifier=root/"verify.py"
+ assert sha(verifier)=="8ba3017c087833d5d8543c748f562093a6cbac1da0262c197ac80adcfc6af84f"
+ out=BASE/"mac-independent-review.json"
+ subprocess.run([sys.executable,"-B",str(verifier),"--root",str(root),"--output",str(out)],check=True,timeout=900)
+ spark=json.loads((root/"spark-independent-review.json").read_bytes());mac=json.loads(out.read_bytes());largest=[0.]
+ def close(a,b):
+  assert type(a)==type(b),(type(a),type(b))
+  if isinstance(a,dict):
+   assert a.keys()==b.keys()
+   for k in a:close(a[k],b[k])
+  elif isinstance(a,list):
+   assert len(a)==len(b)
+   for x,y in zip(a,b,strict=True):close(x,y)
+  elif isinstance(a,float):
+   assert math.isfinite(a)and math.isfinite(b)
+   largest[0]=max(largest[0],abs(a-b));assert math.isclose(a,b,rel_tol=1e-10,abs_tol=1e-12),(a,b)
+  else:assert a==b,(a,b)
+ close(spark,mac)
+ review=mac.get("recomputed_review",{})
+ if mac["measurement_complete"]:
+  assert mac["exact16_dispatch_mechanism_passed"] and review["fp32_input_policy_checked_on_both_ranks"]
+  assert not review["fp32_parent_exact_word_screen_passed"] and not review["fp32_parent_input_timing_screen_passed"]
+ proof={"status":"passed","archive_sha256":sha(archive),"archive_bytes":archive.stat().st_size,
+ "payloads":mac["payloads"],"source_files":mac["source_files"],"measurement_complete":mac["measurement_complete"],
+ "all_decisions_identical":True,"maximum_float64_difference":largest[0],"CPU_absolute_tolerance":1e-12,"CPU_relative_tolerance":1e-10,
+ "model_KL_limit":1e-5,"model_absolute_NLL_limit":1e-4,"quality_qualified":False,"original_service_restored":True,
+ "native_mhc_unchanged":True,"input_FP32_split2_candidate_only":True,
+ "fp32_input_policy_checked_on_both_ranks":review.get("fp32_input_policy_checked_on_both_ranks"),
+ "parent_exact_word_screen_passed":False,"parent_input_timing_screen_passed":False,"compression_numerical_gate_passed":review.get("compression_numerical_gate_passed"),
+ "all_quality_groupings_matched":review.get("all_quality_groupings_matched"),
+ "C16_matched_numerical_gate_passed":review.get("C16_matched_numerical_gate_passed"),"exact16_dispatch_mechanism_passed":mac.get("exact16_dispatch_mechanism_passed"),"exact16_decode_ranges":sum(r["physical_rows"]==16 for r in mac.get("decode_dispatch_mechanism",[])),
+ "M8_dispatch_mechanism_passed":mac.get("M8_dispatch_mechanism_passed"),
+ "M8_decode_ranges":sum(r["physical_rows"]==8 for r in mac.get("decode_dispatch_mechanism",[])),
+ "dispatch_startup_preparation_passed":review.get("dispatch_startup_preparation_passed"),
+ "dispatch_cache_unchanged_after_startup":review.get("dispatch_cache_unchanged_through_model_work"),
+ "observed_speed_gate_passed":review.get("observed_speed_gate_passed"),"worker_profiles":len(mac["profiles"])}
+ (BASE/"cross-host-verification.json").write_text(json.dumps(proof,indent=2)+"\n")
+ print(json.dumps(proof))
+ if review:
+  compact={k:v for k,v in review.items()if k not in("numerical_comparisons","CPU_memory_observations")}
+  compact["numerical_comparisons"]=[{k:v for k,v in r.items()if k!="steps"}for r in review["numerical_comparisons"]]
+  compact["cross_host_verification"]=proof
+  (BASE/"compact-review.json").write_text(json.dumps(compact,indent=2)+"\n")
+if __name__=="__main__":main()

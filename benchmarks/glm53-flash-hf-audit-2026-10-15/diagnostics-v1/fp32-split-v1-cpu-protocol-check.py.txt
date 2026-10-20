@@ -1,0 +1,25 @@
+"""Exercise retained BF16 recomputation and reject corrupt bytes or forged gate decisions."""
+import hashlib,importlib.util,json,pathlib,struct,sys,tempfile
+b=pathlib.Path(__file__).resolve().parent
+sys.path.insert(0,str(b/'overlay/src'))
+from fp32_split_probe import bf16_metrics
+spec=importlib.util.spec_from_file_location('review',b/'verify.py')
+v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+with tempfile.TemporaryDirectory(prefix='fp32-precision-cpu-') as directory:
+ r=pathlib.Path(directory);data=struct.pack('<4096H',*([0x3F80]*4096));art={}
+ for name in ['activation','stock','original','rebuilt','candidate','legacy']:
+  (r/(name+'.bf16')).write_bytes(data)
+  art[name]={'path':name+'.bf16','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),'shape':[1,4096]}
+ row={'tokens':1,'activation':'basis','split':2,'artifacts':art,'stock_comparison':bf16_metrics(data,data,exact=True),'legacy_stock_comparison':bf16_metrics(data,data,exact=True),'original_stock_comparison':bf16_metrics(data,data,exact=True),'parent_comparison':bf16_metrics(data,data,exact=False),'rebuilt_matches_original':True}
+ v.verify_row(r,row,4096)
+ (r/'candidate.bf16').write_bytes(b'\0\0'+data[2:])
+ try:v.verify_row(r,row,4096)
+ except AssertionError:corruption=True
+ else:raise AssertionError('corrupt bytes accepted')
+ changed=(r/'candidate.bf16').read_bytes();art['candidate']['sha256']=hashlib.sha256(changed).hexdigest()
+ try:v.verify_row(r,row,4096)
+ except AssertionError:gate=True
+ else:raise AssertionError('forged pass accepted')
+result={'status':'passed','raw_word_recomputation_passed':True,'corrupt_payload_rejected':corruption,'forged_numerical_pass_rejected':gate,'verifier_sha256':hashlib.sha256((b/'verify.py').read_bytes()).hexdigest(),'script_sha256':hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()}
+(b/'cpu-protocol-check.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps(result))

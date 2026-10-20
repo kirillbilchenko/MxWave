@@ -1,0 +1,82 @@
+{
+  "epoch": 1792403150.4696906,
+  "phase": "measuring_control",
+  "service_paused": true,
+  "error": null,
+  "arms": [
+    {
+      "arm": "control",
+      "status": "running",
+      "phase": "control-c16-b2080-profile",
+      "error": null,
+      "quality_complete": 9,
+      "timing_complete": 36,
+      "profiles_complete": 1,
+      "self_comparisons": [
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        },
+        {
+          "KL": 0.0,
+          "passed": true
+        }
+      ],
+      "startup_passed": true,
+      "cuda_allocated_TP2": 188887819264,
+      "ordinary_profile_prefill_rows": [
+        {
+          "budget_tokens": 2048,
+          "rows": [
+            2048,
+            520,
+            1546
+          ]
+        }
+      ],
+      "timing_cells": [
+        {
+          "case": "c1-short",
+          "budget": 2048,
+          "trials": 6,
+          "median_TPS": 14.862884878702541,
+          "median_TTFT": 0.3923022819799371
+        },
+        {
+          "case": "c1-short",
+          "budget": 2080,
+          "trials": 6,
+          "median_TPS": 14.87747813396056,
+          "median_TTFT": 0.38410011847736314
+        },
+        {
+          "case": "c16-short",
+          "budget": 2048,
+          "trials": 12,
+          "median_TPS": 80.94264743768784,
+          "median_TTFT": 1.6685267807624768
+        },
+        {
+          "case": "c16-short",
+          "budget": 2080,
+          "trials": 12,
+          "median_TPS": 80.7877783737968,
+          "median_TTFT": 1.3837659020209685
+        }
+      ]
+    }
+  ],
+  "watchdog_pid": 2947535,
+  "collection": {
+    "status": "waiting",
+    "started_epoch": 1792401802.6799247
+  }
+}

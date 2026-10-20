@@ -1,0 +1,233 @@
+"""Publish the verified 4096-budget observations without changing prospective gates."""
+from __future__ import annotations
+
+import datetime
+import json
+import pathlib
+import re
+
+BASE = pathlib.Path(__file__).parent
+WORK = pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+DIAG = '../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/'
+
+
+def read(name):
+    return json.loads((BASE / name).read_bytes())
+
+
+def main():
+    proof = read('cross-host-verification.json')
+    findings = read('final-findings.json')
+    review = read('mac-independent-review.json')['recomputed_review']
+    resources = read('resource-review.json')
+    uncertainty = read('uncertainty-review.json')
+    assert proof['status'] == 'passed' and proof['measurement_complete']
+    assert read('terminal-cleanup.json')['status'] == 'released'
+    cells = {(r['arm'], r['case'], r['budget_tokens']): r for r in findings['timing_cells']}
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%d %B %Y, %H:%M UTC')
+    failed = [k for k, v in findings['policy_checks'].items() if not v]
+    decision = 'passes' if findings['policy_gate_passed'] else 'fails'
+    matched = [r for r in review['numerical_comparisons'] if r['matched_budget']]
+    passed_count = sum(r['passed'] for r in matched)
+    save_gib = findings['combined_cuda_saving_GiB']
+    paragraphs = []
+    for arm, label in [('control', 'Stock'), ('candidate', 'Compressed')]:
+        a, b = (cells[arm, 'c16-short', cap] for cap in (2048, 4096))
+        paragraphs.append(
+            f"{label} C16 mean TTFT changes **{a['mean_request_TTFT_seconds']:.3f} -> "
+            f"{b['mean_request_TTFT_seconds']:.3f} s "
+            f"({1000 * (b['mean_request_TTFT_seconds'] - a['mean_request_TTFT_seconds']):+.1f} ms)**; "
+            f"median throughput changes **{a['median_TPS']:.3f} -> {b['median_TPS']:.3f} tok/s**.")
+    summary = '\n'.join(paragraphs)
+    text = f'''# 4,096-token prefill-budget result
+
+**Complete and independently verified, {stamp}.** The larger budget **{decision}
+the prospective scheduling gate**. Matched same-budget numerical checks pass
+in **{passed_count}/{len(matched)}** comparisons at unchanged limits. The
+stock-minus-compressed CUDA allocation saving is **{save_gib:.6f} GiB across TP2**.
+No configuration is promoted. Original service restoration is verified; the
+separately prepared native expert screen is the remaining authorized experiment.
+
+{summary}
+
+## Protocol and timing
+
+Fresh stock and warmed exact16 compressed loads compare scheduler caps 2,048 and
+4,096, balanced and interleaved within each arm, at fixed 10 ms admission.
+Both conditions allocate for 4,096 tokens. Native mHC, the qualified compression
+kernels, graph sizes [1,2,4,8,16], and 4 GiB KV allocation per rank are unchanged.
+No resident BF16 cache is used. There are twelve C16 and six C1 trials per cap
+and arm, with 256 prompt and 64 output tokens: 72 groups and 792 requests.
+Mean request TTFT is the prospective headline. Nearest-rank p95 TTFT and
+single-token ITL have separate guards; all trials remain included.
+
+| Arm | Workload | Cap | tok/s | Mean TTFT (s) | P95 TTFT (s) | Median trial TTFT (s) |
+|---|---|---:|---:|---:|---:|---:|
+'''
+    for row in findings['timing_cells']:
+        text += (f"| {row['arm']} | {row['case']} | {row['budget_tokens']:,} | "
+                 f"{row['median_TPS']:.6f} | {row['mean_request_TTFT_seconds']:.6f} | "
+                 f"{row['pooled_P95_TTFT_seconds']:.6f} | {row['median_trial_TTFT_seconds']:.6f} |\n")
+    text += '\n| Arm | Workload | Cap | P95 ITL (ms) | Mean TPOT (ms) | Single-token streams / requests |\n|---|---|---:|---:|---:|---:|\n'
+    for row in findings['prospective_latency_summaries']:
+        itl = 'unavailable' if row['p95_itl_seconds'] is None else f"{row['p95_itl_seconds'] * 1000:.3f}"
+        text += (f"| {row['arm']} | {row['case']} | {row['budget_tokens']:,} | {itl} | "
+                 f"{row['mean_tpot_seconds'] * 1000:.3f} | {row['single_token_streams']} / {row['requests']} |\n")
+    text += '\nCoalesced streams are excluded from single-token ITL; coverage is reported above.\n\n'
+    text += 'Failed prospective checks: ' + (', '.join(f'`{k}`' for k in failed) or 'none') + '.\n'
+    text += 'Original compression speed/TTFT decisions by cap: `' + json.dumps(findings['original_compression_gates']) + '`. These are separate from the scheduling gate.\n\n'
+    text += '| Within-arm change | Mean TTFT change (ms) | Descriptive paired 95% interval (ms) |\n|---|---:|---:|\n'
+    for row in uncertainty['results']:
+        lo, hi = row['percentile_95_interval_seconds']
+        text += f"| {row['arm']} / {row['case']} | {row['mean_difference_seconds'] * 1000:+.2f} | {lo * 1000:+.2f} to {hi * 1000:+.2f} |\n"
+    text += '''
+The paired bootstrap uses 20,000 resamples with seed 4096. It describes
+within-arm trial uncertainty and does not replace any gate. The model loads
+are separated in time; no paired cross-arm causal interval is claimed.
+
+## Numerics
+
+Twenty captures retain 94 comparisons: 42 matched same-budget comparisons
+are gated, and 52 cross-budget comparisons are diagnostic because grouping
+changes. Limits remain mean decode KL <=1e-5 and absolute mean NLL difference
+<=1e-4. These finite contexts do not establish universal zero loss or serving
+batch invariance. PPL, task accuracy and SQNR were not remeasured.
+
+| Concurrency | Cap | Cross-arm mean decode KL range | Mean NLL difference range | All matched checks pass |
+|---|---:|---:|---:|---|
+'''
+    for row in findings['numerical_summary']:
+        values = row['cross_arm_values']
+        kl = [r['mean_decode_kl'] for r in values]
+        nll = [r['mean_decode_nll_difference'] for r in values]
+        text += (f"| C{row['concurrency']} | {row['budget_tokens']:,} | {min(kl):.9g} to {max(kl):.9g} | "
+                 f"{min(nll):.9g} to {max(nll):.9g} | {row['all_passed']} |\n")
+    self_rows = [r for r in matched if r['reference'].split('-')[0] == r['candidate'].split('-')[0]]
+    text += f"\nMaximum matched self-repeat KL: **{max(r['mean_decode_kl'] for r in self_rows):.9g}**. "
+    text += f"Timed output equality: **{proof['all_timed_generated_ids_match']}**, over {proof['timed_token_sequence_pairs']:,} paired sequences.\n"
+    for arm in ('control', 'candidate'):
+        rows = [r for r in review['numerical_comparisons'] if not r['matched_budget'] and r['reference'].startswith(arm) and r['candidate'].startswith(arm)]
+        text += f"Cross-budget {arm} diagnostic KL reaches {max(r['mean_decode_kl'] for r in rows):.9g}. "
+    text += '''
+
+## Profiles and memory
+
+Ordinary profiles are separate from unprofiled timing. The table retains both
+ranks; reconstruction durations are kernel sums, not API latency or a TP
+critical path. One profile per arm/cap does not identify every timed schedule.
+
+| Arm | Cap | Rank | Prefill rows | Rebuild calls | Rebuild sum (ms) | Decode graph replays |
+|---|---:|---:|---|---:|---:|---:|
+'''
+    for row in findings['ordinary_prefill_profiles']:
+        groups = [g.get('bf16_weight_decode', {}) for g in row['prefill_groups']]
+        count = sum(g.get('calls', 0) for g in groups)
+        milliseconds = sum(g.get('duration_sum_us', 0) for g in groups) / 1000
+        text += (f"| {row['arm']} | {row['budget_tokens']:,} | {row['rank']} | "
+                 f"{' / '.join(str(n) for n in row['row_counts'])} | {count} | {milliseconds:.3f} | "
+                 f"{row['covered_decode_graph_launches']} |\n")
+    text += f"\nAll {proof['worker_profiles']} worker traces verify; {proof['exact16_decode_ranges']} retained exact16 decode ranges pass the unchanged fused-dispatch mechanism checks. "
+    text += f"No recognized JIT overlap: **{findings['no_recognized_JIT_overlap']}**.\n"
+    for arm, data in resources['arms'].items():
+        t = data['timing_boundary_telemetry']
+        text += (f"{arm}: boundary SM clocks {t['SM_clock_MHz_min']}–{t['SM_clock_MHz_max']} MHz; "
+                 f"temperatures {t['temperature_C_min']}–{t['temperature_C_max']} C. ")
+    text += '\nBoundary readings cannot exclude transient throttling; no clock normalization or trial filtering is applied.\n\n'
+    text += f"Memory saving: **{findings['combined_cuda_saving_bytes']:,} bytes / {save_gib:.6f} GiB across TP2**. "
+    text += 'Memory decisions: `' + json.dumps(findings['memory_checks']) + '`.\n'
+    plan = json.loads((BASE / 'evidence/results/prefill-budget-plan.json').read_bytes())
+    candidate = json.loads((BASE / 'evidence/results/candidate-prefill-budget.json').read_bytes())
+    for row in candidate['snapshot_before_profiles']:
+        delta = row['cuda_allocated_bytes'] - plan['historical_candidate_allocated_bytes_by_rank'][str(row['rank'])]
+        text += f"Rank {row['rank']} capacity allocation changes by **{delta / 1024**2:+.3f} MiB** from the frozen historical 2,048-capacity baseline. "
+    text += '''
+The prospective capacity/peak allowance remains 128 MiB per rank. Both cap
+conditions share the new allocation capacity, so the within-run cap comparison
+alone cannot reveal that historical cost. Reserved CUDA and CPU RSS are retained
+separately; overlapping unified-memory counters are never added.
+
+## Retention and closure
+
+'''
+    text += (f"Spark and Mac independently verify **{proof['payloads']:,} payloads / {proof['source_files']} sources / "
+             f"{proof['worker_profiles']} worker traces**. All decisions agree; maximum float64 difference "
+             f"is {proof['maximum_float64_difference']:.4g}. Archive SHA256:\n`{proof['archive_sha256']}`.\n\n")
+    text += '''All 206 parent code bindings remain unchanged; one plugin metadata binding
+changes, and ten modules are added, for 217 bindings. The dispatch capacity
+extension passes 39 guarded startup variants. Validation: 814 tests pass,
+one GPU skip, Ruff and strict core mypy pass. Actual layer-23 MoE inputs and
+outputs are captured only after stock measurement, for a separate native
+expert screen. They do not instrument the timing graphs.
+
+The original containers are restored with exact identities and HTTP 200;
+controller, collector and watchdog are terminal, and the owned awake lease
+is released. Earlier failures and historical measurements remain retained.
+The native expert screen has its own source freeze, bounded pause and numerical
+requirements. It is not qualified by this scheduling result.
+
+'''
+    for label, name in [('Final findings', 'final-findings.json'), ('Independent verification', 'cross-host-verification.json'), ('Resource review', 'resource-review.json'), ('Profile review', 'fresh-profile-review.json'), ('Uncertainty review', 'uncertainty-review.json'), ('Operational closure', 'terminal-cleanup.json')]:
+        suffix = '.gz' if (BASE / name).stat().st_size > 150_000 else ''
+        text += f'- [{label}]({DIAG}prefill-budget-v3-{name}{suffix})\n'
+    text += f'- [Final retention manifest]({DIAG}prefill-budget-v3-final-retention.json)\n'
+    path = WORK / 'docs/GLM53_PREFILL_BUDGET_4096.md'
+    assert not path.exists()
+    path.write_text(text)
+    status = f'''<!-- PREFILL_BUDGET_STATUS_BEGIN -->
+**4,096-budget follow-up complete, {stamp}.** The prospective policy gate
+**{decision}**. {passed_count}/{len(matched)} matched numerical comparisons pass;
+CUDA saving is {save_gib:.6f} GiB across TP2. Mean/p95 TTFT, single-token ITL,
+historical capacity allocation and per-trial peaks retain their original gates.
+{summary}
+Failed checks: {', '.join(failed) or 'none'}. No configuration is promoted.
+Original service restored healthy; this experiment and its collector/watchdog
+are terminal and its owned awake lease is released. The native expert screen
+is separately prepared. See [complete result](GLM53_PREFILL_BUDGET_4096.md).
+<!-- PREFILL_BUDGET_STATUS_END -->'''
+    for name in ('GLM53_HANDOFF.md', 'GLM53_CURRENT_STATE.md'):
+        p = WORK / 'docs' / name
+        new, count = re.subn(r'<!-- PREFILL_BUDGET_STATUS_BEGIN -->.*?<!-- PREFILL_BUDGET_STATUS_END -->', lambda _: status, p.read_text(), count=1, flags=re.S)
+        assert count == 1
+        p.write_text(new)
+    pointer = f'''**4,096-budget follow-up complete, {stamp}.** The larger budget {decision}
+the prospective scheduling gate. {passed_count}/{len(matched)} matched numerical
+checks pass; allocation saving is {save_gib:.6f} GiB across TP2. All latency and
+memory failures remain recorded. No setting is promoted. See the
+[measured result and evidence](GLM53_PREFILL_BUDGET_4096.md).
+Older checkpoints below remain historical.
+
+'''
+    for name in ('GLM53_PREFILL_ADMISSION.md', 'GLM53_SPEED_OPTIONS.md', 'GLM53_LOSSLESS_RUNTIME_HANDOFF.md'):
+        p = WORK / 'docs' / name
+        title, rest = p.read_text().split('\n\n', 1)
+        p.write_text(title + '\n\n' + pointer + rest)
+    p = WORK / 'README.md'
+    anchor = '**Bounded scheduler-budget follow-up, 19 October: complete and independently verified.**'
+    old = p.read_text()
+    assert old.count(anchor) == 1
+    table = f'''**4,096-token scheduler-budget follow-up, 19 October: independently verified.**
+At fixed 10 ms admission, the larger cap **{decision} the prospective policy gate**.
+Both caps share 4,096 allocation capacity; all original mean/p95 TTFT, ITL and
+memory guards are preserved. No setting is promoted.
+
+| Workload / cap | Stock tok/s | Compressed tok/s | Stock mean TTFT (s) | Compressed mean TTFT (s) |
+|---|---:|---:|---:|---:|
+'''
+    for case in ('c1-short', 'c16-short'):
+        for cap in (2048, 4096):
+            a, b = (cells[arm, case, cap] for arm in ('control', 'candidate'))
+            table += f"| {case} / {cap:,} | {a['median_TPS']:.3f} | {b['median_TPS']:.3f} | {a['mean_request_TTFT_seconds']:.3f} | {b['mean_request_TTFT_seconds']:.3f} |\n"
+    table += f'''
+Numerics: {passed_count}/{len(matched)} matched comparisons pass KL <=1e-5 / abs mean
+NLL <=1e-4; 52 cross-budget diagnostics remain separate. CUDA saving is
+{save_gib:.6f} GiB across TP2. PPL, task accuracy and SQNR are not remeasured.
+See [full latency, memory, profile and quality evidence](docs/GLM53_PREFILL_BUDGET_4096.md).
+Earlier experiments below keep their original metrics and decisions.
+
+'''
+    p.write_text(old.replace(anchor, table + anchor, 1))
+    print(json.dumps(dict(status='complete', documents_updated=7, policy_gate_passed=findings['policy_gate_passed'])))
+
+
+if __name__ == '__main__':
+    main()

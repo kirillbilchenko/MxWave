@@ -1,0 +1,167 @@
+{
+  "status": "complete",
+  "scope": "One warmed gate/up GEMM, TP2 rank0 M128 concentrated routing; only the active eight experts resident, full 288-expert routing metadata and original plan.",
+  "raw": {
+    "namespace": "ncu-raw-up-v2",
+    "application": {
+      "status": "complete",
+      "purpose": "hardware counters for one warmed grouped GEMM",
+      "arm": "raw",
+      "projection": "gate-up",
+      "tokens": 128,
+      "concentrated_routing": true,
+      "moe_block": 8,
+      "tp": 2,
+      "rank": 0,
+      "resident_experts": 8,
+      "routing_experts": 288,
+      "raw_reference_bits_exact": true,
+      "gpu": "NVIDIA GB10",
+      "plan": [
+        64,
+        128,
+        3
+      ],
+      "script_sha256": "99b1ab1450875ddd5ae10f9fd6cd9bcde446f3225f2e564ea566bba52addc1f8",
+      "runtime_sha256": "ca87b029d7b3ac925ec5372b9b4eb79657a523b3eaa660dde4ce00ff5e321498",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "library_sha256": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+      "codec_sha256": "49c6cc2bcf950b6fbcf206d7848a76ea9c72bf17a1ab0cc38a166ee60a9a3ce5",
+      "peak_cuda_allocated_bytes": 60817408,
+      "limitations": [
+        "Only the eight active experts are resident; full 288-expert routing metadata and launch plan.",
+        "One synthetic concentrated-routing gate-up/down GEMM, not a model forward.",
+        "Nsight replay counters are diagnostics, not paired latency measurements.",
+        "No new whole-model quality or throughput measurement."
+      ]
+    },
+    "ncu_report_sha256": "3222f1b52a34c6bd67e0bb8c98835032d7ddc0e417a6e7876961315f484bcd16",
+    "csv_sha256": "b5d86dbd2d6d2ede9d7c1f5e760988a9d7d6ae939bc636c6e61c03a734d8d087",
+    "metrics": {
+      "gpu__time_duration.sum": {
+        "value": 512.736,
+        "unit": "us"
+      },
+      "smsp__inst_executed.sum": {
+        "value": 134136572.0,
+        "unit": "inst"
+      },
+      "smsp__sass_thread_inst_executed_op_integer_pred_on.sum": {
+        "value": 2472494947.0,
+        "unit": "inst"
+      },
+      "smsp__warp_issue_stalled_long_scoreboard_per_warp_active.pct": {
+        "value": 14.170781,
+        "unit": "%"
+      },
+      "smsp__warp_issue_stalled_short_scoreboard_per_warp_active.pct": {
+        "value": 1.507905,
+        "unit": "%"
+      },
+      "smsp__warp_issue_stalled_math_pipe_throttle_per_warp_active.pct": {
+        "value": 7.102569,
+        "unit": "%"
+      },
+      "smsp__warp_issue_stalled_barrier_per_warp_active.pct": {
+        "value": 17.165594,
+        "unit": "%"
+      },
+      "launch__registers_per_thread": {
+        "value": 92.0,
+        "unit": "register/thread"
+      },
+      "profiler__replayer_passes": {
+        "value": 5.0,
+        "unit": "pass"
+      }
+    },
+    "missing_requested_metrics": [
+      "dram__bytes_read.sum"
+    ]
+  },
+  "stage": {
+    "namespace": "ncu-stage-up-v1",
+    "application": {
+      "status": "complete",
+      "purpose": "hardware counters for one warmed grouped GEMM",
+      "arm": "candidate",
+      "projection": "gate-up",
+      "tokens": 128,
+      "concentrated_routing": true,
+      "moe_block": 8,
+      "tp": 2,
+      "rank": 0,
+      "resident_experts": 8,
+      "routing_experts": 288,
+      "raw_reference_bits_exact": true,
+      "gpu": "NVIDIA GB10",
+      "plan": [
+        64,
+        128,
+        3
+      ],
+      "script_sha256": "99b1ab1450875ddd5ae10f9fd6cd9bcde446f3225f2e564ea566bba52addc1f8",
+      "runtime_sha256": "ca87b029d7b3ac925ec5372b9b4eb79657a523b3eaa660dde4ce00ff5e321498",
+      "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+      "library_sha256": "2dc093d9190af7298f8b88ed59fd24d3c0e4a694c5d980f738dfc3c49d28660e",
+      "codec_sha256": "49c6cc2bcf950b6fbcf206d7848a76ea9c72bf17a1ab0cc38a166ee60a9a3ce5",
+      "peak_cuda_allocated_bytes": 60817408,
+      "limitations": [
+        "Only the eight active experts are resident; full 288-expert routing metadata and launch plan.",
+        "One synthetic concentrated-routing gate-up/down GEMM, not a model forward.",
+        "Nsight replay counters are diagnostics, not paired latency measurements.",
+        "No new whole-model quality or throughput measurement."
+      ]
+    },
+    "ncu_report_sha256": "82d9524bdb9e98cb671fea8573ec59e757db00f20984794314f7b193c2dfe667",
+    "csv_sha256": "d9447d8d5ec6961201ea73707f6998358f7f1e5c2d9ed91a4523b4d9064dc8c1",
+    "metrics": {
+      "gpu__time_duration.sum": {
+        "value": 558.912,
+        "unit": "us"
+      },
+      "smsp__inst_executed.sum": {
+        "value": 140823854.0,
+        "unit": "inst"
+      },
+      "smsp__sass_thread_inst_executed_op_integer_pred_on.sum": {
+        "value": 2534189548.0,
+        "unit": "inst"
+      },
+      "smsp__warp_issue_stalled_long_scoreboard_per_warp_active.pct": {
+        "value": 6.809879,
+        "unit": "%"
+      },
+      "smsp__warp_issue_stalled_short_scoreboard_per_warp_active.pct": {
+        "value": 2.893197,
+        "unit": "%"
+      },
+      "smsp__warp_issue_stalled_math_pipe_throttle_per_warp_active.pct": {
+        "value": 8.513648,
+        "unit": "%"
+      },
+      "smsp__warp_issue_stalled_barrier_per_warp_active.pct": {
+        "value": 20.9705,
+        "unit": "%"
+      },
+      "launch__registers_per_thread": {
+        "value": 94.0,
+        "unit": "register/thread"
+      },
+      "profiler__replayer_passes": {
+        "value": 5.0,
+        "unit": "pass"
+      }
+    },
+    "missing_requested_metrics": [
+      "dram__bytes_read.sum"
+    ]
+  },
+  "limitations": [
+    "Unpaired, five-pass application replay; no clock or cache modifications. Not production latency or throughput.",
+    "The requested DRAM-read metric is absent in the report; do not infer DRAM bytes or achieved memory bandwidth.",
+    "Warp-stall percentages describe sampled activity, not additive fractions of end-to-end latency."
+  ],
+  "warp_instruction_change_pct": 4.985427836936229,
+  "integer_thread_instruction_change_pct": 2.4952366869286147
+}

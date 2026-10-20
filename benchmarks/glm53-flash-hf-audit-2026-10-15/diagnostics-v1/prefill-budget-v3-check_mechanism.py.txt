@@ -1,0 +1,22 @@
+from __future__ import annotations
+import copy,hashlib,importlib.util,json,pathlib
+b=pathlib.Path(__file__).parent
+spec=importlib.util.spec_from_file_location('verify_budget_v3',b/'verify.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+profiles=json.loads(pathlib.Path('/private/tmp/mxwave-prefill-budget-v2/evidence/spark-independent-review.json').read_text())['profiles']
+rows=m.verify_decode_mechanism(profiles);assert rows
+bad=[]
+for label in ['missing_rank','wrong_input_geometry','reconstruction','missing_graph']:
+ altered=copy.deepcopy(profiles)
+ if label=='missing_rank':altered=[p for p in altered if p['rank']==0]
+ else:
+  p=next(p for p in altered if p['labels'][0].startswith('candidate-'))
+  s=next(s for s in p['steps'] if not s['batch']['has_prefill']and s['batch']['num_tokens_after_padding']==16)
+  if label=='missing_graph':s['cuda_graph_launches']=0
+  elif label=='reconstruction':s['kernel_variants'].append({'name':'bf16triplebitmap_decompress_kernel','count':1})
+  else:
+   v=next(v for v in s['kernel_variants']if 'BF16TripleBitmap_MM_Kernel'in v['name']and v['grid'][1]==197);v['grid'][1]=196
+ try:m.verify_decode_mechanism(altered)
+ except AssertionError:bad.append(label)
+ else:raise AssertionError('Accepted '+label)
+out={'status':'passed','verifier_sha256':hashlib.sha256((b/'verify.py').read_bytes()).hexdigest(),'real_qualified_parent_profiles_checked':len(profiles),'real_decode_ranges':len(rows),'negative_cases_rejected':bad,'GPU_run':False}
+(b/'mechanism-CPU-check.json').write_text(json.dumps(out,indent=2));print(json.dumps(out))

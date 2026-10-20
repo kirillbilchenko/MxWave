@@ -1,0 +1,36 @@
+"""Bind stream-derived acceptance boundaries to six repeats and captured GPU positions."""
+from __future__ import annotations
+import hashlib,json,sys
+from itertools import accumulate
+from pathlib import Path
+from safetensors.numpy import load_file
+speed,head,output=map(Path,sys.argv[1:])
+inputs=json.loads((head/'inputs.json').read_bytes())
+report={'schema':'mxwave-common-prefix-v1','scope':'Stream-derived accepted prefixes; terminal chunk excluded','source_sha256':{},'cases':{}}
+for case in inputs['cases']:
+ name=case['case']; modes={}
+ for prefix,mode in [('b','ct_mxfp8'),('p','modelopt')]:
+  rows=[]
+  for i in (1,2,3):
+   p=speed/f'{prefix}{i}-measurement.json';report['source_sha256'][p.name]=hashlib.sha256(p.read_bytes()).hexdigest()
+   for t in json.loads(p.read_bytes())['trials']:
+    if t['case']!=name:continue
+    req=t['requests'][0];sizes=[a['tokens'] for a in req['arrivals']]
+    assert sum(sizes)==256 and sizes[0]==1 and all(1<=n<=8 for n in sizes)
+    rows.append({'tokens':req['token_ids'],'sizes':sizes})
+  assert len(rows)==6 and all(row==rows[0] for row in rows)
+  row=rows[0];starts=list(accumulate(row['sizes']))[:-1]
+  accepted=[n-1 for n in row['sizes'][1:-1]]
+  modes[mode]={'six_outputs_and_chunk_patterns_equal':True,'tokens':row['tokens'],'starts':starts,'nonterminal_acceptance':dict(zip(starts,accepted))}
+ a,b=modes['ct_mxfp8'],modes['modelopt'];common=next((i for i,(x,y) in enumerate(zip(a['tokens'],b['tokens'])) if x!=y),256)
+ aligned=[{'generated_prefix_tokens':pos,'ct_accepted':a['nonterminal_acceptance'][pos],'modelopt_accepted':b['nonterminal_acceptance'][pos]} for pos in sorted(a['nonterminal_acceptance'].keys() & b['nonterminal_acceptance'].keys()) if pos+7<=common]
+ gpu_starts=[]
+ for p in sorted((head/'head-r0').glob(f'frame-{name}-*.safetensors')):
+  gpu_starts.append(int(load_file(p)['sample_positions'].reshape(-1)[0])-case['original_case']['prompt_tokens'])
+ assert gpu_starts[:len(a['starts'])]==a['starts']
+ report['cases'][name]={'common_output_prefix_tokens':common,'aligned_rounds':aligned,'ct_stream_starts_match_captured_gpu_positions':True,'modes':{k:{x:y for x,y in v.items() if x!='tokens'} for k,v in modes.items()}}
+report['source_sha256']['inputs.json']=hashlib.sha256((head/'inputs.json').read_bytes()).hexdigest()
+report['source_sha256']['script']=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+report['status']='verified'
+output.write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps({k:v['aligned_rounds'] for k,v in report['cases'].items()}))

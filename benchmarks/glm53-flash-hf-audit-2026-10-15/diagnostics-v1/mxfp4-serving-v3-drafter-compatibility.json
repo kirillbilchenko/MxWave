@@ -1,0 +1,37 @@
+{
+  "status": "structural_checks_passed",
+  "checks": {
+    "hidden_size": true,
+    "vocab_size": true,
+    "num_layers": true,
+    "target_layers": true,
+    "block_size": true
+  },
+  "target": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/source",
+  "draft": "/home/kirya/local-spark/models/glm-5.3-flash/derived/incoai/GLM-5.3-Flash-DFlash2-fp8blk",
+  "source_sha256": {
+    "target/config.json": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198",
+    "target/tokenizer.json": "19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d",
+    "target/tokenizer_config.json": "98b1271574f41abf89427ae2dda030d94dc9478f0edc5a8bd240db213c6fd5fc",
+    "target/chat_template.jinja": "34d5ee66b12fa6446cdae131c352b8f68cd85369e0e6fda115583805fada3891",
+    "target/README.md": "373c133740c5c8c8064fa45bacd36fca303a79f7ff731cd5fa7409df90bee13a",
+    "draft/config.json": "15bc842939ff7ca3ccc5aad36d25fff854da05a60086a4f55672d804fc6dbe7b",
+    "draft/README.md": "2014434d3e3639147d35d61259690d585e7820993180e7d579e3b796dddf5a31"
+  },
+  "target_provenance": "Existing AutoRound CT MXFP4 checkpoint with MxWave lossless runtime; no new MxWave quantization weights.",
+  "scope": "Structural compatibility and prior shared target head/embedding evidence; not a measured acceptance or quality result for the new prompts.",
+  "prior_dflash_c1_v1": {
+    "current": {
+      "accepted": 899,
+      "drafted": 910
+    },
+    "ct_stock": {
+      "accepted": 899,
+      "drafted": 910
+    },
+    "candidate": {
+      "accepted": 899,
+      "drafted": 910
+    }
+  }
+}

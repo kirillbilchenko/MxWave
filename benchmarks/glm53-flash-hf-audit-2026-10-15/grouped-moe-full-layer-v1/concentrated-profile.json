@@ -1,0 +1,414 @@
+{
+  "status": "complete",
+  "purpose": "concentrated-routing traces only; no repeated latency baseline",
+  "script_sha256": "b88b4c04ed1de37f94b805128db2a922afb55b0d0e1517b098e6a2f7657a6c09",
+  "runtime_sha256": "9c7fb2d77b7d6d78e94dbcf01502742439246173b2fde590d8471417ed44e386",
+  "fixture_manifest_sha256": "6c0de19b711541064f8c70f1696768ddd5608ba20675a68216e7cfd6d326c27e",
+  "libraries_sha256": {
+    "libmxwave_moe_raw.so": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+    "libmxwave_moe_async.so": "70efb8efa377f12f2e5d83bbb3f25ac3cf7ab149524849e39150aea49d226884"
+  },
+  "cases": [
+    {
+      "tokens": 64,
+      "concentrated_routing": true,
+      "moe_block": 8,
+      "gate_up_plan": [
+        64,
+        128,
+        3
+      ],
+      "down_plan": [
+        64,
+        128,
+        3
+      ],
+      "exact": true,
+      "arms": {
+        "raw": {
+          "file": "m64-raw.json",
+          "sha256": "5def245247de7abd3a1e960972cebe2cc3652924cf92b43b2e4e87323a996e0d",
+          "kernel_count": 48,
+          "kernel_sum_us": 3066.999,
+          "grouped_gemm_pct": 96.10619370922521,
+          "gate_up_median_us": 238.46300000000002,
+          "down_median_us": 128.3675,
+          "gate_up_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 29,
+            "registers per thread": 92,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "down_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 45,
+            "registers per thread": 92,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "kernel_names": [
+            "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+            "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool, int*)",
+            "void mxwave_grouped_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, true>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)"
+          ]
+        },
+        "async": {
+          "file": "m64-async.json",
+          "sha256": "7b764d1eff2c2cb994eab463d4d753eef03e809369e6f1fc362c82977c1dc923",
+          "kernel_count": 48,
+          "kernel_sum_us": 4232.781,
+          "grouped_gemm_pct": 94.46082847187228,
+          "gate_up_median_us": 289.228,
+          "down_median_us": 158.65449999999998,
+          "gate_up_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 487,
+            "registers per thread": 94,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "down_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 503,
+            "registers per thread": 94,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "kernel_names": [
+            "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+            "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool, int*)",
+            "void mxwave_grouped_async::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, true>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)"
+          ]
+        }
+      }
+    },
+    {
+      "tokens": 128,
+      "concentrated_routing": true,
+      "moe_block": 8,
+      "gate_up_plan": [
+        64,
+        128,
+        3
+      ],
+      "down_plan": [
+        64,
+        128,
+        3
+      ],
+      "exact": true,
+      "arms": {
+        "raw": {
+          "file": "m128-raw.json",
+          "sha256": "80b8ff0cef3e70866cfddd885746519476f622f7fe87d55d992fa25b0f95ec54",
+          "kernel_count": 48,
+          "kernel_sum_us": 5927.504,
+          "grouped_gemm_pct": 96.95524456837144,
+          "gate_up_median_us": 439.79499999999996,
+          "down_median_us": 245.5285,
+          "gate_up_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 6425,
+            "registers per thread": 92,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "down_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 6441,
+            "registers per thread": 92,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "kernel_names": [
+            "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+            "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool, int*)",
+            "void mxwave_grouped_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, true>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)"
+          ]
+        },
+        "async": {
+          "file": "m128-async.json",
+          "sha256": "054af821fdede7807757af7fa96422b6d3e7b1379e69f5a980a065b735861962",
+          "kernel_count": 48,
+          "kernel_sum_us": 6462.406,
+          "grouped_gemm_pct": 97.35477777162252,
+          "gate_up_median_us": 506.1925,
+          "down_median_us": 280.36800000000005,
+          "gate_up_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 6881,
+            "registers per thread": 94,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "down_resources": {
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 6897,
+            "registers per thread": 94,
+            "shared memory": 32768,
+            "blocks per SM": 3.0,
+            "warps per SM": 12.0,
+            "grid": [
+              144,
+              1,
+              1
+            ],
+            "block": [
+              128,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 25,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 3,
+              "limitingFactors": "SMEM",
+              "blockLimitRegs": 5,
+              "blockLimitSharedMem": 3,
+              "blockLimitWarps": 12,
+              "blockLimitBlocks": 24,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 12288,
+              "allocatedSharedMemPerBlock": 33792
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "kernel_names": [
+            "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+            "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool, int*)",
+            "void mxwave_grouped_async::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, true>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)"
+          ]
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Torch traces locate kernels and estimate launch occupancy; they are not hardware performance counters.",
+    "Per-stage trace durations are unpaired profiler observations, not replacement speed measurements.",
+    "Complete paired latency evidence remains the original full-layer qualification report."
+  ]
+}

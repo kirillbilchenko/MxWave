@@ -1,0 +1,667 @@
+{
+  "status": "complete",
+  "numerical_gate_passed": false,
+  "previous_strict_failures_preserved": true,
+  "same_resident_v9_model": true,
+  "model_loads": 1,
+  "source_groups_checked_in_audit_order": 336,
+  "full_float32_rows_reconstructed_from_raw_api": 256,
+  "quality_comparisons": {
+    "qualified_repeat": {
+      "mean_decode_kl": 5.257766885081842e-05,
+      "mean_decode_nll_difference": -4.5297315553688516e-05,
+      "mean_prefill_kl": 5.439939708347356e-05,
+      "mean_prefill_nll_difference": 0.0002151397460541173
+    },
+    "eager_repeat": {
+      "mean_decode_kl": 3.231829601436477e-05,
+      "mean_decode_nll_difference": 2.1772146174705087e-06,
+      "mean_prefill_kl": 5.188602043423466e-05,
+      "mean_prefill_nll_difference": 0.00012417754557828364
+    },
+    "cross_mode": {
+      "mean_decode_kl": 4.5864769784217536e-05,
+      "mean_decode_nll_difference": -3.5099697312591604e-05,
+      "mean_prefill_kl": 8.199766573899367e-05,
+      "mean_prefill_nll_difference": 0.00022458505809035554
+    }
+  },
+  "all_64_generated_token_ids_per_leg_match": true,
+  "timing_blocks": [
+    {
+      "reverse_first_order": false,
+      "medians": {
+        "qualified": {
+          "aggregate_tokens_per_second": 38.067573715429276,
+          "ttft_seconds": 1.1293013879912905
+        },
+        "eager-direct": {
+          "aggregate_tokens_per_second": 38.950950649014906,
+          "ttft_seconds": 1.0916664014803246
+        }
+      },
+      "throughput_change_percent": 2.3205496105142887,
+      "ttft_change_percent": -3.3325901226339605
+    },
+    {
+      "reverse_first_order": true,
+      "medians": {
+        "qualified": {
+          "aggregate_tokens_per_second": 38.558013008577376,
+          "ttft_seconds": 0.8477347860462032
+        },
+        "eager-direct": {
+          "aggregate_tokens_per_second": 38.87907464698628,
+          "ttft_seconds": 1.0901195314945653
+        }
+      },
+      "throughput_change_percent": 0.8326716377669241,
+      "ttft_change_percent": 28.59204900377317
+    }
+  ],
+  "all_20_timing_groups_retained": true,
+  "quality_batch_formation": {
+    "planned_four_request_groups": 16,
+    "quality_prefix_tokens": 2,
+    "per_prompt_tokens": 258,
+    "full_quality_prefill_tokens": 1032,
+    "full_quality_prefills_observed": 9,
+    "quality_groups_split_by_scheduler": 7,
+    "same_counters_on_both_ranks": true,
+    "inference": "Batch-shape differences can confound strict floating comparisons; causality needs a controlled admission test"
+  },
+  "independent_verifier_sha256": "d484260671138fd59750d1c42136e0713ebc06e068492e2dbd68e8e7f2d4417a",
+  "archive_verification": {
+    "status": "passed",
+    "payloads_verified": 555,
+    "archives": [
+      {
+        "status": "verified",
+        "rank": 0,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/eager-dispatch-model-v1-evidence-rank0.tar.gz",
+        "bytes": 242023127,
+        "sha256": "8e851cdca458a0a291c28f830517517db693da0e91c74e0d704cf3f0a4f274b6",
+        "files": 423,
+        "trace_files": 5,
+        "manifest_sha256": "91d41269f696dea743d1ae0a8db1c77d5cc1b10c2e2f4d3c19c653fe430de53a",
+        "finished_epoch": 1792243266.8910427
+      },
+      {
+        "status": "verified",
+        "rank": 1,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/eager-dispatch-model-v1-evidence-rank1.tar.gz",
+        "bytes": 8886389,
+        "sha256": "bc24dfe89e5ff11a115fb0d6d94498b6b2bee15c58d20272f5366546daf54a1c",
+        "files": 132,
+        "trace_files": 3,
+        "manifest_sha256": "48379933ecaa10c80a0b45037e7b8ccfa3cbda3b8bddb99caf87728bdaa399c9",
+        "finished_epoch": 1792243268.6046805
+      }
+    ]
+  },
+  "service_restoration": {
+    "status": "complete",
+    "started_epoch": 1792243068.7010038,
+    "health": 200,
+    "containers": [
+      {
+        "rank": 1,
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "rank": 0,
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ],
+    "finished_epoch": 1792243225.3855112
+  },
+  "experiment": "eagerdispatchv1",
+  "source_inventory_sha256": "fcb450d7372aa52e74384d2d41c3eabafbca98e82f862132ec37ecdb4c328d52",
+  "prepared_sha256": "bf47f0750d0c5555dffef0a13e86fe0141e2539e8b6cb97895d2a300a15c1dd2",
+  "interpretation": "Small incremental eager-host benefit on the same compressed model; strict numerical qualification fails, including reference repeats; batch formation is uncontrolled.",
+  "profiles": {
+    "qualified-r0": {
+      "trace_sha256": "47a7f4fe1f6d43864f153c74081f48a09289d9e513425d9979f120d4f2328982",
+      "complete_forward_shapes": [
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          4
+        ],
+        [
+          514,
+          2,
+          2
+        ],
+        [
+          257,
+          1,
+          1
+        ],
+        [
+          2,
+          0,
+          2
+        ],
+        [
+          256,
+          1,
+          0
+        ]
+      ],
+      "gpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1031sqsq4sqsk1031)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 100744.802,
+          "kernel_union_all_streams_us": 84003.20288085938,
+          "uncovered_all_streams_us": 16741.59911914062,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 2023.9989999999996
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 1087.9040000000002
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 13.76
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 962.1439999999999
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 2045.2810000000009
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 25503.303999999996
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 10320.066999999994
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1866.1149999999998
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4880.228000000002
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 1258.0170000000005
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 485.281
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 119.77599999999998
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 37085.64600000001
+            }
+          }
+        }
+      ],
+      "cpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1031sqsq4sqsk1031)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "cpu_forward_span_us": 357103.071,
+          "operations": {
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "sum_us": 9190.563
+            },
+            "mxwave_glm53::kda_fused_direct": {
+              "calls": 0,
+              "sum_us": 0
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 68,
+              "sum_us": 4921.762
+            }
+          }
+        }
+      ]
+    },
+    "eager-direct-r0": {
+      "trace_sha256": "558be1cd34f8c2ead054683aba7a2e65b08538531e731ef949f8eb842bf9e83c",
+      "complete_forward_shapes": [
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          4
+        ],
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          769,
+          3,
+          1
+        ],
+        [
+          256,
+          1,
+          0
+        ]
+      ],
+      "gpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1030sqsq4sqsk1030)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 100740.199,
+          "kernel_union_all_streams_us": 93634.92749023438,
+          "uncovered_all_streams_us": 7105.271509765618,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1434.4639999999972
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 948.7039999999998
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 8.864
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 19868.52000000002
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1686.7530000000008
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 22001.514
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9787.457999999999
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1645.8559999999995
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 3840.706
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 992.1599999999996
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 381.05700000000013
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 108.60799999999999
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 32825.962000000014
+            }
+          }
+        }
+      ],
+      "cpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1030sqsq4sqsk1030)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "cpu_forward_span_us": 400709.505,
+          "operations": {
+            "mxwave_glm53::kda_linear": {
+              "calls": 0,
+              "sum_us": 0
+            },
+            "mxwave_glm53::kda_fused_direct": {
+              "calls": 68,
+              "sum_us": 5962.786
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 0,
+              "sum_us": 0
+            }
+          }
+        }
+      ]
+    },
+    "qualified-r1": {
+      "trace_sha256": "10efaefe16b4e15ddab50cc66c9ef26f81d7e11e14710a8b4113ec1b3f99cdc6",
+      "complete_forward_shapes": [
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          4
+        ],
+        [
+          514,
+          2,
+          2
+        ],
+        [
+          257,
+          1,
+          1
+        ],
+        [
+          2,
+          0,
+          2
+        ],
+        [
+          256,
+          1,
+          0
+        ]
+      ],
+      "gpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1031sqsq4sqsk1031)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 100732.612,
+          "kernel_union_all_streams_us": 93211.93798828125,
+          "uncovered_all_streams_us": 7520.674011718744,
+          "kernel_groups": {
+            "other": {
+              "calls": 796,
+              "sum_us": 1286.0160000000017
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 795.7119999999999
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 8.544
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 18646.368999999995
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1543.6479999999995
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 21489.313000000006
+            },
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 10113.984000000004
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1657.9199999999998
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 3942.592000000001
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 999.9999999999999
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 366.52800000000013
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 90.14399999999998
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 34306.368
+            }
+          }
+        }
+      ],
+      "cpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1031sqsq4sqsk1031)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "cpu_forward_span_us": 348518.063,
+          "operations": {
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "sum_us": 8722.24
+            },
+            "mxwave_glm53::kda_fused_direct": {
+              "calls": 0,
+              "sum_us": 0
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 68,
+              "sum_us": 4690.384
+            }
+          }
+        }
+      ]
+    },
+    "eager-direct-r1": {
+      "trace_sha256": "aabd1f509c7272d9b5a82d83ec51a7c8acafe550fb0ac87075c21031703d5bcf",
+      "complete_forward_shapes": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          769,
+          3,
+          1
+        ],
+        [
+          256,
+          1,
+          0
+        ],
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          4
+        ]
+      ],
+      "gpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1030sqsq4sqsk1030)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "main_stream": 17,
+          "gpu_range_us": 100929.091,
+          "kernel_union_all_streams_us": 79037.69799804688,
+          "uncovered_all_streams_us": 21891.393001953125,
+          "kernel_groups": {
+            "bf16_dense_linear": {
+              "calls": 240,
+              "sum_us": 9494.080000000004
+            },
+            "other": {
+              "calls": 796,
+              "sum_us": 1544.031999999999
+            },
+            "routing_activation": {
+              "calls": 224,
+              "sum_us": 1128.2560000000003
+            },
+            "stable_expert_order": {
+              "calls": 42,
+              "sum_us": 149.08799999999994
+            },
+            "routed_expert_gemm": {
+              "calls": 84,
+              "sum_us": 35729.21600000001
+            },
+            "generic_marlin_linear": {
+              "calls": 90,
+              "sum_us": 4885.184000000001
+            },
+            "communication": {
+              "calls": 91,
+              "sum_us": 2021.4719999999993
+            },
+            "mhc": {
+              "calls": 181,
+              "sum_us": 1788.2240000000008
+            },
+            "bf16_compressed_linear": {
+              "calls": 68,
+              "sum_us": 23180.992000000006
+            },
+            "recurrent": {
+              "calls": 79,
+              "sum_us": 1704.5439999999994
+            },
+            "other_gemm": {
+              "calls": 23,
+              "sum_us": 870.624
+            },
+            "attention": {
+              "calls": 22,
+              "sum_us": 403.936
+            },
+            "embedding_lookup": {
+              "calls": 1,
+              "sum_us": 17.952
+            }
+          }
+        }
+      ],
+      "cpu_m4": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1030sqsq4sqsk1030)",
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "cpu_forward_span_us": 407045.442,
+          "operations": {
+            "mxwave_glm53::kda_linear": {
+              "calls": 0,
+              "sum_us": 0
+            },
+            "mxwave_glm53::kda_fused_direct": {
+              "calls": 68,
+              "sum_us": 6696.656
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 0,
+              "sum_us": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Profiled spans are not unprofiled request latency or throughput.",
+    "Kernel category sums can overlap; only interval unions estimate covered time.",
+    "Complete-forward anchors require 84 expert GEMMs on their annotated stream.",
+    "All contained device streams are included; unattributed concurrent work can remain.",
+    "Device-clock timestamps are never compared across the two nodes.",
+    "Shape matches do not prove identical activations or routing between model arms.",
+    "Uncovered time is not proof of a CPU bottleneck or a specific synchronization cause.",
+    "These launches capture batch-one graphs only; concurrent decode is eager.",
+    "CPU scope duration includes time blocked on queued work; it is not isolated CPU compute.",
+    "Profile groups have different request admission patterns and are not matched activations.",
+    "One M4 sample per mode/rank; use unprofiled timing for throughput.",
+    "Existing full-model strict task failures remain unchanged.",
+    "No new raw-runtime compression baseline was loaded.",
+    "Batch splitting is an observed confound, not yet an established cause of numerical drift."
+  ],
+  "profile_analysis_code_sha256": {
+    "analyze_stable_profiles.py": "d24ac750c44c6cd9cde6772e4bf5092072dc2b1dbeb2539575713eae124c8ccb",
+    "analyze_dispatch_profiles.py": "78814bd94ab8eb3272e5116b2b25019cf2fbf5ec2c4eaebd9b684909817f6efb",
+    "analyze_full_profiles.py": "490ec06d037499418f400d525ef042c466dd81b957a26b9723c3f05e4fb07cf1",
+    "compare_full_model.py": "06793a3177d81c1f9691305c5a21cd9eed94a5cb4c29d76cc5f6a844ed328fef"
+  },
+  "local_full_profile_review_sha256": "8584738545ed17ed28f8693098cdfbf08a8415499326e50ea23e8ba92f3d03c2"
+}

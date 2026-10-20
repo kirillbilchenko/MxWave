@@ -1,0 +1,308 @@
+{
+  "status": "verified_evidence_supplement",
+  "archive_sha256": "50cd1d98769e02346b429f3fe21cbdc83412504ae204c6909b0d84438e2682a6",
+  "review_sha256": "33ab837e56693780434881b07491b9ddc924f7bb08a39a199739ae93b01705da",
+  "measurement_sha256": "23063dd4fd814aa135822870e3bd833f99d6aeb4d0ab9bcde31de54a247e5151",
+  "scope": "Descriptive subgroup and task breakdown; the frozen full gate still fails.",
+  "subgroups": {
+    "a1_vs_a2": {
+      "outside_long_context": {
+        "positions": 208,
+        "mean_KL": 0.0,
+        "maximum_KL": 0.0,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 0
+      },
+      "short_prompt_first_prediction": {
+        "positions": 8,
+        "mean_KL": 0.0,
+        "maximum_KL": 0.0,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 0
+      }
+    },
+    "a1_vs_a3": {
+      "outside_long_context": {
+        "positions": 208,
+        "mean_KL": 0.0,
+        "maximum_KL": 0.0,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 0
+      },
+      "short_prompt_first_prediction": {
+        "positions": 8,
+        "mean_KL": 0.0,
+        "maximum_KL": 0.0,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 0
+      }
+    },
+    "b1_vs_b2": {
+      "outside_long_context": {
+        "positions": 208,
+        "mean_KL": 0.0,
+        "maximum_KL": 0.0,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 0
+      },
+      "short_prompt_first_prediction": {
+        "positions": 8,
+        "mean_KL": 0.0,
+        "maximum_KL": 0.0,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 0
+      }
+    },
+    "a1_vs_b1": {
+      "outside_long_context": {
+        "positions": 208,
+        "mean_KL": 0.001223384312305864,
+        "maximum_KL": 0.036276695352635974,
+        "argmax_changes": 1,
+        "nonidentical_distributions": 208
+      },
+      "short_prompt_first_prediction": {
+        "positions": 8,
+        "mean_KL": 0.0014776130129592576,
+        "maximum_KL": 0.007623979357519403,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 8
+      }
+    },
+    "a2_vs_b2": {
+      "outside_long_context": {
+        "positions": 208,
+        "mean_KL": 0.001223384312305864,
+        "maximum_KL": 0.036276695352635974,
+        "argmax_changes": 1,
+        "nonidentical_distributions": 208
+      },
+      "short_prompt_first_prediction": {
+        "positions": 8,
+        "mean_KL": 0.0014776130129592576,
+        "maximum_KL": 0.007623979357519403,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 8
+      }
+    },
+    "a3_vs_b1": {
+      "outside_long_context": {
+        "positions": 208,
+        "mean_KL": 0.001223384312305864,
+        "maximum_KL": 0.036276695352635974,
+        "argmax_changes": 1,
+        "nonidentical_distributions": 208
+      },
+      "short_prompt_first_prediction": {
+        "positions": 8,
+        "mean_KL": 0.0014776130129592576,
+        "maximum_KL": 0.007623979357519403,
+        "argmax_changes": 0,
+        "nonidentical_distributions": 8
+      }
+    }
+  },
+  "short_tasks": {
+    "a1": {
+      "strict_passes": 2,
+      "task_count": 8,
+      "code_correctness_passes": 2,
+      "code_task_count": 2,
+      "sandbox_report_sha256": "afc65478bc6b04f7d540924eff702366f309c57c33c62dac67f9cfc5a25b55c2",
+      "cases": [
+        {
+          "name": "json",
+          "strict_pass": true,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "json_types",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "constraints",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "unicode_copy",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "slugify",
+          "strict_pass": false,
+          "code_correctness_pass": true,
+          "format_pass": false,
+          "natural_stop": true
+        },
+        {
+          "name": "merge_intervals",
+          "strict_pass": true,
+          "code_correctness_pass": true,
+          "format_pass": true,
+          "natural_stop": true
+        },
+        {
+          "name": "multiply",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "inventory",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        }
+      ]
+    },
+    "b1": {
+      "strict_passes": 3,
+      "task_count": 8,
+      "code_correctness_passes": 2,
+      "code_task_count": 2,
+      "sandbox_report_sha256": "0ec31263dd2b87bdb8d44206978c0763947174007b4eae2ffd3ac1ff5dea7076",
+      "cases": [
+        {
+          "name": "json",
+          "strict_pass": true,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "json_types",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "constraints",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "unicode_copy",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "slugify",
+          "strict_pass": true,
+          "code_correctness_pass": true,
+          "format_pass": true,
+          "natural_stop": true
+        },
+        {
+          "name": "merge_intervals",
+          "strict_pass": true,
+          "code_correctness_pass": true,
+          "format_pass": true,
+          "natural_stop": true
+        },
+        {
+          "name": "multiply",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "inventory",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        }
+      ]
+    },
+    "a3": {
+      "strict_passes": 2,
+      "task_count": 8,
+      "code_correctness_passes": 2,
+      "code_task_count": 2,
+      "sandbox_report_sha256": "afc65478bc6b04f7d540924eff702366f309c57c33c62dac67f9cfc5a25b55c2",
+      "cases": [
+        {
+          "name": "json",
+          "strict_pass": true,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "json_types",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "constraints",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "unicode_copy",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "slugify",
+          "strict_pass": false,
+          "code_correctness_pass": true,
+          "format_pass": false,
+          "natural_stop": true
+        },
+        {
+          "name": "merge_intervals",
+          "strict_pass": true,
+          "code_correctness_pass": true,
+          "format_pass": true,
+          "natural_stop": true
+        },
+        {
+          "name": "multiply",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        },
+        {
+          "name": "inventory",
+          "strict_pass": false,
+          "semantic_correctness_inferred_from_failed_exact_match": false
+        }
+      ]
+    }
+  },
+  "actual_MXFP8_speed_measured": false,
+  "long_context_batch_control": {
+    "all_five_passes_have_identical_recorded_batches": true,
+    "fields": [
+      "positions",
+      "input_ids",
+      "num_tokens",
+      "num_tokens_after_padding",
+      "has_prefill"
+    ],
+    "token_counts": [
+      2048,
+      2048,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "padded_token_counts": [
+      2048,
+      2048,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "repeat_failure_remains_unresolved": true
+  },
+  "natural_text_comparison": {
+    "original_restored_identical": true,
+    "candidate_changed_names": [
+      "json_types",
+      "slugify"
+    ],
+    "task_count": 8
+  }
+}

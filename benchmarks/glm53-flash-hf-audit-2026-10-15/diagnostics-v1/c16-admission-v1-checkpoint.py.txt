@@ -1,0 +1,44 @@
+"""Keep the live handoff current without changing frozen experiment files."""
+from __future__ import annotations
+import hashlib,json,pathlib
+from datetime import datetime,timezone
+BASE=pathlib.Path(__file__).parent
+WORK=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+state=json.loads((BASE/'latest-live-status.json').read_bytes())
+stamp=datetime.fromtimestamp(state['checked_epoch'],timezone.utc).strftime('%d October %Y, %H:%M:%S UTC')
+parts=[f"**Live C16 admission status: {stamp}.** Phase `{state['phase']}`; service paused: {state['service_paused']}.\n"]
+for arm in state['arms']:
+    passed=sum(bool(r['passed']) for r in arm['self_comparisons'])
+    parts.append(f"{arm['arm'].capitalize()}: {arm['quality']}/10 quality groups recorded, {arm.get('quality_complete', 'not separately counted')} complete; {arm['timing']}/36 timing groups, {arm['profiles']}/2 ordinary profile sessions; {passed} completed self-repeat checks pass. Current phase `{arm['phase']}`.\n")
+preliminary=sorted(BASE.glob('preliminary-*.json'))
+if preliminary:
+    values=json.loads(preliminary[-1].read_bytes())
+    if values['summaries']:
+        parts.append('Complete timing cells below are preliminary and await independent archive verification; every declared repetition is included.\n\n| Arm | Case | Window | Trials | Median tok/s | Median TTFT |\n|---|---|---:|---:|---:|---:|\n'+''.join(f"| {row['arm']} | {row['case']} | {row['window_ms']} ms | {row['trials']} | {row['median_TPS']:.3f} | {row['median_TTFT_seconds']:.6f} s |\n" for row in values['summaries']))
+profile_progress=sorted(BASE.glob('profile-progress-*.json'))
+if profile_progress:
+    values=json.loads(profile_progress[-1].read_bytes())
+    if values['profiles']:
+        parts.append('Completed ordinary-profile metadata (one profile/window/arm, raw GPU trace verification pending):\n'+''.join(f"- {row['arm']} at {row['window_ms']} ms: {row['prefill_forwards']} prefill-containing forwards, row counts {row['prefill_rows']}.\n" for row in values['profiles'] if row['rank']==0)+'These separately profiled samples do not count prefill forwards in every ordinary timing trial.\n')
+if (BASE/'fp32-kl-audit.json').is_file():
+    audit=json.loads((BASE/'fp32-kl-audit.json').read_bytes())
+    parts.append(f"User-requested FP32 KL audit is complete on CPU: {audit['checked_files']} retained files rehashed, exact native source adaptations reproduced. The qualified route already uses FP32 accumulation; split-K=2 changes its grouping. Reverting to the qualified route is the tested numerical recovery and preserves compression. The audit does not locate the first differing layer or establish a kernel bug. No runtime was changed or additional GPU experiment launched. Evidence: `/private/tmp/mxwave-c16-admission-v1/fp32-kl-audit.json`.\n")
+if (BASE/'paired-numerical-progress.json').is_file():
+    paired=json.loads((BASE/'paired-numerical-progress.json').read_bytes())
+    parts.append(f"Completed controller review (independent archive review pending): numerical gate {paired['compression_numerical_gate_passed']}, policy gate {paired['policy_gate_passed']}, all {paired['timed_token_sequence_pairs']} timed output pairs match: {paired['all_timed_generated_ids_match']}. Cross-arm KL is C1 5.803778255e-6 / C16 8.919345724e-7. This does not remove the observed +311.5 ms same-window C16 TTFT gap.\n")
+parts.append('Final paired quality, admission benefit, graph/prefill trace review and independent archive verification are pending. No latency-success or promotion claim.\n')
+if (BASE/'collection-recovery-launch.json').exists():
+    parts.append('Original service restoration is complete. The initial collector failed because profiler file ownership rejected hardlinks; its failure receipt/log are preserved. A separate collector resumes byte-checked retention and copies head traces. Results, 211 frozen sources, verifier and gates are unchanged; this is archival recovery only.\n')
+block='<!-- C16_LIVE_START -->\n'+'\n'.join(parts)+'<!-- C16_LIVE_END -->\n\n'
+records=[]
+for name in ('GLM53_HANDOFF.md','GLM53_CURRENT_STATE.md','GLM53_C16_ADMISSION.md'):
+    path=WORK/'docs'/name;old=path.read_text()
+    if '<!-- C16_LIVE_START -->' in old:
+        start=old.index('<!-- C16_LIVE_START -->');end=old.index('<!-- C16_LIVE_END -->',start)+len('<!-- C16_LIVE_END -->\n\n')
+        new=old[:start]+block+old[end:]
+    else:
+        heading,tail=old.split('\n\n',1);new=heading+'\n\n'+block+tail
+    path.write_text(new)
+    records.append({'document':str(path),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
+(BASE/f"checkpoint-{int(state['checked_epoch'])}.json").write_text(json.dumps({'timestamp':stamp,'status':state,'documents':records},indent=2))
+print('Handoff checkpoint',stamp,state['phase'])

@@ -1,0 +1,28 @@
+"""Read bounded trial progress and retain a timestamped checkpoint."""
+from __future__ import annotations
+import json,pathlib,shlex,subprocess,time
+
+b=pathlib.Path(__file__).parent
+root='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/serving-trial-v2'
+program=r'''
+import json,pathlib,sys,time,subprocess
+r=pathlib.Path(sys.argv[1]);s=json.loads((r/'controller.json').read_bytes())
+out={k:s.get(k)for k in('phase','pid','watchdog_pid','updated_epoch','service_paused','handover_committed','active_arm','error')}
+out['epoch']=time.time();out['measurements']={}
+for arm in('production','current','candidate'):
+ p=r/(arm+'-measurement.json')
+ if p.exists():
+  d=json.loads(p.read_bytes());out['measurements'][arm]={k:d.get(k)for k in('status','phase','trial','case_index','error','summary')}
+  out['measurements'][arm]['completed_trials']=len(d['trials']);out['measurements'][arm]['warmups']=len(d['warmups'])
+if s['phase'].startswith('starting_'):
+ arm=s['phase'][len('starting_'):]
+ name='mxwave-serving-trial-v2-'+arm+'-r0'
+ p=subprocess.run(['docker','logs','--tail','8',name],capture_output=True,text=True)
+ out['startup_log_tail']=(p.stdout+p.stderr)[-3500:]
+if s['phase']in('failed','failed_restored','preparation_failed'):
+ out['controller_log_tail']=(r/'controller.log').read_text()[-3500:]
+print(json.dumps(out))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','spark',shlex.join(['python3','-S','-B','-c',program,root])],timeout=30)
+d=json.loads(raw);(b/f"status-{int(d['epoch'])}.json").write_bytes(raw);(b/'latest-status.json').write_bytes(raw)
+print(json.dumps(d))

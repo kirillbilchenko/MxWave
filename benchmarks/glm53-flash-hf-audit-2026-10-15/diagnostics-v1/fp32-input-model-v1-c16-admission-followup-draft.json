@@ -1,0 +1,244 @@
+{
+  "status": "draft_not_launchable",
+  "created_epoch": 1792389300.5596092,
+  "purpose": "Test whether increasing the already enabled idle admission window from 3 to 10 ms reduces short-C16 TTFT in both stock and compressed arms.",
+  "current_model_run_modified": false,
+  "candidate_selection": "Pending independent fp32inputmodelv1 result; otherwise retain warmed exact16 as the measured baseline.",
+  "windows_ms": [
+    3,
+    10
+  ],
+  "max_num_seqs": 16,
+  "max_batched_tokens": 2048,
+  "capture_sizes": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "KV_bytes_per_rank": 4294967296,
+  "generated_tokens": 64,
+  "warmups_per_case_window": 2,
+  "warmup_output_tokens": 16,
+  "timed_cases": [
+    {
+      "name": "c16-short",
+      "concurrency": 16,
+      "prompt_tokens": 256,
+      "trials_per_window": 12
+    },
+    {
+      "name": "c1-short",
+      "concurrency": 1,
+      "prompt_tokens": 256,
+      "trials_per_window": 6
+    }
+  ],
+  "schedule_per_arm": [
+    {
+      "case": "c16-short",
+      "repeat": 0,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 0,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 0,
+      "window_ms": 3
+    },
+    {
+      "case": "c1-short",
+      "repeat": 0,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 1,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 1,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 1,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 1,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 2,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 2,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 2,
+      "window_ms": 3
+    },
+    {
+      "case": "c1-short",
+      "repeat": 2,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 3,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 3,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 3,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 3,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 4,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 4,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 4,
+      "window_ms": 3
+    },
+    {
+      "case": "c1-short",
+      "repeat": 4,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 5,
+      "window_ms": 10
+    },
+    {
+      "case": "c1-short",
+      "repeat": 5,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 5,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 5,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 6,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 6,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 7,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 7,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 8,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 8,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 9,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 9,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 10,
+      "window_ms": 3
+    },
+    {
+      "case": "c16-short",
+      "repeat": 10,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 11,
+      "window_ms": 10
+    },
+    {
+      "case": "c16-short",
+      "repeat": 11,
+      "window_ms": 3
+    }
+  ],
+  "quality_requirements": [
+    "Preserve native mHC, stable sparse/expert policy and all earlier failures.",
+    "Keep matched grouping and KL <=1e-5 / absolute mean NLL <=1e-4; specify repetitions and all comparisons before freezing.",
+    "Retain every timed output and check paired output IDs across windows/arms; failed quality cannot be hidden by speed summaries."
+  ],
+  "measurement_requirements": [
+    "Same stock/compressed serving settings; change only admission window within each resident arm.",
+    "Balance 3/10 and 10/3 order; retain all trials, request launch offsets, arrivals, admission stop reasons and clocks/thermals.",
+    "Ordinary timing contains no profiler or model pause for cohort collection.",
+    "Separate matched-cohort profiles must count actual forward shapes, graph replays and reconstructions on both ranks.",
+    "Preserve the original compression speed/TTFT gates separately from any policy comparison.",
+    "C1 controls must expose added collection delay; exact prospective policy gates remain to freeze."
+  ],
+  "launch_requirements": [
+    "Wait for the active model controller, restoration and independent retention/review.",
+    "Implement and CPU validate the focused client/reviewer and bind exact sources before launch.",
+    "Verify disk reserve and keep the existing idle guard/restoration watchdog."
+  ],
+  "expected_effect": "Unmeasured; do not assume the 442 ms gap collapses to 36 ms.",
+  "prefill_budget_minimum_forwards_C16_P256": 2,
+  "timed_groups_per_arm": 36,
+  "timed_groups_both_arms": 72,
+  "timed_requests_both_arms": 792,
+  "timed_output_tokens_both_arms": 50688
+}

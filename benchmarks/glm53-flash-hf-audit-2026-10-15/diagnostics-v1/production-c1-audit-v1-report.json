@@ -1,0 +1,146 @@
+{
+  "status": "read_only_compatibility_audit_complete",
+  "updated": "19 October 2026, 17:43 UTC",
+  "serving_changed": false,
+  "gpu_experiment_started": false,
+  "user_objective": {
+    "baseline": "Original tuned ModelOpt/DFlash production deployment, not only uncompressed CT",
+    "primary": "Better end-to-end C1 numbers with quality preserved; also report concurrency separately",
+    "TTFT": "A modest first-token penalty is acceptable; no numeric tolerance was specified",
+    "KV": "Capacity/queueing experiment only; not a C1 regression fix",
+    "historical_gates": "Preserve all earlier decisions; do not relabel them under the new preference"
+  },
+  "findings": {
+    "production_KDA_projections_MXFP8": 68,
+    "production_KDA_names": [
+      "model.language_model.layers.0.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.0.self_attn.o_proj",
+      "model.language_model.layers.1.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.1.self_attn.o_proj",
+      "model.language_model.layers.10.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.10.self_attn.o_proj",
+      "model.language_model.layers.12.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.12.self_attn.o_proj",
+      "model.language_model.layers.13.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.13.self_attn.o_proj",
+      "model.language_model.layers.14.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.14.self_attn.o_proj",
+      "model.language_model.layers.16.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.16.self_attn.o_proj",
+      "model.language_model.layers.17.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.17.self_attn.o_proj",
+      "model.language_model.layers.18.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.18.self_attn.o_proj",
+      "model.language_model.layers.2.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.2.self_attn.o_proj",
+      "model.language_model.layers.20.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.20.self_attn.o_proj",
+      "model.language_model.layers.21.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.21.self_attn.o_proj",
+      "model.language_model.layers.22.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.22.self_attn.o_proj",
+      "model.language_model.layers.24.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.24.self_attn.o_proj",
+      "model.language_model.layers.25.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.25.self_attn.o_proj",
+      "model.language_model.layers.26.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.26.self_attn.o_proj",
+      "model.language_model.layers.28.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.28.self_attn.o_proj",
+      "model.language_model.layers.29.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.29.self_attn.o_proj",
+      "model.language_model.layers.30.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.30.self_attn.o_proj",
+      "model.language_model.layers.32.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.32.self_attn.o_proj",
+      "model.language_model.layers.33.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.33.self_attn.o_proj",
+      "model.language_model.layers.34.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.34.self_attn.o_proj",
+      "model.language_model.layers.36.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.36.self_attn.o_proj",
+      "model.language_model.layers.37.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.37.self_attn.o_proj",
+      "model.language_model.layers.38.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.38.self_attn.o_proj",
+      "model.language_model.layers.4.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.4.self_attn.o_proj",
+      "model.language_model.layers.40.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.40.self_attn.o_proj",
+      "model.language_model.layers.41.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.41.self_attn.o_proj",
+      "model.language_model.layers.42.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.42.self_attn.o_proj",
+      "model.language_model.layers.44.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.44.self_attn.o_proj",
+      "model.language_model.layers.5.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.5.self_attn.o_proj",
+      "model.language_model.layers.6.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.6.self_attn.o_proj",
+      "model.language_model.layers.8.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.8.self_attn.o_proj",
+      "model.language_model.layers.9.self_attn.in_proj_qkvbfg_a",
+      "model.language_model.layers.9.self_attn.o_proj"
+    ],
+    "vocabulary_source_shards_exact_match": 4,
+    "vocabulary_candidate_storage_saving_bytes_TP2": 748632352,
+    "vocabulary_candidate_storage_saving_GiB_TP2": 0.6972182095050812,
+    "vocabulary_port_needed": [
+      "Current selector patches CompressedTensorsConfig, not ModelOptMixedPrecisionConfig",
+      "Current vocabulary policy calls CT-specific KDA policy; separate the vocabulary contract",
+      "Keep ModelOpt projection paths, exact vocabulary weights, shared DFlash head/embedding and production serving policy"
+    ],
+    "expert_port_needed": [
+      "Current expert consumer is MXFP4 with E8M0 scales",
+      "ModelOpt NVFP4 source scales use E4M3 plus global scales and a distinct loader/kernel preparation",
+      "Cannot transfer current codec/consumer unchanged; no validated ModelOpt expert compression yet"
+    ]
+  },
+  "next_scope": {
+    "vocabulary_only": "Small bounded port and paired production-baseline test; potential modest C1 improvement, not yet measured",
+    "full_expert_port": "Separate feasibility and kernel qualification needed",
+    "dense_KDA_option": "Lower priority after user accepts modest TTFT cost; it gives up the fused decode path",
+    "KV_capacity_option": "Separate from C1; no run started"
+  },
+  "engineering_estimates_not_measured": {
+    "vocabulary_adapter_and_paired_validation_hours": [
+      2,
+      4
+    ],
+    "expert_kernel_port_and_qualification_days": [
+      1,
+      3
+    ],
+    "speedup_guaranteed": false
+  },
+  "sources": {
+    "installed_modelopt": {
+      "path": "/private/tmp/mxwave-production-c1-audit-v1/modelopt.py",
+      "sha256": "edc285a5df75b61dc935c5caeb8b69a1fd1bc487d846cc4bc65376985dd4bb21"
+    },
+    "installed_nvfp4_oracle": {
+      "path": "/private/tmp/mxwave-production-c1-audit-v1/nvfp4-oracle.py",
+      "sha256": "e48da1c597f7fcc2992efc5211be4e1d3187b4c4fcd92e49e90029a7a6e48047"
+    },
+    "vocabulary_auditor": {
+      "path": "/private/tmp/mxwave-production-c1-audit-v1/audit_modelopt_vocab.py",
+      "sha256": "fd86631c97f1be055860af9a7c1f29d10c4f0ac5bf2707677fb7fd57db041d14"
+    },
+    "vocabulary_report": {
+      "path": "/private/tmp/mxwave-production-c1-audit-v1/vocabulary-audit.json",
+      "sha256": "ec25a35ecf8082d523551f7b865d1243d4643882eb5de071d2c247554e436e46"
+    },
+    "current_adapter": {
+      "path": "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/model_plugin.py",
+      "sha256": "dd6b1756444cd5d77c0a70c7cfb81fff4f249ad6f13e2635f37eef3eef7bf058"
+    },
+    "current_vocab_adapter": {
+      "path": "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/vocab_adapter.py",
+      "sha256": "a889b1c4984786bc7ad929f1e4877ebb8f09a04f5ef7f73a49d9f5ec7b624934"
+    },
+    "current_scale_codec": {
+      "path": "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4/moe_runtime.py",
+      "sha256": "f56d653e96d5466e3164e167e0d273af67408eb8cc461296c2cd0d7143b02747"
+    }
+  }
+}

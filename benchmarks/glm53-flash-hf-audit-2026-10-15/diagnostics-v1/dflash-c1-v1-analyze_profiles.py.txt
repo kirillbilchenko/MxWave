@@ -1,0 +1,198 @@
+"""Attribute GPU work to diagnostic CPU scopes via launch correlations, preserving unknowns."""
+from __future__ import annotations
+
+import argparse
+import collections
+import gzip
+import hashlib
+import json
+import pathlib
+import re
+import statistics
+
+
+def events(path):
+    """Stream the traceEvents array without loading the full profiler document."""
+    decoder = json.JSONDecoder()
+    with gzip.open(path, 'rt') as stream:
+        buffer = ''
+        while True:
+            buffer += stream.read(65536)
+            found = re.search(r'"traceEvents"\s*:\s*\[', buffer)
+            if found:
+                buffer = buffer[found.end():]
+                break
+            assert len(buffer) < 4 * 1024 * 1024, 'Missing traceEvents header'
+        while True:
+            buffer = buffer.lstrip(' \r\n\t,')
+            if buffer.startswith(']'):
+                return
+            try:
+                value, end = decoder.raw_decode(buffer)
+            except json.JSONDecodeError:
+                chunk = stream.read(65536)
+                assert chunk, 'Incomplete profiler trace'
+                buffer += chunk
+                continue
+            yield value
+            buffer = buffer[end:]
+
+
+def union(intervals):
+    total, end = 0.0, float('-inf')
+    for left, right in sorted(intervals):
+        total += max(0.0, right - max(left, end))
+        end = max(end, right)
+    return total
+
+
+def group(name):
+    lower = name.lower()
+    if 'bf16triplebitmap_decompress_kernel' in lower:
+        return 'weight_reconstruction'
+    if 'bf16triplebitmap_mm_kernel' in lower:
+        return 'compressed_bf16_gemm'
+    if 'splitk_reduction_bf16' in lower:
+        return 'compressed_bf16_reduction'
+    if 'mxwave_grouped_' in name or 'marlin_moe_wna16::Marlin' in name:
+        return 'expert_gemm'
+    if 'marlin::Marlin' in name:
+        return 'other_marlin_linear'
+    if ('nvjet_sm121' in lower or 'internal::gemvx' in lower
+            or ('cutlass' in lower and 'bf16' in lower)):
+        return 'dense_bf16_linear'
+    if 'splitkreduce_kernel' in lower and 'bfloat16' in lower:
+        return 'dense_bf16_reduction'
+    if '_canonicalize' in lower:
+        return 'stable_expert_dispatch'
+    if '_row_gather_kernel' in lower:
+        return 'compressed_embedding'
+    if any(s in lower for s in ('nccl', 'roce', 'allreduce', 'all_reduce', 'allgather')):
+        return 'communication'
+    if 'mhc' in lower or 'hc_prenorm' in lower:
+        return 'mhc'
+    if any(s in lower for s in ('kda', 'mla', 'attn', 'attention', 'flash')):
+        return 'attention'
+    return 'other'
+
+
+def profile(path, metadata):
+    scopes = collections.defaultdict(list)
+    launches = {}
+    operations = {}
+    categories = collections.Counter()
+    gpu_annotations = []
+    for event in events(path):
+        category = event.get('cat', '')
+        categories[category] += 1
+        if event.get('ph') != 'X':
+            continue
+        if event.get('name', '').startswith('mxwave.dflash/'):
+            if category == 'gpu_user_annotation':
+                gpu_annotations.append(event)
+            else:
+                scopes[(event['pid'], event['tid'])].append(event)
+        args = event.get('args', {})
+        if category in ('cuda_runtime', 'cuda_driver') and args.get('correlation') is not None:
+            correlation = args['correlation']
+            if correlation not in launches or 'Launch' in event['name']:
+                launches[correlation] = event
+        if category == 'cpu_op' and args.get('External id') is not None:
+            operations[args['External id']] = event
+    rows = {e['index']: dict(index=e['index'], label=e['label'], metadata=e['metadata'],
+                             cpu_wall_us=(e['end_ns']-e['start_ns'])/1000,
+                             kernels=[], evidence=collections.Counter())
+            for e in metadata['events']}
+    unmatched = []
+    total = []
+
+    def scope_for(operation):
+        if operation is None:
+            return None
+        candidates = [e for e in scopes[(operation['pid'], operation['tid'])]
+                      if e['ts'] <= operation['ts'] + .001 and
+                      operation['ts'] + operation['dur'] <= e['ts'] + e['dur'] + .1]
+        return min(candidates, key=lambda e: e['dur']) if candidates else None
+
+    for event in events(path):
+        if event.get('cat') != 'kernel' or event.get('ph') != 'X':
+            continue
+        args = event.get('args', {})
+        scope = scope_for(launches.get(args.get('correlation')))
+        evidence = 'launch_correlation_and_CPU_scope'
+        if scope is None:
+            scope = scope_for(operations.get(args.get('External id')))
+            evidence = 'external_id_and_CPU_scope'
+        if scope is None:
+            candidates = [e for e in gpu_annotations if e['tid'] == event['tid'] and
+                          e['ts'] <= event['ts'] + .001 and
+                          event['ts'] + event['dur'] <= e['ts'] + e['dur'] + .1]
+            if candidates:
+                scope = min(candidates, key=lambda e: e['dur'])
+                evidence = 'GPU_annotation_containment'
+        value = dict(name=event['name'], ts=float(event['ts']), dur=float(event['dur']),
+                     stream=args.get('stream', event['tid']), group=group(event['name']))
+        total.append(value)
+        if scope is None:
+            unmatched.append(value)
+        else:
+            index = int(scope['name'].rsplit('/', 1)[1])
+            rows[index]['kernels'].append(value)
+            rows[index]['evidence'][evidence] += 1
+
+    def summarize(kernels):
+        groups = collections.defaultdict(lambda: dict(calls=0, duration_sum_us=0.0))
+        names = collections.defaultdict(lambda: dict(calls=0, duration_sum_us=0.0))
+        for kernel in kernels:
+            for target, key in ((groups, kernel['group']), (names, kernel['name'])):
+                target[key]['calls'] += 1
+                target[key]['duration_sum_us'] += kernel['dur']
+        return dict(kernel_count=len(kernels), groups=dict(groups),
+                    kernel_duration_sum_us=sum(k['dur'] for k in kernels),
+                    kernel_union_us=union([(k['ts'], k['ts']+k['dur']) for k in kernels]),
+                    kernel_span_us=(max(k['ts']+k['dur'] for k in kernels)-min(k['ts'] for k in kernels)
+                                    if kernels else 0.0),
+                    top_kernels=[dict(name=n, **v) for n, v in sorted(
+                        names.items(), key=lambda item: -item[1]['duration_sum_us'])[:20]])
+
+    output_rows = []
+    for row in rows.values():
+        kernels = row.pop('kernels')
+        output_rows.append(dict(**row, **summarize(kernels)))
+    assert sum(r['kernel_count'] for r in output_rows) + len(unmatched) == len(total)
+    phases = {}
+    for label in sorted({r['label'] for r in output_rows}):
+        selected = [r for r in output_rows if r['label'] == label]
+        phases[label] = dict(calls=len(selected),
+            calls_with_GPU_work=sum(r['kernel_count'] > 0 for r in selected),
+            median_kernel_duration_sum_us=statistics.median(r['kernel_duration_sum_us'] for r in selected),
+            median_kernel_span_us=statistics.median(r['kernel_span_us'] for r in selected),
+            median_cpu_wall_us=statistics.median(r['cpu_wall_us'] for r in selected),
+            kernel_duration_sum_us=sum(r['kernel_duration_sum_us'] for r in selected))
+    return dict(path=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+                categories=dict(categories), phases=phases, calls=output_rows,
+                total=summarize(total), unmatched=summarize(unmatched),
+                diagnostic_gpu_annotations=len(gpu_annotations),
+                limitations=['Profiled timing is diagnostic and does not replace unprofiled API timing.',
+                             'Kernel duration sums can overlap; CPU scopes are nested.',
+                             'Kernels are assigned once to the most specific observed scope.',
+                             'Unknown attribution is retained; no kernel-name-based phase guessing.'])
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root', required=True, type=pathlib.Path)
+    parser.add_argument('--output', required=True, type=pathlib.Path)
+    args = parser.parse_args()
+    result = {}
+    for arm in ('current', 'ct_stock', 'candidate'):
+        for rank in (0, 1):
+            directory = args.root / f'{arm}-r{rank}'
+            paths = list(directory.glob('*.trace.json.gz'))
+            assert len(paths) == 1, (directory, len(paths))
+            metadata = json.loads((directory / f'phase-trace-r{rank}.json').read_bytes())
+            result[f'{arm}_r{rank}'] = profile(paths[0], metadata)
+    args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
+    print(json.dumps({key: dict(phases=value['phases'],
+                               unmatched_kernels=value['unmatched']['kernel_count'])
+                      for key, value in result.items()}))

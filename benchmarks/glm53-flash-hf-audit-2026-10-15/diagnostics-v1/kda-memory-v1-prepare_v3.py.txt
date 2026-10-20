@@ -1,0 +1,68 @@
+"""Freeze the corrected profiler launch before any GPU diagnostic is started."""
+from __future__ import annotations
+import hashlib,json,os,pathlib,shlex,shutil,subprocess,sys,tarfile,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='kda-memory-v1';sys.path.insert(0,str(ROOT/'full-warmedmodelv1-src'))
+import full_model_control as c
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+ target=ROOT/(DIR+'-preparation-v3.json');assert not target.exists()
+ previous=json.loads((ROOT/(DIR+'-prepared.json')).read_bytes())
+ assert not (ROOT/(DIR+'-controller.json')).exists() and c.health(8000)
+ assert [c.preflight(rank,ROOT/(DIR+'-src')) for rank in (0,1)]==previous['bindings']
+ state={'status':'running','service_paused':False,'GPU_controller_launched':False,'prior_preparations_preserved':True,'started_epoch':time.time()};c.write(target,state)
+ try:
+  archive=ROOT/(DIR+'-source-v2.tar.gz');assert sha(archive)==sys.argv[1]
+  subprocess.run(['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=8','-i','/home/kirya/.ssh/id_glm_cluster',str(archive),'kirya@192.168.192.2:'+str(archive)],check=True,timeout=120)
+  setup="""import hashlib,json,pathlib,shutil,sys,tarfile
+r=pathlib.Path(sys.argv[1]);a=r/'kda-memory-v1-source-v2.tar.gz';assert hashlib.sha256(a.read_bytes()).hexdigest()==sys.argv[2]
+o=r/'kda-memory-v1-overlay-v2';o.mkdir()
+with tarfile.open(a) as tf:
+ rows=tf.getmembers();assert all(m.isfile() and not pathlib.PurePosixPath(m.name).is_absolute() and '..' not in pathlib.PurePosixPath(m.name).parts for m in rows)
+ assert len({m.name for m in rows})==len(rows) and sum(m.size for m in rows)<8*1024**2
+ tf.extractall(o,filter='data')
+for row in json.loads((o/'inventory.json').read_bytes())['files']:
+ p=o/row['path'];assert p.stat().st_size==row['bytes'] and hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256']
+plan=json.loads((o/'plan.json').read_bytes());old=json.loads((r/'kda-memory-v1-prepared.json').read_bytes())
+code=r/'kda-memory-v1-src-v2';shutil.copytree(r/'kda-memory-v1-src',code,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+for p in (o/'src').glob('*.py'):
+ assert hashlib.sha256((code/p.name).read_bytes()).hexdigest()==old['bindings'][0]['code'][p.name]
+ assert hashlib.sha256(p.read_bytes()).hexdigest()==plan['source_sha256'][p.name]
+ compile(p.read_text(),p.name,'exec');shutil.copyfile(p,code/p.name)
+print('assembled')
+"""
+  for rank in (0,1):assert c.run(rank,['python3','-S','-c',setup,str(ROOT),sys.argv[1]],timeout=120).strip()=='assembled'
+  code=ROOT/(DIR+'-src-v2');sys.path.insert(0,str(code))
+  from run_kda_memory import input_bindings
+  from kda_memory_probe import protocol
+  plan=json.loads((ROOT/(DIR+'-overlay-v2/plan.json')).read_bytes())
+  checks=json.loads((ROOT/(DIR+'-overlay-v2/local-checks.json')).read_bytes())
+  assert checks['all_passed'] and checks['source_sha256']==plan['source_sha256'] and plan['protocol']==protocol()
+  bindings=[c.preflight(rank,code) for rank in (0,1)]
+  assert bindings[0]==bindings[1] and len(bindings[0]['code'])==plan['expected_source_files']
+  assert bindings[0]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']}
+  inputs=[input_bindings(rank) for rank in (0,1)];assert inputs==previous['input_bindings']
+  state['counter_capability_checks']=[]
+  query="import pathlib,os,json;s=dict(line.split(':',1) for line in pathlib.Path('/proc/self/status').read_text().splitlines() if ':' in line);print(json.dumps({'uid':os.getuid(),'effective_CAP_SYS_ADMIN':bool(int(s['CapEff'],16)&(1<<21))}))"
+  for rank in (0,1):
+   for root in (False,True):
+    argv=['docker','run','--rm','--network','none','--cpus','1','--memory','256m','--pids-limit','128','--cap-add','SYS_ADMIN']
+    if not root:argv+=['--user',str(os.getuid())+':'+str(os.getgid())]
+    argv+=['--entrypoint','/usr/bin/python3',c.IMAGE,'-S','-c',query]
+    result=json.loads(c.run(rank,argv));assert result['effective_CAP_SYS_ADMIN']==root
+    if root:assert result['uid']==0
+    state['counter_capability_checks'].append({'rank':rank,'profile_root':root,'GPU_used':False,**result})
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)];identities=[c.identity(x) for x in originals]
+  assert c.health(8000) and all(x['State']['Running'] for x in originals) and identities==previous['originals']
+  prepared={**previous,'bindings':bindings,'source_archive_sha256':sha(archive),'prepared_epoch':time.time(),'supersedes_preflight_sha256':sha(ROOT/(DIR+'-prepared.json')),'counter_capability_checks':state['counter_capability_checks']}
+  path=ROOT/(DIR+'-prepared-v2.json');assert not path.exists();c.write(path,prepared)
+  c.run(1,['python3','-S','-c','import pathlib,sys;p=pathlib.Path(sys.argv[1]);assert not p.exists();p.write_text(sys.argv[2])',str(path),path.read_text()])
+  state.update(status='passed',source_files=len(bindings[0]['code']),prepared_sha256=sha(path),plan_sha256=sha(ROOT/(DIR+'-overlay-v2/plan.json')),original_health=200,finished_epoch=time.time())
+  c.write(target,state);print(json.dumps(state))
+ except BaseException as exc:
+  state.update(status='failed',error=repr(exc),finished_epoch=time.time());c.write(target,state);raise
+
+if __name__=='__main__':main()

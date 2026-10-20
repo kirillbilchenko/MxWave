@@ -1,0 +1,94 @@
+"""Align recognized JIT log events with the retained ordinary timing envelopes."""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import hashlib
+import json
+from pathlib import Path
+import re
+
+BASE=Path('/private/tmp/mxwave-c16-admission-v1')
+ROOT=BASE/'evidence'
+STAMP=re.compile(r'(?:(\d{4})-)?(\d{2})-(\d{2}) (\d{2}:\d{2}:\d{2})')
+ANSI=re.compile(r'\x1b\[[0-9;]*m')
+
+
+def sha(path):
+    with path.open('rb')as stream:
+        return hashlib.file_digest(stream,'sha256').hexdigest()
+
+
+def events(text, year):
+    """Retain compiler-source log events, with their one-second timestamp uncertainty."""
+    result=[]
+    for number,raw in enumerate(text.splitlines(),1):
+        line=ANSI.sub('',raw)
+        if '[jit_monitor.py:'in line and 'JIT compilation during inference:'in line:
+            kind='monitored_JIT_warning'
+        elif '[TileLang:'in line and 'begins to compile kernel'in line:
+            kind='TileLang_compile_begin'
+        elif '[TileLang:'in line and 'completes to compile kernel'in line:
+            kind='TileLang_compile_end'
+        else:
+            continue
+        match=STAMP.search(line)
+        assert match,line
+        y,month,day,clock=match.groups()
+        stamp=datetime.fromisoformat(f'{int(y or year):04d}-{month}-{day}T{clock}').replace(tzinfo=timezone.utc)
+        result.append({'line':number,'kind':kind,'epoch_floor':stamp.timestamp(),
+                       'epoch_upper_exclusive':stamp.timestamp()+1,'text':line})
+    return result
+
+
+def main():
+    proof=json.loads((BASE/'cross-host-verification.json').read_bytes())
+    assert proof['status']=='passed'and proof['measurement_complete']and proof['all_decisions_identical']
+    inv={r['path']:r for r in json.loads((ROOT/'evidence-inventory.json').read_bytes())['files']}
+    inputs=[]
+    def read(rel):
+        p=ROOT/rel;assert sha(p)==inv[rel]['sha256']and p.stat().st_size==inv[rel]['bytes']
+        inputs.append(inv[rel]);return p.read_text()
+    plan=json.loads(read('results/c16-admission-plan.json'))
+    year=datetime.fromtimestamp(plan['frozen_epoch'],timezone.utc).year
+    reviews=[]
+    for arm in ('control','candidate'):
+        data=json.loads(read(f'results/{arm}-c16-admission.json'))
+        assert data['status']=='complete'and len(data['timing'])==36
+        windows=[]
+        for trial in data['timing']:
+            starts=[v['epoch']for v in trial['telemetry_before']]
+            ends=[v['epoch']for v in trial['telemetry_after']]
+            assert len(starts)==len(ends)==2 and max(starts)<min(ends)
+            windows.append({'case':trial['case'],'repeat':trial['repeat'],'window_ms':trial['window_ms'],
+                            'start_epoch':min(starts),'end_epoch':max(ends),
+                            'measured_wall_seconds':trial['measurement']['wall_seconds']})
+        startup_complete=max(x['finished_epoch']for x in data['dispatch_startup'])
+        for rank in (0,1):
+            rel=f'engine-{arm}-rank{rank}.log'
+            parsed=events(read(rel),year)
+            for event in parsed:
+                event['overlapping_timing_envelopes']=[
+                    {'case':w['case'],'repeat':w['repeat'],'window_ms':w['window_ms']}
+                    for w in windows if event['epoch_upper_exclusive']>w['start_epoch']
+                    and event['epoch_floor']<w['end_epoch']]
+                event['possibly_after_dispatch_startup']=event['epoch_upper_exclusive']>startup_complete
+            reviews.append({'arm':arm,'rank':rank,'recognized_log_events':len(parsed),
+                            'events_overlapping_timing_envelopes':sum(bool(x['overlapping_timing_envelopes'])for x in parsed),
+                            'events_possibly_after_dispatch_startup':sum(x['possibly_after_dispatch_startup']for x in parsed),
+                            'events':parsed,'timing_envelopes':windows})
+    out={'status':'complete','source_sha256':sha(Path(__file__)),
+         'archive_sha256':proof['archive_sha256'],'verified_inputs':inputs,'reviews':reviews,
+         'no_recognized_JIT_event_overlaps_timed_envelopes':not any(r['events_overlapping_timing_envelopes']for r in reviews),
+         'new_GPU_experiment':False,'original_measurements_or_gates_changed':False,
+         'limits':['Only recognized TileLang/compiler-monitor messages are classified; absence is not proof against unlogged compilation.',
+                   'Timestamps use the experiment UTC log convention and one-second uncertainty.',
+                   'Timing envelopes include before/after telemetry RPCs; an overlap is a candidate for investigation, not proof of a measured-request stall.',
+                   'Compiler begin/end/warning entries are separate log events, not counts of unique compilations.',
+                   'Dispatch cache stability is independently checked by the frozen model review.']}
+    with (BASE/'jit-window-review.json').open('x')as stream:
+        json.dump(out,stream,indent=2);stream.write('\n')
+    print(json.dumps({'status':out['status'],'no_recognized_JIT_event_overlaps_timed_envelopes':out['no_recognized_JIT_event_overlaps_timed_envelopes'],
+                      'counts':[{k:v for k,v in r.items()if k not in ('events','timing_envelopes')}for r in reviews]}))
+
+
+if __name__=='__main__':main()

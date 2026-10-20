@@ -1,0 +1,31 @@
+"""Read bounded experiment progress without inspecting or changing model execution."""
+from __future__ import annotations
+import json,pathlib,shlex,subprocess,time
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+program=r'''
+import json,pathlib,subprocess,time,shutil
+r=pathlib.Path(__import__('sys').argv[1]);rev='c16admissionv1'
+p=r/f'quality-model-controller-{rev}.json';state=json.loads(p.read_bytes())
+launch=json.loads((r/'c16-admission-v1-launch.json').read_bytes())
+out={k:state.get(k) for k in ('phase','service_paused','started_epoch','updated_epoch','error','watchdog_pid')}
+out.update(checked_epoch=time.time(),head_free_bytes=shutil.disk_usage(r).free,arms=[])
+out['processes']={name:subprocess.run(['ps','-p',str(launch[name]),'-o','stat='],capture_output=True,text=True).stdout.strip() for name in ('controller_pid','collector_pid')}
+for arm in ('control','candidate'):
+ p=r/f'run-{rev}/results/{arm}-c16-admission.json'
+ if not p.exists():continue
+ d=json.loads(p.read_bytes())
+ row={k:d.get(k) for k in ('arm','phase','status','started_epoch','finished_epoch','error')}
+ row.update(quality=len(d.get('quality',[])),timing=len(d.get('timing',[])),profiles=len(d.get('profiles',[])),warmups=len(d.get('warmups',[])))
+ row['self_comparisons']=[{k:v.get(k) for k in ('reference','candidate','mean_decode_kl','mean_decode_nll_difference','actual_model_grouping_equal','passed')} for v in d.get('self_comparisons',[])]
+ out['arms'].append(row)
+p=r/'c16-admission-v1-evidence-check.json'
+if p.exists():out['collection']=json.loads(p.read_bytes())
+print(json.dumps(out))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',
+    shlex.join(['python3','-B','-c',program,ROOT])],timeout=45)
+value=json.loads(raw)
+(BASE/f'live-{int(time.time())}.json').write_bytes(raw)
+(BASE/'latest-live-status.json').write_bytes(raw)
+print(json.dumps(value))

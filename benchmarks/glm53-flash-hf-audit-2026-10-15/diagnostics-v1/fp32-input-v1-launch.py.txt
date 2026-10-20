@@ -1,0 +1,41 @@
+"""Launch only the authorized, frozen two-GPU dense-output storage comparison."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='fp32-input-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+import full_model_control as c
+from run_fp32_input import preflight
+
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ receipt=ROOT/(DIR+'-launch.json');assert not receipt.exists()
+ assert not (ROOT/(DIR+'-controller.json')).exists() and not (ROOT/DIR).exists()
+ assert sha(ROOT/(DIR+'-source.tar.gz'))=='4d3d4abedc15ee4d30952b105dfb2253e6fc78ccf5b4140bad8171361bfa43b7'
+ state=json.loads((ROOT/(DIR+'-preparation.json')).read_bytes())
+ assert state['status']=='passed' and state['source_files']==227
+ prepared=ROOT/(DIR+'-prepared.json')
+ assert sha(prepared)==state['prepared_sha256']=='921b4779fffad16cee0a25858214c8cac8ee2785492d4673534e6b008f18f1b5'
+ assert sha(ROOT/('collect-'+DIR+'.py'))=='9ebde56f0da7550ebf0b922d719e1531f00baf0daf1d4dc235703dd8d507e1ea'
+ assert sha(ROOT/('verify-'+DIR+'.py'))=='60d7debe3de4bb9e7ed16437844234f576a13cefe034cecf0ec30cf96573c177'
+ check=json.loads((ROOT/(DIR+'-cpu-protocol-check.json')).read_bytes());assert check['status']=='passed' and check['verifier_sha256']==sha(ROOT/('verify-'+DIR+'.py'))
+ dependency=json.loads((ROOT/(DIR+'-frozen-dependency-check.json')).read_bytes());assert dependency['status']=='passed' and dependency['source_files']==227 and not dependency['GPU_initialized']
+ bound=preflight();assert c.health(8000)
+ originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+ assert all(v['State']['Running'] for v in originals)
+ assert [c.identity(v) for v in originals]==bound['originals']
+ collect=subprocess.Popen(['python3','-S','-u',str(ROOT/('collect-'+DIR+'.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-collector.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ run=subprocess.Popen(['python3','-S','-u',str(ROOT/(DIR+'-src/run_fp32_input.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-controller.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ result={'controller_pid':run.pid,'collector_pid':collect.pid,'started_epoch':time.time(),'source_files':227,
+ 'prepared_sha256':sha(prepared),'plan_sha256':state['plan_sha256'],
+ 'collector_sha256':sha(ROOT/('collect-'+DIR+'.py')),'verifier_sha256':sha(ROOT/('verify-'+DIR+'.py')),
+ 'launcher_sha256':sha(pathlib.Path(__file__)),'protocol':bound['protocol'],'automatic_promotion_allowed':False}
+ c.write(receipt,result)
+ current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+ current.update(active_experiment='fp32inputv1',launch=result,updated_epoch=time.time(),
+  state='Bounded two-GPU integrated FP32 input adapter validation: fixed shared scratch, native fallbacks, compiled graph ordering and two-stream ownership; no full-model quality or serving-speed claim.',
+  user_resumed_work=True,work_paused_by_user=False)
+ c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',current)
+ print(json.dumps({k:v for k,v in result.items() if k!='protocol'}))
+if __name__=='__main__':main()

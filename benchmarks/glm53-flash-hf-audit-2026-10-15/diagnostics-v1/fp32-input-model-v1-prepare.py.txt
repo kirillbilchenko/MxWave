@@ -1,0 +1,117 @@
+"""CPU-prepare a fresh native-mHC matched-cohort stock/compressed comparison."""
+from __future__ import annotations
+import hashlib,json,pathlib,shutil,subprocess,sys,time
+ROOT=pathlib.Path("/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1")
+sys.path.insert(0,str(ROOT/"fp32-input-v1-src"))
+import full_model_control as c
+REV="fp32inputmodelv1"
+def sha(p):
+ with p.open("rb")as f:return hashlib.file_digest(f,"sha256").hexdigest()
+def main():
+ receipt=ROOT/"fp32-input-model-v1-preparation.json";assert not receipt.exists()
+ state={"status":"running","service_paused":False,"GPU_controller_launched":False,"started_epoch":time.time()}
+ c.write(receipt,state)
+ try:
+  wanted=sys.argv[1];archive=ROOT/"fp32-input-model-v1-source-only.tar.gz";assert sha(archive)==wanted
+  proof=json.loads((ROOT/"fp32-input-model-v1-integration-proof.json").read_bytes())
+  assert proof["status"]=="passed"and proof["archive_sha256"]=="a7b9f74fa1df33108caf61cc65db4c63997bbcf8e9dd378f4890efc65f1b5e80"
+  parent=json.loads((ROOT/"fp32-input-v1-prepared.json").read_bytes())
+  assert [c.preflight(rank,ROOT/"fp32-input-v1-src")for rank in(0,1)]==parent["bindings"]
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank])for rank in(0,1)]
+  assert c.health(8000)and all(v["State"]["Running"]for v in originals)
+  identities=[c.identity(v)for v in originals];assert identities==parent["originals"]
+  subprocess.run(["scp","-q","-o","BatchMode=yes","-o","ConnectTimeout=8","-i","/home/kirya/.ssh/id_glm_cluster",str(archive),"kirya@192.168.192.2:"+str(archive)],check=True,timeout=120)
+  setup=r'''import hashlib,json,pathlib,shutil,sys,tarfile
+r=pathlib.Path(sys.argv[1]);a=r/'fp32-input-model-v1-source-only.tar.gz';assert hashlib.sha256(a.read_bytes()).hexdigest()==sys.argv[2]
+assert shutil.disk_usage(r).free>=8_000_000_000
+o=r/'fp32-input-model-v1-overlay';o.mkdir()
+with tarfile.open(a)as tf:
+ names=set()
+ for m in tf.getmembers():
+  p=pathlib.PurePosixPath(m.name);assert m.isfile()and not p.is_absolute()and'..'not in p.parts and m.name not in names
+  names.add(m.name)
+ tf.extractall(o,filter='data')
+for row in json.loads((o/'inventory.json').read_bytes())['files']:
+ p=o/row['path'];assert p.stat().st_size==row['bytes']and hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256']
+plan=json.loads((o/'plan.json').read_bytes());parent=json.loads((r/'fp32-input-v1-prepared.json').read_bytes())
+assert plan['parent_source_sha256']==parent['bindings'][0]['code']
+component=o/'component-proof.json'
+assert hashlib.sha256(component.read_bytes()).hexdigest()==plan['input_component_proof_sha256']
+proof=json.loads(component.read_bytes());assert proof['primary_exact16_component_qualified']
+assert proof['archive_sha256']==plan['input_component_evidence_sha256']
+warm=o/'warmup-component-proof.json'
+assert hashlib.sha256(warm.read_bytes()).hexdigest()==plan['warmup_component_proof_sha256']
+warmproof=json.loads(warm.read_bytes());assert warmproof['status']=='passed'and warmproof['component_passed']
+assert warmproof['archive_sha256']==plan['warmup_component_evidence_sha256']
+assert all(plan['parent_source_sha256'][n]==v for n,v in plan['qualified_warmup_sources'].items())
+code=r/'full-fp32inputmodelv1-src';shutil.copytree(r/'fp32-input-v1-src',code,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+for p in(o/'src').glob('*.py'):
+ assert not(code/p.name).exists();assert hashlib.sha256(p.read_bytes()).hexdigest()==plan['source_sha256'][p.name]
+ compile(p.read_text(),p.name,'exec');shutil.copyfile(p,code/p.name)
+print('assembled')
+'''
+  for rank in(0,1):assert c.run(rank,["python3","-S","-c",setup,str(ROOT),wanted],timeout=120).strip()=="assembled"
+  code=ROOT/f"full-{REV}-src";sys.path.insert(0,str(code))
+  import run_fp32_input_model as model
+  from run_eager_model_dispatch import native_check
+  model.configure()
+  bindings=[c.preflight(rank,code)for rank in(0,1)]
+  plan=json.loads((ROOT/"fp32-input-model-v1-overlay/plan.json").read_bytes())
+  assert bindings[0]==bindings[1]and len(bindings[0]["code"])==plan["expected_source_files"]==229
+  assert all(bindings[0]["code"][n]==v for n,v in parent["bindings"][0]["code"].items())
+  assert all(bindings[0]["code"][n]==v for n,v in plan["source_sha256"].items())
+  assert "consistent_mhc.py"not in bindings[0]["code"]
+  native=native_check(code);assert native==json.loads((ROOT/"warmed-model-v1-prepared.json").read_bytes())["native"]
+  check=r'''import hashlib,json,pathlib,sys
+b=pathlib.Path('/usr/local/lib/python3.12/dist-packages');plan=json.loads(sys.argv[1])
+for name,digest in plan['native_source_pins'].items():
+ p=b/('flashinfer/mla/_core.py'if name=='flashinfer.mla._core'else'vllm/'+name)
+ assert hashlib.sha256(p.read_bytes()).hexdigest()==digest,name
+print('native_exact')
+'''
+  for rank in(0,1):assert c.run(rank,["docker","exec",c.ORIGINAL_IDS[rank],"python3","-S","-c",check,json.dumps(plan)]).strip()=="native_exact"
+  results=ROOT/f"run-{REV}/results";results.mkdir(parents=True)
+  for name in("protocol.json","source-audit.json"):shutil.copyfile(ROOT/"run-warmedmodelv1/results"/name,results/name)
+  assert sha(results/"protocol.json")==plan["source_protocol_sha256"]
+  for name in("quality-protocol.json","graph-quality-plan.json"):
+   source=next((ROOT/f"run-{rev}/results"/name for rev in("pairedspeedv1","c816v1","graphqualityv1")if(ROOT/f"run-{rev}/results"/name).is_file()),None)
+   assert source is not None,name
+   shutil.copyfile(source,results/name)
+  shutil.copyfile(ROOT/"fp32-input-model-v1-overlay/plan.json",results/"warmed-model-plan.json")
+  launches={arm:[model.launch(rank,REV,arm,originals[rank],bindings[0]["vocabulary"],sha(ROOT/"vocab-v2/prepared.json"))for rank in(0,1)]for arm in("control","candidate")}
+  c.validate_transport_control([x[1]for x in launches["control"]],[x[1]for x in launches["candidate"]])
+  state["cpu_cli"]={}
+  for arm in("control","candidate"):
+   for _,meta in launches[arm]:
+    command,env=meta["command"],meta["environment"]
+    assert command[command.index("--max-num-seqs")+1]=="16"
+    assert command[command.index("--max-num-batched-tokens")+1]=="2048"
+    assert command[command.index("--kv-cache-memory-bytes")+1]=="4294967296"
+    assert "--speculative-config"not in command
+    assert env["MXWAVE_GLM53_KDA_FUSED_MAX_TOKENS"]=="8"
+    expected="1"if arm=="candidate"else"0"
+    assert env.get("MXWAVE_GLM53_KDA_OUTPUT_FUSED_16","0")==expected
+    assert env.get("MXWAVE_GLM53_KDA_INPUT_FUSED_16","0")==expected
+    assert json.loads(command[command.index("--compilation-config")+1])["cudagraph_capture_sizes"]==[1,2,4,8,16]
+    assert command[command.index("--worker-extension-cls")+1]=="fp32_input_worker.FP32InputWorker"
+    assert env["MXWAVE_GLM53_KDA_INPUT_FP32_SPLIT2"]==expected
+    if arm=="candidate":assert env["MXWAVE_GLM53_FP32_LIBRARY"]==model.LIBRARY
+   state["cpu_cli"][arm]=model.warmed.controller.cli_check(launches[arm][0][1])
+  prepared={"status":"prepared","bindings":bindings,"native":native,"source_archive_sha256":wanted,
+   "parent_revision":"fp32inputv1","parent_prepared_sha256":sha(ROOT/"fp32-input-v1-prepared.json"),
+   "parent_evidence_archive_sha256":proof["archive_sha256"],"originals":identities,
+   "all_parent_sources_unchanged":True,"new_sources":sorted(plan["source_sha256"]),
+   "native_mhc_unchanged":True,"consistent_mhc_policy_enabled":False,"candidate_exact16_input_output_enabled":True,
+   "fp32_input_policy":plan["fp32_input_policy"],"fp32_input_integration_archive_sha256":plan["fp32_input_integration_archive_sha256"],
+   "startup_warmup_both_arms":True,"startup_trim_once_both_arms":True,
+   "warmup_component_archive_sha256":plan["warmup_component_evidence_sha256"],
+   "protocol_files_sha256":{p.name:sha(p)for p in results.iterdir()if p.is_file()},
+   "prepared_epoch":time.time(),"quality_qualified":False,"GPU_controller_launched":False}
+  target=ROOT/"fp32-input-model-v1-prepared.json";c.write(target,prepared)
+  mirror="import pathlib,sys;p=pathlib.Path(sys.argv[1]);assert not p.exists();p.write_text(sys.argv[2])"
+  c.run(1,["python3","-S","-c",mirror,str(target),target.read_text()])
+  state.update(status="passed",source_files=229,prepared_sha256=sha(target),plan_sha256=sha(results/"warmed-model-plan.json"),original_health=200,finished_epoch=time.time())
+  c.write(receipt,state);print(json.dumps({k:v for k,v in state.items()if k!="cpu_cli"}))
+ except BaseException as exc:
+  state.update(status="failed",error=repr(exc),finished_epoch=time.time());c.write(receipt,state);raise
+if __name__=="__main__":main()

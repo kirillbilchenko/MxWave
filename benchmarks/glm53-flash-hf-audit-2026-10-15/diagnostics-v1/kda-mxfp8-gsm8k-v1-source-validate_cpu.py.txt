@@ -1,0 +1,80 @@
+"""Exercise the full raw-response collection/regrading contract on historical evidence."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import shutil
+import tempfile
+from pathlib import Path
+
+import analyze
+import measure_gsm8k as measure
+from gsm8k_benchmark import summarize
+
+ROOT = Path(__file__).parent
+HISTORICAL = Path("/private/tmp/mxwave-gsm8k-full-v1/extracted-rank0/results")
+
+
+def main():
+    """Use all 2,638 old responses; synthetic startup metadata tests only the analyzer."""
+    plan = json.loads((ROOT / "plan.json").read_bytes())
+    with tempfile.TemporaryDirectory(prefix="mxwave-gsm8k-grading-fixture-") as temporary:
+        fixture = Path(temporary)
+        for name in (
+            "plan.json", "historical-gsm8k-protocol.json",
+            "historical-control-gsm8k.json", "historical-candidate-gsm8k.json",
+        ):
+            shutil.copyfile(ROOT / name, fixture / name)
+        for arm in ("control", "candidate"):
+            directory = fixture / arm / "gsm8k"
+            directory.mkdir(parents=True)
+            rows = []
+            for case in plan["protocol"]["cases"]:
+                old = json.loads(
+                    (HISTORICAL / arm / "gsm8k" /
+                     f"case-{case['source_index']:04d}.json").read_bytes()
+                )
+                measure.request = lambda path, payload, response=old["response"]: response
+                rows.append(measure.case_request(case, plan["protocol"], directory))
+            measure.write(fixture / f"{arm}-measurement.json", {
+                "status": "complete", "cases": rows, "summary": summarize(rows),
+                "plan_sha256": hashlib.sha256((ROOT / "plan.json").read_bytes()).hexdigest(),
+                "speculation": False, "mode": plan["modes"][arm],
+                "benchmark_started_epoch": 0, "benchmark_finished_epoch": 1,
+            })
+            trial = {
+                "speculation": False, "kv_cache_memory_bytes": 4 * 1024**3,
+                "physical_graph_token_counts": [1, 4], "cuda_allocated_bytes": 0,
+                "native_mxfp8_kda": {
+                    "status": "complete", "layers": [{"basis_bits_exact": True}] * 68,
+                    "original_BF16_parameters_alive": 0,
+                    "all_68_rounding_hashes_match_quality_run": True,
+                },
+            }
+            measure.write(fixture / f"{arm}-startup.json",
+                          [{"status": "complete", "trial": trial}] * 2)
+        measure.write(fixture / "controller.json", {
+            "phase": "complete_restored", "service_paused": False,
+            "restoration": {"originals_running": True},
+        })
+        result = analyze.analyze(fixture)
+        assert result["scores"]["control"]["answer_exact_matches"] == 1246
+        assert result["scores"]["candidate"]["answer_exact_matches"] == 1244
+        paired = result["fresh_comparison"]
+        assert len(paired["correct_to_wrong"]) == 22
+        assert len(paired["wrong_to_correct"]) == 20
+        proof = {
+            "status": "passed", "real_historical_responses": 2638,
+            "collection_to_raw_to_compact_to_regrading": "passed",
+            "historical_primary_scores_reproduced": [1246, 1244],
+            "paired_lost_gained_reproduced": [22, 20],
+            "GPU_execution_tested": False,
+            "fixture_startup_and_controller_metadata": "synthetic, temporary, discarded",
+        }
+        measure.write(ROOT / "cpu-collection-regrading-proof.json", proof)
+        print(json.dumps(proof))
+
+
+if __name__ == "__main__":
+    main()

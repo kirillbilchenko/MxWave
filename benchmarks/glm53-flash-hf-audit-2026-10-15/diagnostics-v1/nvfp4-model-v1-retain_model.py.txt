@@ -1,0 +1,81 @@
+"""Retain terminal experiment evidence and verify the restored live service."""
+from __future__ import annotations
+import hashlib, importlib.util, json, pathlib, shlex, subprocess, sys, tarfile, time
+import urllib.request,urllib.error
+ROOT=pathlib.Path(__file__).parent
+sys.path.insert(0,str(ROOT.parent/'full-c16admissionv1-src'))
+import full_model_control as c
+
+def sha(p):
+ h=hashlib.sha256()
+ with p.open('rb')as f:
+  for b in iter(lambda:f.read(1024*1024),b''):h.update(b)
+ return h.hexdigest()
+
+def main():
+ state=json.loads((ROOT/'controller.json').read_bytes())
+ assert state['phase']in('complete_restored','failed_restored','preparation_failed'),state['phase']
+ prepared=json.loads((ROOT/'prepared.json').read_bytes())
+ assert not state['service_paused'] and c.health(8000)
+ final={'epoch':time.time(),'controller_phase':state['phase'],'health_200':True,
+  'live':[],'originals':[],'experiments':[]}
+ for rank in(0,1):
+  live=c.inspect(rank,prepared['live'][rank]['id']);orig=c.inspect(rank,c.ORIGINAL_IDS[rank])
+  assert c.identity(live)==prepared['live'][rank] and live['State']['Running']
+  assert c.identity(orig)==prepared['originals'][rank] and not orig['State']['Running']
+  final['live'].append(c.identity(live));final['originals'].append(c.identity(orig))
+  for arm,entries in prepared['launches'].items():
+   entry=next(x for x in entries if x['rank']==rank)
+   
+   if not c.run(rank,['docker','ps','-aq','--filter','name=^/'+entry['name']+'$']).strip():
+    final['experiments'].append({'arm':arm,'rank':rank,'name':entry['name'],'created':False});continue
+   info=c.inspect(rank,entry['name']);assert not info['State']['Running']
+   final['experiments'].append({'arm':arm,'rank':rank,'name':entry['name'],
+    'id':info['Id'],'state':info['State']})
+ # Confirm the authenticated endpoint restored the same small-context trial.
+ try:
+  urllib.request.urlopen('http://127.0.0.1:8000/v1/models',timeout=10)
+ except urllib.error.HTTPError as exc:
+  final['unauthenticated_models_status']=exc.code
+ else:
+  raise AssertionError('Unauthenticated model endpoint unexpectedly succeeded')
+ key=pathlib.Path('/home/kirya/local-spark/runtime/secrets/llm_api_key').read_text().strip()
+ request=urllib.request.Request('http://127.0.0.1:8000/v1/models',headers={'Authorization':'Bearer '+key})
+ with urllib.request.urlopen(request,timeout=20)as response:
+  final['authenticated_models_status']=response.status
+  final['models']=json.load(response)
+ assert final['unauthenticated_models_status']==401
+ assert final['authenticated_models_status']==200
+ assert any(x['id']=='glm-5.3-flash' and x['max_model_len']==8192 for x in final['models']['data'])
+ # The rank-1 profile/startup files live on rank 1's bind mount.
+ remote_code="""from pathlib import Path
+import io,sys,tarfile
+r=Path(%r)
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|')as t:
+ for arm in ['stock_a','packed','stock_b']:
+  d=r/(arm+'-r1')
+  if d.exists():
+   for p in sorted(d.rglob('*')):
+    if p.is_file():t.add(p,arcname=str(p.relative_to(r)),recursive=False)
+"""%str(ROOT)
+ bundle=ROOT/'rank1-traces.tar'
+ with bundle.open('wb')as out:
+  subprocess.run([*c.SSH,shlex.join(['python3','-c',remote_code])],stdout=out,check=True,timeout=120)
+ with tarfile.open(bundle)as t:t.extractall(ROOT,filter='data')
+ (ROOT/'final-check.json').write_text(json.dumps(final,indent=2)+'\n')
+ dependency=ROOT/'controller-dependencies';dependency.mkdir(exist_ok=True)
+ for source in [ROOT.parent/'full-c16admissionv1-src/full_model_control.py',ROOT.parent/'serving-trial-v2/control_trial.py']:
+  (dependency/source.name).write_bytes(source.read_bytes())
+ exclude={'evidence.tar.gz','evidence-manifest.json','archive-receipt.json','rank1-traces.tar'}
+ paths=[p for p in sorted(ROOT.rglob('*'))if p.is_file() and p.name not in exclude
+        and '__pycache__'not in p.parts and p.suffix not in('.pyc','.incomplete','.pending')]
+ manifest={str(p.relative_to(ROOT)):{'bytes':p.stat().st_size,'sha256':sha(p)}for p in paths}
+ mp=ROOT/'evidence-manifest.json';mp.write_text(json.dumps(manifest,indent=2)+'\n')
+ archive=ROOT/'evidence.tar.gz'
+ with tarfile.open(archive,'w:gz',compresslevel=1)as t:
+  for p in [*paths,mp]:t.add(p,arcname=str(p.relative_to(ROOT)),recursive=False)
+ receipt={'archive':archive.name,'bytes':archive.stat().st_size,'sha256':sha(archive),
+  'payloads':len(paths),'terminal_phase':state['phase'],'health_200':True,'epoch':time.time()}
+ (ROOT/'archive-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt))
+
+if __name__=='__main__':main()

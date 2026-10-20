@@ -1,0 +1,29 @@
+"""Retain completed ordinary-profile forward counts before raw GPU trace verification."""
+from __future__ import annotations
+import json,pathlib,shlex,subprocess,time
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+program=r'''
+import hashlib,json,pathlib,sys,time
+r=pathlib.Path(sys.argv[1]);out={'status':'preliminary','GPU_trace_review_pending':True,'checked_epoch':time.time(),'profiles':[]}
+for arm in ('control','candidate'):
+ p=r/'run-c16admissionv1/results'/f'{arm}-c16-admission.json'
+ if not p.exists():continue
+ raw=p.read_bytes();d=json.loads(raw)
+ if d['status']!='complete':continue
+ for profile in d['profiles']:
+  assert profile['status']=='complete'
+  for worker in profile['worker_trace']:
+   events=[v for v in worker['events'] if v['total_scheduled_tokens']>0]
+   prefill=[v for v in events if v['prepared']['has_prefill']]
+   out['profiles'].append({'arm':arm,'window_ms':profile['window_ms'],'rank':worker['rank'],
+    'prefill_forwards':len(prefill),'prefill_rows':[v['prepared']['num_tokens'] for v in prefill],
+    'prefill_requests':[v['prepared']['num_reqs'] for v in prefill],
+    'first_cohort_requests':profile['admission']['events'][0]['final_requests'],
+    'full_size_decode_forwards':sum(not v['prepared']['has_prefill'] and v['prepared']['num_tokens_after_padding']==16 for v in events),
+    'source_report_sha256':hashlib.sha256(raw).hexdigest()})
+print(json.dumps(out))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['python3','-B','-c',program,ROOT])],timeout=45)
+(BASE/f'profile-progress-{int(time.time())}.json').write_bytes(raw)
+print(raw.decode())

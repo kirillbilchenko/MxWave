@@ -1,0 +1,43 @@
+"""Cross-check both closed head profiles against their retained Triton cache timestamps."""
+from pathlib import Path
+import hashlib,json,re
+B=Path('/private/tmp/mxwave-latency-probe-v1/live')
+inputs={'control':'control-1792351260769035000.json','candidate':'candidate-1792351936430322000.json'}
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+records=[];bindings={}
+for arm,name in inputs.items():
+ paths=[B/name,B/f'{arm}-rank0-profile-review.json',B/f'{arm}-canonicalize-cache-audit.json']
+ data,profile,cache=[json.loads(p.read_text())for p in paths]
+ bindings.update({str(p):sha(p)for p in paths})
+ steps={(s['label'],s['sequence']):s for s in profile['steps']}
+ for sequence,rows_expected,block_expected,width_expected in ((0,1536,48,2048),(2,518,16,1024)):
+  first=steps[arm+'-profile-split-first',sequence];repeat=steps[arm+'-profile-split-repeat',sequence]
+  assert first['batch']['num_tokens']==repeat['batch']['num_tokens']==rows_expected
+  group=next(g for g in data['groups']if g['label']==first['label']);event=next(w for w in group['worker_trace']if w['rank']==0)['events'][sequence]
+  gap=first['largest_owned_kernel_gaps'][0];start=event['host_start_epoch_ns']/1e9+gap['start_since_annotation_us']/1e6;end=start+gap['duration_us']/1e6
+  matches=[]
+  for entry in cache['ranks'][0]['entries']:
+   metadata,ir=entry['files'];ts=metadata['mtime_ns']/1e9
+   if start<=ts<=end:
+    block=int(re.search(r'arith.divsi %blocks\w*, %c(\d+)_i32',ir['text'])[1]);width=max(map(int,re.findall(r'tensor<(\d+)xi32>',ir['text'])))
+    matches.append({'block':block,'compiled_sort_width':width,'cache_created_epoch':ts,'seconds_before_gap_end':end-ts,'metadata_sha256':metadata['sha256'],'IR_sha256':ir['sha256']})
+  assert len(matches)==1 and (matches[0]['block'],matches[0]['compiled_sort_width'])==(block_expected,width_expected)
+  sample=next(w for w in group['worker_trace']if w['rank']==0)['telemetry']
+  records.append({'arm':arm,'sequence':sequence,'actual_rows':rows_expected,
+   'first_host_seconds':first['host_elapsed_us']/1e6,'repeat_host_seconds':repeat['host_elapsed_us']/1e6,
+   'first_host_thread_CPU_seconds':first['host_thread_cpu_us']/1e6,'repeat_host_thread_CPU_seconds':repeat['host_thread_cpu_us']/1e6,
+   'first_GPU_kernel_union_seconds':first['kernel_union_us']/1e6,'repeat_GPU_kernel_union_seconds':repeat['kernel_union_us']/1e6,
+   'first_largest_owned_kernel_gap_seconds':gap['duration_us']/1e6,
+   'repeat_largest_owned_kernel_gap_seconds':repeat['largest_owned_kernel_gaps'][0]['duration_us']/1e6,
+   'cache_creation':matches[0],'sampled_throttle_reasons':sorted({s.get('throttle_reasons')for s in sample['samples']}),
+   'trace_sha256':profile['trace_sha256']})
+result={'status':'passed','source_sha256':sha(Path(__file__)),'inputs':bindings,'records':records,
+ 'both_arm_head_profiles_corroborate':True,'final_archive_verified':False,
+ 'kernel_source_owner':'Project stable_dispatch_gpu.py, enabled in both stock-reference and compressed test arms.',
+ 'inference':'First-use Triton compilation of two previously unwarmed deterministic expert-order specializations explains the reproduced host/GPU gaps.',
+ 'proposed_intervention':'Warm all 34 reachable existing block/capacity pairs on guarded scratch before serving; retain kernel bytes and arithmetic.',
+ 'intervention_GPU_tested':False,
+ 'limits':['Only head profiles are attributed here; final verification will cover both ranks and every trace.','Cache completion is observed, not a directly instrumented compiler span.','The original slow benchmark trial lacked simultaneous GPU traces; its attribution is an inference.','Controlled pause/resume latency is diagnostic, not a serving-speed gate.']}
+p=B/'both-arms-first-use-review.json'
+with p.open('x')as f:json.dump(result,f,indent=2);f.write('\n')
+print(json.dumps({'status':'passed','records':records}))

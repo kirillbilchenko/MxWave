@@ -1,0 +1,42 @@
+"""Resume only evidence packaging after the measured run and exact restoration completed."""
+from __future__ import annotations
+import base64
+import json
+from pathlib import Path
+import shlex
+import subprocess
+
+BASE = Path(__file__).parent
+ROOT = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+program = r'''
+import base64,hashlib,json,pathlib,subprocess,sys,time
+r=pathlib.Path(sys.argv[1]);payload=json.load(sys.stdin)
+state=json.loads((r/'quality-model-controller-c16admissionv1.json').read_bytes())
+assert state['phase']=='complete'and not state['service_paused']
+receipt=r/'c16-admission-v1-evidence-check.json';old=json.loads(receipt.read_bytes())
+assert old['status']=='failed'and old['error']=="PermissionError(1, 'Operation not permitted')"
+assert not(r/'evidence-c16-admission-v1.tar.gz').exists()
+assert not(r/'c16-admission-v1-evidence/evidence-inventory.json').exists()
+source=r/'collect-c16-admission-v1.py'
+plan=json.loads(base64.b64decode(payload['c16-admission-v1-recovery-plan.json']))
+assert hashlib.sha256(source.read_bytes()).hexdigest()==plan['initial_collector_sha256']
+assert hashlib.sha256(base64.b64decode(payload['collect-c16-admission-v1-recovery.py'])).hexdigest()==plan['recovery_collector_sha256']
+for name,bits in payload.items():
+ with(r/name).open('xb')as stream:stream.write(base64.b64decode(bits))
+initial=r/'c16-admission-v1-evidence-check-initial-failure.json';assert not initial.exists()
+receipt.rename(initial)
+log=(r/'c16-admission-v1-recovery-collector.log').open('xb')
+proc=subprocess.Popen(['python3','-S','-u',str(r/'collect-c16-admission-v1-recovery.py')],stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+launch={'status':'launched','recovery_collector_pid':proc.pid,'started_epoch':time.time(),'GPU_experiment_run':False,'recovery_sha256':plan['recovery_collector_sha256']}
+with(r/'c16-admission-v1-recovery-launch.json').open('x')as stream:json.dump(launch,stream,indent=2)
+print(json.dumps(launch))
+'''
+payload = {name: base64.b64encode((BASE / local).read_bytes()).decode() for name, local in {
+    'collect-c16-admission-v1-recovery.py': 'collect_recovery.py',
+    'c16-admission-v1-recovery-plan.json': 'collection-recovery-plan.json',
+    'c16-admission-v1-recovery-CPU-check.json': 'collection-recovery-CPU-check.json',
+}.items()}
+raw = subprocess.check_output(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+    shlex.join(['python3', '-B', '-c', program, ROOT])], input=json.dumps(payload).encode(), timeout=45)
+(BASE / 'collection-recovery-launch.json').write_bytes(raw)
+print(raw.decode())

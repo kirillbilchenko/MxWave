@@ -1,0 +1,33 @@
+"""Read both stopped compressed caches and retain metadata/IR bytes with file timestamps."""
+from pathlib import Path
+import hashlib,json,shlex,subprocess,time
+B=Path('/private/tmp/mxwave-latency-probe-v1');R='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+remote='''import hashlib,json,pathlib,sys
+r=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(r/'full-latencyprobev1-src'));import full_model_control as c
+state=json.loads((r/'quality-model-controller-latencyprobev1.json').read_bytes());measurement=json.loads((r/'run-latencyprobev1/results/candidate-latency-probe.json').read_bytes());assert measurement['status']=='complete'
+reader="""import hashlib,json,pathlib,sys
+root=pathlib.Path(sys.argv[1]);rows=[]
+for p in sorted((root/'triton').rglob('_canonicalize.json')):
+ files=[]
+ for f in (p,p.with_suffix('.ttir')):
+  before=f.stat();data=f.read_bytes();after=f.stat();assert before.st_mtime_ns==after.st_mtime_ns and before.st_size==after.st_size
+  files.append({'path':str(f),'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),'mtime_ns':before.st_mtime_ns,'text':data.decode()})
+ rows.append({'files':files})
+print(json.dumps(rows))
+"""
+result=[]
+for rank in(0,1):
+ meta=state['launches']['candidate'][rank];cache=next(src for src,dst,mode in meta['mounts']if dst=='/cache');assert cache.startswith(str(r/'run-latencyprobev1'))
+ result.append({'rank':rank,'cache':cache,'entries':json.loads(c.run(rank,['python3','-S','-c',reader,cache],timeout=60))})
+print(json.dumps(result))
+'''
+bits=subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['python3','-S','-c',remote,R])],timeout=90)
+ranks=json.loads(bits)
+for rank in ranks:
+ for e in rank['entries']:
+  for f in e['files']:
+   data=f['text'].encode();assert len(data)==f['bytes']and hashlib.sha256(data).hexdigest()==f['sha256']
+result={'status':'captured','arm':'candidate','ranks':ranks,'captured_epoch':time.time(),'source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'final_evidence_archive_verified':False,'limits':['Closed cache file mtimes support first-use compilation attribution; they are not a direct compiler-start trace.','Monotonic clocks are not compared across hosts.']}
+p=B/'live/candidate-canonicalize-cache-audit.json'
+with p.open('x')as f:json.dump(result,f,indent=2);f.write('\n')
+print(json.dumps({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'entries_per_rank':[len(r['entries'])for r in ranks]}))

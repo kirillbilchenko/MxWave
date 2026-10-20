@@ -1,0 +1,13 @@
+import json,pathlib,shlex,subprocess
+b=pathlib.Path(__file__).parent
+r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+prepared=json.loads((b/'prepared.json').read_bytes());image=prepared['originals'][0]['image']
+argv=['docker','run','--rm','--network','none','--cpus','2','--memory','3g','--memory-swap','3g',
+ '-e','NVIDIA_VISIBLE_DEVICES=void','-e','CUDA_VISIBLE_DEVICES=','-e','PYTHONDONTWRITEBYTECODE=1',
+ '-e','PYTHONPATH=/source','-v',r+'/full-prefillbudgetv2-src:/source:ro',
+ '--entrypoint','/usr/bin/python3',image,'-B','-c',(b/'audit_native_control.py').read_text()]
+p=subprocess.run(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(argv)],capture_output=True,text=True,timeout=120)
+(b/'native-control-audit.log').write_text(p.stdout+p.stderr)
+assert p.returncode==0,(p.stdout+p.stderr)[-5000:]
+report=json.loads(p.stdout.strip().splitlines()[-1]);assert report['status']=='passed'
+(b/'native-control-audit.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

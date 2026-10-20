@@ -1,0 +1,69 @@
+{
+  "status": "preliminary_loaded_candidate_startup_passed",
+  "source_snapshot": "/private/tmp/mxwave-warmed-model-v1/live/candidate-1792355952922978000.json",
+  "source_sha256": "74de046ec3d954ca08d79743fb113c33220a1a18eb6a81cac5f5ddf9110417cd",
+  "captured_epoch": 1792355952.922931,
+  "review_script_sha256": "0e5fd69c44ef9c303a9bbfa3c8ec4148f963eb5debb4f01ab6f1366c3740b8e8",
+  "reference_review_sha256": "a2fdd6d06e71789a0d90fedaa2c6dbfeac404301f247bde632171de914f3774b",
+  "ranks": [
+    {
+      "rank": 0,
+      "warmup_seconds": 31.525533303036354,
+      "startup_checks": {
+        "both_complete": true,
+        "all_34_specializations": true,
+        "exact_integer_metadata_and_guards": true,
+        "kernel_and_sources_unchanged": true,
+        "no_persistent_scratch_allocation": true,
+        "model_allocation_unchanged": true,
+        "all_34_variants_cached": true,
+        "cache_unchanged_after_trim": true,
+        "trim_return_valid": true,
+        "warm_calls_under_component_bound": true
+      },
+      "RSS_reclaimed_bytes": 49811456,
+      "trim_seconds": 0.03163424297235906,
+      "CUDA_allocated_before": 89411542528,
+      "CUDA_allocated_after": 89411542528,
+      "RSS_before_startup_bytes": 6922899456,
+      "RSS_after_startup_bytes": 7003246592,
+      "net_RSS_increase_after_startup_bytes": 80347136
+    },
+    {
+      "rank": 1,
+      "warmup_seconds": 31.627743004006334,
+      "startup_checks": {
+        "both_complete": true,
+        "all_34_specializations": true,
+        "exact_integer_metadata_and_guards": true,
+        "kernel_and_sources_unchanged": true,
+        "no_persistent_scratch_allocation": true,
+        "model_allocation_unchanged": true,
+        "all_34_variants_cached": true,
+        "cache_unchanged_after_trim": true,
+        "trim_return_valid": true,
+        "warm_calls_under_component_bound": true
+      },
+      "RSS_reclaimed_bytes": 50573312,
+      "trim_seconds": 0.032437151996418834,
+      "CUDA_allocated_before": 89409951744,
+      "CUDA_allocated_after": 89409951744,
+      "RSS_before_startup_bytes": 6873518080,
+      "RSS_after_startup_bytes": 6954311680,
+      "net_RSS_increase_after_startup_bytes": 80793600
+    }
+  ],
+  "candidate_minus_control_bytes": {
+    "RSS_before_startup_bytes": 171032576,
+    "RSS_after_startup_bytes": 166539264,
+    "CUDA_allocated_after": -10057913856
+  },
+  "final_independent_archive_verification_pending": true,
+  "full_model_measurement_complete": false,
+  "serving_speed_qualified": false,
+  "limits": [
+    "Snapshots are measured before quality testing; final independent archive verification remains pending.",
+    "RSS and CUDA allocation overlap on Spark and must not be added.",
+    "Trim reclamation is separate from the net startup RSS change."
+  ]
+}

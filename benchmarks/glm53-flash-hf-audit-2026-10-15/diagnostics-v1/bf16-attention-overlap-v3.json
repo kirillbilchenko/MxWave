@@ -1,0 +1,1022 @@
+{
+  "status": "passed",
+  "source_checks": [
+    {
+      "name": "kda-input-l0-r0",
+      "bits_exact": true
+    },
+    {
+      "name": "kda-output-l0-r0",
+      "bits_exact": true
+    },
+    {
+      "name": "mla-input-l3-replicated",
+      "bits_exact": true
+    }
+  ],
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GB10",
+  "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+  "source_code_sha256": {
+    "bf16_prefetch.py": "95bd2b044e8585b5cc7827aeaaca8df99300dc66ef482b52eca39f9c2eabbd9d",
+    "diagnose_bf16_overlap.py": "bbb1e8e1c547299b786ed1d29a87aec077cee2320b3c061464230267cf71c8a4"
+  },
+  "prepared_sha256": "9511784249f49a84633d74fb1104429970c6b954d686fa26af3111c91ef3afce",
+  "enqueue_order": "Current GEMM before next decode",
+  "capture_strategy": "One reused warmup/capture stream and one reused caller stream",
+  "gates": {
+    "decoded_weight_bits_exact": true,
+    "all_intermediate_output_bits_exact": true,
+    "maximum_pipeline_weight_storage_bytes": 268435456,
+    "graph_replay_allocation_growth_bytes": 0
+  },
+  "limits": [
+    "Three real matrices with an authored dependent activation bridge; not GLM.",
+    "First 4096 output columns feed the next matrix; real attention is omitted.",
+    "All intermediate outputs are retained deliberately for exactness checks.",
+    "The scratch pool exceeds savings of this three-matrix fixture by itself.",
+    "A full model must amortize the pool across more compressed projections.",
+    "Primed-first timings exclude its separately measured initial decode.",
+    "Both arms coexist for comparison; peak is not a net production allocation.",
+    "Model prefill is eager; graph replay is a separate component measurement."
+  ],
+  "raw_weight_bytes": 153354240,
+  "packed_weight_bytes": 109086808,
+  "passed": true,
+  "seconds": 12.24209662701469,
+  "cuda_peak_bytes": 1032655872,
+  "raw_report_sha256": "dc0c8dcb9787b91ba7b1ef27dc5e393cc86fe23090a33a198726ad3ca247779b",
+  "raw_report_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/diagnostics-v1/bf16overlapv3-attempt1/report.json",
+  "guard": {
+    "phase": "complete_idle",
+    "attempts": 1,
+    "production_stopped": false,
+    "interrupted_attempts": 0
+  },
+  "evidence_archive": {
+    "archive": "bf16overlap-evidence-v1.tar.gz",
+    "bytes": 275287,
+    "sha256": "6f8e1dc3a9c25d3c500934b547708a50c5ea687df23bf917d2aec746e56c3144"
+  },
+  "performance_qualified": false,
+  "decision": "Do not integrate this async prefill variant: no useful net improvement over serial decoding with these kernels",
+  "cases": [
+    {
+      "first_weight_primed": false,
+      "first_prime_ms": 0.0,
+      "scratch_and_cached_weight_bytes": 206569472,
+      "slot_bytes": [
+        103284736,
+        103284736
+      ],
+      "cached_first_bytes": 0,
+      "measurements": [
+        {
+          "tokens": 32,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 574978048,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 0.7284959852695465,
+              "zipserv_ms": 1.8041119575500488,
+              "speedup": 0.40379754827346237,
+              "latency_ratio": 2.4764885380700075
+            },
+            "serial_to_async": {
+              "dense_ms": 1.7908160090446472,
+              "zipserv_ms": 1.9321119785308838,
+              "speedup": 0.9268696788507705,
+              "latency_ratio": 1.0789003274331985
+            },
+            "dense_to_async": {
+              "dense_ms": 0.6938880085945129,
+              "zipserv_ms": 1.9097760319709778,
+              "speedup": 0.36334735073643787,
+              "latency_ratio": 2.752282801138581
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 0.7338240146636963,
+              "zipserv_ms": 1.8257280588150024,
+              "speedup": 0.40217467573576443,
+              "latency_ratio": 2.4879644469685473
+            },
+            "serial_to_async": {
+              "dense_ms": 1.822335958480835,
+              "zipserv_ms": 1.959455966949463,
+              "speedup": 0.9314284350859275,
+              "latency_ratio": 1.0752440886821637
+            },
+            "dense_to_async": {
+              "dense_ms": 0.7095360159873962,
+              "zipserv_ms": 1.9522559642791748,
+              "speedup": 0.3637911707587488,
+              "latency_ratio": 2.751454359314515
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 586809344,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 0.7596000134944916,
+              "zipserv_ms": 1.8600639700889587,
+              "speedup": 0.4091790737860506,
+              "latency_ratio": 2.4487413599847803
+            },
+            "serial_to_async": {
+              "dense_ms": 1.84961599111557,
+              "zipserv_ms": 1.9667199850082397,
+              "speedup": 0.9401537890382685,
+              "latency_ratio": 1.0633125981042368
+            },
+            "dense_to_async": {
+              "dense_ms": 0.7320320010185242,
+              "zipserv_ms": 1.9541599750518799,
+              "speedup": 0.37396994696091285,
+              "latency_ratio": 2.669500749055955
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 0.7600640058517456,
+              "zipserv_ms": 1.870303988456726,
+              "speedup": 0.40638527776380856,
+              "latency_ratio": 2.460719063206814
+            },
+            "serial_to_async": {
+              "dense_ms": 1.883679986000061,
+              "zipserv_ms": 2.0135040283203125,
+              "speedup": 0.9334083396546876,
+              "latency_ratio": 1.0689204340891942
+            },
+            "dense_to_async": {
+              "dense_ms": 0.7424319982528687,
+              "zipserv_ms": 1.9969600439071655,
+              "speedup": 0.37214965751267853,
+              "latency_ratio": 2.68975481741967
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 634360832,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 1.0623680353164673,
+              "zipserv_ms": 2.2642879486083984,
+              "speedup": 0.46849920504921355,
+              "latency_ratio": 2.1313592590668384
+            },
+            "serial_to_async": {
+              "dense_ms": 2.2748160362243652,
+              "zipserv_ms": 2.2460319995880127,
+              "speedup": 1.0106550278407724,
+              "latency_ratio": 0.9873466530136973
+            },
+            "dense_to_async": {
+              "dense_ms": 1.0469120144844055,
+              "zipserv_ms": 2.2437920570373535,
+              "speedup": 0.4678492770187109,
+              "latency_ratio": 2.1432479769012875
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 1.0646079778671265,
+              "zipserv_ms": 2.2766079902648926,
+              "speedup": 0.4674844549249095,
+              "latency_ratio": 2.1384472384153366
+            },
+            "serial_to_async": {
+              "dense_ms": 2.282464027404785,
+              "zipserv_ms": 2.3292160034179688,
+              "speedup": 0.9799280204392473,
+              "latency_ratio": 1.0204831162514931
+            },
+            "dense_to_async": {
+              "dense_ms": 1.0506240129470825,
+              "zipserv_ms": 2.321120023727417,
+              "speedup": 0.45263665911593703,
+              "latency_ratio": 2.2092775294717413
+            }
+          }
+        },
+        {
+          "tokens": 2048,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 825365504,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 3.523327946662903,
+              "zipserv_ms": 4.697279930114746,
+              "speedup": 0.7446215451419058,
+              "latency_ratio": 1.3331940714073307
+            },
+            "serial_to_async": {
+              "dense_ms": 4.699615955352783,
+              "zipserv_ms": 4.704816102981567,
+              "speedup": 1.0021152431237368,
+              "latency_ratio": 1.001106504803411
+            },
+            "dense_to_async": {
+              "dense_ms": 3.550671935081482,
+              "zipserv_ms": 4.675984144210815,
+              "speedup": 0.760332177639701,
+              "latency_ratio": 1.3169293670899251
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 3.5467519760131836,
+              "zipserv_ms": 4.71289587020874,
+              "speedup": 0.7544552916017176,
+              "latency_ratio": 1.328792061605162
+            },
+            "serial_to_async": {
+              "dense_ms": 4.7218241691589355,
+              "zipserv_ms": 4.744671821594238,
+              "speedup": 0.9961402738793326,
+              "latency_ratio": 1.0048387342723464
+            },
+            "dense_to_async": {
+              "dense_ms": 3.5470080375671387,
+              "zipserv_ms": 4.732480049133301,
+              "speedup": 0.7491775542671957,
+              "latency_ratio": 1.334217458491937
+            }
+          }
+        }
+      ],
+      "traces": [
+        {
+          "file": "prime0-m128.trace.json.gz",
+          "bytes": 16522,
+          "sha256": "b3ec371a9d6f96abb2d7abdf0d8c96a1d1265271ab1c6ce50afb50528ee5c525",
+          "scopes": [
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 773.89111328125,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 1053.85986328125,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 1150.178955078125,
+              "gemm_us": 698.6591796875,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 1866.6630859375,
+              "kernel_count": 7
+            },
+            {
+              "path": "async",
+              "decode_us": 1196.197265625,
+              "gemm_us": 811.235107421875,
+              "decoder_gemm_overlap_us": 27.297119140625,
+              "decode_overlap_fraction": 0.022819914344447655,
+              "decoder_streams": [
+                21
+              ],
+              "gpu_kernel_span_us": 1994.470947265625,
+              "kernel_count": 7
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 730.114990234375,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 742.786865234375,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 1138.722900390625,
+              "gemm_us": 705.380126953125,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 1860.5830078125,
+              "kernel_count": 7
+            },
+            {
+              "path": "async",
+              "decode_us": 1210.7568359375,
+              "gemm_us": 814.14599609375,
+              "decoder_gemm_overlap_us": 34.271728515625,
+              "decode_overlap_fraction": 0.028306037594318507,
+              "decoder_streams": [
+                21
+              ],
+              "gpu_kernel_span_us": 2003.52685546875,
+              "kernel_count": 7
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 728.258056640625,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 740.93115234375,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 1142.147216796875,
+              "gemm_us": 707.619873046875,
+              "decoder_gemm_overlap_us": 0.064208984375,
+              "decode_overlap_fraction": 5.621778298866987e-05,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 1867.65478515625,
+              "kernel_count": 7
+            },
+            {
+              "path": "async",
+              "decode_us": 1214.243896484375,
+              "gemm_us": 821.507080078125,
+              "decoder_gemm_overlap_us": 31.744140625,
+              "decode_overlap_fraction": 0.026143133778073296,
+              "decoder_streams": [
+                21
+              ],
+              "gpu_kernel_span_us": 2015.39892578125,
+              "kernel_count": 7
+            }
+          ],
+          "note": "Three profiled calls per path; durations are separate from timing medians",
+          "medians_by_path": {
+            "dense": {
+              "decode_us": 0,
+              "gemm_us": 730.114990234375,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "gpu_kernel_span_us": 742.786865234375
+            },
+            "serial": {
+              "decode_us": 1142.147216796875,
+              "gemm_us": 705.380126953125,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "gpu_kernel_span_us": 1866.6630859375
+            },
+            "async": {
+              "decode_us": 1210.7568359375,
+              "gemm_us": 814.14599609375,
+              "decoder_gemm_overlap_us": 31.744140625,
+              "decode_overlap_fraction": 0.026143133778073296,
+              "gpu_kernel_span_us": 2003.52685546875
+            }
+          }
+        },
+        {
+          "file": "prime0-m2048.trace.json.gz",
+          "bytes": 16352,
+          "sha256": "436a35c9bd6ec67dc2de5884f092f41135cfdb1081bde5f7246970585cc55e30",
+          "scopes": [
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 3290.66796875,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 3423.083984375,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 1178.56396484375,
+              "gemm_us": 3285.51611328125,
+              "decoder_gemm_overlap_us": 1.760009765625,
+              "decode_overlap_fraction": 0.0014933510765012539,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 4599.569091796875,
+              "kernel_count": 7
+            },
+            {
+              "path": "async",
+              "decode_us": 1222.468017578125,
+              "gemm_us": 3302.89208984375,
+              "decoder_gemm_overlap_us": 31.327880859375,
+              "decode_overlap_fraction": 0.025626748846517704,
+              "decoder_streams": [
+                21
+              ],
+              "gpu_kernel_span_us": 4631.185302734375,
+              "kernel_count": 7
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 3300.68212890625,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 3431.7548828125,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 1194.0830078125,
+              "gemm_us": 3308.844970703125,
+              "decoder_gemm_overlap_us": 0.89599609375,
+              "decode_overlap_fraction": 0.0007503633230586036,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 4639.47314453125,
+              "kernel_count": 7
+            },
+            {
+              "path": "async",
+              "decode_us": 1216.260009765625,
+              "gemm_us": 3314.797119140625,
+              "decoder_gemm_overlap_us": 27.807861328125,
+              "decode_overlap_fraction": 0.022863418269818487,
+              "decoder_streams": [
+                21
+              ],
+              "gpu_kernel_span_us": 4638.864990234375,
+              "kernel_count": 7
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 3310.251953125,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 3441.163818359375,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 1192.868896484375,
+              "gemm_us": 3286.411865234375,
+              "decoder_gemm_overlap_us": 2.591552734375,
+              "decode_overlap_fraction": 0.0021725377717642133,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 4613.713134765625,
+              "kernel_count": 7
+            },
+            {
+              "path": "async",
+              "decode_us": 1206.69189453125,
+              "gemm_us": 3319.468017578125,
+              "decoder_gemm_overlap_us": 26.592041015625,
+              "decode_overlap_fraction": 0.022037142319543724,
+              "decoder_streams": [
+                21
+              ],
+              "gpu_kernel_span_us": 4638.575927734375,
+              "kernel_count": 7
+            }
+          ],
+          "note": "Three profiled calls per path; durations are separate from timing medians",
+          "medians_by_path": {
+            "dense": {
+              "decode_us": 0,
+              "gemm_us": 3300.68212890625,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "gpu_kernel_span_us": 3431.7548828125
+            },
+            "serial": {
+              "decode_us": 1192.868896484375,
+              "gemm_us": 3286.411865234375,
+              "decoder_gemm_overlap_us": 1.760009765625,
+              "decode_overlap_fraction": 0.0014933510765012539,
+              "gpu_kernel_span_us": 4613.713134765625
+            },
+            "async": {
+              "decode_us": 1216.260009765625,
+              "gemm_us": 3314.797119140625,
+              "decoder_gemm_overlap_us": 27.807861328125,
+              "decode_overlap_fraction": 0.022863418269818487,
+              "gpu_kernel_span_us": 4638.575927734375
+            }
+          }
+        }
+      ]
+    },
+    {
+      "first_weight_primed": true,
+      "first_prime_ms": 0.9854080080986023,
+      "scratch_and_cached_weight_bytes": 170393600,
+      "slot_bytes": [
+        33554432,
+        33554432
+      ],
+      "cached_first_bytes": 103284736,
+      "measurements": [
+        {
+          "tokens": 32,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 762148864,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 0.7302559912204742,
+              "zipserv_ms": 0.9806880056858063,
+              "speedup": 0.7425570364471025,
+              "latency_ratio": 1.342937295244625
+            },
+            "serial_to_async": {
+              "dense_ms": 0.9676960110664368,
+              "zipserv_ms": 1.1190400123596191,
+              "speedup": 0.8661153261133463,
+              "latency_ratio": 1.1563962231552403
+            },
+            "dense_to_async": {
+              "dense_ms": 0.6987839937210083,
+              "zipserv_ms": 1.1002399921417236,
+              "speedup": 0.6351487006529727,
+              "latency_ratio": 1.5745065743177253
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 0.7400640249252319,
+              "zipserv_ms": 1.0099200010299683,
+              "speedup": 0.7308263799289905,
+              "latency_ratio": 1.3646386893782598
+            },
+            "serial_to_async": {
+              "dense_ms": 1.0196479558944702,
+              "zipserv_ms": 1.168063998222351,
+              "speedup": 0.8760737902858545,
+              "latency_ratio": 1.1455561612906733
+            },
+            "dense_to_async": {
+              "dense_ms": 0.749888002872467,
+              "zipserv_ms": 1.185439944267273,
+              "speedup": 0.6310148634431443,
+              "latency_ratio": 1.5808226558184848
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 550633472,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 0.7682400047779083,
+              "zipserv_ms": 1.0537760257720947,
+              "speedup": 0.7293154328117325,
+              "latency_ratio": 1.3716755430833525
+            },
+            "serial_to_async": {
+              "dense_ms": 1.0371039509773254,
+              "zipserv_ms": 1.161679983139038,
+              "speedup": 0.8927621772176111,
+              "latency_ratio": 1.1201191375698811
+            },
+            "dense_to_async": {
+              "dense_ms": 0.7444320023059845,
+              "zipserv_ms": 1.1431360244750977,
+              "speedup": 0.6495520490271876,
+              "latency_ratio": 1.5355815184383133
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 0.7767680287361145,
+              "zipserv_ms": 1.063264012336731,
+              "speedup": 0.7244024015998214,
+              "latency_ratio": 1.3688308130636844
+            },
+            "serial_to_async": {
+              "dense_ms": 1.0702400207519531,
+              "zipserv_ms": 1.1945600509643555,
+              "speedup": 0.8952610333020286,
+              "latency_ratio": 1.1161608870924624
+            },
+            "dense_to_async": {
+              "dense_ms": 0.7499840259552002,
+              "zipserv_ms": 1.1727999448776245,
+              "speedup": 0.6394145187747161,
+              "latency_ratio": 1.5637665660730766
+            }
+          }
+        },
+        {
+          "tokens": 512,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 598184960,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 1.0720959901809692,
+              "zipserv_ms": 1.4453920125961304,
+              "speedup": 0.7391434533457674,
+              "latency_ratio": 1.3481927232580628
+            },
+            "serial_to_async": {
+              "dense_ms": 1.4461599588394165,
+              "zipserv_ms": 1.4351679682731628,
+              "speedup": 1.0052912463072796,
+              "latency_ratio": 0.9923991875870529
+            },
+            "dense_to_async": {
+              "dense_ms": 1.0554400086402893,
+              "zipserv_ms": 1.432096004486084,
+              "speedup": 0.7384500316317522,
+              "latency_ratio": 1.356871061133106
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 1.0683200359344482,
+              "zipserv_ms": 1.4738240242004395,
+              "speedup": 0.7237987299863823,
+              "latency_ratio": 1.379571640169887
+            },
+            "serial_to_async": {
+              "dense_ms": 1.4679360389709473,
+              "zipserv_ms": 1.4638400077819824,
+              "speedup": 1.0035001250917814,
+              "latency_ratio": 0.9972096664430719
+            },
+            "dense_to_async": {
+              "dense_ms": 1.0478399991989136,
+              "zipserv_ms": 1.4536000490188599,
+              "speedup": 0.7220787929313743,
+              "latency_ratio": 1.3872347401608593
+            }
+          }
+        },
+        {
+          "tokens": 2048,
+          "all_intermediate_outputs_bits_exact": true,
+          "poisoned_pool_replay_pairs": 3,
+          "nondefault_caller_stream_exact": true,
+          "replay_allocation_growth_bytes": 0,
+          "cuda_allocated_at_timing": 789189632,
+          "graph_replay": {
+            "dense_to_serial": {
+              "dense_ms": 3.4929120540618896,
+              "zipserv_ms": 3.8742560148239136,
+              "speedup": 0.9019828312082455,
+              "latency_ratio": 1.10917651371112
+            },
+            "serial_to_async": {
+              "dense_ms": 4.012400031089783,
+              "zipserv_ms": 4.006495952606201,
+              "speedup": 0.997613337595289,
+              "latency_ratio": 0.9985285419106186
+            },
+            "dense_to_async": {
+              "dense_ms": 3.5118879079818726,
+              "zipserv_ms": 3.8918079137802124,
+              "speedup": 0.9029932251910618,
+              "latency_ratio": 1.1081811309907847
+            }
+          },
+          "eager_cuda_events": {
+            "dense_to_serial": {
+              "dense_ms": 3.49564790725708,
+              "zipserv_ms": 3.8903040885925293,
+              "speedup": 0.8975861029579746,
+              "latency_ratio": 1.112899294152632
+            },
+            "serial_to_async": {
+              "dense_ms": 3.89190411567688,
+              "zipserv_ms": 3.9072959423065186,
+              "speedup": 0.9960607471619995,
+              "latency_ratio": 1.0039548319208687
+            },
+            "dense_to_async": {
+              "dense_ms": 3.5128960609436035,
+              "zipserv_ms": 3.908224105834961,
+              "speedup": 0.8963737879779974,
+              "latency_ratio": 1.1125362202675497
+            }
+          }
+        }
+      ],
+      "traces": [
+        {
+          "file": "prime1-m128.trace.json.gz",
+          "bytes": 15029,
+          "sha256": "4b4af57fc050642d14f72f767e03e3c8cd54799f8ed66d63b1967e34a2d4b40a",
+          "scopes": [
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 741.154052734375,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 754.75390625,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 349.537841796875,
+              "gemm_us": 661.8271484375,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 1028.133056640625,
+              "kernel_count": 6
+            },
+            {
+              "path": "async",
+              "decode_us": 391.04296875,
+              "gemm_us": 812.034912109375,
+              "decoder_gemm_overlap_us": 47.8408203125,
+              "decode_overlap_fraction": 0.12234159449389154,
+              "decoder_streams": [
+                25
+              ],
+              "gpu_kernel_span_us": 1167.237060546875,
+              "kernel_count": 6
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 724.772216796875,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 738.179931640625,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 348.864990234375,
+              "gemm_us": 659.236083984375,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 1026.85302734375,
+              "kernel_count": 6
+            },
+            {
+              "path": "async",
+              "decode_us": 393.632080078125,
+              "gemm_us": 806.757080078125,
+              "decoder_gemm_overlap_us": 44.0,
+              "decode_overlap_fraction": 0.11177950737975224,
+              "decoder_streams": [
+                25
+              ],
+              "gpu_kernel_span_us": 1163.4931640625,
+              "kernel_count": 6
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 721.090087890625,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 734.114013671875,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 350.656005859375,
+              "gemm_us": 657.988037109375,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 1024.9638671875,
+              "kernel_count": 6
+            },
+            {
+              "path": "async",
+              "decode_us": 437.922119140625,
+              "gemm_us": 850.435791015625,
+              "decoder_gemm_overlap_us": 70.208984375,
+              "decode_overlap_fraction": 0.16032299193467908,
+              "decoder_streams": [
+                25
+              ],
+              "gpu_kernel_span_us": 1227.204833984375,
+              "kernel_count": 6
+            }
+          ],
+          "note": "Three profiled calls per path; durations are separate from timing medians",
+          "medians_by_path": {
+            "dense": {
+              "decode_us": 0,
+              "gemm_us": 724.772216796875,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "gpu_kernel_span_us": 738.179931640625
+            },
+            "serial": {
+              "decode_us": 349.537841796875,
+              "gemm_us": 659.236083984375,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "gpu_kernel_span_us": 1026.85302734375
+            },
+            "async": {
+              "decode_us": 393.632080078125,
+              "gemm_us": 812.034912109375,
+              "decoder_gemm_overlap_us": 47.8408203125,
+              "decode_overlap_fraction": 0.12234159449389154,
+              "gpu_kernel_span_us": 1167.237060546875
+            }
+          }
+        },
+        {
+          "file": "prime1-m2048.trace.json.gz",
+          "bytes": 14798,
+          "sha256": "afb1e9614664f25f260b09594e1f1022a34db3e79ad57473de1716a43e8a071b",
+          "scopes": [
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 3902.6259765625,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 4039.201904296875,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 382.14501953125,
+              "gemm_us": 3354.719970703125,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 3878.65673828125,
+              "kernel_count": 6
+            },
+            {
+              "path": "async",
+              "decode_us": 436.60791015625,
+              "gemm_us": 3340.577880859375,
+              "decoder_gemm_overlap_us": 199.391845703125,
+              "decode_overlap_fraction": 0.45668399739200355,
+              "decoder_streams": [
+                25
+              ],
+              "gpu_kernel_span_us": 3742.43408203125,
+              "kernel_count": 6
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 3220.322021484375,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 3355.8740234375,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 379.423095703125,
+              "gemm_us": 3239.93701171875,
+              "decoder_gemm_overlap_us": 0.256103515625,
+              "decode_overlap_fraction": 0.0006749813559725555,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 3760.89697265625,
+              "kernel_count": 6
+            },
+            {
+              "path": "async",
+              "decode_us": 454.338134765625,
+              "gemm_us": 3969.79296875,
+              "decoder_gemm_overlap_us": 220.1611328125,
+              "decode_overlap_fraction": 0.4845755087806406,
+              "decoder_streams": [
+                25
+              ],
+              "gpu_kernel_span_us": 4366.338134765625,
+              "kernel_count": 6
+            },
+            {
+              "path": "dense",
+              "decode_us": 0,
+              "gemm_us": 3418.81689453125,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "decoder_streams": [],
+              "gpu_kernel_span_us": 3552.802001953125,
+              "kernel_count": 4
+            },
+            {
+              "path": "serial",
+              "decode_us": 376.89697265625,
+              "gemm_us": 3224.160888671875,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "decoder_streams": [
+                7
+              ],
+              "gpu_kernel_span_us": 3741.18603515625,
+              "kernel_count": 6
+            },
+            {
+              "path": "async",
+              "decode_us": 436.09716796875,
+              "gemm_us": 3374.782958984375,
+              "decoder_gemm_overlap_us": 201.5361328125,
+              "decode_overlap_fraction": 0.46213584406249053,
+              "decoder_streams": [
+                25
+              ],
+              "gpu_kernel_span_us": 3774.593017578125,
+              "kernel_count": 6
+            }
+          ],
+          "note": "Three profiled calls per path; durations are separate from timing medians",
+          "medians_by_path": {
+            "dense": {
+              "decode_us": 0,
+              "gemm_us": 3418.81689453125,
+              "decoder_gemm_overlap_us": 0,
+              "decode_overlap_fraction": 0,
+              "gpu_kernel_span_us": 3552.802001953125
+            },
+            "serial": {
+              "decode_us": 379.423095703125,
+              "gemm_us": 3239.93701171875,
+              "decoder_gemm_overlap_us": 0.0,
+              "decode_overlap_fraction": 0.0,
+              "gpu_kernel_span_us": 3760.89697265625
+            },
+            "async": {
+              "decode_us": 436.60791015625,
+              "gemm_us": 3374.782958984375,
+              "decoder_gemm_overlap_us": 201.5361328125,
+              "decode_overlap_fraction": 0.46213584406249053,
+              "gpu_kernel_span_us": 3774.593017578125
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "previous_attempts": [
+    {
+      "revision": "bf16overlapv1",
+      "status": "trace_reader_failed_after_two_exact_shapes",
+      "reason": "CPU and GPU annotation scopes counted twice; fixed reader validated on preserved trace"
+    },
+    {
+      "revision": "bf16overlapv2",
+      "status": "own_1_5_GiB_allocator_cap_reached",
+      "reason": "Completed all cold sizes and two cached-first sizes; reused warmup/capture and caller streams in v3 to avoid accumulating per-stream workspace; device cap unchanged"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "status": "CPU_prepared",
+  "ruff_passed": true,
+  "mypy_35_core_files_passed": true,
+  "full_pytest_passed": true,
+  "GPU_skip_count": 1,
+  "GPU_warmup_executed": false,
+  "model_policy_changed": false,
+  "runtime_kernel_changed": false,
+  "coverage": {
+    "max_tokens": 2048,
+    "block_sizes": [
+      8,
+      16,
+      32,
+      48,
+      64
+    ],
+    "specializations": 34
+  },
+  "sources": {
+    "stable_dispatch_warmup.py": "064a923babcd181bd01ab1e656e18c227f025f9942ee901f3d08a70a1149abd9",
+    "test_glm53_stable_dispatch_warmup.py": "9bd9f6c50fd0924db654195575233aeb50e281f83044f3f60a2a2cdb123fe504"
+  },
+  "logs": {
+    "warmup-ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "warmup-mypy.log": "32c1f154f636757bc9df6843701b18b495673a7cf2e0f68b592d2055d6ae6c07",
+    "warmup-pytest.log": "eb562abd4b8bf0f355660fabc7d7cd6fd06c1f449561065bffa3e4781072d52f"
+  },
+  "initial_style_issue_fixed": "import ordering only",
+  "initial_GPU_or_model_failure": false
+}

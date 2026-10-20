@@ -1,0 +1,152 @@
+"""Freeze the final admission comparison from the qualified warmed exact16 parent."""
+from __future__ import annotations
+import hashlib, json, pathlib, shutil, sys, tarfile, time
+
+BASE = pathlib.Path(__file__).parent
+WARM = pathlib.Path('/private/tmp/mxwave-warmed-model-v1')
+FP32 = pathlib.Path('/private/tmp/mxwave-fp32-input-model-v1')
+sys.path.insert(0, str(BASE / 'cpu-source'))
+from c16_admission_protocol import plan as admission_plan
+
+def sha(p):
+    with p.open('rb') as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
+
+def write(p, value):
+    p.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
+
+def replace(s, a, b):
+    assert a in s, a
+    return s.replace(a, b)
+
+def main():
+    overlay = BASE / 'overlay'
+    (overlay / 'src').mkdir(parents=True)
+    parent = json.loads((WARM / 'evidence/prepared.json').read_bytes())
+    proof = json.loads((WARM / 'cross-host-verification.json').read_bytes())
+    assert proof['status'] == 'passed' and proof['compression_numerical_gate_passed']
+    assert proof['C16_matched_numerical_gate_passed']
+    assert sha(WARM / 'evidence.tar.gz') == proof['archive_sha256']
+    assert len(parent['bindings'][0]['code']) == 207
+    for name, digest in parent['bindings'][0]['code'].items():
+        assert sha(BASE / 'cpu-source' / name) == digest
+    cpu = json.loads((BASE / 'cpu-protocol-check.json').read_bytes())
+    assert cpu['status'] == 'passed' and cpu['matched_grouping_nonzero_KL_rejected']
+    sources = {}
+    for name in ('c16_admission_protocol.py', 'measure_c16_admission.py',
+                 'analyze_c16_admission.py', 'run_c16_admission.py'):
+        source = BASE / 'cpu-source' / name
+        shutil.copyfile(source, overlay / 'src' / name)
+        sources[name] = sha(source)
+    assert sources == cpu['source_sha256']
+    for source, target in ((WARM / 'cross-host-verification.json', 'parent-proof.json'),
+            (WARM / 'evidence/component-cross-host-verification.json', 'component-proof.json'),
+            (WARM / 'evidence/warmup-component-cross-host-verification.json', 'warmup-component-proof.json')):
+        shutil.copyfile(source, overlay / target)
+    plan = json.loads((WARM / 'plan.json').read_bytes())
+    plan.update(admission_plan(plan['source_protocol_sha256'], proof['archive_sha256'], input_fp32=False))
+    plan.update(revision='c16admissionv1', parent_revision='warmedmodelv1',
+        purpose='Final compression experiment: measure short-C16 3 versus 10 ms admission in both qualified parent arms, with short-C1 delay controls, unchanged numerical limits and actual graph/prefill traces.',
+        parent_evidence_archive_sha256=proof['archive_sha256'], parent_model_proof_sha256=sha(overlay / 'parent-proof.json'),
+        parent_source_sha256=parent['bindings'][0]['code'], source_sha256=sources,
+        expected_source_files=211, CPU_protocol_check=cpu,
+        timing_cases=[['c16-short',16,256],['c1-short',1,256]],
+        warmup_groups_per_arm=8, profile_sessions_per_arm=4, worker_traces_expected=16,
+        mixed_profile_concurrency=[], ordinary_timing_groups_total=72,
+        ordinary_timed_requests_total=792, ordinary_timed_output_tokens_total=50688,
+        C1_C8_ordinary_API_speed_remeasured=False, C1_C16_short_API_speed_remeasured=True,
+        frozen_epoch=time.time(), head_free_bytes_required_before_launch=6_000_000_000,
+        collector_free_bytes_required=3*1024**3, evidence_copies_use_hardlinks=True,
+        numerical_comparisons_expected=94, full_latency_resolution_claimed=False,
+        concurrent_compression_throughput_optimization_stopped=True)
+    write(BASE / 'plan.json', plan)
+    write(overlay / 'plan.json', plan)
+    for name in ('prepare.py', 'collect.py', 'verify.py', 'launch.py'):
+        original = FP32 / name if name == 'prepare.py' else (
+            WARM / 'recovery-v2/verify-recovery-v2.py' if name == 'verify.py' else WARM / name)
+        s = original.read_text()
+        if name == 'prepare.py':
+            s = s.replace('fp32-input-model-v1', 'c16-admission-v1').replace('fp32inputmodelv1','c16admissionv1')
+            s = s.replace('fp32-input-v1-src','full-warmedmodelv1-src')
+            s = s.replace('fp32-input-v1-prepared.json','warmed-model-v1-prepared.json')
+            s = s.replace('run_fp32_input_model','run_c16_admission')
+            s = s.replace('c16-admission-v1-integration-proof.json','c16-admission-v1-parent-proof.json')
+            s = s.replace('a7b9f74fa1df33108caf61cc65db4c63997bbcf8e9dd378f4890efc65f1b5e80',proof['archive_sha256'])
+            s = s.replace('"parent_revision":"fp32inputv1"','"parent_revision":"warmedmodelv1"')
+            s = s.replace('fp32_input_worker.FP32InputWorker','warmed_model_worker.WarmedModelWorker')
+            s = s.replace('warmed-model-plan.json','c16-admission-plan.json')
+            s = s.replace('8_000_000_000','6_000_000_000')
+            s = replace(s, '    assert env["MXWAVE_GLM53_KDA_INPUT_FP32_SPLIT2"]==expected\n    if arm=="candidate":assert env["MXWAVE_GLM53_FP32_LIBRARY"]==model.LIBRARY',
+                        '    assert "MXWAVE_GLM53_KDA_INPUT_FP32_SPLIT2" not in env\n    assert "MXWAVE_GLM53_FP32_LIBRARY" not in env')
+            s = replace(s, '   "fp32_input_policy":plan["fp32_input_policy"],"fp32_input_integration_archive_sha256":plan["fp32_input_integration_archive_sha256"],\n', '')
+            s = s.replace('==229','==211').replace('source_files=229','source_files=211')
+            s = replace(s, 'assert proof["status"]=="passed"and proof["archive_sha256"]==',
+                        'assert proof["compression_numerical_gate_passed"] and proof["C16_matched_numerical_gate_passed"]\n  assert proof["status"]=="passed"and proof["archive_sha256"]==')
+        else:
+            s = s.replace('warmed-model-v1','c16-admission-v1').replace('warmedmodelv1','c16admissionv1')
+            s = s.replace('run_warmed_model','run_c16_admission').replace('analyze_warmed_model','analyze_c16_admission')
+            s = s.replace('warmed-model-plan.json','c16-admission-plan.json').replace('{arm}-warmed-model.json','{arm}-c16-admission.json')
+            s = s.replace('==207','==211').replace('source_files=207','source_files=211').replace('"source_files":207','"source_files":211')
+            assert 'restored["health"]==211' not in s
+            if name == 'collect.py':
+                s = s.replace('6*1024**3','3*1024**3')
+                s = s.replace('matched-row16-v1-cross-host-verification.json','c16-admission-v1-parent-proof.json')
+                a = s.index('  names.update('); z = s.index('  for name,target in names.items():',a)
+                s = s[:a]+'''  names.update({"c16-admission-v1-mechanism-CPU-check.json":"mechanism-CPU-check.json",
+   "c16-admission-v1-cpu-protocol-check.json":"cpu-protocol-check.json",
+   "c16-admission-v1-overlay/component-proof.json":"component-cross-host-verification.json",
+   "c16-admission-v1-overlay/warmup-component-proof.json":"warmup-component-cross-host-verification.json",
+   "c16-admission-v1-overlay/parent-proof.json":"parent-cross-host-verification.json",
+   "c16-admission-v1-storage-relocation.json":"storage-relocation.json",
+   "relocate-evidence-c16-admission-v1.py":"storage-relocation.py"})
+''' + s[z:]
+                s = s.replace('latest_warmed_model=progress','latest_c16_admission=progress')
+                s = s.replace('import hashlib,json,pathlib,shutil,subprocess,sys,tarfile,time','import hashlib,json,os,pathlib,shutil,subprocess,sys,tarfile,time')
+                s = s.replace('shutil.copytree(ROOT/f"run-{REV}/results",base/"results")',
+                              'shutil.copytree(ROOT/f"run-{REV}/results",base/"results",copy_function=os.link)')
+                s = s.replace('shutil.copy2(source,dest)','os.link(source,dest)')
+            elif name == 'verify.py':
+                s = s.replace('for m in(8,16)','for m in(16,)')
+                s = s.replace('plan["worker_traces_expected"]==12','plan["worker_traces_expected"]==16')
+                s = s.replace('  result["M8_dispatch_mechanism_passed"]=True\n','')
+                s = replace(s, '  coverage=[v for t in result["profiles"]for v in t["coverage"].values()]',
+                    '''  expected={(label,rank) for label,g in groups.items() if g.get("profiled") or g.get("after_all_unprofiled_timing") for rank in (0,1)}
+  observed={(label,t["rank"]) for t in result["profiles"] for label in t["labels"]}
+  assert len(expected)==16 and observed==expected
+  coverage=[v for t in result["profiles"]for v in t["coverage"].values()]''')
+                s = replace(s, ' assert sources==prepared', ''' parent=root/"parent-cross-host-verification.json"
+ assert sha(parent)==plan["parent_model_proof_sha256"]
+ parent_proof=json.loads(parent.read_bytes())
+ assert parent_proof["status"]=="passed" and parent_proof["compression_numerical_gate_passed"]
+ assert parent_proof["archive_sha256"]==plan["parent_model_archive_sha256"]
+ assert not plan["candidate_input_fp32"] and "fp32_input_worker.py" not in sources
+ assert sources==prepared''')
+            else:
+                s = s.replace('"numerical_comparisons":46','"numerical_comparisons":94').replace('"profile_sessions":6','"profile_sessions":8').replace('"worker_profiles_expected":12','"worker_profiles_expected":16')
+                s = s.replace('Fresh C1/C8/C16 quality, ordinary short/long API speed and CPU/CUDA memory comparison with identical qualified startup warmup and one-time heap trimming launched.',
+                    'Final short-C16 3/10 ms admission comparison with short-C1 controls and qualified warmed exact16 kernels launched.')
+                s = s.replace('"MTP_deferred_by_user":True','"MTP_not_part_of_this_experiment":True')
+        compile(s, name, 'exec')
+        (BASE / name).write_text(s)
+
+    checks = json.loads((BASE / 'local-test-receipt.json').read_bytes())
+    assert all(r['exit_code']==0 for r in checks['checks'])
+    write(BASE / 'local-checks.json', {'status':'passed','ruff_passed':True,'mypy_passed':True,
+        'pytest_passed':True,'CPU_protocol_simulation_passed':True,'sources':sources,
+        'plan_sha256':sha(BASE/'plan.json'),'local_test_receipt_sha256':sha(BASE/'local-test-receipt.json'),
+        'tests':checks, 'GPU_initialized':False})
+    files = [p for p in sorted(overlay.rglob('*')) if p.is_file()]
+    write(overlay / 'inventory.json', {'files':[{'path':str(p.relative_to(overlay)),
+        'bytes':p.stat().st_size,'sha256':sha(p)} for p in files]})
+    archive = BASE / 'source-only.tar.gz'
+    with tarfile.open(archive,'x:gz',compresslevel=1) as tf:
+        for p in [*files,overlay/'inventory.json']:
+            tf.add(p,arcname=str(p.relative_to(overlay)),recursive=False)
+    write(BASE/'source-freeze.json',{'source_files':211,'all_207_parent_sources_unchanged':True,
+        'new_sources':sources,'source_archive_sha256':sha(archive),'plan_sha256':sha(BASE/'plan.json'),
+        'operations_sha256':{n:sha(BASE/n) for n in ('prepare.py','collect.py','verify.py','launch.py')},
+        'GPU_model_run_started':False})
+    print(json.dumps({'status':'frozen','sources':211,'source_archive_sha256':sha(archive),'plan_sha256':sha(BASE/'plan.json')}))
+
+if __name__ == '__main__':
+    main()

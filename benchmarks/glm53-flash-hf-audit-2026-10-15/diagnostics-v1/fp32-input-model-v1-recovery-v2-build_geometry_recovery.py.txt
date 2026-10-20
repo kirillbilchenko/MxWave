@@ -1,0 +1,161 @@
+"""Prepare an offline-only verifier correction without changing frozen model sources."""
+
+from __future__ import annotations
+
+import ast
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import shutil
+import sys
+import time
+
+BASE = Path(__file__).parent
+DEST = BASE / 'recovery-v2'
+PARENT = Path('/private/tmp/mxwave-warmed-model-v1/recovery-v2')
+
+
+def sha(path: Path) -> str:
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def replace(text: str, before: str, after: str) -> str:
+    assert text.count(before) == 1, before
+    return text.replace(before, after)
+
+
+def main() -> None:
+    DEST.mkdir()
+    old = '''def verify_decode_mechanism(profiles):
+ from analyze_fp32_input_model import verify_decode_mechanism as check
+ return check(profiles)
+'''
+    new = '''def verify_decode_mechanism(profiles):
+ import analyze_fp32_input_model as original
+ source=Path(original.__file__).read_bytes()
+ assert hashlib.sha256(source).hexdigest()=="05fcca9e8cb7f94ed3089cd7490810464e2e44dbf892ca349eb97bfb90038c0c"
+ before=b'any(v["grid"][1] != 197 for v in fp32)'
+ # Bound native API: M_Global * Split_K / TILE_M = 12608 * 2 / 64.
+ after=b'any(v["grid"][1] != 394 for v in fp32)'
+ assert source.count(before)==1
+ scope=dict(vars(original))
+ exec(compile(source.replace(before,after),"offline_split2_grid_correction","exec"),scope)
+ return scope["verify_decode_mechanism"](profiles)
+'''
+    original = (BASE / 'verify.py').read_text()
+    assert sha(BASE / 'verify.py') == '8ba3017c087833d5d8543c748f562093a6cbac1da0262c197ac80adcfc6af84f'
+    corrected = replace(original, old, new)
+    verifier = DEST / 'verify-recovery-v2.py'
+    verifier.write_text(corrected)
+    sys.path.insert(0, str(BASE / 'cpu-source'))
+    import analyze_fp32_input_model as initial
+    spec = importlib.util.spec_from_file_location('geometry_recovery_verifier', verifier)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    observed = json.loads((BASE / 'failed-mechanism-inspection.json').read_bytes())
+    assert len(observed['traces']) == 6 and observed['restored_health'] == 200
+    grids = {tuple(v['grid']) for t in observed['traces'] for v in t['variants']
+             if 'BF16TripleBitmap_MM_FP32_Kernel' in v['name']}
+    assert grids == {(1, 394, 1)}
+    assert observed['native_library_sha256'] == '20458fa202200f895d5a95edbe1cd85f0d71927485ba102d616718c4957f8d10'
+    assert observed['native_API_sha256'] == '343fbf66a2c5ea1560f195a949cd86786008d897d60c82be55adfe5e3f4750aa'
+    assert 12608 * 2 // (16 * 1 * 4) == 394
+    profiles = []
+    for arm in ('control', 'candidate'):
+        for rank in (0, 1):
+            for rows in (8, 16):
+                label = f'{arm}-c{rows}-profile'
+                variants = [] if arm == 'control' else [
+                    {'name': 'BF16TripleBitmap_MM_Kernel', 'grid': [1, 64, 1], 'count': 34},
+                    {'name': 'BF16TripleBitmap_MM_FP32_Kernel', 'grid': [1, 394, 1], 'count': 34},
+                    {'name': 'MxWaveReduceFP32', 'grid': [12608 * rows // 256, 1, 1], 'count': 34},
+                ]
+                profiles.append({'rank': rank, 'labels': [label], 'steps': [{
+                    'label': label, 'sequence': 0,
+                    'batch': {'has_prefill': False, 'num_tokens_after_padding': rows, 'num_tokens': rows},
+                    'cuda_graph_launches': 1, 'kernel_variants': variants,
+                }]})
+    def rejected(check, values):
+        try:
+            check(values)
+        except ValueError:
+            return True
+        return False
+    assert rejected(initial.verify_decode_mechanism, profiles)
+    assert len(module.verify_decode_mechanism(profiles)) == 8
+    failures = []
+    for name in ('split1_grid', 'split4_grid', 'wrong_output', 'missing_reduce',
+                 'missing_graph', 'reconstruction', 'missing_rank'):
+        values = copy.deepcopy(profiles)
+        step = values[-1]['steps'][0]
+        if name in ('split1_grid', 'split4_grid'):
+            step['kernel_variants'][1]['grid'][1] = 197 if name == 'split1_grid' else 788
+        elif name == 'wrong_output':
+            step['kernel_variants'][0]['grid'][1] = 197
+        elif name == 'missing_reduce':
+            step['kernel_variants'][2]['count'] = 33
+        elif name == 'missing_graph':
+            step['cuda_graph_launches'] = 0
+        elif name == 'reconstruction':
+            step['kernel_variants'].append({'name': 'BF16TripleBitmap_Decompress_Kernel', 'count': 1})
+        else:
+            values.pop()
+        assert rejected(module.verify_decode_mechanism, values), name
+        failures.append(name)
+    checks = {'status': 'passed', 'created_epoch': time.time(), 'GPU_work_run': False,
+              'original_checker_rejects_actual_split2_geometry': True,
+              'corrected_checker_accepts_native_split2_geometry': True,
+              'negative_cases_rejected': failures, 'model_sources_changed': False,
+              'original_verifier_sha256': sha(BASE / 'verify.py'),
+              'corrected_verifier_sha256': sha(verifier)}
+    (DEST / 'recovery-checks.json').write_text(json.dumps(checks, indent=2) + '\n')
+    recover = (PARENT / 'recover.py').read_text().replace('warmed-model-v1', 'fp32-input-model-v1').replace('warmedmodelv1', 'fp32inputmodelv1')
+    recover = recover.replace('3129756,3129755,3134792', '1258389,1258388,1262165')
+    recover = recover.replace('source_files=207', 'source_files=229')
+    recover = recover.replace('latest_warmed_model_recovery', 'latest_fp32_input_model_recovery')
+    before = '''            assert original.count(b'restored["health"]==207') == 1
+            assert corrected == original.replace(b'restored["health"]==207', b'restored["health"]==200')'''
+    after = '''            assert original.count(plan['old_helper'].encode()) == 1
+            assert corrected == original.replace(plan['old_helper'].encode(), plan['new_helper'].encode())'''
+    recover = replace(recover, before, after)
+    recover = replace(recover, "'==207' in failed['error']", "'Input or output projection geometry changed' in failed['error']")
+    old_control_sha = 'd08220b0e0e503461308d4f5356db3e7a4b947e37cf7dc8a0969da3ee0898791'
+    recover = replace(recover, old_control_sha, sha(BASE / 'cpu-source/full_model_control.py'))
+    (DEST / 'recover.py').write_text(recover)
+    retainer = (BASE / 'retain_and_review.py').read_text()
+    retainer = replace(retainer, '/fp32-input-model-v1-evidence-check.json', '/fp32-input-model-v1-recovery-v2-evidence-check.json')
+    retainer = replace(retainer, 'verifier=root/"verify.py"', 'verifier=root/"recovery/verify-recovery-v2.py"')
+    retainer = replace(retainer, '8ba3017c087833d5d8543c748f562093a6cbac1da0262c197ac80adcfc6af84f', sha(verifier))
+    marker = ' (BASE/"cross-host-verification.json").write_text'
+    insert = ''' original=root/"verify.py"
+ recovery_plan=json.loads((root/"recovery/recovery-plan.json").read_bytes())
+ assert sha(original)==recovery_plan["original_verifier_sha256"]
+ assert verifier.read_bytes()==original.read_bytes().replace(recovery_plan["old_helper"].encode(),recovery_plan["new_helper"].encode())
+ assert json.loads((root/"recovery/initial-collector-receipt.json").read_bytes())["status"]=="failed"
+ proof["verifier_recovery"]={"original_failure_preserved":True,"only_split2_grid_expectation_corrected":True,"original_verifier_sha256":sha(original),"corrected_verifier_sha256":sha(verifier),"measurement_sources_and_gates_unchanged":True}
+'''
+    retainer = replace(retainer, marker, insert + marker)
+    (DEST / 'retain_and_review_v2.py').write_text(retainer)
+    for name in ('failed-mechanism-inspection.json', 'native-tiling-proof.json', 'retainer-state.json',
+                 'inspect_failed_mechanism.py', 'build_geometry_recovery.py'):
+        shutil.copyfile(BASE / name, DEST / name)
+    plan = {'status': 'offline_recovery_prepared', 'GPU_experiment_rerun': False,
+            'original_prepared_sha256': sha(BASE / 'prepared.json'),
+            'original_collector_sha256': sha(BASE / 'collect.py'),
+            'original_verifier_sha256': sha(BASE / 'verify.py'),
+            'corrected_verifier_sha256': sha(verifier),
+            'checks_sha256': sha(DEST / 'recovery-checks.json'),
+            'old_helper': old, 'new_helper': new, 'original_failure_preserved': True,
+            'numerical_and_speed_gates_changed': False}
+    (DEST / 'recovery-plan.json').write_text(json.dumps(plan, indent=2) + '\n')
+    for path in DEST.glob('*.py'):
+        ast.parse(path.read_text(), filename=str(path))
+    print(json.dumps(checks, indent=2))
+
+
+if __name__ == '__main__':
+    main()

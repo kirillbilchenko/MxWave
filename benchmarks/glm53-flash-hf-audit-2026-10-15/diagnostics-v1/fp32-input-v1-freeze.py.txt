@@ -1,0 +1,23 @@
+import hashlib,json,pathlib,shutil,sys,tarfile,time
+b=pathlib.Path(__file__).parent;w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');old=pathlib.Path('/private/tmp/mxwave-fp32-speed-v1/evidence');src=w/'integrations/glm53_mxfp4'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+sys.path.insert(0,str(src));from fp32_input_probe import protocol
+prepared=json.loads((old/'prepared.json').read_bytes());prior=json.loads((old/'plan.json').read_bytes());overlay=b/'overlay';overlay.mkdir();(overlay/'src').mkdir()
+new=['fp32_input_policy.py','fp32_input_runtime.py','fp32_input_worker.py','fp32_input_probe.py','benchmark_fp32_input.py','run_fp32_input.py'];hashes={n:sha(src/n) for n in new}
+for n in new:shutil.copyfile(src/n,overlay/'src'/n)
+for n in ('kda_runtime.py','input_row16_dispatch.py','benchmark_fp32_split.py','benchmark_kda_memory.py','prepare_bf16_attention.py','warmed_model_worker.py'):
+ assert sha(src/n)==prepared['bindings'][0]['code'][n],n
+assert (b/'ruff-final.log').read_text().strip()=='All checks passed!' and '770 passed, 1 skipped' in (b/'pytest-final.log').read_text() and 'Success: no issues found in 35 source files' in (b/'mypy.log').read_text()
+plan={'revision':'fp32inputv1','protocol':protocol(),'parent_archive_sha256':'55dde1aedfa17bdf97cb607a51d318edb7c3ae0202ab3081335657cb8aa360cc','precision_archive_sha256':'e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b','parent_source_sha256':prepared['bindings'][0]['code'],'source_sha256':hashes,'expected_source_files':226,'selected_cases':prior['selected_cases'],'native_build_path':prior['native_build_path'],'native_build_sha256':prior['native_build_sha256'],'parent_report_sha256':prior['parent_report_sha256']}
+for rank in (0,1):shutil.copyfile(old/f'parent-rank{rank}.json',overlay/f'parent-rank{rank}.json')
+checks={'all_passed':True,'pytest_passed_count':770,'pytest_skipped_count':1,'ruff_passed':True,'strict_core_mypy_passed':True,'source_sha256':hashes,'logs_sha256':{n:sha(b/n) for n in ('ruff-final.log','pytest-final.log','mypy.log')},'verified_epoch':time.time()}
+for name,obj in [('plan.json',plan),('local-checks.json',checks)]:
+ (b/name).write_text(json.dumps(obj,indent=2)+'\n');shutil.copyfile(b/name,overlay/name)
+shutil.copyfile(old.parent/'cross-host-verification.json',overlay/'parent-cross-host.json')
+files=[{'path':str(p.relative_to(overlay)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in sorted(overlay.rglob('*')) if p.is_file()];(overlay/'inventory.json').write_text(json.dumps({'files':files},indent=2)+'\n')
+archive=b/'source.tar.gz'
+with tarfile.open(archive,'x:gz') as tf:
+ for p in sorted(overlay.rglob('*')):
+  if p.is_file():tf.add(p,arcname=str(p.relative_to(overlay)),recursive=False)
+result={'status':'frozen','archive_sha256':sha(archive),'archive_bytes':archive.stat().st_size,'source_sha256':hashes,'plan_sha256':sha(b/'plan.json'),'parent_sources':220,'new_sources':6,'total_sources':226,'service_paused':False}
+(b/'freeze.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

@@ -1,0 +1,942 @@
+{
+  "payloads_verified": 217,
+  "variants": {
+    "direct5_16experts": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 1,
+          "raw_us": 263.3663972218831,
+          "candidate_us": 268.9231872558594,
+          "time_change_pct": 2.109908512472347,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.840584450496564,
+            39.77429721069643
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 508.4805488586426,
+          "candidate_us": 501.090145111084,
+          "time_change_pct": -1.453428998247308,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -1.5271068847573677,
+            0.11030319074403216
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 16,
+          "raw_us": 532.7408154805502,
+          "candidate_us": 537.339719136556,
+          "time_change_pct": 0.8632534850661733,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            0.07625797754984287,
+            1.587881328401286
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 64,
+          "raw_us": 584.4501495361328,
+          "candidate_us": 886.8794759114584,
+          "time_change_pct": 51.74595756633102,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            59.9686479802255,
+            40.23221401939918
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 256,
+          "raw_us": 1626.2619018554688,
+          "candidate_us": 2375.0757853190103,
+          "time_change_pct": 46.04509781660562,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            47.928715529498355,
+            47.2569449575136
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 1,
+          "raw_us": 265.7546679178874,
+          "candidate_us": 265.3141339619954,
+          "time_change_pct": -0.16576715635643335,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -5.545473659437206,
+            39.28794171820329
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 8,
+          "raw_us": 514.6479924519857,
+          "candidate_us": 502.6591936747233,
+          "time_change_pct": -2.3295143385565376,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -3.806464292291034,
+            -0.4030682287969545
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 16,
+          "raw_us": 529.5856157938639,
+          "candidate_us": 532.5786590576172,
+          "time_change_pct": 0.5651670238940865,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -0.6677764050521562,
+            1.6371406466465954
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 64,
+          "raw_us": 584.2597325642904,
+          "candidate_us": 830.3642908732096,
+          "time_change_pct": 42.12245763177569,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            46.37935879233459,
+            36.2870295184017
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 256,
+          "raw_us": 1658.4986368815105,
+          "candidate_us": 2373.2666015625,
+          "time_change_pct": 43.09728984914778,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            46.96071809394067,
+            48.43784557643747
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 12582912,
+          "retained_bytes": 7867440,
+          "scale_byte_reduction_pct": 37.47520446777344,
+          "raw_fallback_parts": 0,
+          "parts": 48
+        },
+        {
+          "rank": 1,
+          "source_bytes": 12582912,
+          "retained_bytes": 7867440,
+          "scale_byte_reduction_pct": 37.47520446777344,
+          "raw_fallback_parts": 0,
+          "parts": 48
+        }
+      ],
+      "controls_stable": 27,
+      "controls_total": 30,
+      "matching_output_hashes": 0,
+      "traces": [
+        {
+          "file": "test4/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_direct5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        },
+        {
+          "file": "test4/rank1-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_direct5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 379122688,
+      "elapsed_s": 68.81993198394775,
+      "full_model_qualified": false
+    },
+    "async5_16experts": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 1,
+          "raw_us": 266.2794589996338,
+          "candidate_us": 265.829340616862,
+          "time_change_pct": -0.16903984425340468,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -5.396852629568216,
+            35.40560912853006
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 509.4538688659668,
+          "candidate_us": 504.8618634541829,
+          "time_change_pct": -0.9013584334938041,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -3.213535514254484,
+            -1.149451795034706
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 16,
+          "raw_us": 531.4847946166992,
+          "candidate_us": 525.6373405456543,
+          "time_change_pct": -1.1002109806851679,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.8420171712078224,
+            0.7072991875842094
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 64,
+          "raw_us": 587.0719909667969,
+          "candidate_us": 652.6954650878906,
+          "time_change_pct": 11.178096576030526,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            11.025134321006934,
+            8.434680515565285
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 256,
+          "raw_us": 1637.5072479248047,
+          "candidate_us": 2153.792063395182,
+          "time_change_pct": 31.528704140067767,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            34.74277442706977,
+            26.817610357411613
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 1,
+          "raw_us": 271.13386789957684,
+          "candidate_us": 269.11306381225586,
+          "time_change_pct": -0.7453159957388489,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.401005062873185,
+            37.87444780744025
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 8,
+          "raw_us": 522.6991971333822,
+          "candidate_us": 508.7061246236165,
+          "time_change_pct": -2.677079396047921,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -4.06092612172394,
+            0.43742330612641656
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 16,
+          "raw_us": 533.2672119140625,
+          "candidate_us": 529.1653315226237,
+          "time_change_pct": -0.7691979367559276,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -1.8573278692571193,
+            -2.081069552249426
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 64,
+          "raw_us": 586.9690577189127,
+          "candidate_us": 652.234141031901,
+          "time_change_pct": 11.118998941208647,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            11.345087361028616,
+            9.692345951811788
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 256,
+          "raw_us": 1643.0100758870442,
+          "candidate_us": 2160.344441731771,
+          "time_change_pct": 31.486986807760342,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            41.25952274927138,
+            22.297437011733013
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 12582912,
+          "retained_bytes": 7867440,
+          "scale_byte_reduction_pct": 37.47520446777344,
+          "raw_fallback_parts": 0,
+          "parts": 48
+        },
+        {
+          "rank": 1,
+          "source_bytes": 12582912,
+          "retained_bytes": 7867440,
+          "scale_byte_reduction_pct": 37.47520446777344,
+          "raw_fallback_parts": 0,
+          "parts": 48
+        }
+      ],
+      "controls_stable": 27,
+      "controls_total": 30,
+      "matching_output_hashes": 90,
+      "traces": [
+        {
+          "file": "test5/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_async5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        },
+        {
+          "file": "test5/rank1-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_async5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 379122688,
+      "elapsed_s": 67.82656025886536,
+      "full_model_qualified": false
+    },
+    "delta5_16experts": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 1,
+          "raw_us": 270.2245394388835,
+          "candidate_us": 265.5706723531087,
+          "time_change_pct": -1.7222222287577749,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -7.29478965807544,
+            25.283406825320487
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 512.389341990153,
+          "candidate_us": 501.58348083496094,
+          "time_change_pct": -2.108916066290789,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.8651169690090628,
+            -2.475291495410481
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 16,
+          "raw_us": 531.6224098205566,
+          "candidate_us": 522.2842534383138,
+          "time_change_pct": -1.756539267295898,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.0720461220635977,
+            -5.0233094748938
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 64,
+          "raw_us": 582.5994491577148,
+          "candidate_us": 622.2639719645182,
+          "time_change_pct": 6.808197787373094,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            4.999714642760522,
+            -1.185336137999582
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 256,
+          "raw_us": 1632.9519907633464,
+          "candidate_us": 1960.0512186686199,
+          "time_change_pct": 20.03116011710584,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            22.414228286605642,
+            12.488782620234918
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 1,
+          "raw_us": 268.70988210042316,
+          "candidate_us": 265.45173327128094,
+          "time_change_pct": -1.2125154473941357,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -6.346236752824064,
+            23.28802769282079
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 8,
+          "raw_us": 507.8490575154622,
+          "candidate_us": 501.910400390625,
+          "time_change_pct": -1.169374450331906,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -3.3930975651986994,
+            0.48873122152341963
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 16,
+          "raw_us": 532.5653394063314,
+          "candidate_us": 528.9600054423014,
+          "time_change_pct": -0.6769749544814574,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.3064875372152294,
+            0.09910661895051742
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 64,
+          "raw_us": 589.9722417195638,
+          "candidate_us": 618.5578664143881,
+          "time_change_pct": 4.845249093670412,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            3.755165395230109,
+            4.9256243727300975
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 256,
+          "raw_us": 1647.7845509847004,
+          "candidate_us": 1969.5760091145833,
+          "time_change_pct": 19.528733773938068,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            23.220946223681473,
+            12.63926392074306
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 12582912,
+          "retained_bytes": 7867440,
+          "scale_byte_reduction_pct": 37.47520446777344,
+          "raw_fallback_parts": 0,
+          "parts": 48
+        },
+        {
+          "rank": 1,
+          "source_bytes": 12582912,
+          "retained_bytes": 7965712,
+          "scale_byte_reduction_pct": 36.69420878092448,
+          "raw_fallback_parts": 1,
+          "parts": 48
+        }
+      ],
+      "controls_stable": 28,
+      "controls_total": 30,
+      "matching_output_hashes": 90,
+      "traces": [
+        {
+          "file": "test6/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        },
+        {
+          "file": "test6/rank1-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 379220480,
+      "elapsed_s": 66.91739058494568,
+      "full_model_qualified": false
+    },
+    "delta5_288experts": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 1,
+          "raw_us": 272.329584757487,
+          "candidate_us": 263.52267265319824,
+          "time_change_pct": -3.233916767482836,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -5.784574061071945,
+            19.427739663005305
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 1788.0325317382812,
+          "candidate_us": 1738.497543334961,
+          "time_change_pct": -2.7703628163389005,
+          "control_stable": false,
+          "gemm_time_change_pct": [
+            -3.4467345298487495,
+            -1.359166380890664
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 16,
+          "raw_us": 3110.2612813313804,
+          "candidate_us": 3006.4053853352866,
+          "time_change_pct": -3.339137345774279,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -3.1705556110569244,
+            -4.370271725236552
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 64,
+          "raw_us": 7292.536926269531,
+          "candidate_us": 7008.927917480469,
+          "time_change_pct": -3.8890308222839787,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -4.106688486174026,
+            -4.636759566223625
+          ]
+        },
+        {
+          "rank": 0,
+          "rows": 256,
+          "raw_us": 8923.575846354166,
+          "candidate_us": 8610.863240559896,
+          "time_change_pct": -3.504341882430817,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -6.173982002165812,
+            -3.4616876040610034
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 1,
+          "raw_us": 267.73548126220703,
+          "candidate_us": 262.23146120707196,
+          "time_change_pct": -2.0557678904518095,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -3.3544771755177782,
+            27.47071310939937
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 8,
+          "raw_us": 1739.2570495605469,
+          "candidate_us": 1682.7674865722656,
+          "time_change_pct": -3.247913412370773,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -4.36489364490672,
+            -3.5948489036562226
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 16,
+          "raw_us": 3122.459157307943,
+          "candidate_us": 2990.1713053385415,
+          "time_change_pct": -4.236655959447511,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -3.6087427871489997,
+            -3.6899940369181428
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 64,
+          "raw_us": 7320.9747314453125,
+          "candidate_us": 7017.212422688802,
+          "time_change_pct": -4.149205807961332,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.545447823721625,
+            -4.248354433887503
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 256,
+          "raw_us": 8974.331665039062,
+          "candidate_us": 8572.293090820312,
+          "time_change_pct": -4.479872030860587,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -4.98124964881963,
+            -3.771696510329081
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 226492416,
+          "retained_bytes": 142694096,
+          "scale_byte_reduction_pct": 36.99828960277416,
+          "raw_fallback_parts": 11,
+          "parts": 864
+        },
+        {
+          "rank": 1,
+          "source_bytes": 226492416,
+          "retained_bytes": 142792368,
+          "scale_byte_reduction_pct": 36.954900953504776,
+          "raw_fallback_parts": 12,
+          "parts": 864
+        }
+      ],
+      "controls_stable": 29,
+      "controls_total": 30,
+      "matching_output_hashes": 90,
+      "traces": [
+        {
+          "file": "test8/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        },
+        {
+          "file": "test8/rank1-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 2437532160,
+      "elapsed_s": 292.7421567440033,
+      "full_model_qualified": false
+    },
+    "delta5_288experts_repeat": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 1748.6781438191733,
+          "candidate_us": 1703.0075073242188,
+          "time_change_pct": -2.611723412703515,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.6636576533755507,
+            -2.306639002023958
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 226492416,
+          "retained_bytes": 142694096,
+          "scale_byte_reduction_pct": 36.99828960277416,
+          "raw_fallback_parts": 11,
+          "parts": 864
+        }
+      ],
+      "controls_stable": 3,
+      "controls_total": 3,
+      "matching_output_hashes": 9,
+      "traces": [
+        {
+          "file": "test9/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 2436189696,
+      "elapsed_s": 53.05934119224548,
+      "full_model_qualified": false
+    },
+    "delta5_installed_C1_shape": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 1739.2759958902993,
+          "candidate_us": 1703.2370885213218,
+          "time_change_pct": -2.0720637468770398,
+          "control_stable": false,
+          "gemm_time_change_pct": [
+            -2.005108484260454,
+            -2.8835556447236455
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 8,
+          "raw_us": 1746.6557184855144,
+          "candidate_us": 1702.2149403889975,
+          "time_change_pct": -2.5443353046730066,
+          "control_stable": false,
+          "gemm_time_change_pct": [
+            -2.386506848083536,
+            -1.8804544175239357
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 226492416,
+          "retained_bytes": 142694096,
+          "scale_byte_reduction_pct": 36.99828960277416,
+          "raw_fallback_parts": 11,
+          "parts": 864
+        },
+        {
+          "rank": 1,
+          "source_bytes": 226492416,
+          "retained_bytes": 142792368,
+          "scale_byte_reduction_pct": 36.954900953504776,
+          "raw_fallback_parts": 12,
+          "parts": 864
+        }
+      ],
+      "controls_stable": 4,
+      "controls_total": 6,
+      "matching_output_hashes": 18,
+      "traces": [
+        {
+          "file": "test10/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        },
+        {
+          "file": "test10/rank1-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 2436189696,
+      "elapsed_s": 69.76521897315979,
+      "full_model_qualified": false
+    },
+    "delta5_installed_shared_buffers": {
+      "cases": [
+        {
+          "rank": 0,
+          "rows": 8,
+          "raw_us": 1776.7546971639,
+          "candidate_us": 1740.1551564534507,
+          "time_change_pct": -2.059909607604826,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -1.7387566518163422,
+            -1.3902899362611132
+          ]
+        },
+        {
+          "rank": 1,
+          "rows": 8,
+          "raw_us": 1754.6221415201821,
+          "candidate_us": 1701.2884775797525,
+          "time_change_pct": -3.0396096503274572,
+          "control_stable": true,
+          "gemm_time_change_pct": [
+            -2.8822039693447987,
+            -3.5639143591776334
+          ]
+        }
+      ],
+      "storage": [
+        {
+          "rank": 0,
+          "source_bytes": 226492416,
+          "retained_bytes": 142694096,
+          "scale_byte_reduction_pct": 36.99828960277416,
+          "raw_fallback_parts": 11,
+          "parts": 864
+        },
+        {
+          "rank": 1,
+          "source_bytes": 226492416,
+          "retained_bytes": 142792368,
+          "scale_byte_reduction_pct": 36.954900953504776,
+          "raw_fallback_parts": 12,
+          "parts": 864
+        }
+      ],
+      "controls_stable": 6,
+      "controls_total": 6,
+      "matching_output_hashes": 18,
+      "traces": [
+        {
+          "file": "test11/rank0-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        },
+        {
+          "file": "test11/rank1-m8-trace.json",
+          "kernel_count": 32,
+          "kernel_counts": {
+            "void nv_raw::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8,
+            "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)": 8,
+            "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8> >(at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, c10::BFloat16, 4, 8>)": 8,
+            "void nv_delta5::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767172868l, 128, 1, 8, 4, true, 4, 1, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)": 8
+          },
+          "cudaGraphLaunch_events": 8
+        }
+      ],
+      "max_cuda_allocated_bytes": 2436189696,
+      "elapsed_s": 128.67746353149414,
+      "full_model_qualified": false
+    }
+  },
+  "limitations": [
+    "Numerical equality is reported by GPU harness and cross-checked via retained output hashes where available; no independent GPU rerun",
+    "One layer with synthetic activations/routing; TP partitions run sequentially on one GPU, no model-wide all-reduce or serving measurement"
+  ],
+  "service_healthy": true,
+  "full_range_storage": [
+    {
+      "source": 9512681472,
+      "retained": 6022928448,
+      "parts": 36288,
+      "fallbacks": 765,
+      "saved_GiB": 3.250085771083832
+    },
+    {
+      "source": 9512681472,
+      "retained": 6020078560,
+      "parts": 36288,
+      "fallbacks": 736,
+      "saved_GiB": 3.2527399361133575
+    }
+  ],
+  "installed_stock_verified": [
+    {
+      "rank": 0,
+      "rows": 8,
+      "stock_us": 1773.9168167114258,
+      "candidate_us": 1740.1551564534507,
+      "time_reduction_pct": 1.9032267995837682,
+      "raw_over_installed": 1.0015997821463438,
+      "control_difference_pct": 1.1925562698116954,
+      "faster_trials": 25,
+      "trials": 32
+    },
+    {
+      "rank": 1,
+      "rows": 8,
+      "stock_us": 1755.221621195475,
+      "candidate_us": 1701.2884775797525,
+      "time_reduction_pct": 3.0727255729102176,
+      "raw_over_installed": 0.9996584592691579,
+      "control_difference_pct": 0.46414897988318327,
+      "faster_trials": 25,
+      "trials": 32
+    }
+  ],
+  "validation": {
+    "ruff": "pass",
+    "mypy_mxwave": "35 source files pass",
+    "pytest": "832 passed, 1 skipped via python -m pytest",
+    "codec_tests": 18,
+    "bare_pytest_note": "Initial console-entry invocation imported the editable root checkout and failed collection; python -m pytest from this worktree resolves the worktree and passes"
+  }
+}

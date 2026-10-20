@@ -1,0 +1,105 @@
+{
+  "timestamp": "19 October 2026, 08:36:07 UTC",
+  "status": {
+    "phase": "measuring_candidate",
+    "service_paused": true,
+    "started_epoch": 1792396792.4891658,
+    "updated_epoch": 1792398667.8993993,
+    "error": null,
+    "watchdog_pid": 2197964,
+    "checked_epoch": 1792398967.2491384,
+    "head_free_bytes": 5588230144,
+    "arms": [
+      {
+        "arm": "control",
+        "phase": "complete",
+        "status": "complete",
+        "started_epoch": 1792397103.915633,
+        "finished_epoch": 1792398214.7384999,
+        "error": null,
+        "quality": 10,
+        "timing": 36,
+        "profiles": 2,
+        "warmups": 8,
+        "self_comparisons": [
+          {
+            "reference": "control-c1-w3-r0",
+            "candidate": "control-c1-w3-r1",
+            "mean_decode_kl": 0.0,
+            "mean_decode_nll_difference": 0.0,
+            "actual_model_grouping_equal": true,
+            "passed": true
+          },
+          {
+            "reference": "control-c16-w3-r0",
+            "candidate": "control-c16-w3-r1",
+            "mean_decode_kl": 0.0,
+            "mean_decode_nll_difference": 0.0,
+            "actual_model_grouping_equal": true,
+            "passed": true
+          },
+          {
+            "reference": "control-c1-w10-r0",
+            "candidate": "control-c1-w10-r1",
+            "mean_decode_kl": 0.0,
+            "mean_decode_nll_difference": 0.0,
+            "actual_model_grouping_equal": true,
+            "passed": true
+          },
+          {
+            "reference": "control-c16-w10-r0",
+            "candidate": "control-c16-w10-r1",
+            "mean_decode_kl": 0.0,
+            "mean_decode_nll_difference": 0.0,
+            "actual_model_grouping_equal": true,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "arm": "candidate",
+        "phase": "candidate-c16-w3-r1",
+        "status": "running",
+        "started_epoch": 1792398668.192911,
+        "finished_epoch": null,
+        "error": null,
+        "quality": 4,
+        "timing": 0,
+        "profiles": 0,
+        "warmups": 0,
+        "self_comparisons": [
+          {
+            "reference": "candidate-c1-w3-r0",
+            "candidate": "candidate-c1-w3-r1",
+            "mean_decode_kl": 0.0,
+            "mean_decode_nll_difference": 0.0,
+            "actual_model_grouping_equal": true,
+            "passed": true
+          }
+        ]
+      }
+    ],
+    "processes": {
+      "controller_pid": "Ss",
+      "collector_pid": "Ss"
+    },
+    "collection": {
+      "status": "waiting",
+      "started_epoch": 1792396792.4911783
+    }
+  },
+  "documents": [
+    {
+      "document": "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/docs/GLM53_HANDOFF.md",
+      "sha256": "15d3189384953c2d37b177f729a852c178e099f55896874aeebdfb66afa232af"
+    },
+    {
+      "document": "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/docs/GLM53_CURRENT_STATE.md",
+      "sha256": "f5511f79c7a7e1076732e74343350d38923502795828f647c34e5494642d6f67"
+    },
+    {
+      "document": "/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/docs/GLM53_C16_ADMISSION.md",
+      "sha256": "8e0df8e5ba1c58c1954b4202574882089704b155bead916fc0e11d576800ce44"
+    }
+  ]
+}

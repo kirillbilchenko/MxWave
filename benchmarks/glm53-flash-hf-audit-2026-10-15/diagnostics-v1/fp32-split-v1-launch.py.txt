@@ -1,0 +1,40 @@
+"""Launch only the authorized, frozen two-GPU dense-output storage comparison."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='fp32-split-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+import full_model_control as c
+from run_fp32_split import preflight
+
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ receipt=ROOT/(DIR+'-launch.json');assert not receipt.exists()
+ assert not (ROOT/(DIR+'-controller.json')).exists() and not (ROOT/DIR).exists()
+ assert sha(ROOT/(DIR+'-source.tar.gz'))=='709c69b7be7cee4ea755b4d101c693226c43faf3ffbb6726f398570422774305'
+ state=json.loads((ROOT/(DIR+'-preparation-v2.json')).read_bytes())
+ assert state['status']=='passed' and state['source_files']==217
+ prepared=ROOT/(DIR+'-prepared.json')
+ assert sha(prepared)==state['prepared_sha256']=='d3fed2624219b65f19cf169882eb60b482668ec6f6eb92a75e6103c9db353338'
+ assert sha(ROOT/('collect-'+DIR+'-v2.py'))=='2cdc9a1b70df7f4141b39eec0755fee18076ffc8228cc45a47a35d015114e9a3'
+ assert sha(ROOT/('verify-'+DIR+'.py'))=='108c870a3eacd0c9a3abcfd4792a43c91b571134e0bc0355cc8c8c2650fecd77'
+ check=json.loads((ROOT/(DIR+'-cpu-protocol-check.json')).read_bytes());assert check['status']=='passed' and check['verifier_sha256']==sha(ROOT/('verify-'+DIR+'.py'))
+ bound=preflight();assert c.health(8000)
+ originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+ assert all(v['State']['Running'] for v in originals)
+ assert [c.identity(v) for v in originals]==bound['originals']
+ collect=subprocess.Popen(['python3','-S','-u',str(ROOT/('collect-'+DIR+'-v2.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-collector.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ run=subprocess.Popen(['python3','-S','-u',str(ROOT/(DIR+'-src/run_fp32_split.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-controller.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ result={'controller_pid':run.pid,'collector_pid':collect.pid,'started_epoch':time.time(),'source_files':217,
+ 'prepared_sha256':sha(prepared),'plan_sha256':state['plan_sha256'],
+ 'collector_sha256':sha(ROOT/('collect-'+DIR+'-v2.py')),'verifier_sha256':sha(ROOT/('verify-'+DIR+'.py')),
+ 'launcher_sha256':sha(pathlib.Path(__file__)),'protocol':bound['protocol'],'automatic_promotion_allowed':False}
+ c.write(receipt,result)
+ current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+ current.update(active_experiment='fp32splitv1',launch=result,updated_epoch=time.time(),
+  state='Bounded two-GPU FP32 split precision screen, twelve source-bound matrices and unchanged strict gates; no serving policy change or speed claim.',
+  user_resumed_work=True,work_paused_by_user=False)
+ c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',current)
+ print(json.dumps({k:v for k,v in result.items() if k!='protocol'}))
+if __name__=='__main__':main()

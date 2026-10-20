@@ -1,0 +1,76 @@
+"""Retain a read-only candidate snapshot and review its reported startup measurements."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import shlex
+import subprocess
+import sys
+import time
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+REMOTE = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+SOURCE = Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4')
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    prepared = json.loads((BASE/'warmed-model-v1-prepared.json').read_bytes())
+    expected = prepared['bindings'][0]['code']
+    for name in ('startup_preparation.py', 'benchmark_stable_warmup.py', 'stable_dispatch_warmup.py'):
+        assert sha(SOURCE/name) == expected[name]
+    sys.path.insert(0, str(SOURCE))
+    from startup_preparation import validate_startup_report
+    raw = subprocess.check_output(
+        ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+         shlex.join(['cat', REMOTE+'/run-warmedmodelv1/results/candidate-warmed-model.json'])],
+        timeout=30)
+    data = json.loads(raw)
+    if len(data.get('dispatch_startup', [])) != 2:
+        print(json.dumps({'status': 'waiting', 'phase': data.get('phase')}))
+        return
+    captured = time.time()
+    snapshot = BASE/'live'/f'candidate-{time.time_ns()}.json'
+    with snapshot.open('xb') as stream:
+        stream.write(raw)
+    ranks = []
+    for r in sorted(data['dispatch_startup'], key=lambda x:x['rank']):
+        checks = validate_startup_report(r)
+        assert r['checks'] == checks
+        rss = lambda sample: sample['process_memory_kib']['VmRSS'] * 1024
+        ranks.append({
+            'rank':r['rank'], 'warmup_seconds':r['warmup']['seconds'],
+            'startup_checks':checks, 'RSS_reclaimed_bytes':rss(r['trim']['telemetry_before'])-rss(r['trim']['telemetry_after']),
+            'trim_seconds':r['trim']['seconds'],
+            'CUDA_allocated_before':r['CUDA_allocated_before'], 'CUDA_allocated_after':r['CUDA_allocated_after'],
+            'RSS_before_startup_bytes':rss(r['telemetry_before']), 'RSS_after_startup_bytes':rss(r['telemetry_after']),
+            'net_RSS_increase_after_startup_bytes':rss(r['telemetry_after'])-rss(r['telemetry_before']),
+        })
+    control_path = BASE/'live/control-startup-review.json'
+    control = json.loads(control_path.read_bytes())
+    assert sha(Path(control['source_snapshot'])) == control['source_sha256']
+    differences = {
+        key:sum(r[key] for r in ranks)-sum(r[key] for r in control['ranks'])
+        for key in ('RSS_before_startup_bytes', 'RSS_after_startup_bytes', 'CUDA_allocated_after')
+    }
+    result = {'status':'preliminary_loaded_candidate_startup_passed',
+              'source_snapshot':str(snapshot), 'source_sha256':sha(snapshot), 'captured_epoch':captured,
+              'review_script_sha256':sha(Path(__file__)), 'reference_review_sha256':sha(control_path),
+              'ranks':ranks, 'candidate_minus_control_bytes':differences,
+              'final_independent_archive_verification_pending':True,
+              'full_model_measurement_complete':False, 'serving_speed_qualified':False,
+              'limits':['Snapshots are measured before quality testing; final independent archive verification remains pending.',
+                        'RSS and CUDA allocation overlap on Spark and must not be added.',
+                        'Trim reclamation is separate from the net startup RSS change.']}
+    with (BASE/'candidate-startup-review-preliminary.json').open('x') as stream:
+        json.dump(result,stream,indent=2);stream.write('\n')
+    print(json.dumps(result))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,40 @@
+"""Launch only the authorized, frozen two-GPU dense-output storage comparison."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='dense-output-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+import full_model_control as c
+from run_dense_output import preflight
+
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ receipt=ROOT/(DIR+'-launch.json');assert not receipt.exists()
+ assert not (ROOT/(DIR+'-controller.json')).exists() and not (ROOT/DIR).exists()
+ assert sha(ROOT/(DIR+'-source.tar.gz'))=='3ad5d909b2bd7838d4ca2882af3417473b80a1da6264ac87c8c15295b71a408a'
+ state=json.loads((ROOT/(DIR+'-preparation.json')).read_bytes())
+ assert state['status']=='passed' and state['source_files']==213
+ prepared=ROOT/(DIR+'-prepared.json')
+ assert sha(prepared)==state['prepared_sha256']=='3254da0443dfc7d0ade36b8e78ff352621731b434b3aa01646dcca60559d28f0'
+ assert sha(ROOT/('collect-'+DIR+'.py'))=='b2c4a5e404f2c39c97135a87afe346e59c6b462108e5112b708cda98d9f87b1a'
+ assert sha(ROOT/('verify-'+DIR+'.py'))=='655cfaedb203b5ab7aa553f0e0e0c337b8f4ff42c809583c77f8d0cd6e5ebcb2'
+ check=json.loads((ROOT/(DIR+'-cpu-protocol-check.json')).read_bytes());assert check['status']=='passed' and check['verifier_sha256']==sha(ROOT/('verify-'+DIR+'.py'))
+ bound=preflight();assert c.health(8000)
+ originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+ assert all(v['State']['Running'] for v in originals)
+ assert [c.identity(v) for v in originals]==bound['originals']
+ collect=subprocess.Popen(['python3','-S','-u',str(ROOT/('collect-'+DIR+'.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-collector.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ run=subprocess.Popen(['python3','-S','-u',str(ROOT/(DIR+'-src/run_dense_output.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-controller.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ result={'controller_pid':run.pid,'collector_pid':collect.pid,'started_epoch':time.time(),'source_files':213,
+ 'prepared_sha256':sha(prepared),'plan_sha256':state['plan_sha256'],
+ 'collector_sha256':sha(ROOT/('collect-'+DIR+'.py')),'verifier_sha256':sha(ROOT/('verify-'+DIR+'.py')),
+ 'launcher_sha256':sha(pathlib.Path(__file__)),'protocol':bound['protocol'],'automatic_promotion_allowed':False}
+ c.write(receipt,result)
+ current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+ current.update(active_experiment='denseoutputv1',launch=result,updated_epoch=time.time(),
+  state='Bounded two-GPU output-storage comparison at decode/prefill shapes, six actual rank-specific matrices; no serving policy change or automatic promotion.',
+  user_resumed_work=True,work_paused_by_user=False)
+ c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',current)
+ print(json.dumps({k:v for k,v in result.items() if k!='protocol'}))
+if __name__=='__main__':main()

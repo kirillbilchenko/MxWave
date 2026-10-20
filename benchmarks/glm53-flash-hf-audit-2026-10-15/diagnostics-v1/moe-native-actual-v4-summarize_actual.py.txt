@@ -1,0 +1,94 @@
+"""Summarize verified component evidence without changing its frozen decisions."""
+from __future__ import annotations
+
+import hashlib
+import json
+import pathlib
+import statistics
+
+base = pathlib.Path(__file__).parent
+
+
+def read(name):
+    return json.loads((base / name).read_bytes())
+
+
+report = read('actual-evidence/rank1/report.json')
+review = read('actual-mac-independent-review.json')
+profiles = read('actual-profile-review.json')
+proof = read('actual-cross-host-verification.json')
+assert proof['status'] == 'passed' and review['evidence_complete']
+rows = []
+for case, audited, numerical in zip(report['cases'], review['cases'], review['numerics'], strict=True):
+    assert case['tokens'] == audited['tokens'] == numerical['tokens']
+    repeats = numerical['native_repeats']
+    telemetry = {}
+    for arm in ('current', 'native'):
+        samples = []
+        for trial in case['timing']:
+            if trial['arm'] != arm:
+                continue
+            for boundary in ('telemetry_before', 'telemetry_after'):
+                raw = trial[boundary]
+                assert raw['returncode'] == 0
+                sm, mem, temp, power, state = [v.strip() for v in raw['values'].split(',')]
+                assert mem == '[N/A]'
+                samples.append((int(sm), int(temp), float(power), state))
+        assert len(samples) == 32
+        telemetry[arm] = dict(samples=len(samples),
+            sm_clock_MHz=[min(v[0] for v in samples), max(v[0] for v in samples)],
+            temperature_C=[min(v[1] for v in samples), max(v[1] for v in samples)],
+            power_W=[min(v[2] for v in samples), max(v[2] for v in samples)],
+            pstates=sorted({v[3] for v in samples}), memory_clock_available=False)
+    by_arm = {}
+    for profile in profiles['rows']:
+        if profile['tokens'] != case['tokens']:
+            continue
+        assert profile['graph_launches'] == 1 and profile['unassigned_GPU_events'] == 0
+        scale_us = sum(g['duration_sum_us'] for g in profile['groups']
+                       if 'mxwave_decode_moe_scales' in g['name'])
+        expert_us = sum(g['duration_sum_us'] for g in profile['groups']
+                        if '::Marlin<' in g['name'] or 'kernel_cutlass_kernel_' in g['name'])
+        by_arm[profile['arm']] = dict(
+            scale_reconstruction_ms=scale_us / 1000,
+            expert_kernel_sum_ms=expert_us / 1000,
+            all_kernel_sum_ms=profile['kernel_duration_sum_us'] / 1000,
+            kernel_sum_excluding_scale_reconstruction_ms=(profile['kernel_duration_sum_us'] - scale_us) / 1000,
+            graph_launches=profile['graph_launches'], unassigned_GPU_events=0)
+    rows.append(dict(**audited,
+        native_extra_time_percent=-100 * audited['time_reduction_fraction'],
+        reference_reproducer_bitwise_exact=numerical['reference_reproducer_bitwise_exact'],
+        current_bitwise_repeats=sum(v['bitwise_exact'] for v in case['numerics']['current_repeats']),
+        native_bitwise_repeats=sum(v['bitwise_repeat'] for v in repeats), repeats_per_arm=20,
+        native_vs_current=numerical['native_vs_current'],
+        native_repeat_relative_l2=dict(
+            minimum=min(v['vs_first']['relative_l2'] for v in repeats),
+            median=statistics.median(v['vs_first']['relative_l2'] for v in repeats),
+            maximum=max(v['vs_first']['relative_l2'] for v in repeats)),
+        native_repeats_vs_current_relative_l2=dict(
+            minimum=min(v['vs_current']['relative_l2'] for v in repeats),
+            maximum=max(v['vs_current']['relative_l2'] for v in repeats)),
+        boundary_telemetry=telemetry, profiles=by_arm,
+        graph_persistent_allocation_delta_bytes=case['graph_persistent_allocation_delta_bytes'],
+        scratch_bytes=case['scratch_bytes'],
+        benchmark_cuda_allocated_bytes=case['cuda_allocated_bytes'],
+        benchmark_cuda_peak_allocated_bytes=case['cuda_peak_allocated_bytes']))
+
+result = dict(status='complete', decision='do_not_integrate_tested_native_configuration',
+    cases=rows, component_memory=report['component_memory'],
+    native_scale_preparation=report['native_scale_preparation'],
+    high_concurrency_layer_time_gate_passed=False, full_model_KL_qualified=False,
+    full_model_memory_qualified=False, production_promotion=False,
+    source_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+    evidence_archive_sha256=proof['archive_sha256'],
+    limits=[
+        'One actual layer and TP rank; no full-model native quality, throughput or peak-memory result.',
+        'Native component relative L2 and repeat error are not full-model KL.',
+        'Default native heuristic with tune=False; this is not a bound on all native expert implementations.',
+        'Profile sums are single-replay diagnostics; headline timings use separate interleaved trials.',
+        'Subtracting scale reconstruction from a profile is not a measured alternate implementation.',
+        'Boundary telemetry cannot exclude transients; memory-clock telemetry was unavailable.',
+        'Benchmark CUDA peak includes both weight layouts and accumulated graph allocations.',
+    ])
+(base / 'actual-final-findings.json').write_text(json.dumps(result, indent=2) + '\n')
+print(json.dumps(result))

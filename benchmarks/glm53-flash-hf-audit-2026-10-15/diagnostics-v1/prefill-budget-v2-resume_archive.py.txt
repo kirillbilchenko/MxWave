@@ -1,0 +1,27 @@
+"""Resume a verified archive prefix in bounded transfers; never rerun GPU measurements."""
+import hashlib,json,pathlib,shlex,subprocess,time
+BASE=pathlib.Path(__file__).parent
+SSH=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','-o','ServerAliveInterval=5','-o','ServerAliveCountMax=2','spark']
+def sha(p):
+ with p.open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def main():
+ receipt=json.loads((BASE/'spark-evidence-receipt.json').read_bytes());p=BASE/'evidence.tar.gz'
+ size=p.stat().st_size;initial=sha(p)
+ code="import pathlib,hashlib,sys;p=pathlib.Path(sys.argv[1]);n=int(sys.argv[2]);print(hashlib.sha256(p.open('rb').read(n)).hexdigest())"
+ remote=subprocess.check_output([*SSH,shlex.join(['python3','-S','-c',code,receipt['archive'],str(size)])],timeout=45,text=True).strip()
+ assert remote==initial
+ state={'status':'resuming','initial_prefix_bytes':size,'initial_prefix_sha256':initial,'prefix_verified_on_Spark':True,'archive_sha256':receipt['archive_sha256'],'GPU_measurements_unchanged':True,'started_epoch':time.time(),'chunks':[]}
+ log=BASE/'archive-transfer-resumption.json';log.write_text(json.dumps(state,indent=2)+'\n')
+ read="import sys;p=open(sys.argv[1],'rb');p.seek(int(sys.argv[2]));sys.stdout.buffer.write(p.read(int(sys.argv[3])))"
+ while size<receipt['archive_bytes']:
+  count=min(16*1024**2,receipt['archive_bytes']-size)
+  block=subprocess.check_output([*SSH,shlex.join(['python3','-S','-c',read,receipt['archive'],str(size),str(count)])],timeout=55)
+  assert len(block)==count
+  with p.open('ab')as stream:stream.write(block)
+  state['chunks'].append({'offset':size,'bytes':count,'sha256':hashlib.sha256(block).hexdigest()});size+=count
+  state.update(retained_bytes=size,updated_epoch=time.time());log.write_text(json.dumps(state,indent=2)+'\n')
+  print(json.dumps({'retained_bytes':size,'total_bytes':receipt['archive_bytes']}),flush=True)
+ assert sha(p)==receipt['archive_sha256'] and size==receipt['archive_bytes']
+ state.update(status='complete',finished_epoch=time.time(),final_sha256=sha(p));log.write_text(json.dumps(state,indent=2)+'\n')
+ print('Complete archive hash matches independently verified Spark archive',flush=True)
+if __name__=='__main__':main()

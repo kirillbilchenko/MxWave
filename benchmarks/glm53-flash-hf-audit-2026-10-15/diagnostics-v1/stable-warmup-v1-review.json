@@ -1,0 +1,153 @@
+{
+  "status": "complete",
+  "component_passed": true,
+  "payloads": 699,
+  "source_files": 203,
+  "ranks": [
+    {
+      "rank": 0,
+      "status": "complete",
+      "exit_code": 0,
+      "OOMKilled": false,
+      "checks": {
+        "fresh_cache": true,
+        "all_probes_complete": true,
+        "complete_specialization_coverage": true,
+        "exact_integer_guards_and_metadata": true,
+        "no_persistent_fixture_CUDA_allocation": true,
+        "exactly_34_compiled_variants": true,
+        "no_subsequent_cache_change": true,
+        "kernel_sources_unchanged": true,
+        "trim_return_valid": true,
+        "warm_call_bound_passed": true
+      },
+      "component_passed": true,
+      "maximum_warm_call_seconds": 8.579198038205504e-05,
+      "cold_warmup_seconds": 33.701033015036955,
+      "CPU_RSS_change_after_cold_warmup_bytes": 348037120,
+      "CPU_RSS_reclaimed_by_trim_bytes": 13422592,
+      "model_quality_or_serving_speed_qualified": false,
+      "trim": {
+        "glibc": "2.39",
+        "returned": 1,
+        "seconds": 0.008544834039639682,
+        "CPU_before": {
+          "VmHWM": 868900864,
+          "VmRSS": 868900864,
+          "RssAnon": 458473472,
+          "RssFile": 366190592,
+          "RssShmem": 44236800
+        },
+        "CPU_after": {
+          "VmHWM": 867233792,
+          "VmRSS": 855478272,
+          "RssAnon": 445050880,
+          "RssFile": 366190592,
+          "RssShmem": 44236800
+        }
+      },
+      "cold_CPU_before": {
+        "VmHWM": 519548928,
+        "VmRSS": 519548928,
+        "RssAnon": 294301696,
+        "RssFile": 225247232,
+        "RssShmem": 0
+      },
+      "cold_CPU_after": {
+        "VmHWM": 867586048,
+        "VmRSS": 867586048,
+        "RssAnon": 457158656,
+        "RssFile": 366190592,
+        "RssShmem": 44236800
+      },
+      "after_trim_probe_CPU": {
+        "VmHWM": 867233792,
+        "VmRSS": 855764992,
+        "RssAnon": 445337600,
+        "RssFile": 366190592,
+        "RssShmem": 44236800
+      },
+      "cold_CUDA_reserved_before": 0,
+      "cold_CUDA_reserved_after": 2097152,
+      "cache_files": 238,
+      "cache_bytes": 37875064
+    },
+    {
+      "rank": 1,
+      "status": "complete",
+      "exit_code": 0,
+      "OOMKilled": false,
+      "checks": {
+        "fresh_cache": true,
+        "all_probes_complete": true,
+        "complete_specialization_coverage": true,
+        "exact_integer_guards_and_metadata": true,
+        "no_persistent_fixture_CUDA_allocation": true,
+        "exactly_34_compiled_variants": true,
+        "no_subsequent_cache_change": true,
+        "kernel_sources_unchanged": true,
+        "trim_return_valid": true,
+        "warm_call_bound_passed": true
+      },
+      "component_passed": true,
+      "maximum_warm_call_seconds": 9.588798275217414e-05,
+      "cold_warmup_seconds": 34.49805847503012,
+      "CPU_RSS_change_after_cold_warmup_bytes": 346738688,
+      "CPU_RSS_reclaimed_by_trim_bytes": 13541376,
+      "model_quality_or_serving_speed_qualified": false,
+      "trim": {
+        "glibc": "2.39",
+        "returned": 1,
+        "seconds": 0.014691714954096824,
+        "CPU_before": {
+          "VmHWM": 860004352,
+          "VmRSS": 860004352,
+          "RssAnon": 458420224,
+          "RssFile": 357347328,
+          "RssShmem": 44236800
+        },
+        "CPU_after": {
+          "VmHWM": 859017216,
+          "VmRSS": 846462976,
+          "RssAnon": 444878848,
+          "RssFile": 357347328,
+          "RssShmem": 44236800
+        }
+      },
+      "cold_CPU_before": {
+        "VmHWM": 511946752,
+        "VmRSS": 511946752,
+        "RssAnon": 294408192,
+        "RssFile": 217538560,
+        "RssShmem": 0
+      },
+      "cold_CPU_after": {
+        "VmHWM": 858685440,
+        "VmRSS": 858685440,
+        "RssAnon": 457101312,
+        "RssFile": 357347328,
+        "RssShmem": 44236800
+      },
+      "after_trim_probe_CPU": {
+        "VmHWM": 859017216,
+        "VmRSS": 846778368,
+        "RssAnon": 445194240,
+        "RssFile": 357347328,
+        "RssShmem": 44236800
+      },
+      "cold_CUDA_reserved_before": 0,
+      "cold_CUDA_reserved_after": 2097152,
+      "cache_files": 238,
+      "cache_bytes": 37875064
+    }
+  ],
+  "original_service_restored": true,
+  "model_quality_or_serving_speed_qualified": false,
+  "model_CPU_saving_demonstrated": false,
+  "limits": [
+    "Component uses aligned scratch metadata with unchanged kernels, not a loaded model.",
+    "CPU RSS and CUDA allocations overlap on unified-memory Spark; do not add them.",
+    "Warm-call timings include host launch and synchronization under a two-CPU limit.",
+    "Fresh full-model numerical, memory and ordinary serving-speed validation remains required."
+  ]
+}

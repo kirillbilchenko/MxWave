@@ -1,0 +1,157 @@
+"""Describe completed diagnostic groups, retaining client and host clock limitations."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from collections import Counter
+from pathlib import Path
+from statistics import median
+from typing import Any
+
+BASE = Path('/private/tmp/mxwave-latency-probe-v1')
+PARENT = Path('/private/tmp/mxwave-matched-c8-v1/evidence/results/protocol.json')
+
+
+def digest(data: bytes) -> str:
+    """Bind the exact input bytes consumed by this descriptive analysis."""
+    return hashlib.sha256(data).hexdigest()
+
+
+def prompt_hash(ids: list[int]) -> str:
+    """Match the existing observer's explicit token serialization."""
+    return digest(json.dumps(ids, separators=(',', ':')).encode())
+
+
+def analyze(path: Path) -> dict[str, Any]:
+    """Link actual prompt scheduling to client arrivals without assuming GPU completion."""
+    raw = path.read_bytes()
+    data = json.loads(raw)
+    plan_raw = (BASE / 'overlay/plan.json').read_bytes()
+    plan = json.loads(plan_raw)
+    protocol_raw = PARENT.read_bytes()
+    assert digest(protocol_raw) == plan['source_protocol_sha256']
+    assert data['plan_sha256'] == digest(plan_raw)
+    assert data['source_sha256'] == plan['source_sha256']['measure_latency_probe.py']
+    protocol = json.loads(protocol_raw)
+    prompt_sets = {(v['batch'], v['prompt_tokens']): v['prompts'] for v in protocol['timing']}
+    assert len(data['groups']) <= len(plan['groups'])
+    summaries = []
+    for item, spec in zip(data['groups'], plan['groups']):
+        assert all(item[k] == v for k, v in spec.items())
+        assert item['label'] == data['arm'] + '-' + spec['name']
+        if item.get('status') != 'complete' or 'worker_trace' not in item:
+            continue
+        workers = sorted(item['worker_trace'], key=lambda w: w['rank'])
+        assert [w['rank'] for w in workers] == [0, 1]
+        events = workers[0]['events']
+        assert [e['sequence'] for e in events] == list(range(len(events)))
+        prompts = prompt_sets[spec['concurrency'], spec['prompt_tokens']]
+        hashed = [prompt_hash(ids) for ids in prompts]
+        assert len(hashed) == len(set(hashed))
+        outputs = item['measurement']['requests']
+        assert len(outputs) == len(prompts)
+        cumulative: Counter[str] = Counter()
+        first, complete = {}, {}
+        for event in events:
+            assert event['status'] == 'complete'
+            for row in event['prepared']['row_order']:
+                key = row['prompt_sha256']
+                assert key in hashed and row['prompt_tokens'] == spec['prompt_tokens']
+                first.setdefault(key, event)
+                cumulative[key] += row['scheduled_tokens']
+                if cumulative[key] >= row['prompt_tokens']:
+                    complete.setdefault(key, event)
+        assert cumulative == Counter({h: spec['prompt_tokens'] + spec['generated_tokens'] - 1 for h in hashed})
+        rows = []
+        for index, (key, output) in enumerate(zip(hashed, outputs, strict=True)):
+            assert len(output['token_ids']) == spec['generated_tokens']
+            assert sum(a['tokens'] for a in output['arrivals']) == spec['generated_tokens']
+            start = output['request_start_monotonic_ns']
+            arrival = output['arrivals'][0]['monotonic_ns']
+            end = output['request_end_monotonic_ns']
+            assert start <= arrival <= end
+            begin, finish = first[key], complete[key]
+            host_offset = begin['host_start_epoch_ns'] - begin['host_start_monotonic_ns']
+            client_offset = output['request_start_epoch_ns'] - start
+            offsets_agree = abs(host_offset - client_offset) <= 10_000_000
+            row = {
+                'index': index, 'prompt_sha256': key,
+                'raw_ttft_ms': (arrival - start) / 1e6,
+                'initial_forward_sequence': begin['sequence'],
+                'prefill_complete_forward_sequence': finish['sequence'],
+                'head_client_clock_offset_difference_ms': (host_offset - client_offset) / 1e6,
+                'head_client_clock_offsets_agree_within_10ms': offsets_agree,
+                'initial_forward_host_elapsed_ms': begin['host_elapsed_ns'] / 1e6,
+                'initial_forward_host_thread_CPU_ms': begin['host_thread_cpu_ns'] / 1e6,
+                'initial_forward_host_prepare_ms': begin['host_prepare_elapsed_ns'] / 1e6,
+                'prefill_complete_forward_host_elapsed_ms': finish['host_elapsed_ns'] / 1e6,
+                'prefill_complete_forward_host_thread_CPU_ms': finish['host_thread_cpu_ns'] / 1e6,
+            }
+            if offsets_agree:
+                row.update({
+                    'request_to_initial_forward_start_ms': (begin['host_start_monotonic_ns'] - start) / 1e6,
+                    'initial_forward_start_to_first_token_ms': (arrival - begin['host_start_monotonic_ns']) / 1e6,
+                    'prefill_complete_forward_host_end_to_first_token_ms': (arrival - finish['host_end_monotonic_ns']) / 1e6,
+                })
+            if spec['admission'] == 'split':
+                row['first_token_since_resume_call_ms'] = (arrival - item['measurement']['resume_call_monotonic_ns']) / 1e6
+                row['intentional_pause_in_raw_TTFT'] = index < 6
+            rows.append(row)
+        per_rank = []
+        for worker in workers:
+            samples = worker['telemetry']['samples']
+            per_rank.append({
+                'rank': worker['rank'],
+                'clock_MHz': [min(s['sm_MHz'] for s in samples), max(s['sm_MHz'] for s in samples)],
+                'temperature_C': [min(s['temperature_C'] for s in samples), max(s['temperature_C'] for s in samples)],
+                'throttle_reason_counts': dict(Counter(str(s.get('throttle_reasons')) for s in samples)),
+                'telemetry_errors': worker['telemetry']['errors'],
+                'telemetry_limit_reached': worker['telemetry']['limit_reached'],
+                'maximum_sample_gap_ms': max(((b['sample_start_monotonic_ns'] - a['sample_start_monotonic_ns']) / 1e6 for a,b in zip(samples,samples[1:])),default=None),
+                'prefill_forwards': [
+                    {'sequence': e['sequence'], 'rows': e['prepared']['num_tokens'],
+                     'requests': e['prepared']['num_reqs'],
+                     'elapsed_ms': e['host_elapsed_ns'] / 1e6,
+                     'thread_CPU_ms': e['host_thread_cpu_ns'] / 1e6,
+                     'prepare_ms': e['host_prepare_elapsed_ns'] / 1e6}
+                    for e in worker['events'] if e['prepared']['has_prefill']
+                ],
+            })
+        summaries.append({
+            'label': item['label'], 'stage': spec['stage'], 'admission': spec['admission'],
+            'request_count': len(rows), 'median_raw_TTFT_ms': median(r['raw_ttft_ms'] for r in rows),
+            'requests': rows, 'workers': per_rank,
+        })
+    return {
+        'status': 'complete', 'arm': data['arm'], 'input_measurement_complete': data['status'] == 'complete',
+        'source_sha256': digest(Path(__file__).read_bytes()), 'input_sha256': digest(raw),
+        'plan_sha256': digest(plan_raw), 'completed_groups': len(summaries), 'groups': summaries,
+        'limits': [
+            'Descriptive diagnostic; not a new speed gate or independent evidence-archive verification.',
+            'Only head-worker/client timestamps are linked; different hosts do not share monotonic origins.',
+            'Epoch/monotonic offset agreement is a consistency check, not precision clock calibration.',
+            'Host execute end does not mean asynchronous GPU work has completed.',
+            'Controlled split TTFT includes an intentional pause; it is not ordinary serving latency.',
+            'Thread CPU time excludes other threads and does not by itself identify a compilation or scheduling cause.',
+        ],
+    }
+
+
+def main() -> None:
+    """Keep each consumed live or archived result and its report distinct."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    report = analyze(args.input)
+    with args.output.open('x') as handle:
+        json.dump(report, handle, indent=2, allow_nan=False)
+        handle.write('\n')
+    print(json.dumps({k:v for k,v in report.items() if k not in ['groups','limits']}))
+    for group in report['groups']:
+        print(json.dumps({k:v for k,v in group.items() if k != 'requests'}))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,932 @@
+{
+  "status": "passed",
+  "native": {
+    "status": "built_pending_gpu_qualification",
+    "source_sha256": {
+      "utils.h": "0522460334d63c0548e11b2941b00e0b254cc0a11d87250fbedc3c038dc81830",
+      "Reduction_Kernel.cuh": "4f649091c288eecf9464a01bf4a0d711b4d001b2ca347cf3ccba073bc9e7fabf",
+      "MMA_PTX.cuh": "73fa705c9c96ed5093494b1c66569fbb1cccbdcdb2d516abdbe5086b8acd7ff2",
+      "L_API.cu": "6e80669ba4cdae2a284f17712abac918a42d6e71071b4bb01cc3abf8b03b1353",
+      "MatMulUtilities.cuh": "c324b1ab193ddef76f785804cfae6ff60185efedbd82f339d81def5e30015632",
+      "L_Kernel.cuh": "0a08e93c88d0d2eeac3be0e8ed222b6384dbb608ca45d923be8cd761fa166239",
+      "TilingConfig.h": "181fcb52c2e5c496b00f84eecec57ef0e322406ae6dcd92f825b97c7766461f6",
+      "AsyncCopy_PTX.cuh": "0facc996c67607a7b6701e5f0939d9397094b0e015dfd7a5c1daa4bdbecc3a4c",
+      "LICENSE": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
+    },
+    "bridge_sha256": "273fc868b14a2a358728cb4764626bde67133adb0a51a426d434bc90512ac0e9",
+    "builder_sha256": "967f1d0a09a091c98fde31925d1a65cc8a7963689d2bc06fc6e239d2576e302d",
+    "GPU_requested": false,
+    "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Wed_Aug_20_01:57:39_PM_PDT_2025\nCuda compilation tools, release 13.0, V13.0.88\nBuild cuda_13.0.r13.0/compiler.36424714_0\n",
+    "arms": [
+      {
+        "arm": "control",
+        "command": [
+          "nvcc",
+          "-std=c++17",
+          "-O3",
+          "--shared",
+          "-Xcompiler=-fPIC",
+          "-gencode=arch=compute_121,code=sm_121",
+          "-I",
+          "/result/build/control",
+          "/result/build/control/L_API.cu",
+          "/result/build/control/bridge.cu",
+          "-o",
+          "/result/build/libmxwave_split_control.so"
+        ],
+        "source_sha256": {
+          "utils.h": "0522460334d63c0548e11b2941b00e0b254cc0a11d87250fbedc3c038dc81830",
+          "Reduction_Kernel.cuh": "4f649091c288eecf9464a01bf4a0d711b4d001b2ca347cf3ccba073bc9e7fabf",
+          "MMA_PTX.cuh": "73fa705c9c96ed5093494b1c66569fbb1cccbdcdb2d516abdbe5086b8acd7ff2",
+          "L_API.cu": "6e80669ba4cdae2a284f17712abac918a42d6e71071b4bb01cc3abf8b03b1353",
+          "MatMulUtilities.cuh": "c324b1ab193ddef76f785804cfae6ff60185efedbd82f339d81def5e30015632",
+          "L_Kernel.cuh": "0a08e93c88d0d2eeac3be0e8ed222b6384dbb608ca45d923be8cd761fa166239",
+          "TilingConfig.h": "181fcb52c2e5c496b00f84eecec57ef0e322406ae6dcd92f825b97c7766461f6",
+          "AsyncCopy_PTX.cuh": "0facc996c67607a7b6701e5f0939d9397094b0e015dfd7a5c1daa4bdbecc3a4c",
+          "LICENSE": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6",
+          "bridge.cu": "273fc868b14a2a358728cb4764626bde67133adb0a51a426d434bc90512ac0e9"
+        },
+        "library": "libmxwave_split_control.so",
+        "library_sha256": "89cf07f7c43ba2b53d51dba2e69a2524cbfab9cce9337338d92e7b7041c81fdc"
+      },
+      {
+        "arm": "fp32",
+        "command": [
+          "nvcc",
+          "-std=c++17",
+          "-O3",
+          "--shared",
+          "-Xcompiler=-fPIC",
+          "-gencode=arch=compute_121,code=sm_121",
+          "-I",
+          "/result/build/fp32",
+          "/result/build/fp32/L_API.cu",
+          "/result/build/fp32/bridge.cu",
+          "-o",
+          "/result/build/libmxwave_split_fp32.so"
+        ],
+        "source_sha256": {
+          "utils.h": "0522460334d63c0548e11b2941b00e0b254cc0a11d87250fbedc3c038dc81830",
+          "Reduction_Kernel.cuh": "4f649091c288eecf9464a01bf4a0d711b4d001b2ca347cf3ccba073bc9e7fabf",
+          "MMA_PTX.cuh": "73fa705c9c96ed5093494b1c66569fbb1cccbdcdb2d516abdbe5086b8acd7ff2",
+          "L_API.cu": "343fbf66a2c5ea1560f195a949cd86786008d897d60c82be55adfe5e3f4750aa",
+          "MatMulUtilities.cuh": "c324b1ab193ddef76f785804cfae6ff60185efedbd82f339d81def5e30015632",
+          "L_Kernel.cuh": "b9b983a9bf0ce5d0d975b0b6ae916f983717acda5f6e6c0013e0eb6a3112e898",
+          "TilingConfig.h": "181fcb52c2e5c496b00f84eecec57ef0e322406ae6dcd92f825b97c7766461f6",
+          "AsyncCopy_PTX.cuh": "0facc996c67607a7b6701e5f0939d9397094b0e015dfd7a5c1daa4bdbecc3a4c",
+          "LICENSE": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6",
+          "bridge.cu": "996f9d7bcad4d10a5174ca7a5b79149f56bb8436c929e110aa09df7220fb344f"
+        },
+        "library": "libmxwave_split_fp32.so",
+        "library_sha256": "20458fa202200f895d5a95edbe1cd85f0d71927485ba102d616718c4957f8d10"
+      }
+    ]
+  },
+  "fixtures": {
+    "status": "prepared_pending_gpu_qualification",
+    "cases": [
+      {
+        "name": "kda-input-l0-r0",
+        "rank": 0,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.0.self_attn.q_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.k_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.v_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.b_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              32
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.f_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.g_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          }
+        ],
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "logical_weight_sha256": "26b5f3140aa59b6c1f90050c8fcd288ad52e9610d2cc929a8b1bb8f9d42a4af9",
+        "padded_weight_sha256": "7c70ae9cf66b2e89e7d4d2fb103bc8a82ee2b602fc50c79e59baea8c688e61b0",
+        "raw_bytes": 103022592,
+        "native_padding_rows": 32,
+        "retained_bytes": 73394904,
+        "saving_fraction": 0.28758437760913647,
+        "native_metadata": [
+          12608,
+          4096,
+          4048,
+          2464,
+          115
+        ],
+        "artifact": "kda-input-l0-r0.safetensors",
+        "artifact_sha256": "9abe983bffdd76c5298eff33887276cef9bb5bd8dbc62839fb5453f5a63e2c7a",
+        "layer": 0,
+        "kind": "input",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-input-l0-r0.safetensors"
+      },
+      {
+        "name": "kda-output-l0-r0",
+        "rank": 0,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.0.self_attn.o_proj.weight",
+            "axis": 1,
+            "range": [
+              0,
+              4096
+            ]
+          }
+        ],
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "logical_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+        "padded_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+        "raw_bytes": 33554432,
+        "native_padding_rows": 0,
+        "retained_bytes": 23809768,
+        "saving_fraction": 0.29041361808776855,
+        "native_metadata": [
+          4096,
+          4096,
+          4032,
+          232,
+          115
+        ],
+        "artifact": "kda-output-l0-r0.safetensors",
+        "artifact_sha256": "3943d44dc1678fb0cd2db54bb6589d5b898227385676abded660f144c1541f60",
+        "layer": 0,
+        "kind": "output",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-output-l0-r0.safetensors"
+      },
+      {
+        "name": "kda-input-l22-r0",
+        "rank": 0,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.22.self_attn.q_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.k_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.v_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.b_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              32
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.f_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.g_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          }
+        ],
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "logical_weight_sha256": "5b3d203c1d47406f6f8e128f022954801b8a3a67a300f023a7a403695fee71d7",
+        "padded_weight_sha256": "7fcd6ca93b08550dd42b838a97625d4cb46f6fee1fe3037d0fdeab662994c94f",
+        "raw_bytes": 103022592,
+        "native_padding_rows": 32,
+        "retained_bytes": 73264488,
+        "saving_fraction": 0.28885027470479485,
+        "native_metadata": [
+          12608,
+          4096,
+          4048,
+          2728,
+          115
+        ],
+        "artifact": "kda-input-l0-r0.safetensors",
+        "artifact_sha256": "11ef1dd1aba1d16e2fce0081cbda303d3ee03ba2078e5a2dd0f18e792390717b",
+        "layer": 22,
+        "kind": "input",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-input-l22-r0.safetensors"
+      },
+      {
+        "name": "kda-output-l22-r0",
+        "rank": 0,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.22.self_attn.o_proj.weight",
+            "axis": 1,
+            "range": [
+              0,
+              4096
+            ]
+          }
+        ],
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "logical_weight_sha256": "93ad28b2cf086ae56b8ec7c0eb531dddbe4dcd52dba94fc878cc1fe68f0207b3",
+        "padded_weight_sha256": "93ad28b2cf086ae56b8ec7c0eb531dddbe4dcd52dba94fc878cc1fe68f0207b3",
+        "raw_bytes": 33554432,
+        "native_padding_rows": 0,
+        "retained_bytes": 23683592,
+        "saving_fraction": 0.2941739559173584,
+        "native_metadata": [
+          4096,
+          4096,
+          4048,
+          160,
+          115
+        ],
+        "artifact": "kda-output-l0-r0.safetensors",
+        "artifact_sha256": "a2b3d96126d01a75c3465f82e36c0796021ecbf7e30b4c4f60e390f7e69a66c8",
+        "layer": 22,
+        "kind": "output",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-output-l22-r0.safetensors"
+      },
+      {
+        "name": "kda-input-l44-r0",
+        "rank": 0,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.44.self_attn.q_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.k_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.v_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              4096
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.b_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              32
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.f_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.g_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          }
+        ],
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "logical_weight_sha256": "b488c5b2271472097481fba5d8130c8eaa633394aec64cb5866a181bd0c23b49",
+        "padded_weight_sha256": "00c79ff28c62b6b99f64ee8f8c7db9894492af23a477ebd93ba611df695a3133",
+        "raw_bytes": 103022592,
+        "native_padding_rows": 32,
+        "retained_bytes": 73419320,
+        "saving_fraction": 0.28734738104822677,
+        "native_metadata": [
+          12608,
+          4096,
+          4032,
+          2760,
+          115
+        ],
+        "artifact": "kda-input-l0-r0.safetensors",
+        "artifact_sha256": "69f6fb30b02f6aaa21ff1afefb61cefd2ca2e7ee971831d0feaa338f549d024b",
+        "layer": 44,
+        "kind": "input",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-input-l44-r0.safetensors"
+      },
+      {
+        "name": "kda-output-l44-r0",
+        "rank": 0,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.44.self_attn.o_proj.weight",
+            "axis": 1,
+            "range": [
+              0,
+              4096
+            ]
+          }
+        ],
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "logical_weight_sha256": "014dd50be516d96cef944a52b0fafbca8df3e91e78d9130bc6cf09e921d2f2e4",
+        "padded_weight_sha256": "014dd50be516d96cef944a52b0fafbca8df3e91e78d9130bc6cf09e921d2f2e4",
+        "raw_bytes": 33554432,
+        "native_padding_rows": 0,
+        "retained_bytes": 23899064,
+        "saving_fraction": 0.2877523899078369,
+        "native_metadata": [
+          4096,
+          4096,
+          4016,
+          248,
+          116
+        ],
+        "artifact": "kda-output-l0-r0.safetensors",
+        "artifact_sha256": "9d45276c4994c9e604081fabb28f2ee790a249526315552a677285e75911ca8e",
+        "layer": 44,
+        "kind": "output",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-output-l44-r0.safetensors"
+      },
+      {
+        "name": "kda-input-l0-r1",
+        "rank": 1,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.0.self_attn.q_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.k_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.v_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.b_proj.weight",
+            "axis": 0,
+            "range": [
+              32,
+              64
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.f_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          },
+          {
+            "name": "model.language_model.layers.0.self_attn.g_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          }
+        ],
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "logical_weight_sha256": "6388e51135d858b843c4d4607ef4fe24efd96a2a79a9db36cfd9ffa38fd5703b",
+        "padded_weight_sha256": "e04322e2bc4f9d0b4f3a41ea792b50e113dafe6321d2f99852f37b7197ff0a76",
+        "raw_bytes": 103022592,
+        "native_padding_rows": 32,
+        "retained_bytes": 73239112,
+        "saving_fraction": 0.28909658961017015,
+        "native_metadata": [
+          12608,
+          4096,
+          4048,
+          2464,
+          115
+        ],
+        "artifact": "kda-input-l0-r0.safetensors",
+        "artifact_sha256": "ed9ab847525727a2bdc0fac2137983b1123cf801107a8039ff36b10eb3d8a86b",
+        "layer": 0,
+        "kind": "input",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-input-l0-r1.safetensors"
+      },
+      {
+        "name": "kda-output-l0-r1",
+        "rank": 1,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.0.self_attn.o_proj.weight",
+            "axis": 1,
+            "range": [
+              4096,
+              8192
+            ]
+          }
+        ],
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "logical_weight_sha256": "779e569f8f3d1152ced9dfbb03b81ed0651c92ed0132cad16881575c2711b467",
+        "padded_weight_sha256": "779e569f8f3d1152ced9dfbb03b81ed0651c92ed0132cad16881575c2711b467",
+        "raw_bytes": 33554432,
+        "native_padding_rows": 0,
+        "retained_bytes": 23831256,
+        "saving_fraction": 0.28977322578430176,
+        "native_metadata": [
+          4096,
+          4096,
+          4032,
+          232,
+          115
+        ],
+        "artifact": "kda-output-l0-r0.safetensors",
+        "artifact_sha256": "6dac41cd4b84803e525223ce979a31e57e10655529b1fbc1e97a6603311a04c5",
+        "layer": 0,
+        "kind": "output",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-output-l0-r1.safetensors"
+      },
+      {
+        "name": "kda-input-l22-r1",
+        "rank": 1,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.22.self_attn.q_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.k_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.v_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.b_proj.weight",
+            "axis": 0,
+            "range": [
+              32,
+              64
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.f_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          },
+          {
+            "name": "model.language_model.layers.22.self_attn.g_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          }
+        ],
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "logical_weight_sha256": "9ad52e14cdec3bc2dad5f02a06e873d66bbab037ffdadfe9cf3ecb528697f268",
+        "padded_weight_sha256": "f360e466543bbbaa882da2f8fceabc66633ab4fb39c931b44297c0c05d67a55f",
+        "raw_bytes": 103022592,
+        "native_padding_rows": 32,
+        "retained_bytes": 73224152,
+        "saving_fraction": 0.2892418004780932,
+        "native_metadata": [
+          12608,
+          4096,
+          4048,
+          2728,
+          115
+        ],
+        "artifact": "kda-input-l0-r0.safetensors",
+        "artifact_sha256": "65ae372763300c9acef91b5f6f5303a019501cd8e2c20a37bb5165ec35355762",
+        "layer": 22,
+        "kind": "input",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-input-l22-r1.safetensors"
+      },
+      {
+        "name": "kda-output-l22-r1",
+        "rank": 1,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.22.self_attn.o_proj.weight",
+            "axis": 1,
+            "range": [
+              4096,
+              8192
+            ]
+          }
+        ],
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "logical_weight_sha256": "8afe10e71a6a5a23759fde4d0b3b92e9c35c998e0aa7855dfb4d61d1397cfde6",
+        "padded_weight_sha256": "8afe10e71a6a5a23759fde4d0b3b92e9c35c998e0aa7855dfb4d61d1397cfde6",
+        "raw_bytes": 33554432,
+        "native_padding_rows": 0,
+        "retained_bytes": 23682584,
+        "saving_fraction": 0.2942039966583252,
+        "native_metadata": [
+          4096,
+          4096,
+          4048,
+          144,
+          115
+        ],
+        "artifact": "kda-output-l0-r0.safetensors",
+        "artifact_sha256": "dd526c8ef71ff6aa7e42e46af4bd11462c268565cdb3a7cc536596b490544baf",
+        "layer": 22,
+        "kind": "output",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-output-l22-r1.safetensors"
+      },
+      {
+        "name": "kda-input-l44-r1",
+        "rank": 1,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.44.self_attn.q_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.k_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.v_proj.weight",
+            "axis": 0,
+            "range": [
+              4096,
+              8192
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.b_proj.weight",
+            "axis": 0,
+            "range": [
+              32,
+              64
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.f_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          },
+          {
+            "name": "model.language_model.layers.44.self_attn.g_a_proj.weight",
+            "axis": 0,
+            "range": [
+              0,
+              128
+            ]
+          }
+        ],
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "logical_weight_sha256": "a3cdab24acaaab22e98e393be3a8392686b1cbbeac73070c54ea875f21a06f18",
+        "padded_weight_sha256": "41b0c8289b3c831b4005ea7109b9b0822fbb6091cfeb7b54016322b8f8c73325",
+        "raw_bytes": 103022592,
+        "native_padding_rows": 32,
+        "retained_bytes": 73422120,
+        "saving_fraction": 0.2873202025435353,
+        "native_metadata": [
+          12608,
+          4096,
+          4048,
+          2760,
+          115
+        ],
+        "artifact": "kda-input-l0-r0.safetensors",
+        "artifact_sha256": "0cd3b4c81d7321d1ee27e063158c64df7fc93b1a62726d29129b29e0d356e55a",
+        "layer": 44,
+        "kind": "input",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-input-l44-r1.safetensors"
+      },
+      {
+        "name": "kda-output-l44-r1",
+        "rank": 1,
+        "source_tensors": [
+          {
+            "name": "model.language_model.layers.44.self_attn.o_proj.weight",
+            "axis": 1,
+            "range": [
+              4096,
+              8192
+            ]
+          }
+        ],
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "logical_weight_sha256": "b5bf5fa7f1a0b3609c61bf238bdaaa8b76b31c18a9c994c45905ebbe4827f7be",
+        "padded_weight_sha256": "b5bf5fa7f1a0b3609c61bf238bdaaa8b76b31c18a9c994c45905ebbe4827f7be",
+        "raw_bytes": 33554432,
+        "native_padding_rows": 0,
+        "retained_bytes": 23923976,
+        "saving_fraction": 0.28700995445251465,
+        "native_metadata": [
+          4096,
+          4096,
+          4000,
+          280,
+          116
+        ],
+        "artifact": "kda-output-l0-r0.safetensors",
+        "artifact_sha256": "ff6099e524e1ecb3f106eb259119feebb4d7495adbca1c467d485b0954c6bc73",
+        "layer": 44,
+        "kind": "output",
+        "artifact_path": "/audit/bf16-kernels-n8compactv1/build/fixtures/kda-output-l44-r1.safetensors"
+      },
+      {
+        "kind": "head",
+        "rank": 0,
+        "prefix": "language_model.lm_head",
+        "source_key": "lm_head.weight",
+        "shape": [
+          77440,
+          4096
+        ],
+        "source_sha256": "39d08c9cb373c189c4e6faa2061f45d90923549c7dac53db35c73ab20ac3bb00",
+        "raw_bytes": 634388480,
+        "retained_bytes": 447464872,
+        "metadata": [
+          77440,
+          4096,
+          4048,
+          200,
+          115
+        ],
+        "artifact": "head-r0.safetensors",
+        "artifact_bytes": 447465424,
+        "artifact_sha256": "d5d67d6d59012dd29bd5d0b28539b80c19c8fdbec0133ff9497bc504991b61d1",
+        "name": "head-r0",
+        "layer": null,
+        "logical_shape": [
+          77440,
+          4096
+        ],
+        "native_shape": [
+          77440,
+          4096
+        ],
+        "logical_weight_sha256": "39d08c9cb373c189c4e6faa2061f45d90923549c7dac53db35c73ab20ac3bb00",
+        "padded_weight_sha256": "39d08c9cb373c189c4e6faa2061f45d90923549c7dac53db35c73ab20ac3bb00",
+        "native_metadata": [
+          77440,
+          4096,
+          4048,
+          200,
+          115
+        ],
+        "artifact_path": "/audit/vocab-v2/head-r0.safetensors",
+        "source_tensors": [
+          {
+            "name": "lm_head.weight",
+            "axis": 0,
+            "range": [
+              0,
+              77440
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "head",
+        "rank": 1,
+        "prefix": "language_model.lm_head",
+        "source_key": "lm_head.weight",
+        "shape": [
+          77440,
+          4096
+        ],
+        "source_sha256": "b4ee0f3ed236614ba6daa491f93bfbc5684022a954fa9b0e71eb8f0afee89877",
+        "raw_bytes": 634388480,
+        "retained_bytes": 447795656,
+        "metadata": [
+          77440,
+          4096,
+          4048,
+          360,
+          115
+        ],
+        "artifact": "head-r1.safetensors",
+        "artifact_bytes": 447796208,
+        "artifact_sha256": "fa46304937045805a3836534020e0fcd930d2f547bdd8fdca7b4c3d959446ff0",
+        "name": "head-r1",
+        "layer": null,
+        "logical_shape": [
+          77440,
+          4096
+        ],
+        "native_shape": [
+          77440,
+          4096
+        ],
+        "logical_weight_sha256": "b4ee0f3ed236614ba6daa491f93bfbc5684022a954fa9b0e71eb8f0afee89877",
+        "padded_weight_sha256": "b4ee0f3ed236614ba6daa491f93bfbc5684022a954fa9b0e71eb8f0afee89877",
+        "native_metadata": [
+          77440,
+          4096,
+          4048,
+          360,
+          115
+        ],
+        "artifact_path": "/audit/vocab-v2/head-r1.safetensors",
+        "source_tensors": [
+          {
+            "name": "lm_head.weight",
+            "axis": 0,
+            "range": [
+              77440,
+              154880
+            ]
+          }
+        ]
+      }
+    ],
+    "source_metadata": {
+      "config.json": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198",
+      "model.safetensors.index.json": "6d1364a27eef78675390422b1b5230601817fb7460ce816951b2cd515934c85d"
+    },
+    "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+    "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+    "code_sha256": "d8934d510f0fddfd8a685a05a6ed2bc60fdd148029e80545bebb0895e4630d11",
+    "device": "cpu"
+  },
+  "native_build_sha256": "823c001ccaed7a349ff56f747934603bd8809fb2665cb8185623eb653296384b",
+  "transfer": {
+    "archive_sha256": "7376987827745a76aff79bb4fb3e49feb88df1260ad0d019c56b549cf7d04ea7",
+    "archive_bytes": 432906726
+  },
+  "GLM_health": 200,
+  "GPU_used": false,
+  "finished_epoch": 1792360682.4859204
+}

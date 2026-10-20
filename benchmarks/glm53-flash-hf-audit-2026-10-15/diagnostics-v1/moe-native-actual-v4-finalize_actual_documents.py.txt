@@ -1,0 +1,220 @@
+"""Publish the verified native-screen decision while preserving earlier checkpoints."""
+from __future__ import annotations
+
+import datetime
+import json
+import pathlib
+
+base = pathlib.Path(__file__).parent
+work = pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+findings = json.loads((base / 'actual-final-findings.json').read_bytes())
+proof = json.loads((base / 'actual-cross-host-verification.json').read_bytes())
+cleanup = json.loads((base / 'actual-terminal-cleanup.json').read_bytes())
+assert findings['status'] == 'complete' and proof['status'] == 'passed'
+assert cleanup['status'] == 'released'
+stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%d %B %Y, %H:%M UTC')
+diag = '../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/'
+prefix = 'moe-native-actual-v4-'
+table = '\n'.join(
+    f"| {r['tokens']} | {r['median_current_ms']:.6f} | {r['median_native_ms']:.6f} | "
+    f"+{r['native_extra_time_percent']:.2f}% | {100*r['native_vs_current']['relative_l2']:.3f}% |"
+    for r in findings['cases'])
+profile_table = '\n'.join(
+    f"| {r['tokens']} | {r['profiles']['current']['all_kernel_sum_ms']:.3f} | "
+    f"{r['profiles']['native']['scale_reconstruction_ms']:.3f} | "
+    f"{r['profiles']['native']['kernel_sum_excluding_scale_reconstruction_ms']:.3f} |"
+    for r in findings['cases'])
+
+summary = f'''**Native expert screen complete and independently verified, {stamp}.**
+Do not integrate the tested native configuration. Complete layer time is
+**57.28% longer at C8 and 41.81% longer at C16**, failing the prospective
+15% time-reduction requirement. Current replay reproduces captured model outputs
+bitwise and repeats exactly; native output differs by about 4.1% relative L2
+and does not repeat bitwise. This component error is not full-model KL.
+
+Traces attribute about 0.7 ms/layer to native scale reconstruction; native expert
+kernels also take longer. Even the profile sums with reconstruction excluded
+remain above the current complete path. No simple scale-cache change is supported
+as a sufficient fix. This finding covers this backend/configuration and actual
+layer, not every possible native implementation.
+
+The original service is restored with exact container/configuration identities
+and HTTP 200. All owned experiment jobs are terminal and the awake lease is
+released. No configuration is promoted; native full-model KL and memory remain
+unqualified. The existing warmed exact16 compression candidate remains the
+measured option: about 9.37 GiB TP2 saving, about 13% faster C1, and passing
+measured KL. C16 first-token latency remains an unresolved tradeoff.
+The 4,096-budget follow-up also failed its mean-latency and memory policy gates.
+This bounded expert/latency investigation is closed. BF16 caching, new kernels
+and MTP have not started. See [backend evidence](GLM53_MOE_BACKENDS.md) and
+[budget evidence](GLM53_PREFILL_BUDGET_4096.md).
+'''
+for name in ('GLM53_HANDOFF.md', 'GLM53_CURRENT_STATE.md'):
+    path = work / 'docs' / name
+    old = path.read_text()
+    start = old.index('<!-- MOE_BACKEND_STATUS_BEGIN -->')
+    end = old.index('<!-- MOE_BACKEND_STATUS_END -->', start) + len('<!-- MOE_BACKEND_STATUS_END -->')
+    block = '<!-- MOE_BACKEND_STATUS_BEGIN -->\n' + summary + '<!-- MOE_BACKEND_STATUS_END -->'
+    new = old[:start] + block + old[end:]
+    new = new.replace('The native expert screen\nis separately prepared.',
+                      'The separate native expert screen is also complete; see the current status above.')
+    path.write_text(new)
+
+detail = f'''**Final result, {stamp}: no native integration.**
+The bounded `nativeactualv4` screen completed all four actual-input cases and
+failed every complete-layer speed gate. Spark and Mac independently verify
+494 payloads, 68 source/dependency bindings, 217 baseline bindings and four
+traces, with identical decisions (maximum float64 difference 6.94e-18).
+Original service restoration, terminal jobs and the owned awake-lease release
+are verified. No model, backend or serving configuration is promoted.
+
+## Complete-layer measurements
+
+Same GLM-5.3-Flash CT `mxfp4-pack-quantized` checkpoint and exact source weights
+on SM121, layer 23, all 288 experts, TP rank 1. Actual C1/C8/C16/P256 activations
+and routes were captured from the stock model. The current comparator is the
+qualified aligned-scale Marlin path; native uses pinned FlashInfer MXFP8×MXFP4
+with its default heuristic (`tune=False`). Each arm has 16 interleaved timing
+trials, 40 graph replays per trial. Timing includes routing, quantization,
+both GEMMs, activation/reduction, output zeroing and native scale reconstruction.
+
+| Rows | Current layer ms | Native layer ms | Native extra time | Native/current relative L2 |
+|---|---:|---:|---:|---:|
+{table}
+
+All four reference timing controls pass the unchanged 2% stability limit
+(second-half/first-half ratios 1.01484 / 0.99516 / 1.00600 / 0.98346).
+The required C8/C16 time reduction was at least 15%; both fail substantially.
+These are component measurements, not full-model throughput or TTFT.
+PPL, task accuracy and SQNR were not measured by this screen.
+
+## What the traces establish
+
+Each trace contains exactly one replay per arm, all GPU events attributed by
+their host launch correlation, and zero unattributed GPU events. The values
+below are kernel-duration sums from separate profiled replays, not the ordinary
+timing medians above. Native FC1/FC2 kernels include fused ancillary work.
+
+| Rows | Current complete kernel sum, ms | Native scale rebuild, ms | Native remainder, ms |
+|---|---:|---:|---:|
+{profile_table}
+
+Native reconstructs both full expert-scale arrays on every invocation to retain
+the existing lossless scale storage. That costs 0.707–0.772 ms per tested layer.
+The two native expert kernels themselves total 1.690 / 2.766 ms at C8/C16,
+versus current Marlin's 1.518 / 2.292 ms. Even subtracting reconstruction leaves
+the native profile above the current complete path at every tested size.
+This subtraction is a diagnostic, not a measured cache or fused-decoder variant.
+Removing reconstruction alone therefore has no support here as a sufficient
+route to the 15% gate. No further GPU tuning or full-model port is launched.
+
+Actual routing is sparse: only 54 / 78 experts are active at C8/C16, with
+46 / 50 receiving a single token. That explains why concurrency alone should
+not be assumed to produce large dense expert batches. It does not establish
+a hardware limit or rule out a different kernel, layout or tuning strategy.
+
+## Numerical and memory limits
+
+The current complete path reproduces every captured model output bit for bit,
+and all 20 repeats per shape are exact. Native outputs are finite but differ
+from current by 4.084–4.174% relative L2. None of its 20 repeats per shape are
+bitwise identical to its first output. Maximum native self-repeat relative L2
+is 0.3892% / 0.1794% / 0.1590% / 0.0400% for M=1/8/16/256.
+The native FC2 BF16 atomic reduction is a plausible repeat-noise mechanism;
+activation quantization and arithmetic order also differ. Their individual
+contributions were not isolated. No component error is converted into model KL.
+The unchanged full-model KL <=1e-5 gate remains mandatory and untested for native.
+
+Both component layouts retain 1,868,562,464 bytes of weights/scales. Native
+additionally needs 113,246,208 bytes (108 MiB) of reusable raw-scale scratch;
+GPU reconstruction is exact for both arrays. Its reported total scratch is
+113,333,828–125,981,828 bytes across shapes. Both benchmark layouts and graph
+allocations coexist: the measured 4,039,118,336-byte benchmark CUDA peak is
+not a deployment peak or a full-model memory qualification. Detailed per-shape
+allocation and graph deltas are retained in the final findings.
+
+Every timing boundary records telemetry for both arms. C8 SM clocks span
+2457–2470 MHz at 48–52 C, and C16 2418–2463 MHz at 51–53 C in both arms;
+all samples are P0. Across shapes clocks span 2418–2509 MHz and 48–58 C.
+Memory-clock readings are unavailable. Boundary samples cannot exclude transient
+throttling, but stable interleaved controls do not suggest a large arm-specific
+clock/thermal imbalance. Raw samples and power readings remain archived.
+
+## Evidence and operational closure
+
+- [Final findings]({diag}{prefix}actual-final-findings.json)
+- [Independent Spark/Mac verification]({diag}{prefix}actual-cross-host-verification.json)
+- [Attributed trace review]({diag}{prefix}actual-profile-review.json)
+- [Service restoration check]({diag}{prefix}actual-final-service-check.json)
+- [Final retention manifest]({diag}{prefix}final-retention.json)
+- [Preserved v3 setup failure]({diag}moe-native-actual-v3-final-retention.json)
+
+Archive: `moe-native-actual-v4-evidence.tar.gz`, 85,825,023 bytes, SHA256
+`b6fde7108cd6bc91ce7cb4f6240a5fac9e4e5be6de66ad6a59fd0e36b2779c84`.
+It is retained at `/private/tmp/mxwave-moe-native-actual-v4/actual-evidence.tar.gz`
+and under the remote audit `full-model-v1` root. Source archive SHA256
+`f3dfc0f6af612d47b5bcb2f947e3ad91142131d9c90a5d6d199cd4c0bebebfc2`.
+All 58 upstream FlashInfer files remain unchanged and external to the repository;
+their license and provenance are recorded in `CONTRIBUTING.md` and the archive.
+V3's loader setup failure is preserved separately; it yielded no timing result.
+
+The existing warmed exact16 compression candidate remains numerically qualified
+on its measured fixtures, with about 9.37 GiB TP2 saving and about 13% faster C1.
+The [4,096-budget test](GLM53_PREFILL_BUDGET_4096.md) improves C16 throughput/tail
+latency but worsens mean TTFT and extra memory, so it is not adopted. Remaining
+first-token latency is not solved. The authorized bounded investigation is
+complete; no BF16 cache, new kernel project or MTP work has started.
+
+## Historical preparation and checkpoints
+
+The entries below preserve the sequence and original failures. Their pending
+or running language is superseded by the verified result above.
+
+'''
+path = work / 'docs/GLM53_MOE_BACKENDS.md'
+old = path.read_text()
+assert '**Final result,' not in old
+heading, body = old.split('\n\n', 1)
+path.write_text(heading + '\n\n' + detail + body)
+
+pointer = f'''**Native expert follow-up complete, {stamp}.** The tested native path
+takes 57.28% longer at C8 and 41.81% longer at C16, with about 4.1% component
+relative L2 error and non-bitwise repeats. Full-model native KL/memory remain
+unqualified. Traces show both scale-reconstruction overhead and slower expert
+kernels; the 15% layer-time gate fails. Original service is restored, all jobs
+are terminal and the owned lease is released. No integration or configuration
+promotion. The bounded expert/latency investigation is closed; retain the
+qualified warmed exact16 candidate. See [verified native result](GLM53_MOE_BACKENDS.md).
+
+'''
+for name in ('GLM53_SPEED_OPTIONS.md', 'GLM53_LOSSLESS_RUNTIME_HANDOFF.md'):
+    path = work / 'docs' / name
+    heading, body = path.read_text().split('\n\n', 1)
+    path.write_text(heading + '\n\n' + pointer + body)
+
+readme = f'''**Native expert follow-up, 19 October: complete and independently verified.**
+Same GLM-5.3-Flash CT MXFP4 source weights on SM121; complete routed layer 23,
+TP rank 1, all 288 experts, actual captured inputs. The comparator is the current
+aligned-scale Marlin path. Native includes FP8 activation quantization and
+lossless scale reconstruction in each timed invocation.
+
+| Rows | Current layer ms | Native layer ms | Native extra time | Native/current relative L2 |
+|---|---:|---:|---:|---:|
+{table}
+
+Sixteen interleaved trials per arm/shape, 40 graph replays each; all reference
+timing controls pass. The C8/C16 requirement of at least 15% time reduction
+fails. Current replay and all repeats are bitwise exact; native repeats differ.
+These are component results; full-model native KL, throughput, peak memory,
+PPL, task accuracy and SQNR remain unmeasured. No native integration or promotion.
+Scale rebuild costs about 0.7 ms/layer, and native expert kernels also take longer.
+494 payloads independently verify on Spark/Mac; service restoration is complete.
+See [traces, numerical limits and retained evidence](docs/GLM53_MOE_BACKENDS.md).
+
+'''
+path = work / 'README.md'
+old = path.read_text()
+anchor = '**4,096-token scheduler-budget follow-up, 19 October: independently verified.**'
+assert old.count(anchor) == 1 and '**Native expert follow-up, 19 October:' not in old
+path.write_text(old.replace(anchor, readme + anchor))
+print(json.dumps(dict(status='complete', timestamp=stamp, documents_updated=6)))

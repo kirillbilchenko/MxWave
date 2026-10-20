@@ -1,0 +1,27 @@
+{
+  "status": "complete",
+  "started": 1792436122.7235913,
+  "finished": 1792436146.490107,
+  "tensor_count": 36288,
+  "ranks": [
+    {
+      "source": 9512681472,
+      "retained": 6022928448,
+      "parts": 36288,
+      "fallbacks": 765,
+      "saved_GiB": 3.250085771083832
+    },
+    {
+      "source": 9512681472,
+      "retained": 6020078560,
+      "parts": 36288,
+      "fallbacks": 736,
+      "saved_GiB": 3.2527399361133575
+    }
+  ],
+  "assumptions": [
+    "Source bytes are finite positive normal E4M3; the existing power-of-two Marlin transformation preserves byte span within each projection",
+    "Exact byte-offset eligibility and byte recovery verified separately on actual post-Marlin GPU fixtures",
+    "Counts include 32-byte per-part pointer table, 32-byte palette for eligible parts, and 24-byte per-family descriptor; allocator rounding and model integration are not measured"
+  ]
+}

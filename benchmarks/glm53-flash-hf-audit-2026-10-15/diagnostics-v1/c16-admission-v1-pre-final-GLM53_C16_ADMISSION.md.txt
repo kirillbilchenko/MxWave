@@ -1,0 +1,103 @@
+# Final short-C16 admission experiment
+
+<!-- C16_LIVE_START -->
+**Live C16 admission status: 19 October 2026, 08:56:30 UTC.** Phase `complete`; service paused: False.
+
+Control: 10/10 quality groups recorded, 10 complete; 36/36 timing groups, 2/2 ordinary profile sessions; 4 completed self-repeat checks pass. Current phase `complete`.
+
+Candidate: 10/10 quality groups recorded, 10 complete; 36/36 timing groups, 2/2 ordinary profile sessions; 4 completed self-repeat checks pass. Current phase `complete`.
+
+Complete timing cells below are preliminary and await independent archive verification; every declared repetition is included.
+
+| Arm | Case | Window | Trials | Median tok/s | Median TTFT |
+|---|---|---:|---:|---:|---:|
+| control | c16-short | 3 ms | 12 | 80.417 | 2.025473 s |
+| control | c16-short | 10 ms | 12 | 80.657 | 1.382793 s |
+| control | c1-short | 3 ms | 6 | 14.856 | 0.375959 s |
+| control | c1-short | 10 ms | 6 | 14.835 | 0.379790 s |
+| candidate | c16-short | 3 ms | 12 | 81.671 | 2.132724 s |
+| candidate | c16-short | 10 ms | 12 | 82.344 | 1.694334 s |
+| candidate | c1-short | 3 ms | 6 | 16.745 | 0.403606 s |
+| candidate | c1-short | 10 ms | 6 | 16.691 | 0.412472 s |
+
+Completed ordinary-profile metadata (one profile/window/arm, raw GPU trace verification pending):
+- control at 3 ms: 4 prefill-containing forwards, row counts [1024, 260, 2048, 785].
+- control at 10 ms: 3 prefill-containing forwards, row counts [2048, 2048, 23].
+- candidate at 3 ms: 3 prefill-containing forwards, row counts [768, 2048, 1293].
+- candidate at 10 ms: 3 prefill-containing forwards, row counts [2048, 2048, 23].
+These separately profiled samples do not count prefill forwards in every ordinary timing trial.
+
+User-requested FP32 KL audit is complete on CPU: 787 retained files rehashed, exact native source adaptations reproduced. The qualified route already uses FP32 accumulation; split-K=2 changes its grouping. Reverting to the qualified route is the tested numerical recovery and preserves compression. The audit does not locate the first differing layer or establish a kernel bug. No runtime was changed or additional GPU experiment launched. Evidence: `/private/tmp/mxwave-c16-admission-v1/fp32-kl-audit.json`.
+
+Completed controller review (independent archive review pending): numerical gate True, policy gate True, all 1188 timed output pairs match: True. Cross-arm KL is C1 5.803778255e-6 / C16 8.919345724e-7. This does not remove the observed +311.5 ms same-window C16 TTFT gap.
+
+Final paired quality, admission benefit, graph/prefill trace review and independent archive verification are pending. No latency-success or promotion claim.
+
+Original service restoration is complete. The initial collector failed because profiler file ownership rejected hardlinks; its failure receipt/log are preserved. A separate collector resumes byte-checked retention and copies head traces. Results, 211 frozen sources, verifier and gates are unchanged; this is archival recovery only.
+<!-- C16_LIVE_END -->
+
+**19 October 2026, 08:09 UTC: final C16 admission run launched.** Both actual CPU serving
+preflights passed. Revision `c16admissionv1`, controller **2193910**,
+collector **2193909**, restoration watchdog **2197964**.
+Latest phase: `measuring_control`; original service paused: **True**.
+No model result is claimed. The 3/10 ms comparison uses the qualified warmed
+exact16 kernel; the failed input-FP32 route is excluded. All 211 sources are
+frozen and the unchanged 207-file parent is verified on both nodes.
+Prepared receipt SHA256: `ec6bd69fb31ec64a18c93d9b29ebca24e0ccad02fdd6a58b36a78021fd51f5ef`.
+The bounded awake lease is retained in `c16-admission-v1-awake-lease.json`.
+[Preparation, checks and operational receipts](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/c16-admission-v1-preparation-retention.json)
+are retained. Keep the controller/collector singular; original service restoration
+and independent Spark/Mac verification remain required before a final result.
+
+**19 October 2026, 07:59 UTC: the user has resumed the final C16 admission experiment.**
+Compare **3 versus 10 ms** in both stock and the qualified warmed exact16
+compressed arm. Short C16/P256 is primary (12 repetitions/window/arm), with
+short C1/P256 delay controls (six repetitions/window/arm), 64 output tokens.
+This is the last compression experiment; further kernel/throughput tuning stops.
+No latency-success claim is made before measurement. Historical paused statements
+below are superseded for this explicitly requested experiment.
+
+Preparation is frozen at **211 source files**: all 207 qualified parent files
+unchanged plus four admission measurement/protocol/controller/reviewer additions.
+The failed input-FP32 route is excluded. **796 tests / one GPU skip, Ruff,
+strict core mypy and full CPU workload simulation pass**. The protocol retains
+72 timing groups / 792 requests / 50,688 output tokens, 20 quality captures /
+94 comparisons and 16 worker traces. Policy order is balanced, all trials remain,
+and KL <=1e-5 / absolute mean NLL <=1e-4 are unchanged. Original 5% compression
+speed gates are reported separately; throughput parity does not trigger tuning.
+Six negative mechanism fixtures reject wrong kernels/geometry or missing replay.
+
+Both actual serving-CLI CPU preflights are being checked before any GPU launch.
+GLM remains healthy. Completed FP32 evidence is independently hashed on the worker
+under `ROOT/retained-c16-admission-v1`; head free space is now 6,825,943,040 bytes.
+All canonical archives, model inputs and source snapshots remain. New evidence
+uses hardlinks for immutable completed head payloads to avoid redundant copies.
+Local preparation: `/private/tmp/mxwave-c16-admission-v1`.
+Frozen archive SHA256: `0ad0d869d7a8ac2810fa59ffc1715eeeedc24e5361f882816f957dd7f2ad4bcd`.
+Plan SHA256: `b85013c785af0cd230f4739bb2faf527e495018f390dd4464b30e6a68716c9a4`.
+No controller has launched at this checkpoint; automatic restoration and evidence
+collection will accompany the run. See [admission protocol](GLM53_C16_ADMISSION.md).
+
+The candidate is the numerically qualified warmed exact16 model, not the failed
+input-FP32 variant. Both arms keep native mHC, deterministic sparse/expert order,
+startup warmup/trim, graph sizes 1/2/4/8/16, 4 GiB KV per rank, 16 sequences and
+a 2,048-token budget. No MTP or kernel implementation change is part of this run.
+
+The two idle admission windows are interleaved within each arm with balanced
+order. Two fresh loads have fixed stock-then-compressed order. Quality compares
+all same-concurrency window/repeat/arm combinations plus separately profiled C16
+quality captures. Actual worker grouping must match. Ordinary timing uses native
+admission without controlled pause/resume or profiling; separate profiles retain
+prefill counts, reconstruction cost and actual C16 graph replay.
+
+The policy benefit gate requires at least 5% C16 TTFT improvement in the compressed
+arm, no more than 5% stock C16 TTFT regression, at least 98% throughput retention,
+and at most 15 ms added C1 TTFT, with quality and timed output checks passing.
+The actual compressed-versus-stock TTFT gap is reported separately: passing the
+policy gate alone cannot establish that latency is solved. Short-C16 results do
+not establish every concurrency or prompt length. Sixteen 256-token prompts still
+require at least two prefill forwards under the fixed 2,048-token budget.
+
+No result is yet claimed. All earlier failed gates remain retained. Both machines
+will independently verify the final evidence and the original GLM service will
+be restored before concluding the experiment.

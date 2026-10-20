@@ -1,0 +1,514 @@
+# GLM lossless experiment: current state and next steps
+
+<!-- C16_LIVE_START -->
+**Live C16 admission status: 19 October 2026, 08:56:30 UTC.** Phase `complete`; service paused: False.
+
+Control: 10/10 quality groups recorded, 10 complete; 36/36 timing groups, 2/2 ordinary profile sessions; 4 completed self-repeat checks pass. Current phase `complete`.
+
+Candidate: 10/10 quality groups recorded, 10 complete; 36/36 timing groups, 2/2 ordinary profile sessions; 4 completed self-repeat checks pass. Current phase `complete`.
+
+Complete timing cells below are preliminary and await independent archive verification; every declared repetition is included.
+
+| Arm | Case | Window | Trials | Median tok/s | Median TTFT |
+|---|---|---:|---:|---:|---:|
+| control | c16-short | 3 ms | 12 | 80.417 | 2.025473 s |
+| control | c16-short | 10 ms | 12 | 80.657 | 1.382793 s |
+| control | c1-short | 3 ms | 6 | 14.856 | 0.375959 s |
+| control | c1-short | 10 ms | 6 | 14.835 | 0.379790 s |
+| candidate | c16-short | 3 ms | 12 | 81.671 | 2.132724 s |
+| candidate | c16-short | 10 ms | 12 | 82.344 | 1.694334 s |
+| candidate | c1-short | 3 ms | 6 | 16.745 | 0.403606 s |
+| candidate | c1-short | 10 ms | 6 | 16.691 | 0.412472 s |
+
+Completed ordinary-profile metadata (one profile/window/arm, raw GPU trace verification pending):
+- control at 3 ms: 4 prefill-containing forwards, row counts [1024, 260, 2048, 785].
+- control at 10 ms: 3 prefill-containing forwards, row counts [2048, 2048, 23].
+- candidate at 3 ms: 3 prefill-containing forwards, row counts [768, 2048, 1293].
+- candidate at 10 ms: 3 prefill-containing forwards, row counts [2048, 2048, 23].
+These separately profiled samples do not count prefill forwards in every ordinary timing trial.
+
+User-requested FP32 KL audit is complete on CPU: 787 retained files rehashed, exact native source adaptations reproduced. The qualified route already uses FP32 accumulation; split-K=2 changes its grouping. Reverting to the qualified route is the tested numerical recovery and preserves compression. The audit does not locate the first differing layer or establish a kernel bug. No runtime was changed or additional GPU experiment launched. Evidence: `/private/tmp/mxwave-c16-admission-v1/fp32-kl-audit.json`.
+
+Completed controller review (independent archive review pending): numerical gate True, policy gate True, all 1188 timed output pairs match: True. Cross-arm KL is C1 5.803778255e-6 / C16 8.919345724e-7. This does not remove the observed +311.5 ms same-window C16 TTFT gap.
+
+Final paired quality, admission benefit, graph/prefill trace review and independent archive verification are pending. No latency-success or promotion claim.
+
+Original service restoration is complete. The initial collector failed because profiler file ownership rejected hardlinks; its failure receipt/log are preserved. A separate collector resumes byte-checked retention and copies head traces. Results, 211 frozen sources, verifier and gates are unchanged; this is archival recovery only.
+<!-- C16_LIVE_END -->
+
+**19 October 2026, 08:09 UTC: final C16 admission run launched.** Both actual CPU serving
+preflights passed. Revision `c16admissionv1`, controller **2193910**,
+collector **2193909**, restoration watchdog **2197964**.
+Latest phase: `measuring_control`; original service paused: **True**.
+No model result is claimed. The 3/10 ms comparison uses the qualified warmed
+exact16 kernel; the failed input-FP32 route is excluded. All 211 sources are
+frozen and the unchanged 207-file parent is verified on both nodes.
+Prepared receipt SHA256: `ec6bd69fb31ec64a18c93d9b29ebca24e0ccad02fdd6a58b36a78021fd51f5ef`.
+The bounded awake lease is retained in `c16-admission-v1-awake-lease.json`.
+[Preparation, checks and operational receipts](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/c16-admission-v1-preparation-retention.json)
+are retained. Keep the controller/collector singular; original service restoration
+and independent Spark/Mac verification remain required before a final result.
+
+**19 October 2026, 07:59 UTC: the user has resumed the final C16 admission experiment.**
+Compare **3 versus 10 ms** in both stock and the qualified warmed exact16
+compressed arm. Short C16/P256 is primary (12 repetitions/window/arm), with
+short C1/P256 delay controls (six repetitions/window/arm), 64 output tokens.
+This is the last compression experiment; further kernel/throughput tuning stops.
+No latency-success claim is made before measurement. Historical paused statements
+below are superseded for this explicitly requested experiment.
+
+Preparation is frozen at **211 source files**: all 207 qualified parent files
+unchanged plus four admission measurement/protocol/controller/reviewer additions.
+The failed input-FP32 route is excluded. **796 tests / one GPU skip, Ruff,
+strict core mypy and full CPU workload simulation pass**. The protocol retains
+72 timing groups / 792 requests / 50,688 output tokens, 20 quality captures /
+94 comparisons and 16 worker traces. Policy order is balanced, all trials remain,
+and KL <=1e-5 / absolute mean NLL <=1e-4 are unchanged. Original 5% compression
+speed gates are reported separately; throughput parity does not trigger tuning.
+Six negative mechanism fixtures reject wrong kernels/geometry or missing replay.
+
+Both actual serving-CLI CPU preflights are being checked before any GPU launch.
+GLM remains healthy. Completed FP32 evidence is independently hashed on the worker
+under `ROOT/retained-c16-admission-v1`; head free space is now 6,825,943,040 bytes.
+All canonical archives, model inputs and source snapshots remain. New evidence
+uses hardlinks for immutable completed head payloads to avoid redundant copies.
+Local preparation: `/private/tmp/mxwave-c16-admission-v1`.
+Frozen archive SHA256: `0ad0d869d7a8ac2810fa59ffc1715eeeedc24e5361f882816f957dd7f2ad4bcd`.
+Plan SHA256: `b85013c785af0cd230f4739bb2faf527e495018f390dd4464b30e6a68716c9a4`.
+No controller has launched at this checkpoint; automatic restoration and evidence
+collection will accompany the run. See [admission protocol](GLM53_C16_ADMISSION.md).
+
+Historical checkpoint before this resumed experiment:
+
+Updated **19 October 2026, 07:43 UTC**. All current measurements, independent reviews and
+retention are finished. [Handoff](GLM53_HANDOFF.md) / [full result](GLM53_FP32_INPUT_MODEL.md).
+
+**Keep the preceding warmed exact16 candidate. The new input-FP32 route fails
+C16 qualification:** KL **1.601802484e-5 > 1e-5**, reproducible in all ten C16
+cross-arm comparisons. C1/C8 pass; all within-arm repeats are exact and all 300
+timed output pairs match. This is an arithmetic difference between candidates,
+not the earlier repeatability noise. Spark/Mac agree after independently checking
+1,634 payloads / 229 sources / 12 traces. No configuration is promoted.
+
+The failed new candidate measures C1 +12.24-14.78% throughput, C8/C16 -2.03%
+to +3.13%, with the same **9.367162 GiB TP2 CUDA saving**. Short-C1 TTFT rises
+**41 ms**, short-C16 **132 ms**; the latter remains admission-confounded.
+These latency numbers do not replace the qualified fallback's +38 ms / +442 ms.
+Mixed KDA kernel sums improve modestly to ~20-21 ms, while expert work remains
+~60-61 ms at C8 / ~97-98 ms at C16. No CPU-memory gain is established.
+
+The original GLM is restored healthy. Controllers, recovery and Mac retention
+have finished; the owned awake lease is released. An offline checker correction
+accounts for split-2 grid geometry (394 blocks, not 197); all original sources,
+failed logs and numerical/performance gates remain preserved. No GPU rerun.
+
+The qualified fallback below still passes all 46 numerical checks, gives C1
++11.82-13.28%, near-parity C8/C16 and the same CUDA saving. This is finite
+qualification, not universal zero-loss inference. Its original speed/TTFT gates
+remain failed. User scope ends further compression-kernel optimization; next
+proposed test is **3 versus 10 ms admission** with the fallback and short-C1
+controls, then MTP. Both are unlaunched. Three local admission modules remain
+unfinished/unvalidated; the broader goal is still paused pending the next phase.
+
+Historical checkpoints below retain their original evidence and failures;
+forward-looking statements in them are superseded by this snapshot.
+
+**18 October 2026, 22:50 UTC integration follow-up:** input-only FP32 split 2 passes
+the independently verified GPU integration fixture (**434 payloads / 227
+sources**): 120 retained-output checks, 66 native-fallback checks, compiled
+captures and six two-stream stress fixtures. The existing pool is reused with
+zero retained replay growth; a third stream is rejected. Both GPU jobs, retention
+and exact original-service restoration are complete; the awake lease is released.
+This adds no full-model quality/speed or CPU-saving result. The 216 prior exact-word
+failures and two input timing repeat failures remain failed. Fresh matched model
+qualification is next, after evidence-storage preparation. See the [handoff](GLM53_HANDOFF.md).
+
+**18 October 2026, 22:31 UTC speed follow-up:** FP32 timing independently verifies on
+Spark/Mac (**246 payloads / 220 sources / 884,736 events**). Input split 2 saves
+about **7-8% of component time** (46/48 strict timing conditions pass; two M8
+pressure repeat controls fail). Output gains shrink substantially under pressure;
+the broad screen fails 78/288 conditions. Prior 216 exact-word failures remain
+failed. No new full-model quality/speed or CPU-saving claim is made. GLM is
+restored healthy, all jobs/retention complete and the owned awake lease released.
+Next is a bounded input-only split-2 model probe under unchanged KL/NLL limits.
+See the [handoff](GLM53_HANDOFF.md) for measurements, controls and provenance.
+
+**18 October 22:12 UTC precision follow-up:** FP32 split partials are independently
+verified on Spark/Mac (2,227 payloads / 217 sources). All 576 comparisons pass
+the 0.001 relative-error bound; all 144 basis cases are exact. However, all 216
+random M4/M8 cases fail the retained exact-word gate, despite about 22-26 times
+lower relative error than the old BF16-partial route. Source/storage, guards,
+repeats and graph checks pass. No speed, model-KL or CPU-saving result is measured,
+and no route is promoted. GLM is restored healthy; all jobs and retention are
+complete. Next comes paired component timing, then any justified exploratory
+model test under the unchanged KL/NLL limits. See the [handoff](GLM53_HANDOFF.md).
+
+**18 October 21:52 UTC follow-up:** dense-output replacement is rejected by its
+frozen component screen. Spark/Mac independently verify **270 payloads / 213
+sources / 221,184 timing samples**. All six matrices pass storage/execution and
+numerical checks, but warm-cache C1 adds **56-68 us per projection**: 12 stable
+cost failures plus six separately unstable conditions, all retained. Prefill
+saves about **205-284 us/projection** in graph + pressure measurements; these
+are not serving-speed results. No dense-only policy is integrated. The warmed
+exact16 candidate below remains current. GLM is restored healthy, all jobs and
+retention are complete, and the owned awake lease is released. An FP32 split-K
+partial-storage idea is source-audited only; no new kernel result exists.
+See the [handoff](GLM53_HANDOFF.md) for evidence and limitations.
+
+**Verified full-model result, 18 October 21:10 UTC:** startup warming works in
+the measured workload. All **1,612 payloads / 207 sources / 12 worker traces**
+independently verify on Spark and Mac. All **46 numerical comparisons** pass at
+the unchanged KL <=1e-5 / absolute mean NLL <=1e-4 limits; all **300 paired timed
+output sequences** match. Native mHC and matched quality grouping remain in both
+arms. This is finite numerical qualification, not universal bitwise equivalence.
+
+| Workload, 64 output tokens | Stock tok/s | Compressed tok/s | Change | Median TTFT, stock -> compressed |
+|---|---:|---:|---:|---:|
+| C1 / 256 prompt tokens | 14.784 | 16.748 | +13.28% | 0.384 -> 0.422 s |
+| C1 / 2,048 prompt tokens | 12.518 | 13.999 | +11.82% | 1.183 -> 1.205 s |
+| C8 / 256 prompt tokens | 60.757 | 62.564 | +2.97% | 1.169 -> 1.192 s |
+| C8 / 2,048 prompt tokens | 31.488 | 31.530 | +0.13% | 6.586 -> 6.662 s |
+| C16 / 256 prompt tokens | 80.870 | 81.108 | +0.29% | 1.838 -> 2.280 s |
+| C16 / 2,048 prompt tokens | 36.628 | 36.477 | -0.41% | 11.395 -> 11.594 s |
+
+Six trials/case/arm, 256/2,048 prompt tokens and 64 output tokens, two fresh loads
+in fixed stock-then-compressed order. **The original overall speed gate still
+fails**: C8/C16 miss the 5% throughput target, and short-C1/C16 exceed the TTFT
+allowance. All trials, admission differences and historical failures are retained.
+CUDA allocation is **9.367162 GiB lower across TP2** at every measured stage.
+CPU process RSS is **158.78 MiB higher before quality / 166.83 MiB higher after
+ordinary timing / 173.72 MiB higher after profiles** across TP2. These overlapping
+Spark counters must not be added. No CPU-memory improvement is demonstrated.
+
+Startup warming moves the identified first-use dispatch compilation out of the
+measured requests: all 34 variants remain cached, and no recognized compiler
+log event overlaps the 72 timed groups. The prior 2.14 s short-C8 gap is not
+reproduced (current candidate maximum 0.448 s). This is finite evidence, not a
+guarantee against all stalls. The 31.3-31.6 s startup warmup leaves all 576
+recorded full-vocabulary rows per arm bitwise equal to its previous exact16 run.
+
+All candidate physical-8/16 decode ranges replay graphs with 68 fused KDA calls
+and zero reconstruction. KDA is about 22 ms/rank; mixed C8/C16 expert GEMMs are
+about 61 / 96-99 ms. Prefill still reconstructs 68 matrices in 35.8-38.0 ms/rank.
+Short-C16 median TTFT rises 24.04%; differing admission is a confounder, and
+mean request TTFT rises 6.11%, but the original failed median gate remains.
+Profiles are separate from ordinary timing; kernel sums are not API latency.
+
+The original service is restored with exact identities/configurations and health
+200, rechecked at 21:08:26 UTC. Model jobs, recovery and Mac retention have
+finished; final latency/resource/trace and both-arm before/after analyses pass.
+A separately retained offline verifier correction fixes HTTP 207 to 200 only;
+the failed original verifier/logs and all measurements/gates remain preserved.
+The archive SHA256 is
+`0fc867240d04e1770e2970143f48f630551feb35f53b739403c4fb6b8bde64e0`.
+No configuration is promoted. Current PPL, task accuracy and SQNR are unmeasured.
+Local runtime checks remain 728 tests passed, one GPU skip, Ruff and strict mypy.
+
+**Next:** keep this as the experimental C1/GPU-capacity candidate. For further
+concurrent speed, investigate the measured prefill reconstruction/admission cost
+with matched grouping and a bounded component test. CPU-memory savings remain
+unproven; broad qualification and the requested roofline follow-up remain open.
+MTP stays deferred. No further GPU experiment was running at that 21:10 UTC
+checkpoint; the later input-only FP32 model run is active as recorded above.
+
+## Historical matched C1/C8 result
+
+**The fresh stock/compressed C1/C8 pair passes all 33 numerical comparisons**
+under the original KL <=1e-5 / absolute mean NLL <=1e-4 gates. Actual grouping
+matches in every pair. All eight self-repeats are exact, with native mHC and
+stable sparse compaction in both arms. Cross-arm decode KL is 5.804e-6 at C1
+and 1.194e-6 at C8. This supports the tested finite compression comparison;
+inference is not universally bitwise identical.
+
+**Speed remains incomplete:** C1 +12.38% throughput, short-C8 +2.40%, long-C8
+-0.61%; C1 first-token latency +7.91%. Six ordinary trials/case/arm are retained,
+including a slow split-admission C8 trial. The overall speed gate fails.
+CUDA allocation falls **9.367162 GiB across TP2**; reserved CUDA also falls.
+Initial host RSS is slightly higher (12.652 -> 12.894 GiB across ranks).
+Do not add host/container and CUDA counters on unified-memory Spark.
+
+All 1,168 payloads, 194 source bindings and eight traces independently verify
+on Spark/Mac. Decisions agree; maximum CPU float64 difference is 1.776e-15.
+All 102 timed paired output sequences match. Exact original service identities,
+configs/mounts and health 200 were restored after that completed pair.
+Ruff, strict mypy and full pytest pass (one GPU skip). No configuration is promoted.
+
+Fresh C8 trace analysis is complete: decode has no KDA reconstruction but
+spends 21.9-23.9 ms in compressed KDA and about 56 ms in expert GEMM kernel sums;
+prefill reconstructs 68 matrices in about 36 ms/forward/rank. These sums are not
+API latency or measured bandwidth.
+
+The user accepts an understood compression cost and prioritizes investigating
+abnormal latency. A new audit of all 13,056 timed token arrivals finds C1's
+31 ms first-token penalty is recovered by faster subsequent tokens. Long-C8
+has the same early stall pattern in stock and compressed trials, consistent
+with prompt/decode interference plus repeated reconstruction overhead.
+The original short-C8 12.052 s outlier had six requests admitted
+first, two later, and six streams have a ~2.14 s gap. It raises mean request
+completion from 8.408 s stock to 8.787 s compressed despite better median group
+time. The focused CPU/GPU replay now reproduces multi-second first-use JIT
+stalls in both arms. This strongly supports a fixable startup cause; attribution
+of that exact older trial remains an inference because it had no simultaneous
+trace. See the [latency audit](GLM53_C8_TRACE.md#latency-cost-and-the-remaining-outlier).
+
+The exact16 input/output full-model follow-up is complete and independently
+verified on Spark/Mac: **1,581 payloads / 200 sources / eight traces**. All 46
+C1/C8/C16 numerical comparisons pass, twelve self comparisons are exact, and
+all 192 timed paired output sequences match. The original service is restored
+with exact configuration/identity checks and health 200. C16 short throughput
+is **+0.48%**, long throughput **-1.40%**; short TTFT rises **1.623 -> 2.211 s
+(+36.22%)**, long TTFT **+2.98%**. The original speed gates fail. Allocation
+saving remains 9.367162 GiB/TP2. All retained physical-16 decode ranges replay
+graphs, and candidate ranges have 68 compressed KDA calls with zero weight
+reconstruction. The fallback is fixed; the first-token penalty remains open.
+The C16 arrival audit now covers all 24,576 arrivals: short-case initial batch
+sizes differ between arms, and both have a slow five-request start. This makes
+admission a concrete confounder, not a proven full explanation. The focused
+C8 6+2 replay launched at 19:11:49 UTC after both real CLI/source/telemetry
+preflights pass. Both arms, restoration and independent evidence verification
+are now complete. It retains CPU/GPU timelines and 100 ms clock/thermal samples.
+No configuration is promoted.
+Native mHC is retained; the optional consistent policy is not required.
+MTP remains deferred.
+Read [the completed quality evidence](GLM53_C8_TRACE.md) and the
+[compact review](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/matched-c8-v1-review.json).
+
+**Historical12:18 UTC compression checkpoint:** The output-only validation continuation is
+complete and independently verified:1,293 payloads/180 bindings/16 traces.
+Exact original service identities/configs/mounts and health200 restored at
+12:14:05 UTC; no experiment containers remain running. No further test is started.
+
+**User priority: finish compression at C8/C16; defer MTP until a working
+compression outcome.** The [matched C8/C16 comparison](GLM53_HIGH_CONCURRENCY.md)
+is complete and independently verified after fixing its startup scratch
+ownership failure. It still **fails both speed and numerical gates**:
+C1 gains12.3–12.6%, C8 is near parity, and C16 loses7.5–13.8% throughput.
+Memory saving remains9.367GiB/TP2. All24 numerical comparisons fail KL; four
+also fail NLL, despite all636 timed paired token sequences matching.
+
+Both-rank profiles identify68 weight reconstructions per retained C16 decode
+forward, taking34–37ms. The existing eight-row fused limit causes that path.
+A focused exact16-row component check has finished GPU timing. Both fixture
+outputs are exact, but only the output matrix passes every timing gate; an
+input-matrix reference repeat misses the unchanged2% limit. All45 payloads
+and18,432 events independently verify on Spark/Mac, with identical reviews.
+No global router change is qualified. The
+[output-only exact16 follow-up](GLM53_OUTPUT_ROW16.md) completes all72 timing
+groups, but stops during numerical group6 because the head node runs out of
+disk space. Five groups complete; no candidate profiles run. ShortC16 improves3.4–4.0% over
+the compressed parent, longC16 improves1.3–1.5%; both remain below stock and
+the original speed gates fail. Recovery is independently verified on Spark/Mac:
+1,532 payloads, all72 timing groups/636 requests/40,704 tokens, and all17
+available complete numerical pairs. Every available pair fails the numerical
+gate in the original failed run. Fresh validation on a separate load has now
+completed all8 groups and4 profile sessions: all24 KL comparisons fail and8
+fail NLL. The original timing load's missing source-after check remains explicit.
+The input route remains unchanged.
+The full-model outcome reuses stock control with
+an explicit time gap. All1,277 payloads and sixteen worker traces verify on
+Spark/Mac. The original service is exactly restored and healthy after the
+output-only follow-up fails; the client is not OOM-killed. Disk recovery
+preserves canonical archives before removing regenerable extractions. Another
+8,950 older generated payloads were checksum-verified on the existing worker
+before relocating7,593,681,896 bytes; model checkpoints remain untouched.
+The head now has about5.63GB free after retaining the completed continuation. No configuration
+is promoted and throughput is not declared fixed.
+
+## Evidence inventory, including historical experiments
+
+| Area | State | What the evidence supports |
+|---|---|---|
+| Weight storage | Verified | 9.367 GiB / 5.33% less allocated CUDA memory across TP2 in the completed full-model runs; source reconstruction checks pass. |
+| Full GSM8K | Complete | 1,319 questions/arm; numeric 1,246 → 1,244, output TPS 41.77 → 42.08, workload time 37m41s → 37m37s. Roughly equal workload speed. |
+| Numerical qualification | Finite C1/C8/C16 compression gates passed | Fresh matched native-mHC C1/C8 pair passes all 33 comparisons; exact16 follow-up passes all 46 C1/C8/C16 comparisons. C1 KL 5.804e-6, C8 1.194e-6 in the C8 pair. Universal serving equivalence is not established; historical failures retained. |
+| First numerical divergence | Narrowed | Actual graph captures first differ inside layer 3's inner MLA module, before MoE, with recorded module inputs equal. The earliest recorded change is sparse-index compaction order with equal selected multisets; other sources remain possible. |
+| Actual MLA internal probe | Complete, independently verified | 40 graph calls / 1,606 payloads; 25/32 noninitial calls change sparse order with equal multisets. Padding fixture passes; stock C1 repeats become exact, while stock C8 still fails KL and differs already at prefill. |
+| Isolated attention fixture | Complete | All six fresh-process cases / thirty graph calls repeat exactly and match eager. The synthetic fixture excludes the full module's projections, cache writes and layer interactions. |
+| Matched speed comparison | Complete and independently verified | C1 throughput +10.4–12.4%; C4/C8 −0.07% to +1.84%; TTFT +2.3–5.9%. All 373 payloads, 260 requests and 16,640 tokens verify on Spark/Mac; three analysis JSON files match bytes. |
+| Prefill reconstruction | V3 independently verified; no accepted speed improvement | All 36 outer / 13 native payloads and 6,656 event samples verify on Spark/Mac. Both direct-output variants and rebuilt-control parity fail the performance gates. No full-model integration. |
+| Exponent-base correctness | CPU audit and V4 GPU regression independently verified | No unsafe bases across 136 KDA shards, two heads or 154,880 embedding rows. Both fixed candidate kernels pass the original base-255 failure and all BF16 bit patterns in eager, separate-stream and graph execution. Both stock control guards refuse unsafe bases. All 34 outer / 13 native V4 payloads verify on Spark/Mac. |
+| Small-prefill routing | V5/V6 independently verified | All numerical checks pass across 51,200 retained events. Large gains at small rows; V6 shared component leads [8,24]. Control variance prevents a blanket crossover claim; 257 and 2,048 rows regress. Compressed candidate's eight-row limit unchanged. |
+| CUDA graph expansion | Complete and independently verified; bundle fails gates | Exact C2: +8.6–9.0% TPS; graph C8: +1.7–3.4%. All 72 groups / 300 requests / 19,200 tokens and eight worker profiles verify. Short-C8 misses 5% gain, C4 TTFT regresses 34.8%; both numerical repeats fail KL. All 150 paired output sequences match. No configuration promoted; C16 remains separate. |
+| Admission / repeated prefill | Complete and independently verified; performance gates pass | 3/10 ms idle-only collection raises short-C4 TPS 6.75%/6.62%; TTFT 1.125 → 0.778/0.782 s. Median large forwards two → one, device reconstructions 136 → 68/rank. All 599 payloads, 108 groups / 450 requests / 28,800 tokens verify; all 300 paired sequence comparisons match. Every numerical comparison still fails KL, including all self-repeats. No promotion. |
+| Matched C8/C16 compression | Complete and independently verified; speed/numerical gates fail | C1+12.3–12.6%; short C8+2.2–2.5%, long C8−0.3–0.7%; short C16−13.6–13.8%, long C16−7.5–7.6%. All144 groups/1,272 requests/81,408 tokens,1,277 payloads and sixteen worker traces verify. Stock control reused with time gap. All24 KL comparisons fail; four NLL failures. |
+| C16 startup / repeated reconstruction | Startup repaired; speed cause measured | Captures through16 and fixed two-slot ownership pass292 worker observations. Eight retained parent pure-decode ranges across TP2 each reconstruct68 matrices in34–37ms. V7 independently verifies45 payloads/18,432 events: exact outputs, output matrix passes at16, input repeat control fails. Output-only follow-up recovers part of the C16 loss; its execution mechanism still needs profiles. |
+| Native MTP compatibility | Deferred by user until compression outcome | Actual-geometry CPU proof verifies complete q/KV source bits with zero padding. The repaired 18-check full-pilot preparer/verifier is frozen and native CPU preflight passes with 174 source bindings. No new MTP GPU controller, acceptance or speed result. |
+| New no-drafter control | Complete, independently verified | C1 P256/P2048 medians 16.768/13.961 TPS. Ten trials, 640 timed tokens; all source checks pass. Repeat IDs/conditioning match, but mean decode KL 1.1901962e-5 fails the unchanged 1e-5 floor; mean NLL delta 2.29481e-5 is below 1e-4. |
+| Output-only row16 route | Complete, independently verified; gates fail | Original timings preserved; fresh validation archive verifies1,293 payloads/180 bindings/16 traces. ShortC16+3.4–4.0% and longC16+1.3–1.5% over parent, still below stock. All24 KL comparisons fail;8 NLL failures. Eight retained TP2 decode ranges reconstruct34 matrices in25.68–28.11ms. Separate-load/source-after gap remains explicit. |
+| Experiment storage | Recovered; additional diagnostic budget unavailable | About5.63GB free after retention. Two regenerable extractions and7.59GB of checksum-backed older generated payloads relocated; worker backups and manifests retained. Checkpoints/global caches untouched. No additional cache cleanup executed. MLA requires12GiB free/node before launch. |
+| Exact16 continuation | Complete and independently verified | All 46 numerical comparisons pass; 9.367 GiB CUDA allocation saved/TP2. C16 throughput +0.48% short / -1.40% long; TTFT +36.22% short / +2.98% long. Retained physical-16 decode replays graphs with zero KDA reconstruction. Original speed gates fail. |
+| Multi-second latency stalls | Warmup validated in the full model | All 34 variants stay cached through quality/timing/profiles; no recognized JIT event overlaps timed requests, and the prior 2.14 s short-C8 gap does not recur. Startup takes 31.3-31.6 s; all 576 old/new output rows per arm are bitwise equal. |
+| Original GLM service | Restored after completed latency replay | Exact identities/configs/mounts and health 200 verified at 19:33:58 UTC. Controllers, collector and watchdog exited; no configuration promoted. |
+| Roofline figure | Deferred | Resume after the model work, as requested. No paired roofline collection has started; PNG/SVG links remain outstanding. |
+
+The verified storage result does not imply the same reduction in per-step
+memory traffic. Every token uses a subset of stored experts, and compression
+also adds decoding work. The latest matched measurement confirms a useful
+single-request benefit and near-parity concurrent throughput. A separate C4
+profile has about 8% faster decode forwards and 6.6–6.7% slower prefill;
+68 explicit KDA reconstructions add about 36.26 ms per profiled prefill.
+Slow short-C4 trials correlate with split/mixed admission. Read the
+[complete paired result](GLM53_PAIRED_SPEED.md) before interpreting those
+profiles as API speed. Quality diagnostics have narrowed a separate problem;
+they have not themselves accelerated generation.
+
+The completed admission intervention now directly reduces the repeated
+prefill work: separate profiles observe each of 68 KDA weights once per
+forward, with two forwards at zero wait and one at either wait window. Device
+kernel counts agree on both ranks. The improvement is for finite 64-output
+request groups; sustained decode-only speed and continuous active traffic
+were not measured. Graph and admission policies have not been combined in a
+measured run. Both are serving techniques that can generalize, while this
+integration and its measured settings remain GLM/Spark/runtime-specific.
+
+## Matched stock-versus-compressed measurement
+
+The reference and current compressed candidate use the same imported MXFP4
+checkpoint, qualified native libraries, TP2 transport, 4 GiB KV/rank and graph
+captures **[1,4]**. There is no speculative drafter. C8 stays eager.
+
+- Six workloads: concurrency 1/4/8 × 256/2,048 prompt tokens.
+- Five measured groups per workload and arm, exactly 64 generated tokens,
+  with two 16-token warmup groups per workload.
+- Retain every request, generated ID and streaming arrival. Compare total
+  throughput, first-token latency, request latency and client decode cadence.
+- One controlled C4 / 256-prompt / four-output-token profile per arm follows
+  **all** unprofiled timing. Verify both-rank graph launches and full forwards.
+- Source checks before/after each arm; exact original service restoration;
+  then independent archive and raw-timing verification on Spark and Mac.
+
+This is a performance measurement, not another numerical qualification or
+GSM8K rerun. Arms run sequentially, so small differences retain order/clock
+uncertainty. Matching shapes do not prove matching routed activations.
+
+## Next steps
+
+0. **C8/C16 compression:** warmedmodelv1 is complete and independently verified.
+   Exact16 decode reconstruction is gone and finite C1/C8/C16 quality passes.
+   C1 gains 11.82-13.28%, C8 0.13-2.97%, C16 -0.41 to +0.29%; the original
+   overall speed gate fails. All arrivals and all 12 worker traces are analyzed.
+   Next target prefill reconstruction/admission with controlled grouping and a
+   bounded component test before another model run. Preserve the C1 gain and
+   current memory bound; earlier failed kernels and all timing outliers remain.
+1. **Repeatability scope:** stable compaction plus matched native-mHC grouping
+   passes C1/C8/C16 self-repeats in both arms. Arbitrary batch invariance is a separate
+   serving property. The optional consistent-mHC component passes its fixture,
+   but is not enabled or required for the compression comparison. Investigate
+   new numerical causes only if a newly controlled comparison actually fails.
+2. **MTP: explicitly deferred by the user until compression has a working
+   outcome.** The [actual zero-rope CPU preflight](GLM53_MTP_PILOT.md) passes.
+   The full pilot preparation/verifier is now frozen around 18 checks and zero
+   padding, and native CPU preparation passes. No new GPU attempt is started. Keep
+   independent source CT policy, the full 1,756-source consumption guard,
+   42-layer base scale ownership and stock draft GEMMs. Then measure acceptance,
+   verification cost, memory, state rollback and API speed. No MTP gain has
+   been measured, and the completed control's KL failure remains.
+3. **Serving-policy follow-up:** the [admission test](GLM53_PREFILL_ADMISSION.md)
+   passes performance and mechanism gates but fails numerical qualification.
+   Three milliseconds gives the primary gain with a smaller wait; ten also
+   helps the tested staggered cohort. After numerical work, qualify continuous
+   arrivals/longer outputs and matched stock-versus-compressed policies before
+   promotion. Long C4 still needs four chunks at the 2,048-token limit.
+4. **Graph follow-up:** the [C2/C8 test](GLM53_GRAPH_EXPANSION.md) is complete.
+   Exact C2 is a measured throughput lead requiring dedicated C2 probability
+   and latency qualification. C8 replay works but gives a modest gain.
+   C16's matched max-sequences16 test and KDA reconstruction profiles are now
+   complete. Sustained fully active traffic and maximum-context capacity remain
+   unqualified. Its startup repair does not resolve the measured speed loss.
+5. **Remaining decode work:** target expert GEMMs or compressed KDA only with a
+   new profiled mechanism. Decoder occupancy, N8, split-K and naive overlap
+   variants already failed their relevant gates; do not rerun unchanged.
+   Further expert coding has weak headroom (sampled 3.915/4 bits, 1.65% encoded
+   saving). FP8 KV is already on. Lossy FP8 KDA remains separate: approximately
+   0.977 / 0.976 GB additional weight saving per GPU before scales, with native
+   compute support and numerical qualification still required.
+6. After model work, collect the paired roofline evidence and provide the
+   requested image links. Do not substitute estimated LPDDR bytes for
+   hardware-measured traffic.
+
+## Evidence and continuation
+
+- [Current matched C8/C16 compression protocol and live-state paths](GLM53_HIGH_CONCURRENCY.md)
+- [Active output-only exact16 follow-up](GLM53_OUTPUT_ROW16.md)
+- [Full GSM8K result](GLM53_GSM8K_FULL_BENCHMARK.md)
+- [Latest paired speed, profiles and verified evidence](GLM53_PAIRED_SPEED.md)
+- [Completed prefill reconstruction component](GLM53_PREFILL_RECONSTRUCTION.md)
+- [Completed small-prefill routing comparison](GLM53_PREFILL_ROUTING.md)
+- [Completed C2/C8 graph comparison and verified traces](GLM53_GRAPH_EXPANSION.md)
+- [Admission audit and bounded next serving test](GLM53_PREFILL_ADMISSION.md)
+- [MTP, routing and FP8 options assessed against actual state](GLM53_SPEED_OPTIONS.md)
+- [Native MTP compatibility findings and pilot requirements](GLM53_MTP_PILOT.md)
+- [Decode boundary and isolated MLA diagnostics](GLM53_DECODE_STATE_DIAGNOSTIC.md)
+- [BF16 kernel measurements and rejected variants](GLM53_BF16_KERNEL_DIAGNOSTIC.md)
+- [Detailed continuation handoff](GLM53_LOSSLESS_RUNTIME_HANDOFF.md)
+
+Spark experiment root:
+`/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.
+Authoritative run state is in `quality-model-controller-pairedspeedv1.json` and
+`paired-speed-v1-evidence-check.json`; use these rather than assuming this
+timestamped page is live. Frozen source: `full-pairedspeedv1-src`. Local run
+notes/scripts: `/private/tmp/mxwave-paired-speed-v1/`.
+
+Latest graph controller: `quality-model-controller-graphexpandv1.json`,
+**complete**, original service healthy. Source `full-graphexpandv1-src`,
+results `run-graphexpandv1/results`, evidence receipt
+`graph-expansion-v1-evidence-check.json`, corrected independent review
+`graph-expansion-v1-independent-review-v3.json`. Local evidence and verifier:
+`/private/tmp/mxwave-graph-expansion-v1/`. All 466 payloads and eight worker
+profiles verify; the bundle's numerical/performance gates fail. Controller
+882869, watchdog 890911 and collector 882868 are completed-run IDs.
+
+Latest admission controller: `quality-model-controller-prefilladmissionv1.json`,
+**complete**, original service healthy. Source `full-prefilladmissionv1-src`,
+results `run-prefilladmissionv1/results`, evidence receipt
+`prefill-admission-v1-evidence-check.json`. All 599 payloads and six worker
+profiles verify on Spark/Mac; archive SHA256
+`d63d6e69c7acda35d5d6f6cb83b38bbb1fea958b2681b1611a24930db64a9da7`.
+CPU probability recomputation differs by at most 1.7765e-15; model gates stay
+unchanged and all non-probability fields/decisions agree exactly. Local
+`/private/tmp/mxwave-prefill-admission-gpu-v1/`. No configuration promoted.
+
+Latest MTP controller: `quality-model-controller-mtpretryv1.json`, **failed_restored**; prepared
+`mtp-retry-v1-prepared.json`, frozen assembled source `full-mtpretryv1-src`.
+Completed full CPU audit: `mtp-dispatch-v3/`; local continuation:
+`/private/tmp/mxwave-mtp-retry-v1/` and `/private/tmp/mxwave-mtp-loader-v3/`.
+Controller PID **495392**, restoration watchdog **498189**, untimed-quality
+counter observer **506688** are historical completed-run identifiers. All 338
+retry payloads verify locally and on Spark; archive SHA256
+`90428f9bc31f8e83f35253ec9948afc07352675b6e933ee01403076c10e985e6`.
+Corrected geometry source is now frozen/uploaded and passes CPU native binding;
+another MTP GPU attempt has not run. Geometry proof progress:
+`mtp-geometry-v1-progress.json`, **complete**, 14 payloads; local
+`/private/tmp/mxwave-mtp-geometry-v1/`. Archive SHA256
+`1d7aa99458c4ccef6144e26f8bc2cf85e4d76f038c92dd10e9330e12cd13b4db`.
+
+Failed first GPU attempt `mtppilotv2` and successful control: 333 payloads verify
+on Spark/Mac, independent reviews byte-identical, archive SHA256
+`cdfdeb55b386bd714d07707a5ba00e70b5a0ae941ab22c501a6e9194d465cdb2`.
+Actual-loader CPU regression `mtp-loader-v3`: nine payloads verified locally,
+archive `bce71777d09371d507809d1717fe780bbc925c90a871eb4e4f0b040935014918`.
+The retry reuses the measured control across a draft-only loader repair; it
+does not claim a fresh control paired in time. Target kernels/weights/precision
+and all numerical floors remain unchanged.
+
+Latest completed component state: `prefill-decode-controller-prefilldecodev7.json`;
+reports/source in `prefill-decode-v7/`. Local continuation:
+`/private/tmp/mxwave-prefill-decode-v7/`. All45 payloads/18,432 events verify
+on Spark/Mac; shared16 route fails. Archive SHA256
+`ae9d4fd7a8e8173def9654c1ca0b53dc40ff79f1e59340c3d7d8d62711d663f3`.
+These controller files take precedence
+over this timestamped page. Completed V3: `prefill-decode-v3-evidence.tar.gz`.
+CPU audit: `prefill-base-audit-v1/controller.json` and
+`prefill-base-audit-v1/results/base-scan.json` on the worker.
+
+Completed run: controller PID **2104128**, collector **2104127**, watchdog
+**2108100**; launch **19:53:38 UTC**, restoration **20:22:23 UTC**.
+Source inventory SHA256:
+`00840627c120063f83d7f2095adfe4bf72206768ba23d9d63a5f13f91ed2e45e`.
+Plan SHA256:
+`8b339a6c316abe61a4994487e79c11f7822265f31e46539f1b4c9f84e2323adf`.
+
+Current documentation and the preceding optional MLA analysis bundle remain
+local: automatic approval review rejected their optional upload to Spark.
+Original Spark evidence and Spark CPU verification are already preserved.
+The separately approved performance source contains no rejected documents.

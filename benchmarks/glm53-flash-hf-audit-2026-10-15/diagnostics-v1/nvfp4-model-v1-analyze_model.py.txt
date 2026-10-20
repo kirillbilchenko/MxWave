@@ -1,0 +1,140 @@
+"""Independently recompute matched serving, memory and full-distribution gates."""
+from __future__ import annotations
+import argparse,gzip,hashlib,json,statistics
+from pathlib import Path
+import numpy as np
+
+
+def read(path):return json.loads(path.read_bytes())
+def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def signature(event):
+    p=event['prepared']
+    return {'total_scheduled_tokens':event['total_scheduled_tokens'],
+        **{k:p[k]for k in ['num_reqs','num_tokens','num_tokens_after_padding','has_prefill','prefill_lengths','descriptor']},
+        'row_order':[{k:r[k]for k in ['prompt_sha256','prompt_tokens','scheduled_tokens']}for r in p['row_order']]}
+def trace_rows(q):
+    assert len(q['trace'])==2 and {r['rank']for r in q['trace']}=={0,1}
+    values=[[signature(e)for e in row['events']]for row in q['trace']]
+    assert values[0]==values[1], 'TP ranks observed different forward layouts'
+    return values[0]
+def distributions(root, record, vocabulary):
+    path=root/record['file'];assert digest(path)==record['sha256']
+    with gzip.open(path,'rb')as file:d=json.load(file)
+    rows=[]
+    for c in sorted(d['choices'],key=lambda c:c['index']):
+        ids=c['token_ids'];tops=c['logprobs']['top_logprobs']
+        assert len(ids)==len(tops)
+        probs=[]
+        for top in tops:
+            assert len(top)==vocabulary
+            values=np.full(vocabulary,np.nan,dtype=np.float64)
+            for key,value in top.items():
+                assert key.startswith('token_id:')
+                i=int(key.split(':',1)[1]);assert 0<=i<vocabulary
+                values[i]=value
+            assert not np.isnan(values).any() and np.isfinite(values).mean() > 0.99
+            maximum=values.max();normalizer=maximum+np.log(np.exp(values-maximum).sum())
+            probs.append(values-normalizer)
+        rows.append({'tokens':ids,'logp':probs})
+    return rows
+
+def quality_pair(a,b,trace_match):
+    assert len(a)==len(b)
+    rows=[]
+    for index,(left,right)in enumerate(zip(a,b)):
+        assert len(left['logp'])==len(right['logp'])
+        for pos,(p,q)in enumerate(zip(left['logp'],right['logp'])):
+            same=left['tokens'][:pos]==right['tokens'][:pos]
+            supported=np.isfinite(p)
+            assert np.isfinite(q[supported]).all()
+            kl=max(0.,float(np.sum(np.exp(p[supported])*(p[supported]-q[supported])))) if same else None
+            rows.append({'prompt':index,'position':pos,'kind':'prefill'if pos==0 else'decode',
+                'same_conditioning':same,'kl':kl,'finite_reference':int(supported.sum()),
+                'finite_candidate':int(np.isfinite(q).sum()),'normalized_distributions_exact':bool(np.array_equal(p,q))})
+    matched=all(r['same_conditioning']for r in rows)
+    decoded=[r['kl']for r in rows if r['kind']=='decode'and r['same_conditioning']]
+    prefills=[r['kl']for r in rows if r['kind']=='prefill'and r['same_conditioning']]
+    return {'rows':rows,'batch_layouts_match':trace_match,'all_conditioning_matches':matched,
+        'all_generated_tokens_match':all(x['tokens']==y['tokens']for x,y in zip(a,b)),
+        'mean_prefill_kl':float(np.mean(prefills))if prefills else None,
+        'mean_decode_kl':float(np.mean(decoded))if decoded else None,
+        'max_decode_kl':max(decoded)if decoded else None,
+        'gate_passed':trace_match and matched and len(decoded)>0 and float(np.mean(decoded))<1e-5 and float(np.mean(prefills))<1e-5}
+
+
+def main():
+    p=argparse.ArgumentParser();p.add_argument('root',type=Path);args=p.parse_args();root=args.root
+    plan=read(root/'plan.json');arms=plan['arms']
+    manifest=read(root/'evidence-manifest.json')
+    for name,record in manifest.items():
+        path=root/name
+        assert path.stat().st_size==record['bytes'] and digest(path)==record['sha256'],name
+    reports={a:read(root/(a+'-measurement.json'))for a in arms}
+    assert all(r['status']=='complete'for r in reports.values())
+    assert all(r['plan_sha256']==digest(root/'plan.json') and r['client_sha256']==digest(root/'measure_serving.py')for r in reports.values())
+    result={'status':'complete','payloads_verified':len(manifest),'timing':[],'quality':{},'allocation':[],'limits':[
+        'Diagnostic source-context prompts, not a broad quality/task benchmark or the user harness.',
+        'Repeated-prompt timing is distinct from cold C1; cached-token counters determine actual reuse. Cold C1 can include first-use JIT.',
+        'C8/C16 are client concurrency including actual queueing.',
+        'Full-distribution checks cover four generated tokens; no long-context qualification.']}
+    for length,batch in sorted({(x['prompt_tokens'],x['batch'])for x in plan['cases']}):
+        selected={a:[r for r in reports[a]['trials']if(r['prompt_tokens'],r['batch'])==(length,batch)]for a in arms}
+        assert all(len(rows)==plan['trials']for rows in selected.values())
+        seconds={a:statistics.median(r['wall_seconds']for r in rows)for a,rows in selected.items()}
+        rates={a:statistics.median(r['output_tokens_per_second']for r in rows)for a,rows in selected.items()}
+        reference=statistics.median([r['output_tokens_per_second']for a in ['stock_a','stock_b']for r in selected[a]])
+        difference=abs(seconds['stock_b']/seconds['stock_a']-1)
+        equal_counts={}
+        for a in ['packed','stock_b']:
+            equal_counts[a]=sum(x['token_ids']==y['token_ids']for l,r in zip(selected['stock_a'],selected[a])
+                                for x,y in zip(l['requests'],r['requests']))
+        summary={a:next(row for row in reports[a]['summary']if(row['prompt_tokens'],row['batch'])==(length,batch))for a in arms}
+        result['timing'].append({'prompt_tokens':length,'concurrency':batch,'summary':summary,
+            'median_output_tokens_per_second':rates,'pooled_reference_tokens_per_second':reference,
+            'candidate_throughput_change_pct':100*(rates['packed']/reference-1),
+            'control_relative_difference':difference,'control_stable':difference<=plan['timing_control_relative_limit'],
+            'equal_sequences_to_stock_a':equal_counts,'sequence_count':plan['trials']*batch})
+    result['cold_c1']={a:{'mean_ttft_seconds':statistics.mean(x['requests'][0]['ttft_seconds']for x in r['cold']),
+        'trials':[x['requests'][0]['ttft_seconds']for x in r['cold']]}for a,r in reports.items()}
+    startup={a:read(root/(a+'-startup.json'))for a in arms}
+    for rank in(0,1):
+        snapshots={a:next(s for s in rows if s['rank']==rank)for a,rows in startup.items()}
+        records={a:[(entry['layer'],s['name'],s['shape'],s['source_sha256'])for entry in snapshot['layers']for s in entry['scales']]for a,snapshot in snapshots.items()}
+        assert records['stock_a']==records['packed']==records['stock_b']
+        assert all(s['layers_seen']==42 and s['source_bytes']==9512681472 for s in snapshots.values())
+        for key in ['production_flags','max_model_len','max_num_seqs','max_num_batched_tokens','prefix_caching','kv_cache_memory_bytes','graph_token_counts','shared_head','shared_embedding','head_dtype','draft_context_dtype']:
+            assert snapshots['stock_a'][key]==snapshots['packed'][key]==snapshots['stock_b'][key],key
+        assert snapshots['packed']['raw_scale_owners_alive']==0
+        scale_records=[v for e in snapshots['packed']['layers']for v in e['scales']]
+        assert len(scale_records)==84 and all(v['gpu_bytes_exact'] and v['decoder_graph_replays']==8 for v in scale_records)
+        assert sum(len(v['parts'])for v in scale_records)==36288
+        allocated={a:s['cuda_allocated_bytes']for a,s in snapshots.items()}
+        result['allocation'].append({'rank':rank,'startup_allocated_bytes':allocated,
+            'saving_vs_stock_a_GiB':(allocated['stock_a']-allocated['packed'])/2**30,
+            'saving_vs_stock_b_GiB':(allocated['stock_b']-allocated['packed'])/2**30,
+            'encoded_scale_saving_GiB':(9512681472-snapshots['packed']['retained_bytes'])/2**30,
+            'all_84_source_families_match':True,'raw_scale_owners_released':True,
+            'scratch_bytes':snapshots['packed']['scratch_bytes'],
+            'graph_token_counts':{a:s['graph_token_counts']for a,s in snapshots.items()}})
+    for label in ['c1','c8']:
+        records={(a,q['repeat']):q for a in arms for q in reports[a]['quality']if q['case']==label}
+        data={key:distributions(root,q,plan['vocabulary'])for key,q in records.items()}
+        traces={key:trace_rows(q)for key,q in records.items()}
+        comparisons={}
+        for a in arms:
+            comparisons[a+'_self']=quality_pair(data[a,0],data[a,1],traces[a,0]==traces[a,1])
+        for a in ['packed','stock_b']:
+            for repeat in(0,1):
+                comparisons[a+'_vs_stock_a_r'+str(repeat)]=quality_pair(data['stock_a',repeat],data[a,repeat],
+                    traces['stock_a',repeat]==traces[a,repeat])
+        result['quality'][label]={'comparisons':comparisons,'all_gates_pass':all(v['gate_passed']for v in comparisons.values())}
+    final=read(root/'final-check.json');assert final['health_200'] and final['controller_phase']=='complete_restored'
+    result['service_restored']=True
+    result['all_quality_gates_pass']=all(v['all_gates_pass']for v in result['quality'].values())
+    result['all_timing_controls_pass']=all(v['control_stable']for v in result['timing'])
+    (root/'independent-review.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps({'timing':[{k:r[k]for k in ['prompt_tokens','concurrency','candidate_throughput_change_pct','control_stable']}for r in result['timing']],
+        'allocation':result['allocation'],'quality_gates':{k:v['all_gates_pass']for k,v in result['quality'].items()}},indent=2))
+
+
+if __name__=='__main__':main()

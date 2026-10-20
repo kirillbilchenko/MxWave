@@ -1,0 +1,75 @@
+"""Retain local expert-screen reviews and hashes while external kernels stay in archives."""
+from __future__ import annotations
+
+import gzip
+import hashlib
+import json
+import pathlib
+import time
+
+base = pathlib.Path(__file__).parent
+work = pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+dest = work / 'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+prefix = 'moe-native-actual-v4-'
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def main():
+    receipt = json.loads((base / 'actual-spark-receipt.json').read_bytes())
+    cleanup = json.loads((base / 'actual-terminal-cleanup.json').read_bytes())
+    assert receipt['status'] == 'complete' and cleanup['status'] == 'released'
+    selected = {
+        'benchmark_native_experts.py', 'verify_native_actual.py', 'run_native_actual.py',
+        'launch_actual.py', 'status_actual.py', 'prepare_actual.py', 'freeze_actual.py',
+        'stage_actual_source.py', 'build_actual_controller.py', 'check_actual_verifier.py',
+        'check_actual_layout.py', 'check_actual_api.py', 'collect_actual_remote.py', 'retain_actual.py',
+        'stage_actual_collector.py', 'summarize_actual.py', 'finalize_actual_documents.py',
+        'analyze_actual_profiles.py', 'final_actual_service_check.py', 'retain_actual_final.py',
+        'compiled-support.json', 'component-completed.json', 'native-smoke-report.json',
+        'dispatch-smoke-report.json', 'model-fields.json',
+    }
+    files = [p for p in sorted(base.iterdir()) if p.is_file() and
+             (p.name in selected or p.name.startswith('actual-')) and
+             p.suffix in ('.json', '.py', '.log', '.txt', '.md')]
+    records = []
+    for source in files:
+        raw = source.read_bytes()
+        name = source.name + ('.txt' if source.suffix == '.py' else '')
+        compressed = source.suffix == '.json' and len(raw) > 150_000
+        target = dest / (prefix + name + ('.gz' if compressed else ''))
+        stored = gzip.compress(raw, mtime=0) if compressed else raw
+        if target.exists():
+            assert target.read_bytes() == stored, str(target)
+        else:
+            with target.open('xb') as stream:
+                stream.write(stored)
+        kept = target.read_bytes()
+        assert (gzip.decompress(kept) if compressed else kept) == raw
+        records.append(dict(source=str(source), retained=target.name, source_bytes=len(raw),
+                            source_sha256=sha(raw), retained_bytes=len(kept),
+                            retained_sha256=sha(kept), gzip=compressed))
+    docs = ['README.md', 'CONTRIBUTING.md', 'docs/GLM53_MOE_BACKENDS.md',
+            'docs/GLM53_HANDOFF.md', 'docs/GLM53_CURRENT_STATE.md',
+            'docs/GLM53_SPEED_OPTIONS.md', 'docs/GLM53_LOSSLESS_RUNTIME_HANDOFF.md']
+    manifest = dict(status='complete', created_epoch=time.time(), artifacts=records,
+                    documents=[dict(path=p, sha256=sha((work / p).read_bytes())) for p in docs],
+                    archive_local=str(base / 'actual-evidence.tar.gz'),
+                    archive_remote=receipt['archive'], archive_sha256=receipt['archive_sha256'],
+                    archive_bytes=receipt['archive_bytes'], source_files=receipt['source_files'],
+                    baseline_source_files=receipt['baseline_source_files'],
+                    component_phase=receipt['component_phase'],
+                    all_original_failures_preserved=True, original_service_restored=True,
+                    full_model_KL_qualified=False, production_promotion=False,
+                    external_kernel_sources_remain_in_private_archive=True)
+    with (dest / (prefix + 'final-retention.json')).open('x') as stream:
+        json.dump(manifest, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps(dict(status='complete', artifacts=len(records), documents=len(docs),
+                          retained_bytes=sum(r['retained_bytes'] for r in records))))
+
+
+if __name__ == '__main__':
+    main()

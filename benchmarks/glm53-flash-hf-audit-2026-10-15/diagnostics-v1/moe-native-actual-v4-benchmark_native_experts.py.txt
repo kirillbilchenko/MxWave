@@ -1,0 +1,197 @@
+"""Compare complete expert blocks on captured GLM inputs; preserve every control and result."""
+from __future__ import annotations
+import argparse,ctypes,gc,hashlib,importlib,json,os,pathlib,statistics,subprocess,sys,time,traceback,types
+import torch
+
+# Pinned FlashInfer's FC1 activation consumes [linear/up, gate]. Marlin consumes
+# [gate, up]. Permute whole rows and their scale rows; preserve every weight bit.
+NATIVE_FC1_PROJECTIONS = ('up_proj', 'gate_proj')
+
+def sha(path):
+ with pathlib.Path(path).open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def save(path,value):
+ path=pathlib.Path(path);temporary=path.with_suffix('.incomplete');temporary.write_text(json.dumps(value,indent=2,allow_nan=False)+'\n');temporary.replace(path)
+def telemetry():
+ p=subprocess.run(['nvidia-smi','--query-gpu=clocks.sm,clocks.mem,temperature.gpu,power.draw,pstate','--format=csv,noheader,nounits'],capture_output=True,text=True)
+ return dict(returncode=p.returncode,values=p.stdout.strip(),epoch=time.time())
+def nbytes(t):return t.numel()*t.element_size()
+def metrics(a,b):
+ a,b=a.float(),b.float();diff=a-b;finite=bool(torch.isfinite(a).all()and torch.isfinite(b).all())
+ return dict(finite=finite,
+  changed_values=int((a!=b).sum()),values=a.numel(),max_abs=float(diff.abs().max())if finite else None,
+  relative_l2=float(torch.linalg.vector_norm(diff)/torch.linalg.vector_norm(b).clamp_min(1e-30))if finite else None,
+  rms_error=float(diff.square().mean().sqrt())if finite else None,reference_rms=float(b.square().mean().sqrt())if finite else None)
+def retain_tensor(path,tensor):
+ cpu=tensor.detach().cpu().contiguous();raw=cpu.reshape(-1).view(torch.uint8).numpy().tobytes();path.write_bytes(raw)
+ return dict(path=path.name,shape=list(cpu.shape),dtype=str(cpu.dtype),bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest())
+def native_modules(root):
+ import flashinfer.utils,flashinfer.autotuner,flashinfer.api_logging
+ name='mxwave_flashinfer_probe'
+ for suffix,rel in [('', 'flashinfer'),('.fused_moe','flashinfer/fused_moe'),('.fused_moe.cute_dsl','flashinfer/fused_moe/cute_dsl'),('.fused_moe.cute_dsl.blackwell_sm12x','flashinfer/fused_moe/cute_dsl/blackwell_sm12x')]:
+  module=types.ModuleType(name+suffix);module.__path__=[str(root/rel)];sys.modules[module.__name__]=module
+ for suffix,module in [('utils',flashinfer.utils),('autotuner',flashinfer.autotuner),('api_logging',flashinfer.api_logging)]:sys.modules[name+'.'+suffix]=module
+ base=name+'.fused_moe.cute_dsl.blackwell_sm12x.'
+ return [importlib.import_module(base+n)for n in ['moe_mxfp8_q0_route_triton','moe_mxfp8_mxfp4_fc1_act_q1','moe_mxfp8_mxfp4_fc2_finalize']]
+def load_current_fixture(loader,ops,directory,manifest,rank,device):
+ """Adapt the archived five-argument repack call to the pinned explicit permutation ABI."""
+ original=ops.gptq_marlin_repack
+ def repack(weight,k,n,bits,is_a_8bit):
+  empty=torch.empty(0,dtype=torch.int32,device=weight.device)
+  return original(weight,empty,k,n,bits,is_a_8bit)
+ ops.gptq_marlin_repack=repack
+ try:
+  return loader(directory,manifest,2,rank,device)
+ finally:
+  ops.gptq_marlin_repack=original
+def load_native(fixture,manifest,rank):
+ """Load source FP4 bytes unchanged and reindex only the exact E8M0 scales."""
+ records={(r['expert'],r['projection'],r['suffix']):r for r in manifest['tensors']}
+ def source(e,p,s):
+  record=records[e,p,s];path=fixture/record['path'];assert sha(path)==record['sha256']
+  t=torch.frombuffer(bytearray(path.read_bytes()),dtype=torch.uint8).reshape(record['shape'])
+  lo,hi=rank*1024,(rank+1)*1024
+  if p=='down_proj':
+   stride=32 if s=='weight_scale'else 2;t=t[:,lo//stride:hi//stride]
+  else:t=t[lo:hi]
+  return t.contiguous()
+ weights,scales=[],[]
+ for names,N,K in [(NATIVE_FC1_PROJECTIONS,2048,4096),(('down_proj',),4096,1024)]:
+  weight=torch.empty(288,N,K//2,dtype=torch.uint8,device='cuda')
+  scale=torch.empty(288,K//128,N*4,dtype=torch.uint8,device='cuda')
+  for e in range(288):
+   raw=torch.cat([source(e,p,'weight_packed')for p in names]);weight[e].copy_(raw)
+   sf=torch.cat([source(e,p,'weight_scale')for p in names]);assert not (sf==255).any()
+   # Each output row's four adjacent UE8M0 bytes become a K128-major packed word.
+   view=sf.reshape(N,K//128,4).permute(1,0,2).contiguous().reshape(K//128,N*4)
+   assert torch.equal(view.reshape(K//128,N,4).permute(1,0,2).reshape_as(sf),sf)
+   scale[e].copy_(view)
+  weights.append(weight);scales.append(scale)
+ return weights,scales
+
+def main():
+ parser=argparse.ArgumentParser();parser.add_argument('--fixture',type=pathlib.Path,required=True);parser.add_argument('--operands',type=pathlib.Path,required=True);parser.add_argument('--upstream',type=pathlib.Path,required=True);parser.add_argument('--result',type=pathlib.Path,required=True);parser.add_argument('--rank',type=int,choices=[0,1],default=1);args=parser.parse_args()
+ result=args.result;result.mkdir(parents=True,exist_ok=True);report=result/'report.json';assert not report.exists()
+ out=dict(status='running',phase='loading',started_epoch=time.time(),rank=args.rank,source_sha256=sha(__file__),cases=[],actual_model_inputs=True,full_model_KL_qualified=False,promoted=False)
+ save(report,out)
+ try:
+  assert os.environ.get('MXWAVE_MOE_MODE')=='aligned'and os.environ.get('MXWAVE_MOE_DISPATCH')=='dispatcher'
+  torch.set_num_threads(1);torch.cuda.set_per_process_memory_fraction(7*1024**3/torch.cuda.get_device_properties(0).total_memory)
+  assert torch.cuda.get_device_capability()==(12,1)
+  out['telemetry_before']=telemetry()
+  from benchmark_moe import load_fixture,capture,same
+  from vllm import _custom_ops as ops
+  from moe_runtime import NativeMoe,pack_scales
+  from vllm.model_executor.layers.fused_moe.experts import marlin_moe
+  from vllm.model_executor.layers.fused_moe.activation import MoEActivation,ApplyMoEActivationConfig
+  from vllm.model_executor.layers.fused_moe.config import FusedMoEQuantConfig,FusedMoEQuantDesc
+  from vllm.scalar_type import scalar_types
+  import stable_dispatch,model_plugin
+  fixture=json.loads((args.fixture/'manifest.json').read_text());operands=json.loads((args.operands/'manifest.json').read_text())
+  assert fixture['layer']==operands['layer']==23 and fixture['expert_ids']==list(range(288))
+  assert operands['status']=='complete'and operands['python_wrapper_removed']and not operands['graph_operands_claimed']
+  assert {r['tokens']for r in operands['rows']}=={1,8,16,256}
+  out.update(fixture_manifest_sha256=sha(args.fixture/'manifest.json'),operand_manifest_sha256=sha(args.operands/'manifest.json'),operand_capture_mode=operands['mode'],source_revision=fixture['revision'],clamp_limit=10.0)
+  w1,w2,s1,s2=load_current_fixture(load_fixture,ops,args.fixture,fixture,args.rank,torch.device('cuda',0))
+  layer=torch.nn.Module()
+  for n,t in [('w13_weight_scale',s1),('w2_weight_scale',s2)]:layer.register_parameter(n,torch.nn.Parameter(t,requires_grad=False))
+  config=FusedMoEQuantConfig(_a1=FusedMoEQuantDesc(),_a2=FusedMoEQuantDesc(),_w1=FusedMoEQuantDesc(scale=layer.w13_weight_scale),_w2=FusedMoEQuantDesc(scale=layer.w2_weight_scale))
+  method=types.SimpleNamespace(use_cutlass_mxfp4=False,moe=types.SimpleNamespace(layer_name='fixture.layers.23.mlp.experts'),moe_quant_config=config,moe_kernel=None)
+  model_plugin.install();model_plugin._GEMM_OP=model_plugin.moe_operation('dispatcher');model_plugin.prepare_layer(method,layer,'aligned');stable_dispatch.install();del s1,s2
+  out['baseline_preparation']=model_plugin.report()
+  native_weights,raw_native_scales=load_native(args.fixture,fixture,args.rank)
+  decoder=NativeMoe(pathlib.Path(os.environ['MXWAVE_MOE_ALIGNED_LIBRARY']));assert decoder.encoding=='aligned_nibbles'
+  packed=[];scale_buffers=[];scale_records=[]
+  for index,raw in enumerate(raw_native_scales):
+   row=dict(projection=index,raw_bytes=nbytes(raw),minimum=int(raw.min()),maximum=int(raw.max()))
+   try:
+    p=pack_scales(raw.view(torch.float8_e8m0fnu),pathlib.Path(os.environ['MXWAVE_MOE_RECORD_CODEC']),encoding='aligned_nibbles')
+    decoded=decoder.decode(p);assert same(decoded,raw)
+    packed.append(p);scale_buffers.append(decoded);row.update(compressed=True,retained_bytes=p.retained_bytes,gpu_decode_exact=True)
+   except ValueError as exc:
+    packed.append(None);scale_buffers.append(raw);row.update(compressed=False,retained_bytes=nbytes(raw),fallback=str(exc))
+   scale_records.append(row)
+  del raw,raw_native_scales;gc.collect();torch.cuda.synchronize()
+  out['native_scale_preparation']=scale_records
+  persistent_current=nbytes(w1)+nbytes(w2)+out['baseline_preparation']['scale_retained_bytes']
+  persistent_native=sum(nbytes(t)for t in native_weights)+sum(r['retained_bytes']for r in scale_records)
+  scale_scratch=sum(nbytes(t)for p,t in zip(packed,scale_buffers)if p is not None)
+  out['component_memory']=dict(current_persistent_bytes=persistent_current,native_persistent_bytes=persistent_native,native_reusable_scale_scratch_bytes=scale_scratch,full_model_peak_measured=False,both_benchmark_weight_formats_resident=True)
+  route,fc1,fc2=native_modules(args.upstream)
+  for record in sorted(operands['rows'],key=lambda r:r['tokens']):
+   M=record['tokens'];case=dict(tokens=M,status='running',telemetry_before=telemetry(),numerics={},timing=[]);out['cases'].append(case);out['phase']='case-'+str(M);save(report,out)
+   tensors={}
+   for key,r in record['tensors'].items():
+    p=args.operands/r['path'];assert p.stat().st_size==r['bytes']and sha(p)==r['sha256']
+    dtype=getattr(torch,r['dtype'].removeprefix('torch.'));tensors[key]=torch.frombuffer(bytearray(p.read_bytes()),dtype=dtype).reshape(r['shape']).cuda()
+   x,ids,rw=tensors['hidden_states'],tensors['topk_ids'],tensors['topk_weights'];assert x.shape==(M,4096)and ids.shape==(M,8)
+   assert record['expert_map_is_none']and record['apply_router_weight_on_input']is False
+   assert record['activation']=='MoEActivation.SILU'and record['global_num_experts']==288
+   current_y=torch.empty_like(x)
+   def current_sum(*args):
+    marlin_moe.MarlinExperts.moe_sum(None,*args)
+   def current():
+    marlin_moe.fused_marlin_moe(hidden_states=x,w1=w1,w2=w2,bias1=None,bias2=None,w1_scale=config.w1_scale,w2_scale=config.w2_scale,topk_weights=rw,topk_ids=ids,quant_type_id=scalar_types.float4_e2m1f.id,global_num_experts=288,activation=MoEActivation.SILU,activation_config=ApplyMoEActivationConfig(clamp_limit=10.0),moe_sum=current_sum,output=current_y)
+    return current_y
+   baseline=current().clone();torch.cuda.synchronize();case['numerics']['captured_model_vs_replay']=metrics(baseline,tensors['output'])
+   case['numerics']['current_output']=retain_tensor(result/f'm{M}-current.bin',baseline)
+   case['numerics']['captured_output']=retain_tensor(result/f'm{M}-captured.bin',tensors['output'])
+   case['numerics']['reference_reproducer_bitwise_exact']=same(baseline,tensors['output'])
+   if not case['numerics']['reference_reproducer_bitwise_exact']:
+    case['status']='reference_reproducer_failed';save(report,out);raise RuntimeError('Reference complete-layer replay differs from captured model; no speed conclusion')
+   ws=route.make_mxfp8_q0_route_workspace(x,ids,288)
+   q1=torch.empty(M*8,1024,device='cuda',dtype=torch.float8_e4m3fn)
+   sf1=torch.zeros(fc1.out_sf_shape(M*8,1024,288),device='cuda',dtype=torch.int32)
+   y=torch.zeros_like(x)
+   def native():
+    for p,dest in zip(packed,scale_buffers):
+     if p is not None:
+      status=decoder.library.mxwave_moe_decode(p.descriptor.data_ptr(),dest.data_ptr(),dest.numel(),torch.cuda.current_stream().cuda_stream)
+      if status:raise RuntimeError('Native scale reconstruction failed')
+    y.zero_();off,tm,rw2,aq,asc=route.mxfp8_q0_route_triton(x,ids,rw,288,workspace=ws,enable_pdl=False)
+    fc1.cute_dsl_sm12x_fc1_act_q1_mxfp8_mxfp4(aq,asc,native_weights[0],scale_buffers[0],off,tune=False,enable_pdl=False,swiglu_limit=10.0,out_q=q1,out_sf=sf1)
+    fc2.cute_dsl_sm12x_fc2_finalize_mxfp8_mxfp4(q1,sf1,native_weights[1],scale_buffers[1],off,tm,rw2,M,tune=False,enable_pdl=False,out=y)
+    return y
+   sample=native().clone();torch.cuda.synchronize();case['numerics']['native_vs_current']=metrics(sample,baseline)
+   assert case['numerics']['native_vs_current']['finite']
+   case['numerics']['native_first_output']=retain_tensor(result/f'm{M}-native-first.bin',sample)
+   graphs={};graph_outputs={};pool_sizes={}
+   for label,operation in [('current',current),('native',native)]:
+    before=torch.cuda.memory_allocated();graphs[label],graph_outputs[label]=capture(operation);torch.cuda.synchronize();pool_sizes[label]=torch.cuda.memory_allocated()-before
+   case['graph_persistent_allocation_delta_bytes']=pool_sizes
+   repeat_metrics=[];case['numerics']['current_repeats']=[]
+   for repeat in range(20):
+    graphs['current'].replay();graphs['native'].replay();torch.cuda.synchronize()
+    exact=same(graph_outputs['current'],baseline)
+    case['numerics']['current_repeats'].append(dict(bitwise_exact=exact,payload=retain_tensor(result/f'm{M}-current-repeat{repeat:02d}.bin',graph_outputs['current'])))
+    if not exact:
+     save(report,out);raise RuntimeError('Baseline graph self-repeat changed')
+    repeat_metrics.append({**metrics(graph_outputs['native'],sample),'payload':retain_tensor(result/f'm{M}-native-repeat{repeat:02d}.bin',graph_outputs['native'])})
+   case['numerics']['native_repeat_metrics']=repeat_metrics
+   case['numerics']['native_final_output']=retain_tensor(result/f'm{M}-native-final.bin',graph_outputs['native'])
+   # Balanced interleaving: 16 trials per arm, all kept. Two control halves are compared.
+   for trial in range(16):
+    for label in (('current','native')if trial%2==0 else('native','current')):
+     before=telemetry();start,end=torch.cuda.Event(enable_timing=True),torch.cuda.Event(enable_timing=True)
+     start.record()
+     for _ in range(40):graphs[label].replay()
+     end.record();end.synchronize()
+     case['timing'].append(dict(trial=trial,arm=label,replays=40,layer_ms=start.elapsed_time(end)/40,telemetry_before=before,telemetry_after=telemetry()))
+   current_times=[t['layer_ms']for t in case['timing']if t['arm']=='current'];native_times=[t['layer_ms']for t in case['timing']if t['arm']=='native']
+   case['control_half_ratio']=statistics.median(current_times[8:])/statistics.median(current_times[:8]);case['control_stable']=abs(case['control_half_ratio']-1)<=.02
+   case['median_current_ms']=statistics.median(current_times);case['median_native_ms']=statistics.median(native_times);case['speedup_percent']=(case['median_current_ms']/case['median_native_ms']-1)*100
+   case['time_reduction_fraction']=1-case['median_native_ms']/case['median_current_ms'];case['layer_time_gate_passed']=case['control_stable']and case['time_reduction_fraction']>=.15
+   case['scratch_bytes']=dict(native=sum(nbytes(t)for t in vars(ws).values())+nbytes(q1)+nbytes(sf1)+nbytes(y)+scale_scratch,current_plugin=model_plugin.report()['scratch_bytes'])
+   with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,torch.profiler.ProfilerActivity.CUDA])as prof:
+    for label in ('current','native'):
+     with torch.profiler.record_function('mxwave_layer23_m'+str(M)+'_'+label):graphs[label].replay()
+    torch.cuda.synchronize()
+   trace=result/f'm{M}.pt.trace.json';prof.export_chrome_trace(str(trace));case['trace']=dict(path=trace.name,sha256=sha(trace),bytes=trace.stat().st_size)
+   case.update(status='complete',telemetry_after=telemetry(),cuda_allocated_bytes=torch.cuda.memory_allocated(),cuda_peak_allocated_bytes=torch.cuda.max_memory_allocated());save(report,out)
+   del graphs,graph_outputs,tensors,x,ids,rw,ws,q1,sf1,y,current_y,baseline,sample;gc.collect();torch.cuda.synchronize()
+  out.update(status='complete',phase='complete',finished_epoch=time.time(),high_concurrency_layer_time_gate_passed=all(c['layer_time_gate_passed']for c in out['cases']if c['tokens']in (8,16)),telemetry_after=telemetry())
+  # Component arithmetic is reported, never substituted for the model's KL/NLL gate.
+  out['full_model_integration_authorized_by_this_result']=False
+  save(report,out)
+ except BaseException:
+  out.update(status='failed',error=traceback.format_exc(),finished_epoch=time.time());save(report,out);raise
+if __name__=='__main__':main()

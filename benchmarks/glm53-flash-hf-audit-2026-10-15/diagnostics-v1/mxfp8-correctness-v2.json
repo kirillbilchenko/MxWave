@@ -1,0 +1,748 @@
+{
+  "status": "complete",
+  "started_epoch": 1792086205.1551564,
+  "layers": [
+    {
+      "prefix": "model.language_model.layers.0.mlp.",
+      "rank": 0,
+      "family": "gate_up",
+      "shape_nk": [
+        12288,
+        4096
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.0.mlp.gate_proj",
+          "weight_sha256": "69ff0158365b4db9c7e13ba9685eacc4a707217f4b113fd9973eb1720fafaff9",
+          "scale_sha256": "fb670ef502cfc1121233951ce5331881268d22b6f1fff23b5932e911280e48ed"
+        },
+        {
+          "name": "model.language_model.layers.0.mlp.up_proj",
+          "weight_sha256": "670eda9be3ea67c466f8e13a0b99715c372144158d2473a4a2e94f99d026b451",
+          "scale_sha256": "71a51a042e378b057f3e10d684ee0670736d28e72e138ceee5e880395dd7c7c4"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 3.0517578125e-05,
+          "relative_l2": 1.8372764999813982e-06,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.0009765625,
+          "relative_l2": 2.6010353165724604e-05,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.001953125,
+          "relative_l2": 5.6823013626681815e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.0.mlp.",
+      "rank": 0,
+      "family": "down",
+      "shape_nk": [
+        4096,
+        6144
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.0.mlp.down_proj",
+          "weight_sha256": "81386c5398697d00484a05c34bbb5c96794f6f3fd310dfba87d9475d04a254f5",
+          "scale_sha256": "31b75c8ddc7e99a31a355e75df2dc8d9dac4a7a50b18d4a3af88541bc124ca09"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 1.52587890625e-05,
+          "relative_l2": 1.2751765619609873e-06,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.001953125,
+          "relative_l2": 6.0303503138841925e-05,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00390625,
+          "relative_l2": 5.830574904726361e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.0.mlp.",
+      "rank": 1,
+      "family": "gate_up",
+      "shape_nk": [
+        12288,
+        4096
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.0.mlp.gate_proj",
+          "weight_sha256": "69ff0158365b4db9c7e13ba9685eacc4a707217f4b113fd9973eb1720fafaff9",
+          "scale_sha256": "fb670ef502cfc1121233951ce5331881268d22b6f1fff23b5932e911280e48ed"
+        },
+        {
+          "name": "model.language_model.layers.0.mlp.up_proj",
+          "weight_sha256": "670eda9be3ea67c466f8e13a0b99715c372144158d2473a4a2e94f99d026b451",
+          "scale_sha256": "71a51a042e378b057f3e10d684ee0670736d28e72e138ceee5e880395dd7c7c4"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 3.2132733324723736e-05,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 1.5351897446352858e-05,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00390625,
+          "relative_l2": 6.148250964013935e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.0.mlp.",
+      "rank": 1,
+      "family": "down",
+      "shape_nk": [
+        4096,
+        6144
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.0.mlp.down_proj",
+          "weight_sha256": "81386c5398697d00484a05c34bbb5c96794f6f3fd310dfba87d9475d04a254f5",
+          "scale_sha256": "31b75c8ddc7e99a31a355e75df2dc8d9dac4a7a50b18d4a3af88541bc124ca09"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 7.62939453125e-06,
+          "relative_l2": 6.128393521307506e-07,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 3.0517578125e-05,
+          "relative_l2": 9.750886216231267e-07,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.001953125,
+          "relative_l2": 5.26690080105743e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.3.mlp.shared_experts.",
+      "rank": 0,
+      "family": "gate_up",
+      "shape_nk": [
+        2048,
+        4096
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.3.mlp.shared_experts.gate_proj",
+          "weight_sha256": "167d8ed2b08a49c55da584ef467cf2fe2087927cafea6f824d1e466cc5d9c1d2",
+          "scale_sha256": "ddc0f3dc5c00bdfc846b4db909dc52aa3b5b8c719b516b3d0b5969d089474201"
+        },
+        {
+          "name": "model.language_model.layers.3.mlp.shared_experts.up_proj",
+          "weight_sha256": "d288e50d0d69fba01f689b2614604d622ab05d849b8938cb2804f17c9ddafb82",
+          "scale_sha256": "127bd5ce0abddd79a1f5dfaca4ad0c10089a18b74daa0c4f50b3379494c09a90"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 6.103515625e-05,
+          "relative_l2": 3.802836702270329e-06,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 1.6919552256196016e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.3.mlp.shared_experts.",
+      "rank": 0,
+      "family": "down",
+      "shape_nk": [
+        4096,
+        1024
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.3.mlp.shared_experts.down_proj",
+          "weight_sha256": "7bc34bc236457305a5067660944d5caa25beb15b008ff083c43f221c86103ced",
+          "scale_sha256": "6bb236b6e0344e450d4c846b84648d5fb41ece99d54b745868f29cb988aa9ef9"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 7.450580596923828e-09,
+          "relative_l2": 1.8407024851073917e-09,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 7.62939453125e-06,
+          "relative_l2": 7.241408471319961e-07,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 1.842226345407251e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.3.mlp.shared_experts.",
+      "rank": 1,
+      "family": "gate_up",
+      "shape_nk": [
+        2048,
+        4096
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.3.mlp.shared_experts.gate_proj",
+          "weight_sha256": "167d8ed2b08a49c55da584ef467cf2fe2087927cafea6f824d1e466cc5d9c1d2",
+          "scale_sha256": "ddc0f3dc5c00bdfc846b4db909dc52aa3b5b8c719b516b3d0b5969d089474201"
+        },
+        {
+          "name": "model.language_model.layers.3.mlp.shared_experts.up_proj",
+          "weight_sha256": "d288e50d0d69fba01f689b2614604d622ab05d849b8938cb2804f17c9ddafb82",
+          "scale_sha256": "127bd5ce0abddd79a1f5dfaca4ad0c10089a18b74daa0c4f50b3379494c09a90"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.000244140625,
+          "relative_l2": 2.1460722981189664e-05,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.001953125,
+          "relative_l2": 4.9501495516559316e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.3.mlp.shared_experts.",
+      "rank": 1,
+      "family": "down",
+      "shape_nk": [
+        4096,
+        1024
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.3.mlp.shared_experts.down_proj",
+          "weight_sha256": "7bc34bc236457305a5067660944d5caa25beb15b008ff083c43f221c86103ced",
+          "scale_sha256": "6bb236b6e0344e450d4c846b84648d5fb41ece99d54b745868f29cb988aa9ef9"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 1.9073486328125e-06,
+          "relative_l2": 1.9677982690855888e-07,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 1.793041456958796e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.44.mlp.shared_experts.",
+      "rank": 0,
+      "family": "gate_up",
+      "shape_nk": [
+        2048,
+        4096
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.44.mlp.shared_experts.gate_proj",
+          "weight_sha256": "bc685dc65fb912a46b8a43970bb26a80c3954b9983d08d7f4a6bfeb3549e88ea",
+          "scale_sha256": "53bec8bb46f3d8b360e4a343bafa1556b30d72e872c04cd4d92ea6d488342a42"
+        },
+        {
+          "name": "model.language_model.layers.44.mlp.shared_experts.up_proj",
+          "weight_sha256": "3bd89d15c0fa8bbe8e56cd21e59eb783144de8c6f2d547c5a1b1b30c882928f2",
+          "scale_sha256": "20a58428edcc92f9bafbd9c91e4050908c31f24117c26bbd968f4d8604b0febe"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.001953125,
+          "relative_l2": 8.361797919850883e-05,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.0009765625,
+          "relative_l2": 2.052500037216251e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.44.mlp.shared_experts.",
+      "rank": 0,
+      "family": "down",
+      "shape_nk": [
+        4096,
+        1024
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.44.mlp.shared_experts.down_proj",
+          "weight_sha256": "3b0ccd81f3ccf0946bfabd9973a130ec77bbb3bd1b39de5b09dbabf3aebe0868",
+          "scale_sha256": "d6d55f0e5369ef8a69f387a358444446cbae002c58ab70d33c233f0f4ba0d3c1"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 6.103515625e-05,
+          "relative_l2": 1.735367563729679e-05,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 3.0517578125e-05,
+          "relative_l2": 2.9779788513085175e-06,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.0009765625,
+          "relative_l2": 3.8114565468877006e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.44.mlp.shared_experts.",
+      "rank": 1,
+      "family": "gate_up",
+      "shape_nk": [
+        2048,
+        4096
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.44.mlp.shared_experts.gate_proj",
+          "weight_sha256": "bc685dc65fb912a46b8a43970bb26a80c3954b9983d08d7f4a6bfeb3549e88ea",
+          "scale_sha256": "53bec8bb46f3d8b360e4a343bafa1556b30d72e872c04cd4d92ea6d488342a42"
+        },
+        {
+          "name": "model.language_model.layers.44.mlp.shared_experts.up_proj",
+          "weight_sha256": "3bd89d15c0fa8bbe8e56cd21e59eb783144de8c6f2d547c5a1b1b30c882928f2",
+          "scale_sha256": "20a58428edcc92f9bafbd9c91e4050908c31f24117c26bbd968f4d8604b0febe"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.000244140625,
+          "relative_l2": 3.126466103459038e-05,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 2.2018809378354403e-05,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.001953125,
+          "relative_l2": 3.164471337869599e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "model.language_model.layers.44.mlp.shared_experts.",
+      "rank": 1,
+      "family": "down",
+      "shape_nk": [
+        4096,
+        1024
+      ],
+      "source_hashes": [
+        {
+          "name": "model.language_model.layers.44.mlp.shared_experts.down_proj",
+          "weight_sha256": "3b0ccd81f3ccf0946bfabd9973a130ec77bbb3bd1b39de5b09dbabf3aebe0868",
+          "scale_sha256": "d6d55f0e5369ef8a69f387a358444446cbae002c58ab70d33c233f0f4ba0d3c1"
+        }
+      ],
+      "cases": [
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "basis",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": true,
+          "finite": true,
+          "max_absolute_error": 0.0,
+          "relative_l2": 0.0,
+          "label": "random_1",
+          "repeat_bits_exact": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 7.450580596923828e-09,
+          "relative_l2": 6.989956830026617e-10,
+          "label": "random_8",
+          "repeat_bits_exact": true,
+          "graph_bits_exact_to_eager": true,
+          "passed": true
+        },
+        {
+          "bits_exact": false,
+          "finite": true,
+          "max_absolute_error": 0.00048828125,
+          "relative_l2": 2.4140058380898185e-05,
+          "label": "random_64",
+          "repeat_bits_exact": true,
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "torch": "2.13.0+cu130",
+  "vllm": "0.1.dev20051+g487ecf187",
+  "gates": {
+    "basis_bits_exact": true,
+    "random_relative_l2_maximum": 0.01
+  },
+  "scope": "Unmodified MXFP8 Marlin W8A16, component-only; not model quality",
+  "code_sha256": "39a4cc264e10c0f59b424608adf0383ab27fb8eb125ce1314eb165a9137a5595",
+  "memory_before": {
+    "cuda_free_bytes": 3144671232,
+    "cuda_total_bytes": 130594160640,
+    "cuda_allocated_bytes": 0,
+    "cuda_reserved_bytes": 0,
+    "max_host_rss_bytes": 1214713856,
+    "memory.current": "862183424",
+    "memory.max": "5368709120",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "current_layer": {
+    "index": 44,
+    "rank": 1,
+    "family": "down",
+    "shape_nk": [
+      4096,
+      1024
+    ],
+    "memory": {
+      "cuda_free_bytes": 4162801664,
+      "cuda_total_bytes": 130594160640,
+      "cuda_allocated_bytes": 0,
+      "cuda_reserved_bytes": 0,
+      "max_host_rss_bytes": 2068357120,
+      "memory.current": "1256288256",
+      "memory.max": "5368709120",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  "passed": true,
+  "cuda_peak_bytes": 152568320,
+  "finished_epoch": 1792086260.1409373
+}

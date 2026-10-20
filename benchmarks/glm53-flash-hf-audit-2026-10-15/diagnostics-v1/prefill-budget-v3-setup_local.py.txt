@@ -1,0 +1,11 @@
+from __future__ import annotations
+import pathlib,shutil
+BASE=pathlib.Path(__file__).parent;OLD=pathlib.Path('/private/tmp/mxwave-prefill-budget-v2')
+REPO=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4')
+shutil.copytree(OLD/'cpu-source',BASE/'cpu-source',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+for p in REPO.glob('*budget*.py'):shutil.copyfile(p,BASE/'cpu-source'/p.name)
+s=(OLD/'simulate.py').read_text().replace('mxwave-prefill-budget-v2','mxwave-prefill-budget-v3').replace('2080','4096').replace('specialization_count":38','specialization_count":39').replace('range(38)','range(39)')
+(BASE/'simulate.py').write_text(s)
+for n in ['build_preparation.py','status.py','analyze_profiles.py','analyze_resources.py','analyze_uncertainty.py','retain_and_review.py','final_service_check.py']:
+ s=(OLD/n).read_text().replace('prefill-budget-v2','prefill-budget-v3').replace('prefillbudgetv2','prefillbudgetv3').replace('2080','4096').replace('four added block/capacity variants,38','five added block/capacity variants,39').replace('tests_passed\':810','tests_passed\':812')
+ (BASE/n).write_text(s)

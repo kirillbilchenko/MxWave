@@ -1,0 +1,104 @@
+"""Estimate selective dense storage from verified per-matrix payload accounting."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import pathlib
+import re
+
+BASE = pathlib.Path('/private/tmp/mxwave-matched-c8-v1')
+ROOT = BASE / 'evidence'
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    inventory = json.loads((ROOT / 'evidence-inventory.json').read_bytes())
+    hashes = {item['path']: item['sha256'] for item in inventory['files']}
+    data, sources = {}, {}
+    for arm in ('control', 'candidate'):
+        name = f'results/{arm}-matched-c8.json'
+        path = ROOT / name
+        assert sha(path) == hashes[name]
+        sources[name] = hashes[name]
+        data[arm] = json.loads(path.read_bytes())
+    for name in ('source/kda_adapter.py', 'source/kda_runtime.py'):
+        assert sha(ROOT / name) == hashes[name]
+        sources[name] = hashes[name]
+    allocations = {arm: {s['tp_rank']: s['allocation'] for s in d['source_before']}
+                   for arm, d in data.items()}
+    current_saving = sum(allocations['control'][rank]['cuda_allocated_bytes']
+                         - allocations['candidate'][rank]['cuda_allocated_bytes']
+                         for rank in (0, 1))
+    assert current_saving == 10057913856
+    cases = []
+    for policy in ('all_kda_dense', 'all_inputs_dense', 'all_outputs_dense',
+                   'outputs_and_first_five_inputs_dense'):
+        ranks = []
+        for rank in (0, 1):
+            kda = allocations['candidate'][rank]['kda']
+            layers = kda['layers']
+            assert len(layers) == 68 and kda['dense_parameter_references_alive'] == 0
+            assert sum(x['raw_bytes'] for x in layers) == kda['raw_bytes']
+            assert sum(x['packed_bytes'] for x in layers) == kda['packed_bytes']
+            assert all(x['gpu_decode_bits_exact'] for x in layers)
+            ordered_inputs = sorted((x for x in layers if x['kind'] == 'input'),
+                                    key=lambda x: int(re.search(r'\.layers\.(\d+)\.', x['prefix'])[1]))
+            first_five = {x['prefix'] for x in ordered_inputs[:5]}
+            chosen = [x for x in layers if policy == 'all_kda_dense'
+                      or policy == 'all_inputs_dense' and x['kind'] == 'input'
+                      or policy == 'all_outputs_dense' and x['kind'] == 'output'
+                      or policy == 'outputs_and_first_five_inputs_dense'
+                      and (x['kind'] == 'output' or x['prefix'] in first_five)]
+            selected = {x['prefix'] for x in chosen}
+            kept = [x for x in layers if x['prefix'] not in selected]
+            dense_extra = sum(x['raw_bytes'] - x['packed_bytes'] for x in chosen)
+            # A redesigned two-slot pool can shrink only if every remaining
+            # compressed projection fits. Merely filtering targets in the
+            # existing adapter does not change its already-closed maximum.
+            reduced_pool = max((x['native_shape'][0] * x['native_shape'][1]
+                                for x in kept), default=0) * 2 * 2
+            assert reduced_pool <= kda['pool_bytes']
+            ranks.append({'rank': rank, 'dense_projection_count': len(chosen),
+                          'remaining_packed_projection_count': len(kept),
+                          'extra_weight_bytes_replacing_packed': dense_extra,
+                          'current_pool_bytes': kda['pool_bytes'],
+                          'hypothetical_resized_pool_bytes': reduced_pool,
+                          'hypothetical_pool_release_bytes': kda['pool_bytes'] - reduced_pool,
+                          'dense_prefixes': sorted(selected)})
+        conservative = current_saving - sum(x['extra_weight_bytes_replacing_packed'] for x in ranks)
+        resized = conservative + sum(x['hypothetical_pool_release_bytes'] for x in ranks)
+        cases.append({'policy': policy, 'ranks': ranks,
+                      'estimated_saved_bytes_with_current_pool': conservative,
+                      'estimated_saved_GiB_with_current_pool': conservative / 1024**3,
+                      'estimated_saved_bytes_with_resized_pool': resized,
+                      'estimated_saved_GiB_with_resized_pool': resized / 1024**3})
+    out = {'status': 'complete', 'source_sha256': sha(pathlib.Path(__file__)),
+           'inputs': sources,
+           'parent_archive_sha256': json.loads((BASE / 'cross-host-verification.json').read_bytes())['archive_sha256'],
+           'GPU_experiment_run': False, 'runtime_policy_changed': False,
+           'measured_current_cuda_saving_bytes': current_saving,
+           'scenarios': cases,
+           'limits': [
+               'These are arithmetic storage estimates, not new allocator or API measurements.',
+               'Each selected matrix replaces its packed copy with dense BF16; no duplicate cache is assumed.',
+               'Pool reduction requires a separately implemented and qualified policy; current code does not do it.',
+               'Allocator granularity, capture storage and other runtime allocations can change the real result.',
+               'Current host RSS is not improved; these CUDA storage estimates do not predict CPU RSS.',
+               'No speed gain follows from storage arithmetic. Existing warm and cache-pressure timings differ.',
+               'Keeping all KDA weights dense would remove the fused KDA benefit observed at C1.',
+               'Every candidate still requires original numerical, throughput, TTFT and restoration gates.',
+           ]}
+    destination = BASE / 'storage-tradeoff-review.json'
+    assert not destination.exists()
+    destination.write_text(json.dumps(out, indent=2) + '\n')
+    print(json.dumps({'status': 'complete', 'scenarios': [
+        {k: v for k, v in x.items() if k != 'ranks'} for x in cases]}))
+
+
+if __name__ == '__main__':
+    main()

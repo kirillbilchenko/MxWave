@@ -1,0 +1,266 @@
+{
+  "status": "complete",
+  "attribution": "Source-order inference, not module-labelled GPU scopes",
+  "limitations": [
+    "Kernel sums can overlap and are not unprofiled API latency.",
+    "Source-order KDA attribution covers primary GEMMs; reductions/copies remain separate.",
+    "Native MXFP8 additionally requires the independent startup layout checks to pass.",
+    "Graph rows distinguish physical verify widths, not offered request concurrency.",
+    "Eager work includes prefill and uncaptured decode; it is not all prefill by assumption."
+  ],
+  "source_sha256": {
+    "kda-profile-review.json": "c01e0a6ca5bffbebb94194c639693bdef5f808058968c169bb98f5e3a1c484b3",
+    "profiles-review.json": "92e1c331ef9812be7a3fe5bd07190ef0f7ed716376bec5b961a7acb1c419112f"
+  },
+  "arms": {
+    "p3_r0": {
+      "mode": "modelopt",
+      "trace_sha256": "5721fc626ce78c1310705d3b6ea2bbaf77ce1ef47837c3cbe212af0fb64dc530",
+      "graph_widths": {
+        "12": {
+          "graphs": 16,
+          "mean_input_gemm_ms": 8.8819033125,
+          "mean_output_gemm_ms": 4.600505,
+          "median_graph_span_ms": 102.32456665039064,
+          "weight_rebuilds": 0
+        },
+        "16": {
+          "graphs": 10,
+          "mean_input_gemm_ms": 9.1099355,
+          "mean_output_gemm_ms": 4.5377953,
+          "median_graph_span_ms": 124.31013439941407,
+          "weight_rebuilds": 0
+        },
+        "4": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 9.0641,
+          "mean_output_gemm_ms": 3.3874250000000004,
+          "median_graph_span_ms": 66.06397998046874,
+          "weight_rebuilds": 0
+        },
+        "6": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 8.455879999999999,
+          "mean_output_gemm_ms": 3.9917469999999997,
+          "median_graph_span_ms": 76.87982885742187,
+          "weight_rebuilds": 0
+        },
+        "8": {
+          "graphs": 17,
+          "mean_input_gemm_ms": 8.63694305882353,
+          "mean_output_gemm_ms": 4.333757294117647,
+          "median_graph_span_ms": 91.1524130859375,
+          "weight_rebuilds": 0
+        }
+      },
+      "attributed_graphs": 45,
+      "unattributed_graphs": 0,
+      "total_rebuilds": {},
+      "graph_rebuilds": 0
+    },
+    "p3_r1": {
+      "mode": "modelopt",
+      "trace_sha256": "6e2d8cdbed53fa85e99b641f38cd6852c68050a0e468a77cbf51b6c7a76647d3",
+      "graph_widths": {
+        "12": {
+          "graphs": 16,
+          "mean_input_gemm_ms": 8.904378812500001,
+          "mean_output_gemm_ms": 4.6152751875,
+          "median_graph_span_ms": 102.5500889892578,
+          "weight_rebuilds": 0
+        },
+        "16": {
+          "graphs": 10,
+          "mean_input_gemm_ms": 9.129646300000001,
+          "mean_output_gemm_ms": 4.5727909,
+          "median_graph_span_ms": 124.72188403320312,
+          "weight_rebuilds": 0
+        },
+        "4": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 8.763537,
+          "mean_output_gemm_ms": 3.377224,
+          "median_graph_span_ms": 66.53887109375,
+          "weight_rebuilds": 0
+        },
+        "6": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 8.489779,
+          "mean_output_gemm_ms": 4.043406,
+          "median_graph_span_ms": 76.767501953125,
+          "weight_rebuilds": 0
+        },
+        "8": {
+          "graphs": 17,
+          "mean_input_gemm_ms": 8.853091470588236,
+          "mean_output_gemm_ms": 4.388901941176471,
+          "median_graph_span_ms": 91.42731298828124,
+          "weight_rebuilds": 0
+        }
+      },
+      "attributed_graphs": 45,
+      "unattributed_graphs": 0,
+      "total_rebuilds": {},
+      "graph_rebuilds": 0
+    },
+    "a3_r0": {
+      "mode": "ct_bf16",
+      "trace_sha256": "13fa1c3fd0c2d7cc3153abda85b5dfa52081c012df3193a2927c14a3aacd835b",
+      "graph_widths": {
+        "12": {
+          "graphs": 7,
+          "mean_input_gemm_ms": 19.568733285714284,
+          "mean_output_gemm_ms": 5.990976857142857,
+          "median_graph_span_ms": 136.2097697753906,
+          "weight_rebuilds": 476
+        },
+        "16": {
+          "graphs": 12,
+          "mean_input_gemm_ms": 15.821741,
+          "mean_output_gemm_ms": 7.0733255,
+          "median_graph_span_ms": 140.22779504394532,
+          "weight_rebuilds": 0
+        },
+        "6": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 15.478448,
+          "mean_output_gemm_ms": 7.072075,
+          "median_graph_span_ms": 82.28082104492188,
+          "weight_rebuilds": 0
+        },
+        "8": {
+          "graphs": 15,
+          "mean_input_gemm_ms": 15.6932084,
+          "mean_output_gemm_ms": 7.0459864,
+          "median_graph_span_ms": 97.25123901367188,
+          "weight_rebuilds": 0
+        }
+      },
+      "attributed_graphs": 35,
+      "unattributed_graphs": 0,
+      "total_rebuilds": {
+        "calls": 5848,
+        "duration_sum_us": 3138296.685000004
+      },
+      "graph_rebuilds": 476
+    },
+    "a3_r1": {
+      "mode": "ct_bf16",
+      "trace_sha256": "887fa9843dfd8eff7c3ad9a4e4d18b8e569f46c0372d6ab14896070005c88893",
+      "graph_widths": {
+        "12": {
+          "graphs": 7,
+          "mean_input_gemm_ms": 21.312859,
+          "mean_output_gemm_ms": 5.969823285714286,
+          "median_graph_span_ms": 136.36193505859376,
+          "weight_rebuilds": 476
+        },
+        "16": {
+          "graphs": 12,
+          "mean_input_gemm_ms": 15.984631083333333,
+          "mean_output_gemm_ms": 7.134955166666667,
+          "median_graph_span_ms": 140.0282010498047,
+          "weight_rebuilds": 0
+        },
+        "6": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 15.413958000000001,
+          "mean_output_gemm_ms": 6.914805,
+          "median_graph_span_ms": 82.41373901367187,
+          "weight_rebuilds": 0
+        },
+        "8": {
+          "graphs": 15,
+          "mean_input_gemm_ms": 15.808569466666667,
+          "mean_output_gemm_ms": 6.9862938,
+          "median_graph_span_ms": 97.54104223632812,
+          "weight_rebuilds": 0
+        }
+      },
+      "attributed_graphs": 35,
+      "unattributed_graphs": 0,
+      "total_rebuilds": {
+        "calls": 5848,
+        "duration_sum_us": 3126249.311000003
+      },
+      "graph_rebuilds": 476
+    },
+    "b3_r0": {
+      "mode": "ct_mxfp8",
+      "trace_sha256": "f34edcef9477a99d66b9967a04adaca47600d01e3bace7ad615ecf303b553e5b",
+      "graph_widths": {
+        "12": {
+          "graphs": 12,
+          "mean_input_gemm_ms": 8.99262775,
+          "mean_output_gemm_ms": 4.615382333333334,
+          "median_graph_span_ms": 92.15562744140625,
+          "weight_rebuilds": 0
+        },
+        "16": {
+          "graphs": 10,
+          "mean_input_gemm_ms": 9.0560145,
+          "mean_output_gemm_ms": 4.5601017,
+          "median_graph_span_ms": 135.7416435546875,
+          "weight_rebuilds": 0
+        },
+        "6": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 8.649768,
+          "mean_output_gemm_ms": 3.978197,
+          "median_graph_span_ms": 75.761037109375,
+          "weight_rebuilds": 0
+        },
+        "8": {
+          "graphs": 13,
+          "mean_input_gemm_ms": 8.648347846153847,
+          "mean_output_gemm_ms": 4.328958692307692,
+          "median_graph_span_ms": 87.87126928710937,
+          "weight_rebuilds": 0
+        }
+      },
+      "attributed_graphs": 36,
+      "unattributed_graphs": 0,
+      "total_rebuilds": {},
+      "graph_rebuilds": 0
+    },
+    "b3_r1": {
+      "mode": "ct_mxfp8",
+      "trace_sha256": "2a8f2572ee986f22903efffddbe64a4d0c9a25a0302843cb543e274dd57f2887",
+      "graph_widths": {
+        "12": {
+          "graphs": 12,
+          "mean_input_gemm_ms": 8.975220333333333,
+          "mean_output_gemm_ms": 4.581861166666667,
+          "median_graph_span_ms": 92.05547131347656,
+          "weight_rebuilds": 0
+        },
+        "16": {
+          "graphs": 10,
+          "mean_input_gemm_ms": 9.0734663,
+          "mean_output_gemm_ms": 4.539049,
+          "median_graph_span_ms": 135.7549245605469,
+          "weight_rebuilds": 0
+        },
+        "6": {
+          "graphs": 1,
+          "mean_input_gemm_ms": 8.461142,
+          "mean_output_gemm_ms": 3.981545,
+          "median_graph_span_ms": 76.83706591796874,
+          "weight_rebuilds": 0
+        },
+        "8": {
+          "graphs": 13,
+          "mean_input_gemm_ms": 8.787111153846153,
+          "mean_output_gemm_ms": 4.34467176923077,
+          "median_graph_span_ms": 88.2711650390625,
+          "weight_rebuilds": 0
+        }
+      },
+      "attributed_graphs": 36,
+      "unattributed_graphs": 0,
+      "total_rebuilds": {},
+      "graph_rebuilds": 0
+    }
+  },
+  "total_attributed_graphs": 232
+}

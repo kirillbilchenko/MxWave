@@ -1,0 +1,62 @@
+"""Correct the graph-replay/verified-round count contract without rewriting frozen evidence."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+from drafter_head_analysis import analyze
+
+
+def main():
+    root, output = Path(sys.argv[1]), Path(sys.argv[2])
+    result = analyze(root)
+    original = json.loads((root / "head-review.json").read_bytes())
+    result["schema"] = "mxwave-draft-head-review-v2"
+    result["original_review_controls_pass"] = original["controls_pass"]
+    result["coverage_correction"] = (
+        "V1 compared every graph replay to the verified-draft counter. Each request also "
+        "has two post-cap lookahead replays. V2 uses captured token positions and reconstructs "
+        "all 125 verified prefixes, 389 accepted tokens and all fourteen position counters. "
+        "The original failed count comparison is retained; no tensor or request is removed."
+    )
+    result["source_bindings"] = {
+        "v1_review": hashlib.sha256((root / "head-review.json").read_bytes()).hexdigest(),
+        "analysis": hashlib.sha256(Path(__file__).with_name("drafter_head_analysis.py").read_bytes())
+        .hexdigest(),
+        "verifier": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "manifest": hashlib.sha256((root / "evidence-manifest.json").read_bytes()).hexdigest(),
+    }
+    for case, row in result["cases"].items():
+        prior = original["cases"][case]
+        for rank, values in row["ranks"].items():
+            old = prior["ranks"][rank]
+            assert all(
+                value == old[key] for key, value in values.items()
+                if key not in ("coverage", "all_draft_rounds_captured")
+            )
+            assert not old["all_draft_rounds_captured"]
+            assert values["coverage"]["passed"]
+    assert result["controls_pass"]
+    assert not output.exists()
+    output.write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps({
+        "controls_pass": result["controls_pass"],
+        "cases": {
+            case: {
+                "captured": row["ranks"]["0"]["frames"],
+                "verified_rounds": row["ranks"]["0"]["coverage"]["reported_rounds"],
+                "proposals_changed": row["ranks"]["0"]["proposal_changed_tokens"],
+                "sampled_logits_different": sum(
+                    r["raw_sampled_bit_differences"] for r in row["ranks"].values()
+                ),
+            }
+            for case, row in result["cases"].items()
+        },
+    }))
+
+
+if __name__ == "__main__":
+    main()

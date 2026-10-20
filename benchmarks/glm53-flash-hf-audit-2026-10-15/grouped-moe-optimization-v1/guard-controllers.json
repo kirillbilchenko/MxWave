@@ -1,0 +1,831 @@
+{
+  "status": "verified",
+  "epoch": 1792068260.1236088,
+  "guard_script_sha256": "6f8dd78d741b118560251396c3ef5ca745ae8b75202cdec4559f2c9e0b154a10",
+  "guards": {
+    "opt-stage-v1": {
+      "controller_sha256": "9438fd909f578a32cc5da1ee6c2c3799e56c9472fe0104e1115f0b2659bd44d6",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-stage-v1-1",
+            "before": {
+              "epoch": 1792065036.1562195,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6049951744,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-stage-v1-attempt1",
+            "after": {
+              "epoch": 1792065057.6762984,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792065035.4950655,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792065058.0050464,
+        "available_bytes": 6049951744
+      }
+    },
+    "opt-prmt-v1": {
+      "controller_sha256": "56d59e1b19a7ef6f695c3da411ffd15b95c61192441c92e7a8825077fa2737c9",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-prmt-v1-1",
+            "before": {
+              "epoch": 1792065115.6453037,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6025240576,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-prmt-v1-attempt1",
+            "after": {
+              "epoch": 1792065135.0625205,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792065114.9974072,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792065135.398022,
+        "available_bytes": 6025240576
+      }
+    },
+    "opt-early-v1": {
+      "controller_sha256": "a295c81c8c8e6b8bdee959682f883191e26a6e2879592dd7efa2b0f0bf9b2243",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-early-v1-1",
+            "before": {
+              "epoch": 1792065331.9622874,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6013743104,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-early-v1-attempt1",
+            "after": {
+              "epoch": 1792065356.0164747,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792065331.355186,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792065356.3393536,
+        "available_bytes": 6013743104
+      }
+    },
+    "opt-bf16stage-v1": {
+      "controller_sha256": "6849b115823a28a142517ee34c07ab3a11809d25b05165eab094d5d577ee4f85",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-bf16stage-v1-1",
+            "before": {
+              "epoch": 1792065633.0874667,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6030376960,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-bf16stage-v1-attempt1",
+            "after": {
+              "epoch": 1792065654.8741326,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792065632.4330962,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792065655.1947877,
+        "available_bytes": 6030376960
+      }
+    },
+    "opt-stage-b64-v1": {
+      "controller_sha256": "3ef889e2e729b1df1aff1259ace51ca158647a65b03f2ef94502ab04c16be4c2",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-stage-b64-v1-1",
+            "before": {
+              "epoch": 1792065815.9812577,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6068154368,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-stage-b64-v1-attempt1",
+            "after": {
+              "epoch": 1792065835.202591,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792065815.3230596,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792065835.5768003,
+        "available_bytes": 6068154368
+      }
+    },
+    "opt-nibbles-v1": {
+      "controller_sha256": "bb12c84d653fcb98bde9bc48eb38e091953de3922e2ebfd0a244d63e5586c4a5",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-nibbles-v1-1",
+            "before": {
+              "epoch": 1792067183.6072135,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 37915475.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 130969.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 261.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6047195136,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-nibbles-v1-attempt1",
+            "after": {
+              "epoch": 1792067207.747162,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 37915475.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 130969.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 261.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792067182.9174886,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 37915475.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 130969.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 261.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792067208.097242,
+        "available_bytes": 6047195136
+      }
+    },
+    "opt-aligned-v1": {
+      "controller_sha256": "9c4eca96014c97bb52df6dd95b38742de5aa7f08a67732a5bc35671503c8f7cc",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-opt-aligned-v1-1",
+            "before": {
+              "epoch": 1792067526.5010152,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 38660183.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 132524.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 264.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6027530240,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-aligned-v1-attempt1",
+            "after": {
+              "epoch": 1792067538.720372,
+              "busy": true,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 1.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 38909601.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 132596.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 264.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "interrupted": true
+          },
+          {
+            "container": "mxwave-glm53-moe-opt-aligned-v1-2",
+            "before": {
+              "epoch": 1792067600.365122,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 39409908.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 134404.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 267.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6048784384,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-aligned-v1-attempt2",
+            "after": {
+              "epoch": 1792067610.2532904,
+              "busy": true,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 1.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 39661289.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 134485.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 267.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "interrupted": true
+          },
+          {
+            "container": "mxwave-glm53-moe-opt-aligned-v1-3",
+            "before": {
+              "epoch": 1792067657.1165044,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 39913227.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 135678.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 269.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6013693952,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-aligned-v1-attempt3",
+            "after": {
+              "epoch": 1792067671.7774303,
+              "busy": true,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 1.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 39913227.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 135678.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 269.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "interrupted": true
+          },
+          {
+            "container": "mxwave-glm53-moe-opt-aligned-v1-4",
+            "before": {
+              "epoch": 1792067718.7063951,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 40420358.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 136875.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 271.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6046801920,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-aligned-v1-attempt4",
+            "after": {
+              "epoch": 1792067726.2220662,
+              "busy": true,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 1.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 40675315.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 136897.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 271.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "interrupted": true
+          },
+          {
+            "container": "mxwave-glm53-moe-opt-aligned-v1-5",
+            "before": {
+              "epoch": 1792067767.8640573,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 40675315.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 137925.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 272.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6024540160,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/opt-aligned-v1-attempt5",
+            "after": {
+              "epoch": 1792067787.3544888,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 40675315.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 137925.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 272.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792067767.2054455,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 40675315.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 137925.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 272.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792067787.6938288,
+        "available_bytes": 6024540160
+      }
+    },
+    "ncu-raw-up-v2": {
+      "controller_sha256": "875b28027e425bfea69744a09cacd266a62ce37dae3555a56ae56ba68602d77e",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-ncu-raw-up-v2-1",
+            "before": {
+              "epoch": 1792066353.3334572,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6017089536,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/ncu-raw-up-v2-attempt1",
+            "after": {
+              "epoch": 1792066400.7134855,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792066352.6775272,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792066401.040489,
+        "available_bytes": 6017089536
+      }
+    },
+    "ncu-stage-up-v1": {
+      "controller_sha256": "01df0af186f3fb4f1c9957c5f25651f4e1feaa1ef7067e44749961f319cad15c",
+      "controller": {
+        "phase": "complete_idle",
+        "runs": [
+          {
+            "container": "mxwave-glm53-moe-ncu-stage-up-v1-1",
+            "before": {
+              "epoch": 1792066460.860534,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "available_bytes": 6013792256,
+            "results": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/grouped-moe-v1/ncu-stage-up-v1-attempt1",
+            "after": {
+              "epoch": 1792066505.703765,
+              "busy": false,
+              "gauges": {
+                "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+              },
+              "counters": {
+                "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+                "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+                "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+              }
+            },
+            "exit_code": 0,
+            "quiet": true
+          }
+        ],
+        "fixture_state": {
+          "status": "complete",
+          "tensors": 1728,
+          "payload_bytes": 3850371072
+        },
+        "last_activity": {
+          "epoch": 1792066460.1788018,
+          "busy": false,
+          "gauges": {
+            "vllm:num_requests_running{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:num_requests_waiting{engine=\"0\",model_name=\"glm-5.3-flash\"}": 0.0
+          },
+          "counters": {
+            "vllm:prompt_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 36686200.0,
+            "vllm:generation_tokens_total{engine=\"0\",model_name=\"glm-5.3-flash\"}": 128176.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"stop\",model_name=\"glm-5.3-flash\"}": 256.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"length\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"abort\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"error\",model_name=\"glm-5.3-flash\"}": 0.0,
+            "vllm:request_success_total{engine=\"0\",finished_reason=\"repetition\",model_name=\"glm-5.3-flash\"}": 0.0
+          }
+        },
+        "updated_epoch": 1792066506.261888,
+        "available_bytes": 6013792256
+      }
+    }
+  },
+  "live_glm": {
+    "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+    "name": "/local-spark-glm53-tp2-long500k-20261013-r0",
+    "started_at": "2026-10-15T06:33:28.698734588Z",
+    "running": true,
+    "health_status": 200
+  }
+}

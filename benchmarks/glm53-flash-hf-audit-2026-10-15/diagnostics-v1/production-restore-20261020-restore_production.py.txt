@@ -1,0 +1,22 @@
+import json,pathlib,subprocess,sys,time,urllib.request
+root=pathlib.Path(__file__).parent;base=root.parent
+sys.path.insert(0,str(base/'full-c16admissionv1-src'))
+import full_model_control as c
+before=json.loads((root/'controller-before.json').read_bytes())
+state={'status':'restoring','started_epoch':time.time()};c.write(root/'status.json',state)
+try:
+ subprocess.run(['python3','-S','-B','-u',str(base/'serving-trial-v2/control_trial.py'),'--rollback'],check=True)
+ identities=[]
+ for rank in (0,1):
+  obj=c.inspect(rank,c.ORIGINAL_IDS[rank]);assert obj['State']['Running']and c.identity(obj)==before['originals'][rank]
+  identities.append(c.identity(obj))
+  candidate=c.inspect(rank,f'mxwave-serving-trial-v2-candidate-r{rank}');assert not candidate['State']['Running']
+ key=pathlib.Path('/home/kirya/local-spark/runtime/secrets/llm_api_key').read_text().strip()
+ req=urllib.request.Request('http://127.0.0.1:8000/v1/models',headers={'Authorization':'Bearer '+key})
+ with urllib.request.urlopen(req,timeout=20)as response:models=json.load(response);assert response.status==200
+ assert any(m['id']=='glm-5.3-flash'and m['max_model_len']==500000 for m in models['data'])
+ state.update(status='complete',health=200,identities=identities,models=models,trial_stopped=True,finished_epoch=time.time())
+except BaseException as exc:
+ state.update(status='failed',error=repr(exc));raise
+finally:c.write(root/'status.json',state)
+print(json.dumps(state))

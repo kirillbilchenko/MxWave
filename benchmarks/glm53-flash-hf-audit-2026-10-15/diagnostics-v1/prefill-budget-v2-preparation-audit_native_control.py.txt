@@ -1,0 +1,32 @@
+"""Exercise the real pinned engine RPC wrapper without model construction or CUDA."""
+import hashlib,json,os,queue,sys
+from types import SimpleNamespace
+from pathlib import Path
+os.environ['MXWAVE_PREFILL_BUDGET']='1'
+from prefill_budget import install
+from vllm.v1.engine import core
+import torch
+install()
+import stable_dispatch,budget_dispatch
+assert stable_dispatch.canonicalize is budget_dispatch.canonicalize
+e=SimpleNamespace(has_work=lambda:False,input_queue=queue.Queue(),batch_queue=None,
+ scheduler=SimpleNamespace(max_num_scheduled_tokens=2080),
+ vllm_config=SimpleNamespace(speculative_config=None,
+  scheduler_config=SimpleNamespace(max_num_batched_tokens=2080,max_num_seqs=16),
+  parallel_config=SimpleNamespace(data_parallel_size=1,pipeline_parallel_size=1)),
+ model_executor=SimpleNamespace(collective_rpc=lambda *a,**k:['native_passthrough']))
+rows=[]
+for budget in (2048,2080,2048):
+ value=core.EngineCore.collective_rpc(e,'mxwave_budget_configure',args=(budget,))[0]
+ assert value['budget_tokens']==budget and value['window_ms']==10 and not value['events']
+ assert value['allocation_capacity_tokens']==2080 and value['engine_idle']
+ rows.append(value)
+assert core.EngineCore.collective_rpc(e,'untouched_method')==['native_passthrough']
+e.input_queue.put('pending')
+try:core.EngineCore.collective_rpc(e,'mxwave_budget_configure',args=(2080,))
+except RuntimeError:pass
+else:raise AssertionError('Queued work accepted configuration')
+assert e.scheduler.max_num_scheduled_tokens==2048
+assert not torch.cuda.is_initialized()
+print(json.dumps({'status':'passed','real_pinned_engine_RPC':True,'scheduler_object_is_standin':True,
+ 'queued_work_rejected':True,'budget_dispatch_installed':True,'CUDA_initialized':False,'cases':rows}))

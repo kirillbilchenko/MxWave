@@ -1,0 +1,67 @@
+"""Verify native-screen restoration and retained bytes before releasing its owned lease."""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import pathlib
+import shlex
+import signal
+import subprocess
+import time
+
+base = pathlib.Path(__file__).parent
+root = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+receipt = json.loads((base / 'actual-spark-receipt.json').read_bytes())
+assert receipt['status'] == 'complete' and receipt['verified_after_pack']
+archive = base / 'actual-evidence.tar.gz'
+with archive.open('rb') as stream:
+    assert hashlib.file_digest(stream, 'sha256').hexdigest() == receipt['archive_sha256']
+assert archive.stat().st_size == receipt['archive_bytes']
+program = r'''
+import json,pathlib,subprocess,sys,time
+r=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(r/'full-prefillbudgetv3-src'))
+import full_model_control as c
+prefix='moe-native-actual-v4'
+state=json.loads((r/(prefix+'-controller.json')).read_bytes())
+prepared=json.loads((r/(prefix+'-prepared.json')).read_bytes())
+launch=json.loads((r/(prefix+'-launch.json')).read_bytes())
+receipt=json.loads((r/(prefix+'-evidence-check.json')).read_bytes())
+assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+assert receipt['status']=='complete' and receipt['verified_after_pack']
+originals=[c.inspect(rank,c.ORIGINAL_IDS[rank])for rank in (0,1)]
+assert all(row['State']['Running']for row in originals) and c.health(8000)
+assert [c.identity(row)for row in originals]==prepared['originals']
+processes=[]
+for role,pid in [('controller',launch['pid']),('watchdog',state['watchdog_pid'])]:
+    value=subprocess.run(['ps','-p',str(pid),'-o','stat='],capture_output=True,text=True)
+    assert value.returncode!=0 or value.stdout.strip().startswith('Z'),(role,pid,value.stdout)
+    processes.append(dict(role=role,pid=pid,terminal=True))
+for entry in state['runs']:
+    value=c.inspect(entry['rank'],entry['container'])
+    assert not value['State']['Running']
+print(json.dumps(dict(status='passed',checked_epoch=time.time(),health=200,
+    original_identities_equal=True,component_phase=state['phase'],processes=processes,
+    archive_sha256=receipt['archive_sha256'])))
+'''
+raw = subprocess.check_output(
+    ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+     shlex.join(['python3', '-S', '-B', '-c', program, root])], timeout=60)
+remote = json.loads(raw)
+assert remote['archive_sha256'] == receipt['archive_sha256']
+(base / 'actual-final-service-check.json').write_bytes(raw)
+lease = json.loads((base / 'actual-awake-lease.json').read_bytes())
+current = subprocess.run(
+    ['ps', '-p', str(lease['pid']), '-o', 'pid=,lstart=,command='],
+    capture_output=True, text=True)
+if current.returncode == 0:
+    assert current.stdout.strip() == lease['identity']
+    os.kill(lease['pid'], signal.SIGTERM)
+    action = 'TERM_after_verified_retention_and_restoration'
+else:
+    action = 'already_absent'
+cleanup = dict(status='released', checked_epoch=time.time(), awake_pid=lease['pid'],
+               awake_action=action, service_health=200, original_identities_equal=True,
+               archive_sha256=receipt['archive_sha256'])
+(base / 'actual-terminal-cleanup.json').write_text(json.dumps(cleanup, indent=2) + '\n')
+print(json.dumps(dict(service=remote, cleanup=cleanup)))

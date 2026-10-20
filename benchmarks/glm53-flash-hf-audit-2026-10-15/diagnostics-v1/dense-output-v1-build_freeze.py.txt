@@ -1,0 +1,28 @@
+from __future__ import annotations
+import pathlib,json,hashlib,tarfile,shutil,sys,datetime
+w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');b=pathlib.Path('/private/tmp/mxwave-dense-output-v1');old=pathlib.Path('/private/tmp/mxwave-kda-memory-v1/evidence');model=pathlib.Path('/private/tmp/mxwave-warmed-model-v1/evidence');sys.path.insert(0,str(w/'integrations/glm53_mxfp4'));from dense_output_probe import protocol,select_cases
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+parent=json.loads((old/'prepared.json').read_bytes());codes=parent['bindings'][0]['code'];assert len(codes)==210
+parentfile=model/'results/candidate-warmed-model.json';inventory=model/'evidence-inventory.json';inv=json.loads(inventory.read_bytes())['files'];row=next(x for x in inv if x['path']=='results/candidate-warmed-model.json');assert row['sha256']==sha(parentfile)
+selected=select_cases(json.loads(parentfile.read_bytes()));assert len(selected)==6
+newnames=['dense_output_probe.py','benchmark_dense_output.py','run_dense_output.py'];new={n:sha(w/'integrations/glm53_mxfp4'/n) for n in newnames};assert not set(new)&set(codes)
+for name in ['benchmark_kda_memory.py','kda_policy.py','prepare_bf16_attention.py','full_model_control.py']:
+ assert sha(w/'integrations/glm53_mxfp4'/name)==codes[name],(name,'consumed helper changed')
+assert (b/'ruff.log').read_text().strip()=='All checks passed!'
+assert 'Success: no issues found in 35 source files' in (b/'mypy.log').read_text()
+assert '744 passed, 1 skipped' in (b/'pytest.log').read_text()
+checks={'all_passed':True,'ruff_passed':True,'mypy_passed':True,'pytest_passed':True,'pytest_passed_count':744,'pytest_skipped_count':1,'source_sha256':new,'logs':{n:sha(b/n) for n in ['ruff.log','mypy.log','pytest.log']}}
+(b/'local-checks.json').write_text(json.dumps(checks,indent=2)+'\n')
+plan={'revision':'denseoutputv1','created_UTC':datetime.datetime.now(datetime.UTC).isoformat(),'protocol':protocol(),'selected_cases':selected,'selection_parent_sha256':sha(parentfile),'selection_parent_inventory_sha256':sha(inventory),'parent_model_archive_sha256':'0fc867240d04e1770e2970143f48f630551feb35f53b739403c4fb6b8bde64e0','parent_diagnostic_archive_sha256':'30ac97161074f0a965a23776518fb2ad4bda12a21b840f5edc8d95e6e1e339b2','parent_source_sha256':codes,'source_sha256':new,'expected_source_files':213,'minimum_head_free_bytes':3*1024**3,'model_policy_changed':False,'automatic_promotion_allowed':False,'CPU_memory_improvement_claimed':False,'next_model_requires_fresh_paired_quality_and_speed':True}
+(b/'plan.json').write_text(json.dumps(plan,indent=2)+'\n')
+o=b/'overlay';o.mkdir();(o/'src').mkdir()
+for n in newnames:shutil.copyfile(w/'integrations/glm53_mxfp4'/n,o/'src'/n)
+for n in ['plan.json','local-checks.json']:shutil.copyfile(b/n,o/n)
+shutil.copyfile(parentfile,o/'parent-candidate.json')
+for source,name in [(pathlib.Path('/private/tmp/mxwave-kda-memory-v1/cross-host-verification.json'),'parent-diagnostic-cross-host.json'),(pathlib.Path('/private/tmp/mxwave-kda-memory-v1/attributed-v3-cross-host-verification.json'),'parent-attribution-cross-host.json'),(pathlib.Path('/private/tmp/mxwave-warmed-model-v1/cross-host-verification.json'),'parent-model-cross-host.json')]:shutil.copyfile(source,o/name)
+files=[{'path':str(p.relative_to(o)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in sorted(o.rglob('*')) if p.is_file()];(o/'inventory.json').write_text(json.dumps({'files':files},indent=2)+'\n')
+a=b/'source.tar.gz'
+with tarfile.open(a,'x:gz') as t:
+ for p in sorted(o.rglob('*')):
+  if p.is_file():t.add(p,arcname=str(p.relative_to(o)),recursive=False)
+print(json.dumps({'source_archive_sha256':sha(a),'source_archive_bytes':a.stat().st_size,'new_sources':new,'selected_fixtures':[x['name'] for x in selected],'expected_source_files':213}))

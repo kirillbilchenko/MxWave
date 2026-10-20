@@ -1,0 +1,79 @@
+{
+  "status": "live_provisional",
+  "full_archive_independent_verification_pending": true,
+  "source_snapshot_sha256": "b2ada99e887b4ef6c6b01de742950af25e947b0eb49f2dbcbdfc47ff195dfd5c",
+  "completed_groups": 9,
+  "completed_profiled_groups": 3,
+  "planned_groups": 12,
+  "planned_profiles": 6,
+  "comparisons": [
+    {
+      "reference": "ordinary-unprofiled-r0",
+      "candidate": "ordinary-unprofiled-r1",
+      "mean_decode_kl": 3.218049674574274e-05,
+      "mean_decode_nll_difference": 7.093403333019461e-05,
+      "passed": false,
+      "actual_batch_shape_and_prompt_order_equal": false
+    },
+    {
+      "reference": "ordinary-unprofiled-r0",
+      "candidate": "ordinary-unprofiled-r2",
+      "mean_decode_kl": 5.3655592327583446e-05,
+      "mean_decode_nll_difference": 4.596246639962324e-05,
+      "passed": false,
+      "actual_batch_shape_and_prompt_order_equal": false
+    },
+    {
+      "reference": "controlled-unprofiled-r0",
+      "candidate": "controlled-unprofiled-r1",
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "passed": true,
+      "actual_batch_shape_and_prompt_order_equal": true
+    },
+    {
+      "reference": "controlled-unprofiled-r0",
+      "candidate": "controlled-unprofiled-r2",
+      "mean_decode_kl": 0.0,
+      "mean_decode_nll_difference": 0.0,
+      "passed": true,
+      "actual_batch_shape_and_prompt_order_equal": true
+    },
+    {
+      "reference": "ordinary-profiled-r0",
+      "candidate": "ordinary-profiled-r1",
+      "mean_decode_kl": 4.5989040896817884e-05,
+      "mean_decode_nll_difference": -3.226132162221372e-05,
+      "passed": false,
+      "actual_batch_shape_and_prompt_order_equal": false
+    },
+    {
+      "reference": "ordinary-profiled-r0",
+      "candidate": "ordinary-profiled-r2",
+      "mean_decode_kl": 7.006040599442034e-05,
+      "mean_decode_nll_difference": 9.547415158962139e-05,
+      "passed": false,
+      "actual_batch_shape_and_prompt_order_equal": false
+    }
+  ],
+  "first_CUDA_trace": {
+    "source": {
+      "path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-c8tracev2/stock/traces/dp0_pp0_tp0_dcp0_ep0_rank0.1792333695546868382.pt.trace.json.gz",
+      "sha256": "4e484a7fd4ddfce807b70d70c4c9467e416ce1ac0f0ee0be4ca25534e4b1dd2e",
+      "bytes": 3835590
+    },
+    "labels": [
+      "ordinary-profiled-r0"
+    ],
+    "coverage": {
+      "ordinary-profiled-r0": {
+        "profiled_steps": 11,
+        "recorded_steps": 11
+      }
+    },
+    "kernel_events": 21817,
+    "unassigned_kernel_events": 436
+  },
+  "cause_proven": false,
+  "quality_qualified": false
+}

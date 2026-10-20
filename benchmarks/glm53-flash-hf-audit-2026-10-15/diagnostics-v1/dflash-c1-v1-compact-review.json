@@ -1,0 +1,715 @@
+{
+  "status": "complete_verified_service_restored",
+  "measurement_comparisons": {
+    "replacement": {
+      "reference": "current",
+      "candidate": "candidate",
+      "rows": [
+        {
+          "prompt_tokens": 256,
+          "tps_change_percent": -4.55080475309898,
+          "ttft_change_ms": 24.27261914285708,
+          "tpot_change_ms": 0.6557965487528339
+        },
+        {
+          "prompt_tokens": 2048,
+          "tps_change_percent": 3.635659010310377,
+          "ttft_change_ms": -148.3051001428571,
+          "tpot_change_ms": 1.1091538684807265
+        }
+      ]
+    },
+    "compression": {
+      "reference": "ct_stock",
+      "candidate": "candidate",
+      "rows": [
+        {
+          "prompt_tokens": 256,
+          "tps_change_percent": -0.31816258609341785,
+          "ttft_change_ms": 52.29788442857142,
+          "tpot_change_ms": -0.7807497392290266
+        },
+        {
+          "prompt_tokens": 2048,
+          "tps_change_percent": -0.07586875764740153,
+          "ttft_change_ms": 32.730566714285715,
+          "tpot_change_ms": -0.4453772743764173
+        }
+      ]
+    },
+    "checkpoint": {
+      "reference": "current",
+      "candidate": "ct_stock",
+      "rows": [
+        {
+          "prompt_tokens": 256,
+          "tps_change_percent": -4.246151833488443,
+          "ttft_change_ms": -28.02526528571434,
+          "tpot_change_ms": 1.4365462879818605
+        },
+        {
+          "prompt_tokens": 2048,
+          "tps_change_percent": 3.7143457959678994,
+          "ttft_change_ms": -181.03566685714281,
+          "tpot_change_ms": 1.5545311428571438
+        }
+      ]
+    }
+  },
+  "output_agreement": {
+    "replacement": {
+      "equal": 14,
+      "total": 14
+    },
+    "compression": {
+      "equal": 14,
+      "total": 14
+    },
+    "checkpoint": {
+      "equal": 14,
+      "total": 14
+    }
+  },
+  "memory": {
+    "current": {
+      "allocated_bytes_by_rank": [
+        97543298048,
+        97543298048
+      ],
+      "allocated_GiB_TP2": 181.68855094909668
+    },
+    "ct_stock": {
+      "allocated_bytes_by_rank": [
+        95757429760,
+        95757429760
+      ],
+      "allocated_GiB_TP2": 178.3621120452881
+    },
+    "candidate": {
+      "allocated_bytes_by_rank": [
+        90737443840,
+        90731658752
+      ],
+      "allocated_GiB_TP2": 169.00627183914185
+    },
+    "replacement_saving_GiB_TP2": 12.682279109954834,
+    "isolated_compression_saving_GiB_TP2": 9.35584020614624
+  },
+  "profiles": {
+    "current_r0": {
+      "target_graph_replays": 9,
+      "target_rows": 8,
+      "target_requests": 1,
+      "decode_reconstruction_calls": 0,
+      "prefill_reconstruction": {
+        "calls": 0,
+        "duration_sum_us": 0
+      },
+      "phases": {
+        "draft_propose": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 7547.8135,
+          "median_kernel_span_us": 7748.949462890625,
+          "median_cpu_wall_us": 1107.3605,
+          "kernel_duration_sum_us": 77010.137
+        },
+        "target_eager": {
+          "calls": 1,
+          "calls_with_GPU_work": 1,
+          "median_kernel_duration_sum_us": 400169.87,
+          "median_kernel_span_us": 398776.9089355469,
+          "median_cpu_wall_us": 185762.759,
+          "kernel_duration_sum_us": 400169.87
+        },
+        "target_graph": {
+          "calls": 9,
+          "calls_with_GPU_work": 9,
+          "median_kernel_duration_sum_us": 93318.439,
+          "median_kernel_span_us": 91454.0849609375,
+          "median_cpu_wall_us": 847.68,
+          "kernel_duration_sum_us": 845507.997
+        },
+        "target_logits": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 3009.0739999999996,
+          "median_kernel_span_us": 3011.2659912109375,
+          "median_cpu_wall_us": 183.912,
+          "kernel_duration_sum_us": 31389.913
+        },
+        "target_sample": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 57.872,
+          "median_kernel_span_us": 3097.3145751953125,
+          "median_cpu_wall_us": 698.8405,
+          "kernel_duration_sum_us": 587.201
+        }
+      },
+      "attributed_GPU_duration_fraction": 0.9991010197243041,
+      "top_kernel_groups": {
+        "other": {
+          "calls": 12876,
+          "duration_sum_us": 65320.373000001215
+        },
+        "communication": {
+          "calls": 1050,
+          "duration_sum_us": 63499.53100000001
+        },
+        "mhc": {
+          "calls": 1949,
+          "duration_sum_us": 28291.15799999984
+        },
+        "other_marlin_linear": {
+          "calls": 2110,
+          "duration_sum_us": 256438.12100000042
+        },
+        "dense_bf16_linear": {
+          "calls": 2230,
+          "duration_sum_us": 111920.23799999991
+        },
+        "attention": {
+          "calls": 488,
+          "duration_sum_us": 11855.628000000004
+        },
+        "dense_bf16_reduction": {
+          "calls": 1070,
+          "duration_sum_us": 13792.041000000014
+        },
+        "stable_expert_dispatch": {
+          "calls": 420,
+          "duration_sum_us": 4248.357000000001
+        },
+        "expert_gemm": {
+          "calls": 840,
+          "duration_sum_us": 800518.5839999998
+        }
+      }
+    },
+    "current_r1": {
+      "target_graph_replays": 9,
+      "target_rows": 8,
+      "target_requests": 1,
+      "decode_reconstruction_calls": 0,
+      "prefill_reconstruction": {
+        "calls": 0,
+        "duration_sum_us": 0
+      },
+      "phases": {
+        "draft_propose": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 7381.731,
+          "median_kernel_span_us": 7581.23486328125,
+          "median_cpu_wall_us": 1279.1875,
+          "kernel_duration_sum_us": 76638.849
+        },
+        "target_eager": {
+          "calls": 1,
+          "calls_with_GPU_work": 1,
+          "median_kernel_duration_sum_us": 398364.539,
+          "median_kernel_span_us": 396662.39697265625,
+          "median_cpu_wall_us": 182092.111,
+          "kernel_duration_sum_us": 398364.539
+        },
+        "target_graph": {
+          "calls": 9,
+          "calls_with_GPU_work": 9,
+          "median_kernel_duration_sum_us": 93033.388,
+          "median_kernel_span_us": 91136.22680664062,
+          "median_cpu_wall_us": 1079.235,
+          "kernel_duration_sum_us": 843429.406
+        },
+        "target_logits": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 3130.7595,
+          "median_kernel_span_us": 3133.2716064453125,
+          "median_cpu_wall_us": 540.409,
+          "kernel_duration_sum_us": 31745.905
+        },
+        "target_sample": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 57.5525,
+          "median_kernel_span_us": 3242.8714599609375,
+          "median_cpu_wall_us": 1234.1950000000002,
+          "kernel_duration_sum_us": 694.307
+        }
+      },
+      "attributed_GPU_duration_fraction": 0.9990157453463201,
+      "top_kernel_groups": {
+        "other": {
+          "calls": 12876,
+          "duration_sum_us": 68238.42500000072
+        },
+        "communication": {
+          "calls": 1050,
+          "duration_sum_us": 55096.556
+        },
+        "mhc": {
+          "calls": 1949,
+          "duration_sum_us": 28571.906999999766
+        },
+        "other_marlin_linear": {
+          "calls": 2110,
+          "duration_sum_us": 258812.28599999985
+        },
+        "dense_bf16_linear": {
+          "calls": 2230,
+          "duration_sum_us": 114293.64099999977
+        },
+        "attention": {
+          "calls": 488,
+          "duration_sum_us": 11609.151999999995
+        },
+        "dense_bf16_reduction": {
+          "calls": 1070,
+          "duration_sum_us": 14339.081000000044
+        },
+        "stable_expert_dispatch": {
+          "calls": 420,
+          "duration_sum_us": 4138.803000000002
+        },
+        "expert_gemm": {
+          "calls": 840,
+          "duration_sum_us": 797104.0680000008
+        }
+      }
+    },
+    "ct_stock_r0": {
+      "target_graph_replays": 9,
+      "target_rows": 8,
+      "target_requests": 1,
+      "decode_reconstruction_calls": 0,
+      "prefill_reconstruction": {
+        "calls": 0,
+        "duration_sum_us": 0
+      },
+      "phases": {
+        "draft_propose": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 7922.972,
+          "median_kernel_span_us": 8061.579833984375,
+          "median_cpu_wall_us": 974.6655,
+          "kernel_duration_sum_us": 79116.843
+        },
+        "target_eager": {
+          "calls": 1,
+          "calls_with_GPU_work": 1,
+          "median_kernel_duration_sum_us": 355063.207,
+          "median_kernel_span_us": 356463.43115234375,
+          "median_cpu_wall_us": 165593.295,
+          "kernel_duration_sum_us": 355063.207
+        },
+        "target_graph": {
+          "calls": 9,
+          "calls_with_GPU_work": 9,
+          "median_kernel_duration_sum_us": 105050.543,
+          "median_kernel_span_us": 102582.25317382812,
+          "median_cpu_wall_us": 825.697,
+          "kernel_duration_sum_us": 950352.112
+        },
+        "target_logits": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 3164.0525,
+          "median_kernel_span_us": 3166.4365234375,
+          "median_cpu_wall_us": 193.9685,
+          "kernel_duration_sum_us": 32017.675
+        },
+        "target_sample": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 59.68,
+          "median_kernel_span_us": 3271.41259765625,
+          "median_cpu_wall_us": 709.409,
+          "kernel_duration_sum_us": 650.912
+        }
+      },
+      "attributed_GPU_duration_fraction": 0.999147889876843,
+      "top_kernel_groups": {
+        "other": {
+          "calls": 12536,
+          "duration_sum_us": 66312.73300000004
+        },
+        "communication": {
+          "calls": 1050,
+          "duration_sum_us": 66214.67700000003
+        },
+        "mhc": {
+          "calls": 1949,
+          "duration_sum_us": 28363.739999999718
+        },
+        "dense_bf16_linear": {
+          "calls": 3240,
+          "duration_sum_us": 420929.1960000009
+        },
+        "attention": {
+          "calls": 488,
+          "duration_sum_us": 11726.000000000002
+        },
+        "other_marlin_linear": {
+          "calls": 1100,
+          "duration_sum_us": 70344.342
+        },
+        "dense_bf16_reduction": {
+          "calls": 1070,
+          "duration_sum_us": 12747.149999999985
+        },
+        "stable_expert_dispatch": {
+          "calls": 420,
+          "duration_sum_us": 3631.111000000002
+        },
+        "expert_gemm": {
+          "calls": 840,
+          "duration_sum_us": 738140.440999999
+        }
+      }
+    },
+    "ct_stock_r1": {
+      "target_graph_replays": 9,
+      "target_rows": 8,
+      "target_requests": 1,
+      "decode_reconstruction_calls": 0,
+      "prefill_reconstruction": {
+        "calls": 0,
+        "duration_sum_us": 0
+      },
+      "phases": {
+        "draft_propose": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 8049.0085,
+          "median_kernel_span_us": 8193.649047851562,
+          "median_cpu_wall_us": 1593.291,
+          "kernel_duration_sum_us": 79529.606
+        },
+        "target_eager": {
+          "calls": 1,
+          "calls_with_GPU_work": 1,
+          "median_kernel_duration_sum_us": 353429.391,
+          "median_kernel_span_us": 355274.541015625,
+          "median_cpu_wall_us": 164374.22,
+          "kernel_duration_sum_us": 353429.391
+        },
+        "target_graph": {
+          "calls": 9,
+          "calls_with_GPU_work": 9,
+          "median_kernel_duration_sum_us": 104317.564,
+          "median_kernel_span_us": 102225.11108398438,
+          "median_cpu_wall_us": 1110.851,
+          "kernel_duration_sum_us": 947425.202
+        },
+        "target_logits": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 3208.0229999999997,
+          "median_kernel_span_us": 3210.455078125,
+          "median_cpu_wall_us": 467.433,
+          "kernel_duration_sum_us": 31792.485
+        },
+        "target_sample": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 62.56,
+          "median_kernel_span_us": 3302.3270263671875,
+          "median_cpu_wall_us": 1204.9305,
+          "kernel_duration_sum_us": 657.376
+        }
+      },
+      "attributed_GPU_duration_fraction": 0.9991374125965454,
+      "top_kernel_groups": {
+        "other": {
+          "calls": 12536,
+          "duration_sum_us": 66544.35200000058
+        },
+        "communication": {
+          "calls": 1050,
+          "duration_sum_us": 55806.47000000001
+        },
+        "mhc": {
+          "calls": 1949,
+          "duration_sum_us": 28640.130999999827
+        },
+        "dense_bf16_linear": {
+          "calls": 3240,
+          "duration_sum_us": 422083.4199999998
+        },
+        "attention": {
+          "calls": 488,
+          "duration_sum_us": 11682.676999999992
+        },
+        "other_marlin_linear": {
+          "calls": 1100,
+          "duration_sum_us": 71023.07500000003
+        },
+        "dense_bf16_reduction": {
+          "calls": 1070,
+          "duration_sum_us": 12734.006000000043
+        },
+        "stable_expert_dispatch": {
+          "calls": 420,
+          "duration_sum_us": 3735.1420000000016
+        },
+        "expert_gemm": {
+          "calls": 840,
+          "duration_sum_us": 741804.5320000001
+        }
+      }
+    },
+    "candidate_r0": {
+      "target_graph_replays": 9,
+      "target_rows": 8,
+      "target_requests": 1,
+      "decode_reconstruction_calls": 0,
+      "prefill_reconstruction": {
+        "calls": 68,
+        "duration_sum_us": 38689.958000000006
+      },
+      "phases": {
+        "draft_propose": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 6816.711,
+          "median_kernel_span_us": 7020.29541015625,
+          "median_cpu_wall_us": 863.7525,
+          "kernel_duration_sum_us": 70975.977
+        },
+        "target_eager": {
+          "calls": 1,
+          "calls_with_GPU_work": 1,
+          "median_kernel_duration_sum_us": 414171.993,
+          "median_kernel_span_us": 416087.5510253906,
+          "median_cpu_wall_us": 196876.747,
+          "kernel_duration_sum_us": 414171.993
+        },
+        "target_graph": {
+          "calls": 9,
+          "calls_with_GPU_work": 9,
+          "median_kernel_duration_sum_us": 100215.008,
+          "median_kernel_span_us": 98129.82495117188,
+          "median_cpu_wall_us": 852.049,
+          "kernel_duration_sum_us": 907138.788
+        },
+        "target_logits": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 2546.9945,
+          "median_kernel_span_us": 2549.634521484375,
+          "median_cpu_wall_us": 280.4805,
+          "kernel_duration_sum_us": 26413.051
+        },
+        "target_sample": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 64.368,
+          "median_kernel_span_us": 2640.242431640625,
+          "median_cpu_wall_us": 664.0565,
+          "kernel_duration_sum_us": 614.56
+        }
+      },
+      "attributed_GPU_duration_fraction": 0.9991914741029658,
+      "top_kernel_groups": {
+        "other": {
+          "calls": 12843,
+          "duration_sum_us": 62787.353000001305
+        },
+        "compressed_embedding": {
+          "calls": 20,
+          "duration_sum_us": 180.73600000000002
+        },
+        "communication": {
+          "calls": 1050,
+          "duration_sum_us": 68923.22800000008
+        },
+        "mhc": {
+          "calls": 1949,
+          "duration_sum_us": 27541.016999999672
+        },
+        "weight_reconstruction": {
+          "calls": 68,
+          "duration_sum_us": 38689.958000000006
+        },
+        "dense_bf16_linear": {
+          "calls": 2608,
+          "duration_sum_us": 156794.4850000004
+        },
+        "attention": {
+          "calls": 488,
+          "duration_sum_us": 12018.000000000005
+        },
+        "other_marlin_linear": {
+          "calls": 1100,
+          "duration_sum_us": 70316.80700000003
+        },
+        "dense_bf16_reduction": {
+          "calls": 1070,
+          "duration_sum_us": 11937.740000000038
+        },
+        "stable_expert_dispatch": {
+          "calls": 420,
+          "duration_sum_us": 3862.0540000000015
+        },
+        "expert_gemm": {
+          "calls": 840,
+          "duration_sum_us": 722052.0359999993
+        },
+        "compressed_bf16_gemm": {
+          "calls": 632,
+          "duration_sum_us": 245359.43600000025
+        }
+      }
+    },
+    "candidate_r1": {
+      "target_graph_replays": 9,
+      "target_rows": 8,
+      "target_requests": 1,
+      "decode_reconstruction_calls": 0,
+      "prefill_reconstruction": {
+        "calls": 68,
+        "duration_sum_us": 36518.528999999995
+      },
+      "phases": {
+        "draft_propose": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 6877.7395,
+          "median_kernel_span_us": 7081.244384765625,
+          "median_cpu_wall_us": 1414.2505,
+          "kernel_duration_sum_us": 71303.393
+        },
+        "target_eager": {
+          "calls": 1,
+          "calls_with_GPU_work": 1,
+          "median_kernel_duration_sum_us": 412449.881,
+          "median_kernel_span_us": 414262.97607421875,
+          "median_cpu_wall_us": 195267.584,
+          "kernel_duration_sum_us": 412449.881
+        },
+        "target_graph": {
+          "calls": 9,
+          "calls_with_GPU_work": 9,
+          "median_kernel_duration_sum_us": 100158.964,
+          "median_kernel_span_us": 98021.61401367188,
+          "median_cpu_wall_us": 1090.321,
+          "kernel_duration_sum_us": 905281.856
+        },
+        "target_logits": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 2511.3644999999997,
+          "median_kernel_span_us": 2513.236572265625,
+          "median_cpu_wall_us": 407.6965,
+          "kernel_duration_sum_us": 25927.149999999998
+        },
+        "target_sample": {
+          "calls": 10,
+          "calls_with_GPU_work": 10,
+          "median_kernel_duration_sum_us": 67.21600000000001,
+          "median_kernel_span_us": 2608.9326171875,
+          "median_cpu_wall_us": 1008.394,
+          "kernel_duration_sum_us": 735.072
+        }
+      },
+      "attributed_GPU_duration_fraction": 0.9990414822283352,
+      "top_kernel_groups": {
+        "other": {
+          "calls": 12843,
+          "duration_sum_us": 65467.88000000106
+        },
+        "compressed_embedding": {
+          "calls": 20,
+          "duration_sum_us": 151.616
+        },
+        "communication": {
+          "calls": 1050,
+          "duration_sum_us": 61777.83700000004
+        },
+        "mhc": {
+          "calls": 1949,
+          "duration_sum_us": 27975.343999999834
+        },
+        "weight_reconstruction": {
+          "calls": 68,
+          "duration_sum_us": 36518.528999999995
+        },
+        "dense_bf16_linear": {
+          "calls": 2608,
+          "duration_sum_us": 154058.2320000001
+        },
+        "attention": {
+          "calls": 488,
+          "duration_sum_us": 11438.870999999994
+        },
+        "other_marlin_linear": {
+          "calls": 1100,
+          "duration_sum_us": 71058.1110000001
+        },
+        "dense_bf16_reduction": {
+          "calls": 1070,
+          "duration_sum_us": 12583.958000000013
+        },
+        "stable_expert_dispatch": {
+          "calls": 420,
+          "duration_sum_us": 3809.2889999999993
+        },
+        "expert_gemm": {
+          "calls": 840,
+          "duration_sum_us": 714499.6219999999
+        },
+        "compressed_bf16_gemm": {
+          "calls": 632,
+          "duration_sum_us": 257716.33600000013
+        }
+      }
+    }
+  },
+  "independent_verification": {
+    "numeric_fields": 12177,
+    "max_absolute_difference": 0.0,
+    "all_values_equal": true
+  },
+  "archive_verification": {
+    "status": "passed",
+    "archive_sha256": "fc2c40a3e395b03e5201ba51cb65010a54825d4ea6d5ca5439418bea3e492b24",
+    "bytes": 14052856,
+    "payloads_verified": 75,
+    "checkpoint_metadata_semantically_identical": true,
+    "controller_finalization": {
+      "previous": "restoring_live_candidate",
+      "final": "complete_restored",
+      "measurements_and_resources_unchanged": true
+    }
+  },
+  "service_check": "final-service-check.json",
+  "live_vllm_package_version": "0.1.dev20051+g487ecf187",
+  "dense_kda_option": {
+    "status": "storage_estimate_only_not_run",
+    "ranks": [
+      {
+        "rank": 0,
+        "raw_bytes": 4643618816,
+        "packed_bytes": 3298566000,
+        "pool_bytes": 206569472,
+        "increment_if_dense_replaces_packed_and_pool": 1138483344
+      },
+      {
+        "rank": 1,
+        "raw_bytes": 4643618816,
+        "packed_bytes": 3297978432,
+        "pool_bytes": 206569472,
+        "increment_if_dense_replaces_packed_and_pool": 1139070912
+      }
+    ],
+    "extra_bytes_tp2": 2277554256,
+    "remaining_saved_GiB_estimate": 7.23470251262188,
+    "limitations": [
+      "Other allocations can change; measure startup and peak.",
+      "Giving up fused KDA decode may change time and rounding.",
+      "Keep expert-scale and vocabulary compression; do not retain both KDA representations."
+    ]
+  }
+}

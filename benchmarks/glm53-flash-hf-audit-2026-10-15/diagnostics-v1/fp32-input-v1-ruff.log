@@ -1,0 +1,610 @@
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-analyze_retained.py:2:1
+  |
+1 | """Summarize all retained paired conditions; failed controls remain explicit."""
+2 | import collections,hashlib,json,pathlib,statistics,time
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | b=pathlib.Path(__file__).parent;r=b/'evidence';proof=json.loads((b/'cross-host-verification.json').read_bytes());assert proof['status']…
+4 | groups=collections.defaultdict(list);failed=[];telemetry={};peaks={};reports={}
+  |
+help: Organize imports
+  |
+1 | """Summarize all retained paired conditions; failed controls remain explicit."""
+  - import collections,hashlib,json,pathlib,statistics,time
+2 + import collections
+3 + import hashlib
+4 + import json
+5 + import pathlib
+6 + import statistics
+7 + import time
+8 +
+9 | b=pathlib.Path(__file__).parent;r=b/'evidence';proof=json.loads((b/'cross-host-verification.json').read_bytes());assert proof['status']=='passed' and proof['all_decisions_identical'] and proof['diagnostic_complete']
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-collect.py:2:1
+  |
+1 |   """Retain both completed GPU comparisons after exact original-service restoration."""
+2 | / from __future__ import annotations
+3 | | import hashlib,json,os,pathlib,shlex,shutil,subprocess,sys,tarfile,time
+  | |_______________________________________________________________________^
+4 |   ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');DIR='fp32-speed-v1';REV='fp32spee…
+5 |   sys.path.insert(0,str(ROOT/(DIR+'-src')));import full_model_control as c
+  |
+help: Organize imports
+   |
+2  | from __future__ import annotations
+   - import hashlib,json,os,pathlib,shlex,shutil,subprocess,sys,tarfile,time
+3  +
+4  + import hashlib
+5  + import json
+6  + import os
+7  + import pathlib
+8  + import shlex
+9  + import shutil
+10 + import subprocess
+11 + import sys
+12 + import tarfile
+13 + import time
+14 +
+15 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');DIR='fp32-speed-v1';REV='fp32speedv1'
+   |
+
+I001 Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-collect.py:5:43
+  |
+3 | import hashlib,json,os,pathlib,shlex,shutil,subprocess,sys,tarfile,time
+4 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');DIR='fp32-speed-v1';REV='fp32speedv…
+5 | sys.path.insert(0,str(ROOT/(DIR+'-src')));import full_model_control as c
+  |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6 |
+7 | def sha(p):
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-cpu-protocol-check.py:2:1
+  |
+1 | """Reject changed output words or forged timing decisions before any GPU run."""
+2 | import copy,hashlib,importlib.util,json,pathlib,sys
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | b=pathlib.Path(__file__).parent
+4 | sys.path.insert(0,str(b/'overlay/src'))
+  |
+help: Organize imports
+  |
+1 | """Reject changed output words or forged timing decisions before any GPU run."""
+  - import copy,hashlib,importlib.util,json,pathlib,sys
+2 + import copy
+3 + import hashlib
+4 + import importlib.util
+5 + import json
+6 + import pathlib
+7 + import sys
+8 +
+9 | b=pathlib.Path(__file__).parent
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-cpu-protocol-check.py:6:1
+  |
+4 | sys.path.insert(0,str(b/'overlay/src'))
+5 | spec=importlib.util.spec_from_file_location('review',b/'verify.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+6 | from fp32_speed_probe import PAIRS,protocol,summarize
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7 | p=protocol();samples=[]
+8 | for trial in range(p['trials']):
+  |
+help: Organize imports
+  |
+5 | spec=importlib.util.spec_from_file_location('review',b/'verify.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+  - from fp32_speed_probe import PAIRS,protocol,summarize
+6 + from fp32_speed_probe import PAIRS, protocol, summarize
+7 +
+8 | p=protocol();samples=[]
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-deploy_prepare.py:1:1
+  |
+1 | import hashlib,json,pathlib,shlex,subprocess
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 | B=pathlib.Path(__file__).parent;R='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+3 | ssh=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark']
+  |
+help: Organize imports
+  |
+  - import hashlib,json,pathlib,shlex,subprocess
+1 + import hashlib
+2 + import json
+3 + import pathlib
+4 + import shlex
+5 + import subprocess
+6 +
+7 | B=pathlib.Path(__file__).parent;R='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+  |
+
+PLW1510 `subprocess.run` without explicit `check` argument
+  --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-deploy_prepare.py:11:8
+   |
+ 9 | subprocess.run([*ssh,shlex.join(remote)],check=True,timeout=60)
+10 | sha=json.loads((B/'freeze.json').read_bytes())['archive_sha256']
+11 | result=subprocess.run([*ssh,shlex.join(['python3','-S',R+'/prepare-fp32-speed-v1.py',sha])],stdout=subprocess.PIPE,stderr=subprocess.S…
+   |        ^^^^^^^^^^^^^^
+12 | (B/'preparation.log').write_bytes(result.stdout);print(result.stdout.decode());result.check_returncode()
+13 | for name in ['prepared.json','preparation.json']:
+   |
+help: Add explicit `check=False`
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-final_check_remote.py:1:1
+  |
+1 | import hashlib,json,pathlib,sys,time
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1…
+3 | s=json.loads((r/'fp32-speed-v1-controller.json').read_bytes());launch=json.loads((r/'fp32-speed-v1-launch.json').read_bytes());prepared…
+  |
+help: Organize imports
+  |
+  - import hashlib,json,pathlib,sys,time
+1 + import hashlib
+2 + import json
+3 + import pathlib
+4 + import sys
+5 + import time
+6 +
+7 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1-src'));import full_model_control as c
+  |
+
+F401 [*] `hashlib` imported but unused
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-final_check_remote.py:1:8
+  |
+1 | import hashlib,json,pathlib,sys,time
+  |        ^^^^^^^
+2 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1…
+3 | s=json.loads((r/'fp32-speed-v1-controller.json').read_bytes());launch=json.loads((r/'fp32-speed-v1-launch.json').read_bytes());prepared…
+  |
+help: Remove unused import: `hashlib`
+  |
+  - import hashlib,json,pathlib,sys,time
+1 + import json,pathlib,sys,time
+2 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1-src'));import full_model_control as c
+  |
+
+I001 Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-final_check_remote.py:2:144
+  |
+1 | …
+2 | …-v1');sys.path.insert(0,str(r/'fp32-speed-v1-src'));import full_model_control as c
+  |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | …peed-v1-launch.json').read_bytes());prepared=json.loads((r/'fp32-speed-v1-prepared.json').read_bytes());proof=json.loads((r/'fp32-spee…
+4 | …
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-freeze.py:1:1
+  |
+1 | import hashlib,json,pathlib,shutil,sys,tarfile,time
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 | b=pathlib.Path(__file__).parent;w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')…
+3 | def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+  |
+help: Organize imports
+  |
+  - import hashlib,json,pathlib,shutil,sys,tarfile,time
+1 + import hashlib
+2 + import json
+3 + import pathlib
+4 + import shutil
+5 + import sys
+6 + import tarfile
+7 + import time
+8 +
+9 | b=pathlib.Path(__file__).parent;w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');old=pathlib.Path('/private/tmp/mxwave-fp32-split-v1/evidence');src=w/'integrations/glm53_mxfp4'
+  |
+
+I001 Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-freeze.py:4:29
+  |
+2 | b=pathlib.Path(__file__).parent;w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')…
+3 | def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+4 | sys.path.insert(0,str(src));from fp32_speed_probe import protocol
+  |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5 | prepared=json.loads((old/'prepared.json').read_bytes());prior=json.loads((old/'plan.json').read_bytes());overlay=b/'overlay';overlay.mk…
+6 | new=['fp32_speed_probe.py','benchmark_fp32_speed.py','run_fp32_speed.py'];hashes={n:sha(src/n) for n in new}
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-launch.py:2:1
+  |
+1 |   """Launch only the authorized, frozen two-GPU dense-output storage comparison."""
+2 | / from __future__ import annotations
+3 | | import hashlib,json,pathlib,subprocess,sys,time
+  | |_______________________________________________^
+4 |   ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+5 |   DIR='fp32-speed-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+  |
+help: Organize imports
+   |
+2  | from __future__ import annotations
+   - import hashlib,json,pathlib,subprocess,sys,time
+3  +
+4  + import hashlib
+5  + import json
+6  + import pathlib
+7  + import subprocess
+8  + import sys
+9  + import time
+10 +
+11 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-launch.py:6:1
+  |
+4 |   ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+5 |   DIR='fp32-speed-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+6 | / import full_model_control as c
+7 | | from run_fp32_speed import preflight
+  | |____________________________________^
+8 |
+9 |   def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+  |
+help: Organize imports
+   |
+8  |
+9  +
+10 | def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-preliminary_remote.py:1:1
+  |
+1 | import collections,hashlib,json,pathlib,statistics,time
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/fp32-speed-v1');groups=collections.defau…
+3 | for rank in (0,1):
+  |
+help: Organize imports
+  |
+  - import collections,hashlib,json,pathlib,statistics,time
+1 + import collections
+2 + import hashlib
+3 + import json
+4 + import pathlib
+5 + import statistics
+6 + import time
+7 +
+8 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/fp32-speed-v1');groups=collections.defaultdict(list);hashes={};failure_reasons=collections.Counter()
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-prepare.py:2:1
+  |
+1 |   """CPU-only source preparation for the bounded dense-output comparison."""
+2 | / from __future__ import annotations
+3 | | import hashlib,json,pathlib,shutil,subprocess,sys,time
+  | |______________________________________________________^
+4 |   ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+5 |   DIR='fp32-speed-v1';sys.path.insert(0,str(ROOT/'fp32-split-v1-src'))
+  |
+help: Organize imports
+   |
+2  | from __future__ import annotations
+   - import hashlib,json,pathlib,shutil,subprocess,sys,time
+3  +
+4  + import hashlib
+5  + import json
+6  + import pathlib
+7  + import shutil
+8  + import subprocess
+9  + import sys
+10 + import time
+11 +
+12 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+   |
+
+F401 [*] `shutil` imported but unused
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-prepare.py:3:29
+  |
+1 | """CPU-only source preparation for the bounded dense-output comparison."""
+2 | from __future__ import annotations
+3 | import hashlib,json,pathlib,shutil,subprocess,sys,time
+  |                             ^^^^^^
+4 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+5 | DIR='fp32-speed-v1';sys.path.insert(0,str(ROOT/'fp32-split-v1-src'))
+  |
+help: Remove unused import
+  |
+2 | from __future__ import annotations
+  - import hashlib,json,pathlib,shutil,subprocess,sys,time
+3 + import hashlib,json,pathlib,sys,time
+4 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+  |
+
+F401 [*] `subprocess` imported but unused
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-prepare.py:3:36
+  |
+1 | """CPU-only source preparation for the bounded dense-output comparison."""
+2 | from __future__ import annotations
+3 | import hashlib,json,pathlib,shutil,subprocess,sys,time
+  |                                    ^^^^^^^^^^
+4 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+5 | DIR='fp32-speed-v1';sys.path.insert(0,str(ROOT/'fp32-split-v1-src'))
+  |
+help: Remove unused import
+  |
+2 | from __future__ import annotations
+  - import hashlib,json,pathlib,shutil,subprocess,sys,time
+3 + import hashlib,json,pathlib,sys,time
+4 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-prepare.py:6:1
+  |
+4 | ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+5 | DIR='fp32-speed-v1';sys.path.insert(0,str(ROOT/'fp32-split-v1-src'))
+6 | import full_model_control as c
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7 |
+8 | def sha(p):
+  |
+help: Organize imports
+  |
+7 |
+8 +
+9 | def sha(p):
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-reclaim_duplicate.py:2:1
+  |
+1 | """Reclaim only the fully verified redundant unpacked precision evidence on the head."""
+2 | import hashlib,json,pathlib,shutil,subprocess,sys,tarfile,time
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | R=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+4 | sys.path.insert(0,str(R/'fp32-split-v1-src'))
+  |
+help: Organize imports
+   |
+1  | """Reclaim only the fully verified redundant unpacked precision evidence on the head."""
+   - import hashlib,json,pathlib,shutil,subprocess,sys,tarfile,time
+2  + import hashlib
+3  + import json
+4  + import pathlib
+5  + import shutil
+6  + import subprocess
+7  + import sys
+8  + import tarfile
+9  + import time
+10 +
+11 | R=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+   |
+
+F401 [*] `subprocess` imported but unused
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-reclaim_duplicate.py:2:36
+  |
+1 | """Reclaim only the fully verified redundant unpacked precision evidence on the head."""
+2 | import hashlib,json,pathlib,shutil,subprocess,sys,tarfile,time
+  |                                    ^^^^^^^^^^
+3 | R=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+4 | sys.path.insert(0,str(R/'fp32-split-v1-src'))
+  |
+help: Remove unused import: `subprocess`
+  |
+1 | """Reclaim only the fully verified redundant unpacked precision evidence on the head."""
+  - import hashlib,json,pathlib,shutil,subprocess,sys,tarfile,time
+2 + import hashlib,json,pathlib,shutil,sys,tarfile,time
+3 | R=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-reclaim_duplicate.py:5:1
+  |
+3 | R=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+4 | sys.path.insert(0,str(R/'fp32-split-v1-src'))
+5 | import full_model_control as c
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6 | SHA='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+7 | def sha(p):
+  |
+help: Organize imports
+  |
+5 | import full_model_control as c
+6 +
+7 | SHA='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-retain_and_review.py:2:1
+  |
+1 |   """Retain a terminal component once, verify all bytes and recompute its decisions on Mac."""
+2 | / from __future__ import annotations
+3 | | import hashlib,json,pathlib,shlex,subprocess,sys,tarfile
+  | |________________________________________________________^
+4 |   BASE=pathlib.Path('/private/tmp/mxwave-fp32-speed-v1')
+5 |   ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+  |
+help: Organize imports
+   |
+2  | from __future__ import annotations
+   - import hashlib,json,pathlib,shlex,subprocess,sys,tarfile
+3  +
+4  + import hashlib
+5  + import json
+6  + import pathlib
+7  + import shlex
+8  + import subprocess
+9  + import sys
+10 + import tarfile
+11 +
+12 | BASE=pathlib.Path('/private/tmp/mxwave-fp32-speed-v1')
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-status_remote.py:1:1
+  |
+1 | import json,pathlib,shutil,sys
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1…
+3 | s=json.loads((r/'fp32-speed-v1-controller.json').read_bytes());out={k:s.get(k) for k in ('phase','pid','watchdog_pid','service_paused',…
+  |
+help: Organize imports
+  |
+  - import json,pathlib,shutil,sys
+1 + import json
+2 + import pathlib
+3 + import shutil
+4 + import sys
+5 +
+6 | r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1-src'));import full_model_control as c
+  |
+
+I001 Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-status_remote.py:2:144
+  |
+1 | …
+2 | …-v1');sys.path.insert(0,str(r/'fp32-speed-v1-src'));import full_model_control as c
+  |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | …hase','pid','watchdog_pid','service_paused','error','updated_epoch')};out['head_free_bytes']=shutil.disk_usage(r).free
+4 | …
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-update_docs.py:2:1
+  |
+1 | """Record the independently verified speed result and preserve every failed gate."""
+2 | import datetime,hashlib,json,pathlib,re,shutil
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');b=pathlib.Path(__file__).parent…
+4 | s=json.loads((b/'final-findings.json').read_bytes());proof=json.loads((b/'cross-host-verification.json').read_bytes());service=json.loa…
+  |
+help: Organize imports
+  |
+1 | """Record the independently verified speed result and preserve every failed gate."""
+  - import datetime,hashlib,json,pathlib,re,shutil
+2 + import datetime
+3 + import hashlib
+4 + import json
+5 + import pathlib
+6 + import re
+7 + import shutil
+8 +
+9 | w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');b=pathlib.Path(__file__).parent;d=w/'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+  |
+
+UP017 [*] Use `datetime.UTC` alias
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-update_docs.py:5:27
+  |
+3 | w=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4');b=pathlib.Path(__file__).parent…
+4 | s=json.loads((b/'final-findings.json').read_bytes());proof=json.loads((b/'cross-host-verification.json').read_bytes());service=json.loa…
+5 | now=datetime.datetime.now(datetime.timezone.utc);stamp=now.strftime('%d October %Y, %H:%M UTC');berlin=now.astimezone(datetime.timezone…
+  |                           ^^^^^^^^^^^^^^^^^^^^^
+6 | g={(x['kind'],x['tokens'],x['split'],x['cache']):x for x in s['groups']}
+7 | assert len(s['failed_conditions'])==78 and sum(g['input',n,2,c]['strict_passes'] for n in (1,4,8,16) for c in ('warm','pressure'))==46
+  |
+help: Convert to `datetime.UTC` alias
+  |
+4 | s=json.loads((b/'final-findings.json').read_bytes());proof=json.loads((b/'cross-host-verification.json').read_bytes());service=json.loads((b/'final-service-check.json').read_bytes());lease=json.loads((b/'awake-release.json').read_bytes());assert proof['status']=='passed' and service['status']=='passed' and lease['status']=='released'
+  - now=datetime.datetime.now(datetime.timezone.utc);stamp=now.strftime('%d October %Y, %H:%M UTC');berlin=now.astimezone(datetime.timezone(datetime.timedelta(hours=2))).strftime('%d October %H:%M Berlin')
+5 + now=datetime.datetime.now(datetime.UTC);stamp=now.strftime('%d October %Y, %H:%M UTC');berlin=now.astimezone(datetime.timezone(datetime.timedelta(hours=2))).strftime('%d October %H:%M Berlin')
+6 | g={(x['kind'],x['tokens'],x['split'],x['cache']):x for x in s['groups']}
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-upload_launch.py:1:1
+  |
+1 | import hashlib,pathlib,shlex,subprocess
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 | b=pathlib.Path(__file__).parent;r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1';ssh=['ssh','-o','Bat…
+3 | code='import hashlib,pathlib,sys;p=pathlib.Path(sys.argv[1]);data=sys.stdin.buffer.read();assert hashlib.sha256(data).hexdigest()==sys.…
+  |
+help: Organize imports
+  |
+  - import hashlib,pathlib,shlex,subprocess
+1 + import hashlib
+2 + import pathlib
+3 + import shlex
+4 + import subprocess
+5 +
+6 | b=pathlib.Path(__file__).parent;r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1';ssh=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark'];data=(b/'launch.py').read_bytes()
+  |
+
+PLW1510 `subprocess.run` without explicit `check` argument
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-upload_launch.py:5:8
+  |
+3 | code='import hashlib,pathlib,sys;p=pathlib.Path(sys.argv[1]);data=sys.stdin.buffer.read();assert hashlib.sha256(data).hexdigest()==sys.…
+4 | subprocess.run([*ssh,shlex.join(['python3','-S','-c',code,r+'/launch-fp32-speed-v1.py',hashlib.sha256(data).hexdigest()])],input=data,c…
+5 | result=subprocess.run([*ssh,shlex.join(['python3','-S',r+'/launch-fp32-speed-v1.py'])],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,…
+  |        ^^^^^^^^^^^^^^
+6 | (b/'launch.log').write_bytes(result.stdout);print(result.stdout.decode());result.check_returncode()
+  |
+help: Add explicit `check=False`
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-verify.py:2:1
+  |
+1 |   """Independently recompute timing decisions and bind outputs to immutable prior precision evidence."""
+2 | / from __future__ import annotations
+3 | | import argparse,hashlib,json,pathlib,sys,tarfile
+  | |________________________________________________^
+4 |   PARENT_SHA='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+5 |   def sha(p):
+  |
+help: Organize imports
+   |
+2  | from __future__ import annotations
+   - import argparse,hashlib,json,pathlib,sys,tarfile
+3  +
+4  + import argparse
+5  + import hashlib
+6  + import json
+7  + import pathlib
+8  + import sys
+9  + import tarfile
+10 +
+11 | PARENT_SHA='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+   |
+
+I001 Import block is un-sorted or un-formatted
+  --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-verify.py:48:37
+   |
+46 |  assert actual==prepared['bindings'][0]['code']==prepared['bindings'][1]['code']=={**plan['parent_source_sha256'],**plan['source_sha25…
+47 |  assert len(actual)==plan['expected_source_files']==220
+48 |  sys.path.insert(0,str(r/'source'));from fp32_speed_probe import protocol,assess
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+49 |  assert plan['protocol']==prepared['protocol']==protocol()
+50 |  state=json.loads((r/'controller.json').read_bytes());post=json.loads((r/'post-restoration-check.json').read_bytes())
+   |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/fp32-speed-v1-wait_retain.py:2:1
+  |
+1 | """Own one retention attempt after the already-running collector becomes terminal."""
+2 | import json,os,pathlib,shlex,subprocess,sys,time
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | b=pathlib.Path(__file__).parent;r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1';statepath=b/'retaine…
+4 | state={'phase':'waiting_for_collector','pid':os.getpid(),'started_epoch':time.time()}
+  |
+help: Organize imports
+   |
+1  | """Own one retention attempt after the already-running collector becomes terminal."""
+   - import json,os,pathlib,shlex,subprocess,sys,time
+2  + import json
+3  + import os
+4  + import pathlib
+5  + import shlex
+6  + import subprocess
+7  + import sys
+8  + import time
+9  +
+10 | b=pathlib.Path(__file__).parent;r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1';statepath=b/'retainer-state.json';assert not statepath.exists()
+   |
+
+Found 32 errors.
+[*] 25 fixable with the `--fix` option.

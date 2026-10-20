@@ -1,0 +1,2358 @@
+{
+  "status": "passed",
+  "cases": [
+    {
+      "prefix": "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+      "rank": 0,
+      "runtime_class": "_Glm5NextMergedColumnParallelLinear",
+      "measurements": [
+        {
+          "tokens": 0,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011529897892614827,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011529897892614827,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011529897892614827,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011529897892614827,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.595583975315094,
+            "zipserv_ms": 0.42531199753284454,
+            "speedup": 1.403725697654302
+          },
+          "eager_timing": {
+            "dense_ms": 0.6034560203552246,
+            "zipserv_ms": 0.4875519871711731,
+            "speedup": 1.2377265117029645
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.46700799465179443,
+            "zipserv_ms": 1.2955520153045654,
+            "speedup": 0.361087785490415
+          },
+          "eager_timing": {
+            "dense_ms": 0.47545599937438965,
+            "zipserv_ms": 1.3463040590286255,
+            "speedup": 0.35508925499092114
+          }
+        },
+        {
+          "tokens": 512,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 2048,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 2.225391983985901,
+            "zipserv_ms": 3.0546399354934692,
+            "speedup": 0.7267932012670518
+          },
+          "eager_timing": {
+            "dense_ms": 2.315808057785034,
+            "zipserv_ms": 3.1187520027160645,
+            "speedup": 0.7401444438264693
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+        "rank": 0,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73394904,
+        "loaded_weight_sha256": "26b5f3140aa59b6c1f90050c8fcd288ad52e9610d2cc929a8b1bb8f9d42a4af9",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true,
+      "dynamo_fullgraph": [
+        {
+          "tokens": 1,
+          "bits_exact": false,
+          "finite": true,
+          "relative_l2": 0.00010715282405726612,
+          "passed": true
+        },
+        {
+          "tokens": 3,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "prefix": "language_model.model.layers.0.self_attn.o_proj",
+      "rank": 0,
+      "runtime_class": "RowParallelLinear",
+      "measurements": [
+        {
+          "tokens": 0,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 2.3815640815882944e-05,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 2.3815640815882944e-05,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 2.3815640815882944e-05,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 2.3815640815882944e-05,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.22494400292634964,
+            "zipserv_ms": 0.25489600002765656,
+            "speedup": 0.8860822167783596
+          },
+          "eager_timing": {
+            "dense_ms": 0.23744000494480133,
+            "zipserv_ms": 0.3208320140838623,
+            "speedup": 0.7449799050331531
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.18118399381637573,
+            "zipserv_ms": 0.3883039951324463,
+            "speedup": 0.46630048003844987
+          },
+          "eager_timing": {
+            "dense_ms": 0.188960000872612,
+            "zipserv_ms": 0.4416959881782532,
+            "speedup": 0.42173386681206454
+          }
+        },
+        {
+          "tokens": 512,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 2048,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.7284640073776245,
+            "zipserv_ms": 0.9929600059986115,
+            "speedup": 0.7325840260606921
+          },
+          "eager_timing": {
+            "dense_ms": 0.7386559844017029,
+            "zipserv_ms": 1.0470399856567383,
+            "speedup": 0.7034229976108957
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.0.self_attn.o_proj",
+        "rank": 0,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23809768,
+        "loaded_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+      "rank": 0,
+      "runtime_class": "_Glm5NextMergedColumnParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011166100011905655,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011166100011905655,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011166100011905655,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011166100011905655,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.6009920239448547,
+            "zipserv_ms": 0.4233120083808899,
+            "speedup": 1.417091840506269
+          },
+          "eager_timing": {
+            "dense_ms": 0.6069120168685913,
+            "zipserv_ms": 0.47993600368499756,
+            "speedup": 1.2645686345859843
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.4716159999370575,
+            "zipserv_ms": 1.2991840243339539,
+            "speedup": 0.3629809604887916
+          },
+          "eager_timing": {
+            "dense_ms": 0.4795840084552765,
+            "zipserv_ms": 1.3538559675216675,
+            "speedup": 0.3570543679014778
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+        "rank": 0,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73264488,
+        "loaded_weight_sha256": "5b3d203c1d47406f6f8e128f022954801b8a3a67a300f023a7a403695fee71d7",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.22.self_attn.o_proj",
+      "rank": 0,
+      "runtime_class": "RowParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00018127025396097451,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00018127025396097451,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00018127025396097451,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00018127025396097451,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.19940800219774246,
+            "zipserv_ms": 0.14025600254535675,
+            "speedup": 1.4216593026856323
+          },
+          "eager_timing": {
+            "dense_ms": 0.2075520008802414,
+            "zipserv_ms": 0.2003840059041977,
+            "speedup": 1.0312998441425323
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.17652799934148788,
+            "zipserv_ms": 0.3890080004930496,
+            "speedup": 0.45374738224320865
+          },
+          "eager_timing": {
+            "dense_ms": 0.1876479983329773,
+            "zipserv_ms": 0.4456639885902405,
+            "speedup": 0.3774438130471172
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.22.self_attn.o_proj",
+        "rank": 0,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23683592,
+        "loaded_weight_sha256": "93ad28b2cf086ae56b8ec7c0eb531dddbe4dcd52dba94fc878cc1fe68f0207b3",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+      "rank": 0,
+      "runtime_class": "_Glm5NextMergedColumnParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 8.664902270538732e-05,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 8.664902270538732e-05,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 8.664902270538732e-05,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 8.664902270538732e-05,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.5991199910640717,
+            "zipserv_ms": 0.42873600125312805,
+            "speedup": 1.3986105125039612
+          },
+          "eager_timing": {
+            "dense_ms": 0.6098560094833374,
+            "zipserv_ms": 0.48579201102256775,
+            "speedup": 1.253098287894658
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.47572799026966095,
+            "zipserv_ms": 1.3009759783744812,
+            "speedup": 0.36581713816511885
+          },
+          "eager_timing": {
+            "dense_ms": 0.4782080054283142,
+            "zipserv_ms": 1.3428800106048584,
+            "speedup": 0.35570851429979133
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+        "rank": 0,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73419320,
+        "loaded_weight_sha256": "b488c5b2271472097481fba5d8130c8eaa633394aec64cb5866a181bd0c23b49",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.44.self_attn.o_proj",
+      "rank": 0,
+      "runtime_class": "RowParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00014079755055718124,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00014079755055718124,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00014079755055718124,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00014079755055718124,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.20155200362205505,
+            "zipserv_ms": 0.1446559950709343,
+            "speedup": 1.3956555138646867
+          },
+          "eager_timing": {
+            "dense_ms": 0.20943999290466309,
+            "zipserv_ms": 0.20150400698184967,
+            "speedup": 1.0387486083590525
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.1791199967265129,
+            "zipserv_ms": 0.384895995259285,
+            "speedup": 0.46462974624300085
+          },
+          "eager_timing": {
+            "dense_ms": 0.19251200556755066,
+            "zipserv_ms": 0.4447680115699768,
+            "speedup": 0.4248887892016831
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.44.self_attn.o_proj",
+        "rank": 0,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23899064,
+        "loaded_weight_sha256": "014dd50be516d96cef944a52b0fafbca8df3e91e78d9130bc6cf09e921d2f2e4",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+      "rank": 1,
+      "runtime_class": "_Glm5NextMergedColumnParallelLinear",
+      "measurements": [
+        {
+          "tokens": 0,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011739142064470798,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011739142064470798,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011739142064470798,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00011739142064470798,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.6011359989643097,
+            "zipserv_ms": 0.4254080057144165,
+            "speedup": 1.4137191850106527
+          },
+          "eager_timing": {
+            "dense_ms": 0.6098560094833374,
+            "zipserv_ms": 0.48102399706840515,
+            "speedup": 1.266165512849767
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.4784640073776245,
+            "zipserv_ms": 1.2986880540847778,
+            "speedup": 0.3686631463945037
+          },
+          "eager_timing": {
+            "dense_ms": 0.4817279875278473,
+            "zipserv_ms": 1.3547199964523315,
+            "speedup": 0.35728862554883795
+          }
+        },
+        {
+          "tokens": 512,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 2048,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 2.213711977005005,
+            "zipserv_ms": 3.0215039253234863,
+            "speedup": 0.732524719806384
+          },
+          "eager_timing": {
+            "dense_ms": 2.273632049560547,
+            "zipserv_ms": 3.116544008255005,
+            "speedup": 0.7299245901543729
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+        "rank": 1,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73239112,
+        "loaded_weight_sha256": "6388e51135d858b843c4d4607ef4fe24efd96a2a79a9db36cfd9ffa38fd5703b",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.0.self_attn.o_proj",
+      "rank": 1,
+      "runtime_class": "RowParallelLinear",
+      "measurements": [
+        {
+          "tokens": 0,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012088284711353481,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012088284711353481,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012088284711353481,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012088284711353481,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.20371200144290924,
+            "zipserv_ms": 0.1422400027513504,
+            "speedup": 1.4313548472091895
+          },
+          "eager_timing": {
+            "dense_ms": 0.21059200167655945,
+            "zipserv_ms": 0.1979839950799942,
+            "speedup": 1.0655764341609906
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.1786400005221367,
+            "zipserv_ms": 0.38819199800491333,
+            "speedup": 0.4526833607267568
+          },
+          "eager_timing": {
+            "dense_ms": 0.18960000574588776,
+            "zipserv_ms": 0.44467198848724365,
+            "speedup": 0.42531356308213886
+          }
+        },
+        {
+          "tokens": 512,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 2048,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.7238880097866058,
+            "zipserv_ms": 0.9907520115375519,
+            "speedup": 0.7304208977834791
+          },
+          "eager_timing": {
+            "dense_ms": 0.7343040108680725,
+            "zipserv_ms": 1.051103949546814,
+            "speedup": 0.6998508840405662
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.0.self_attn.o_proj",
+        "rank": 1,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23831256,
+        "loaded_weight_sha256": "779e569f8f3d1152ced9dfbb03b81ed0651c92ed0132cad16881575c2711b467",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+      "rank": 1,
+      "runtime_class": "_Glm5NextMergedColumnParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00016375654377043247,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00016375654377043247,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00016375654377043247,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00016375654377043247,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.6186079978942871,
+            "zipserv_ms": 0.47726400196552277,
+            "speedup": 1.3013175549574452
+          },
+          "eager_timing": {
+            "dense_ms": 0.6582720279693604,
+            "zipserv_ms": 0.570688009262085,
+            "speedup": 1.2169729505612445
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.47619199752807617,
+            "zipserv_ms": 1.3018400073051453,
+            "speedup": 0.367853069839879
+          },
+          "eager_timing": {
+            "dense_ms": 0.48281601071357727,
+            "zipserv_ms": 1.3539520502090454,
+            "speedup": 0.3565605679419411
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+        "rank": 1,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73224152,
+        "loaded_weight_sha256": "9ad52e14cdec3bc2dad5f02a06e873d66bbab037ffdadfe9cf3ecb528697f268",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.22.self_attn.o_proj",
+      "rank": 1,
+      "runtime_class": "RowParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00013403275806922466,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00013403275806922466,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00013403275806922466,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00013403275806922466,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.22497599571943283,
+            "zipserv_ms": 0.24884800612926483,
+            "speedup": 0.9040699148803643
+          },
+          "eager_timing": {
+            "dense_ms": 0.23766399919986725,
+            "zipserv_ms": 0.3176639974117279,
+            "speedup": 0.715120365023663
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.18001599609851837,
+            "zipserv_ms": 0.38995200395584106,
+            "speedup": 0.4602904099047028
+          },
+          "eager_timing": {
+            "dense_ms": 0.18892799317836761,
+            "zipserv_ms": 0.44249600172042847,
+            "speedup": 0.39906634215194453
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.22.self_attn.o_proj",
+        "rank": 1,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23682584,
+        "loaded_weight_sha256": "8afe10e71a6a5a23759fde4d0b3b92e9c35c998e0aa7855dfb4d61d1397cfde6",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+      "rank": 1,
+      "runtime_class": "_Glm5NextMergedColumnParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012459354184102267,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012459354184102267,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012459354184102267,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00012459354184102267,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.5991680026054382,
+            "zipserv_ms": 0.42295999825000763,
+            "speedup": 1.4173037918456295
+          },
+          "eager_timing": {
+            "dense_ms": 0.6080960035324097,
+            "zipserv_ms": 0.48156800866127014,
+            "speedup": 1.2627416950367607
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.47681599855422974,
+            "zipserv_ms": 1.2984000444412231,
+            "speedup": 0.3675740681678199
+          },
+          "eager_timing": {
+            "dense_ms": 0.48451200127601624,
+            "zipserv_ms": 1.4146560430526733,
+            "speedup": 0.3568408234392099
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+        "rank": 1,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73422120,
+        "loaded_weight_sha256": "a3cdab24acaaab22e98e393be3a8392686b1cbbeac73070c54ea875f21a06f18",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    },
+    {
+      "prefix": "language_model.model.layers.44.self_attn.o_proj",
+      "rank": 1,
+      "runtime_class": "RowParallelLinear",
+      "measurements": [
+        {
+          "tokens": 1,
+          "eager": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.000207921679248102,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.000207921679248102,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.000207921679248102,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.000207921679248102,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.20345600694417953,
+            "zipserv_ms": 0.14344000071287155,
+            "speedup": 1.418277301896783
+          },
+          "eager_timing": {
+            "dense_ms": 0.21171200275421143,
+            "zipserv_ms": 0.2040960043668747,
+            "speedup": 1.0469595919852293
+          }
+        },
+        {
+          "tokens": 8,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 128,
+          "eager": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "replay_allocation_growth_bytes": 0,
+          "nondefault_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "graph_timing": {
+            "dense_ms": 0.1799520030617714,
+            "zipserv_ms": 0.3954399973154068,
+            "speedup": 0.4560787805044038
+          },
+          "eager_timing": {
+            "dense_ms": 0.18515199422836304,
+            "zipserv_ms": 0.4485119879245758,
+            "speedup": 0.41095892140404056
+          }
+        }
+      ],
+      "qualification": {
+        "prefix": "language_model.model.layers.44.self_attn.o_proj",
+        "rank": 1,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23923976,
+        "loaded_weight_sha256": "b5bf5fa7f1a0b3609c61bf238bdaaa8b76b31c18a9c994c45905ebbe4827f7be",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      "dense_parameter_released": true,
+      "independent_source_bits_exact": true,
+      "return_bias_false_passed": true
+    }
+  ],
+  "rejections": [
+    "implicit_source_dtype_cast",
+    "duplicate_fused_source"
+  ],
+  "torch": "2.13.0+cu130",
+  "vllm": "0.1.dev20051+g487ecf187",
+  "selected_prefixes": [
+    "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.0.self_attn.o_proj",
+    "language_model.model.layers.1.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.1.self_attn.o_proj",
+    "language_model.model.layers.10.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.10.self_attn.o_proj",
+    "language_model.model.layers.12.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.12.self_attn.o_proj",
+    "language_model.model.layers.13.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.13.self_attn.o_proj",
+    "language_model.model.layers.14.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.14.self_attn.o_proj",
+    "language_model.model.layers.16.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.16.self_attn.o_proj",
+    "language_model.model.layers.17.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.17.self_attn.o_proj",
+    "language_model.model.layers.18.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.18.self_attn.o_proj",
+    "language_model.model.layers.2.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.2.self_attn.o_proj",
+    "language_model.model.layers.20.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.20.self_attn.o_proj",
+    "language_model.model.layers.21.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.21.self_attn.o_proj",
+    "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.22.self_attn.o_proj",
+    "language_model.model.layers.24.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.24.self_attn.o_proj",
+    "language_model.model.layers.25.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.25.self_attn.o_proj",
+    "language_model.model.layers.26.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.26.self_attn.o_proj",
+    "language_model.model.layers.28.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.28.self_attn.o_proj",
+    "language_model.model.layers.29.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.29.self_attn.o_proj",
+    "language_model.model.layers.30.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.30.self_attn.o_proj",
+    "language_model.model.layers.32.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.32.self_attn.o_proj",
+    "language_model.model.layers.33.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.33.self_attn.o_proj",
+    "language_model.model.layers.34.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.34.self_attn.o_proj",
+    "language_model.model.layers.36.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.36.self_attn.o_proj",
+    "language_model.model.layers.37.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.37.self_attn.o_proj",
+    "language_model.model.layers.38.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.38.self_attn.o_proj",
+    "language_model.model.layers.4.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.4.self_attn.o_proj",
+    "language_model.model.layers.40.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.40.self_attn.o_proj",
+    "language_model.model.layers.41.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.41.self_attn.o_proj",
+    "language_model.model.layers.42.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.42.self_attn.o_proj",
+    "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.44.self_attn.o_proj",
+    "language_model.model.layers.5.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.5.self_attn.o_proj",
+    "language_model.model.layers.6.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.6.self_attn.o_proj",
+    "language_model.model.layers.8.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.8.self_attn.o_proj",
+    "language_model.model.layers.9.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.9.self_attn.o_proj"
+  ],
+  "gates": {
+    "source_and_restored_gpu_weight_bits_exact": true,
+    "maximum_single_token_relative_l2": 0.001,
+    "fallback_output_bits_exact": true,
+    "maximum_shared_pool_bytes": 268435456
+  },
+  "code_sha256": {
+    "kda_policy.py": "0a82783be8da8e86dc56928d0a3f6f86e7c1d24e5ba71064a26b4cecea8760bb",
+    "kda_runtime.py": "ee3cdf35780c1f11a2d05b630a81966548733683389f05633fa8605abdafdd02",
+    "kda_adapter.py": "69f7506236efe591569aa99bd3e0bdcf3dbced8330191e60614ebeeca69d0a20",
+    "model_plugin.py": "e1f840598f87d412ec564811f868adb8062fae894e5003fd834df592ddbd2053",
+    "diagnose_bf16_kda.py": "2e2d3af8a62c4bdc73b6dc11aa7df6f8c965463ceb6ad164124425f34f398b6b"
+  },
+  "runtime_source_sha256": {
+    "linear": "fc4e96ba5e36895513b801b99e746e2b07959d402e36d56aae7d8ad3f124cfe7"
+  },
+  "limits": [
+    "Real vLLM linear classes; TP2 source slices tested sequentially on one GPU.",
+    "Rank/world-size queries are patched only inside this private fixture.",
+    "Row-parallel collective reduction is disabled; full TP2 remains a gate.",
+    "Random and basis activations, not captured model activations.",
+    "Both dense control and packed candidate coexist for paired timing.",
+    "Components at layers 0, 22 and 44; whole-model quality is unqualified."
+  ],
+  "passed": true,
+  "seconds": 57.64585844002431,
+  "allocation": {
+    "layers": [
+      {
+        "prefix": "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+        "rank": 0,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73394904,
+        "loaded_weight_sha256": "26b5f3140aa59b6c1f90050c8fcd288ad52e9610d2cc929a8b1bb8f9d42a4af9",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      {
+        "prefix": "language_model.model.layers.0.self_attn.o_proj",
+        "rank": 0,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23809768,
+        "loaded_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      {
+        "prefix": "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+        "rank": 0,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73264488,
+        "loaded_weight_sha256": "5b3d203c1d47406f6f8e128f022954801b8a3a67a300f023a7a403695fee71d7",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      {
+        "prefix": "language_model.model.layers.22.self_attn.o_proj",
+        "rank": 0,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23683592,
+        "loaded_weight_sha256": "93ad28b2cf086ae56b8ec7c0eb531dddbe4dcd52dba94fc878cc1fe68f0207b3",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      {
+        "prefix": "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+        "rank": 0,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73419320,
+        "loaded_weight_sha256": "b488c5b2271472097481fba5d8130c8eaa633394aec64cb5866a181bd0c23b49",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      {
+        "prefix": "language_model.model.layers.44.self_attn.o_proj",
+        "rank": 0,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23899064,
+        "loaded_weight_sha256": "014dd50be516d96cef944a52b0fafbca8df3e91e78d9130bc6cf09e921d2f2e4",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      {
+        "prefix": "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+        "rank": 1,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73239112,
+        "loaded_weight_sha256": "6388e51135d858b843c4d4607ef4fe24efd96a2a79a9db36cfd9ffa38fd5703b",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      {
+        "prefix": "language_model.model.layers.0.self_attn.o_proj",
+        "rank": 1,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23831256,
+        "loaded_weight_sha256": "779e569f8f3d1152ced9dfbb03b81ed0651c92ed0132cad16881575c2711b467",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      {
+        "prefix": "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+        "rank": 1,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73224152,
+        "loaded_weight_sha256": "9ad52e14cdec3bc2dad5f02a06e873d66bbab037ffdadfe9cf3ecb528697f268",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      {
+        "prefix": "language_model.model.layers.22.self_attn.o_proj",
+        "rank": 1,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23682584,
+        "loaded_weight_sha256": "8afe10e71a6a5a23759fde4d0b3b92e9c35c998e0aa7855dfb4d61d1397cfde6",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      },
+      {
+        "prefix": "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+        "rank": 1,
+        "kind": "input",
+        "logical_shape": [
+          12576,
+          4096
+        ],
+        "native_shape": [
+          12608,
+          4096
+        ],
+        "raw_bytes": 103022592,
+        "packed_bytes": 73422120,
+        "loaded_weight_sha256": "a3cdab24acaaab22e98e393be3a8392686b1cbbeac73070c54ea875f21a06f18",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "row_parallel_source_loaded": false
+      },
+      {
+        "prefix": "language_model.model.layers.44.self_attn.o_proj",
+        "rank": 1,
+        "kind": "output",
+        "logical_shape": [
+          4096,
+          4096
+        ],
+        "native_shape": [
+          4096,
+          4096
+        ],
+        "raw_bytes": 33554432,
+        "packed_bytes": 23923976,
+        "loaded_weight_sha256": "b5bf5fa7f1a0b3609c61bf238bdaaa8b76b31c18a9c994c45905ebbe4827f7be",
+        "gpu_decode_bits_exact": true,
+        "loaded_shards": [],
+        "row_parallel_source_loaded": true
+      }
+    ],
+    "prepared_layers": 12,
+    "resident_layers": 0,
+    "raw_bytes": 0,
+    "packed_bytes": 0,
+    "pool_bytes": 206569472,
+    "pool_streams": [
+      2
+    ],
+    "cuda_allocated_bytes": 241172480,
+    "cuda_peak_allocated_bytes": 625506304
+  },
+  "source_report_sha256": "2d472446f99c90d1d793a45c3c386c073a8613bf6d2f532c7f3800987eb088db",
+  "scope": "Real vLLM KDA projections; sequential TP slices, not full TP2 model qualification",
+  "guard": {
+    "phase": "complete_idle",
+    "attempts": 1,
+    "production_stopped": false,
+    "interrupted_attempts": 0
+  },
+  "evidence_archive": {
+    "archive": "kdaadapterv3-evidence-v1.tar.gz",
+    "bytes": 230058,
+    "sha256": "677b85c7d05dba5ff1336f0fede04b021d299a4cde3932635bd88fdf5e68e4e5"
+  }
+}

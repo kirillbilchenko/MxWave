@@ -1,0 +1,80 @@
+"""Independently recompute timing decisions and bind outputs to immutable prior precision evidence."""
+from __future__ import annotations
+import argparse,hashlib,json,pathlib,sys,tarfile
+PARENT_SHA='e40d606164bbf8ead44a3f932f6f615d1d7b4be70d60a6a17facf0ce571ae94b'
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def verify_row(row,prior):
+ assert row['activation']=='787' and row['tokens']==prior['tokens'] and row['split']==prior['split']
+ expected={k:prior['artifacts'][k]['sha256'] for k in ('original','rebuilt','candidate')}
+ for key in ('output_sha256_before','output_sha256_after','graph_output_sha256'):assert row[key]==expected
+ assert row['outputs_match_parent_before'] and row['outputs_match_parent_after'] and row['graph_matches_eager'] and row['guards_unchanged'] and row['graph_retained_bytes']==0
+ from fp32_speed_probe import summarize
+ for timing in row['timing']:assert summarize(timing['samples'])==timing['summary']
+def parent_files(path):
+ assert sha(path)==PARENT_SHA
+ wanted={'inventory.json','plan.json','prepared.json','spark-independent-review.json','rank0-precision-report.json','rank1-precision-report.json','native-inputs/fp32-split-v1-native/build/native-build.json'}
+ result={}
+ with tarfile.open(path,'r|gz') as tf:
+  for m in tf:
+   if m.name in wanted:
+    assert m.isfile() and m.name not in result and m.size<8*1024**2
+    result[m.name]=tf.extractfile(m).read()
+ assert set(result)==wanted
+ inventory=json.loads(result['inventory.json'])['files'];bound={x['path']:x for x in inventory}
+ for name,data in result.items():
+  if name in ('inventory.json','spark-independent-review.json'):continue
+  assert len(data)==bound[name]['bytes'] and hashlib.sha256(data).hexdigest()==bound[name]['sha256']
+ review=json.loads(result['spark-independent-review.json']);assert review['diagnostic_complete'] and review['source_files']==217
+ assert not any(review['splits_passed_on_both_GPUs'].values())
+ return result
+
+def main():
+ p=argparse.ArgumentParser();p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--parent-archive',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);a=p.parse_args();r=a.root
+ inv=json.loads((r/'inventory.json').read_bytes())['files'];assert len({x['path'] for x in inv})==len(inv)
+ for x in inv:
+  rel=pathlib.PurePosixPath(x['path']);assert not rel.is_absolute() and '..' not in rel.parts
+  f=r/rel;assert not f.is_symlink() and f.stat().st_size==x['bytes'] and sha(f)==x['sha256'],x['path']
+ parent=parent_files(a.parent_archive)
+ plan=json.loads((r/'plan.json').read_bytes());prepared=json.loads((r/'prepared.json').read_bytes())
+ assert plan['parent_archive_sha256']==PARENT_SHA
+ oldplan=json.loads(parent['plan.json']);oldprepared=json.loads(parent['prepared.json'])
+ assert plan['selected_cases']==oldplan['selected_cases'] and plan['native_build_path']==oldplan['native_build_path'] and plan['native_build_sha256']==oldplan['native_build_sha256']
+ assert plan['native_build_sha256']==hashlib.sha256(parent['native-inputs/fp32-split-v1-native/build/native-build.json']).hexdigest()
+ assert plan['parent_source_sha256']==oldprepared['bindings'][0]['code']==oldprepared['bindings'][1]['code']
+ actual={str(f.relative_to(r/'source')):sha(f) for f in (r/'source').rglob('*') if f.is_file() and f.suffix in ('.py','.toml')}
+ assert actual==prepared['bindings'][0]['code']==prepared['bindings'][1]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']}
+ assert len(actual)==plan['expected_source_files']==220
+ sys.path.insert(0,str(r/'source'));from fp32_speed_probe import protocol,assess
+ assert plan['protocol']==prepared['protocol']==protocol()
+ state=json.loads((r/'controller.json').read_bytes());post=json.loads((r/'post-restoration-check.json').read_bytes())
+ assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+ assert post['health']==200 and post['originals']==prepared['originals']==oldprepared['originals'] and post['controller_terminal'] and post['watchdog_terminal']
+ assert state['restoration']['status']=='complete' and state['restoration']['health']==200
+ assert state['preflight']['prepared_sha256']==sha(r/'prepared.json')
+ checks=[]
+ for entry in state['runs']:
+  rank=entry['rank'];assert entry['stage']=='timing';path=r/f'rank{rank}-timing-report.json'
+  if not path.exists():checks.append({'rank':rank,'diagnostic_complete':False,'error':'report absent'});continue
+  report=json.loads(path.read_bytes());assert report==json.loads((r/f'rank{rank}/timing.json').read_bytes())
+  assert report['source_sha256']==actual['benchmark_fp32_speed.py'] and report['protocol']==protocol()
+  assert report['plan_sha256']==sha(r/'plan.json') and report['native_build_sha256']==plan['native_build_sha256']
+  assert report['qualified_library_sha256']==prepared['bindings'][rank]['libraries']['libmxwave_kda_zipserv.so']
+  previous_data=parent[f'rank{rank}-precision-report.json'];previous=json.loads(previous_data)
+  assert report['parent_report_sha256']==plan['parent_report_sha256'][str(rank)]==hashlib.sha256(previous_data).hexdigest()
+  assert (r/f'parent-rank{rank}.json').read_bytes()==previous_data
+  if report['status']!='complete':checks.append({'rank':rank,'diagnostic_complete':False,'error':report.get('error')});continue
+  selected=[c for c in plan['selected_cases'] if c['rank']==rank];assert len(selected)==len(report['cases'])==6
+  for case,wanted in zip(report['cases'],selected,strict=True):
+   assert case['name']==wanted['name'] and case['artifact_sha256']==wanted['artifact_sha256']
+   oldcase=next(c for c in previous['cases'] if c['name']==case['name'])
+   for row in case['measurements']:
+    prior=next(x for x in oldcase['checks'] if x['tokens']==row['tokens'] and x['split']==row['split'] and x['activation']=='787');verify_row(row,prior)
+  result=assess(report);assert result==report['assessment']==entry['independent_assessment']
+  assert report['CUDA_peak_bytes']<=protocol()['CUDA_allocation_cap_bytes']
+  checks.append({'rank':rank,'exit_code':entry['exit_code'],'OOMKilled':entry['OOMKilled'],**result,'CUDA_peak_bytes':report['CUDA_peak_bytes']})
+ unchanged=state.get('source_after')==prepared['bindings'] and state.get('input_bindings_after')==prepared['input_bindings']
+ complete=len(checks)==2 and {x['rank'] for x in checks}=={0,1} and unchanged and all(x['diagnostic_complete'] and not x.get('exit_code') and not x.get('OOMKilled') for x in checks)
+ out={'status':'complete','diagnostic_complete':complete,'payloads':len(inv),'source_files':len(actual),'processes':checks,'source_and_fixture_bindings_unchanged':unchanged,'original_service_restored':True,'timing_screen_passed_on_both_GPUs':complete and all(c['timing_screen_passed_all_conditions'] for c in checks),'parent_exact_word_screen_passed':False,'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False,'automatic_promotion_allowed':False}
+ a.output.write_text(json.dumps(out,indent=2,allow_nan=False)+'\n');print(json.dumps({k:v for k,v in out.items() if k!='processes'}))
+if __name__=='__main__':main()

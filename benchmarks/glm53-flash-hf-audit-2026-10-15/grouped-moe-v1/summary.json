@@ -1,0 +1,482 @@
+{
+  "status": "component_complete",
+  "scope": "16 real GLM layer-23 experts; sequential TP2 partitions; no whole-model or inter-rank test",
+  "cases": 24,
+  "peak_cuda_allocated_bytes": 367045632,
+  "peak_cuda_reserved_bytes": 387973120,
+  "partitions": [
+    {
+      "tp": 1,
+      "rank": 0,
+      "raw_scale_bytes": 12582912,
+      "retained_scale_bytes_with_descriptors": 6291488,
+      "escape_vectors": 0,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -1.8413502486085753,
+            -1.687673148853508
+          ],
+          "raw_median_us_by_order": [
+            467.2016143798828,
+            555.9391975402832
+          ],
+          "async_median_us_by_order": [
+            459.3167781829834,
+            545.7024097442627
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 1,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -2.4041715007469544,
+            -2.2774895970869347
+          ],
+          "raw_median_us_by_order": [
+            559.827184677124,
+            562.3040199279785
+          ],
+          "async_median_us_by_order": [
+            546.3679790496826,
+            549.4976043701172
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 8,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -2.5524808085373163,
+            -1.804966497592253
+          ],
+          "raw_median_us_by_order": [
+            1129.2400360107422,
+            1142.8560256958008
+          ],
+          "async_median_us_by_order": [
+            1108.8576316833496,
+            1113.6848449707031
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 8,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -3.2348103620079893,
+            -1.912973029960996
+          ],
+          "raw_median_us_by_order": [
+            584.8080158233643,
+            504.5616149902344
+          ],
+          "async_median_us_by_order": [
+            573.6207962036133,
+            488.24000358581543
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 16,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -3.978486927714364,
+            -3.3480629467656176
+          ],
+          "raw_median_us_by_order": [
+            966.1952018737793,
+            1096.617603302002
+          ],
+          "async_median_us_by_order": [
+            933.846378326416,
+            1052.9888153076172
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 16,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -2.0422751622705237,
+            -1.4712471148572326
+          ],
+          "raw_median_us_by_order": [
+            627.6048183441162,
+            631.8431854248047
+          ],
+          "async_median_us_by_order": [
+            618.3712005615234,
+            618.939208984375
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 32,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -2.6391965710702237,
+            -1.1424554864318925
+          ],
+          "raw_median_us_by_order": [
+            1303.8592338562012,
+            1324.2799758911133
+          ],
+          "async_median_us_by_order": [
+            1288.963222503662,
+            1289.3296241760254
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 32,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -0.05379413836800184,
+            -0.03043039946233339
+          ],
+          "raw_median_us_by_order": [
+            536.3759994506836,
+            541.3311958312988
+          ],
+          "async_median_us_by_order": [
+            536.2127780914307,
+            541.0399913787842
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -3.8184264707262217,
+            -2.576558115763783
+          ],
+          "raw_median_us_by_order": [
+            1046.8815803527832,
+            1025.5552291870117
+          ],
+          "async_median_us_by_order": [
+            1006.9071769714355,
+            999.1312026977539
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            2.5331068531669887,
+            2.8047449137378555
+          ],
+          "raw_median_us_by_order": [
+            615.9071922302246,
+            618.4383869171143
+          ],
+          "async_median_us_by_order": [
+            631.5087795257568,
+            635.7840061187744
+          ],
+          "reused_control": true
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -0.7285271237222446,
+            -0.6051462912528449
+          ],
+          "raw_median_us_by_order": [
+            1308.2351684570312,
+            1239.9791717529297
+          ],
+          "async_median_us_by_order": [
+            1300.318431854248,
+            1230.9455871582031
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 128,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            2.056277632061976,
+            2.059237850566009
+          ],
+          "raw_median_us_by_order": [
+            770.7903861999512,
+            770.3839778900146
+          ],
+          "async_median_us_by_order": [
+            786.6399765014648,
+            786.2480163574219
+          ],
+          "reused_control": false
+        }
+      ]
+    },
+    {
+      "tp": 2,
+      "rank": 0,
+      "raw_scale_bytes": 6291456,
+      "retained_scale_bytes_with_descriptors": 3145760,
+      "escape_vectors": 0,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -2.4970286818465914,
+            -1.7761996958783777
+          ],
+          "raw_median_us_by_order": [
+            248.74401092529297,
+            244.65761184692383
+          ],
+          "async_median_us_by_order": [
+            242.5328016281128,
+            240.31200408935547
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 1,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -2.6124229393566623,
+            -2.4406052803303546
+          ],
+          "raw_median_us_by_order": [
+            244.46399211883545,
+            244.6160078048706
+          ],
+          "async_median_us_by_order": [
+            238.49759101867676,
+            238.2256031036377
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 16,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -2.602661749291091,
+            -2.5017131420513206
+          ],
+          "raw_median_us_by_order": [
+            480.6943893432617,
+            480.2464008331299
+          ],
+          "async_median_us_by_order": [
+            468.668794631958,
+            467.7472114562988
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 16,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -2.433171899026776,
+            -1.936841337381412
+          ],
+          "raw_median_us_by_order": [
+            263.4255886077881,
+            277.1519899368286
+          ],
+          "async_median_us_by_order": [
+            257.0159912109375,
+            271.78399562835693
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -1.6095898824541544,
+            -0.8943385237191626
+          ],
+          "raw_median_us_by_order": [
+            572.5696086883545,
+            540.9999847412109
+          ],
+          "async_median_us_by_order": [
+            563.3535861968994,
+            536.1616134643555
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            1.5203270231075372,
+            1.538956514322365
+          ],
+          "raw_median_us_by_order": [
+            335.08639335632324,
+            334.87679958343506
+          ],
+          "async_median_us_by_order": [
+            340.1808023452759,
+            340.0304079055786
+          ],
+          "reused_control": false
+        }
+      ]
+    },
+    {
+      "tp": 2,
+      "rank": 1,
+      "raw_scale_bytes": 6291456,
+      "retained_scale_bytes_with_descriptors": 3145760,
+      "escape_vectors": 0,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -2.6383468309624902,
+            -2.427512679148547
+          ],
+          "raw_median_us_by_order": [
+            248.81439208984375,
+            249.12641048431396
+          ],
+          "async_median_us_by_order": [
+            242.7743911743164,
+            242.55359172821045
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 1,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -2.4772577432075282,
+            -2.4473515094368348
+          ],
+          "raw_median_us_by_order": [
+            241.37120246887207,
+            241.49279594421387
+          ],
+          "async_median_us_by_order": [
+            235.4640007019043,
+            235.51039695739746
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 16,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -2.7485738378238755,
+            -2.676274105419574
+          ],
+          "raw_median_us_by_order": [
+            482.80959129333496,
+            479.4127941131592
+          ],
+          "async_median_us_by_order": [
+            469.539213180542,
+            466.58239364624023
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 16,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            -3.421510466104949,
+            -1.9508574180357674
+          ],
+          "raw_median_us_by_order": [
+            261.17119789123535,
+            256.9535970687866
+          ],
+          "async_median_us_by_order": [
+            252.23519802093506,
+            251.94079875946045
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": false,
+          "latency_change_percent_range": [
+            -1.568353678470713,
+            -1.275966362512393
+          ],
+          "raw_median_us_by_order": [
+            542.736005783081,
+            541.3328170776367
+          ],
+          "async_median_us_by_order": [
+            534.2239856719971,
+            534.4255924224854
+          ],
+          "reused_control": false
+        },
+        {
+          "tokens": 64,
+          "concentrated_routing": true,
+          "latency_change_percent_range": [
+            1.4145830823114824,
+            1.4179552939720397
+          ],
+          "raw_median_us_by_order": [
+            347.4656105041504,
+            346.7535972595215
+          ],
+          "async_median_us_by_order": [
+            352.3808002471924,
+            351.67040824890137
+          ],
+          "reused_control": false
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "tokens": 1,
+      "arm": "raw",
+      "kernel_count_per_call": 5.0,
+      "kernel_sum_us_per_call": 618.2155,
+      "marlin_share": 0.9584738250658548,
+      "trace_sha256": "4bf181a771bbd3681613cd31126d567733e4fa7467ca91026a28707bd387cd97",
+      "interpretation": "attribution only; use paired timings for speed comparisons"
+    },
+    {
+      "tokens": 1,
+      "arm": "async",
+      "kernel_count_per_call": 5.0,
+      "kernel_sum_us_per_call": 537.983375,
+      "marlin_share": 0.9617964495650073,
+      "trace_sha256": "e25f67a7eb45c96262a62e81ee7f3f2648c0a0b66a0ad85cac3927afa8eb9502",
+      "interpretation": "attribution only; use paired timings for speed comparisons"
+    },
+    {
+      "tokens": 128,
+      "arm": "raw",
+      "kernel_count_per_call": 6.0,
+      "kernel_sum_us_per_call": 1244.0325,
+      "marlin_share": 0.9557085526302568,
+      "trace_sha256": "1bcb8bdb3ae37d8424d10fd1443dd68f9993ae6cd2419a8ce48a3bce9c327b89",
+      "interpretation": "attribution only; use paired timings for speed comparisons"
+    },
+    {
+      "tokens": 128,
+      "arm": "async",
+      "kernel_count_per_call": 6.0,
+      "kernel_sum_us_per_call": 1233.3165,
+      "marlin_share": 0.9586604492845107,
+      "trace_sha256": "39e0cb469f14f03e893d1206ca380dc2ea8321f83b68192a7565f8f1464a1476",
+      "interpretation": "attribution only; use paired timings for speed comparisons"
+    }
+  ]
+}

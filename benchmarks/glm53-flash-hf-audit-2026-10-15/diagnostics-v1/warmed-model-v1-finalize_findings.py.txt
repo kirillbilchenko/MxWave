@@ -1,0 +1,120 @@
+"""Bind preliminary observations and final interpretations to verified evidence."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+
+
+def read(name: str) -> dict:
+    """Read an already retained JSON object."""
+    return json.loads((BASE / name).read_bytes())
+
+
+def sha(path: Path) -> str:
+    """Hash the exact input bytes."""
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main() -> None:
+    """Check final bindings and retain descriptive findings without changing gates."""
+    proof = read('cross-host-verification.json')
+    assert proof['status'] == 'passed' and proof['measurement_complete']
+    inventory = {r['path']: r for r in read('evidence/evidence-inventory.json')['files']}
+    expected = {
+        'control': 'de6955593dc63fdbeefa621b4122c4e7960f8488b49487338b778a2e2a057014',
+        'candidate': '371cb8c440d1d980914c181d74cd550bfb55a30c6a7bf55967321c853b8cf594',
+    }
+    snapshots = {
+        'control': 'live/control-1792354263453964800.json',
+        'candidate': 'live/candidate-1792355952922978000.json',
+    }
+    bindings = []
+    for arm, digest in expected.items():
+        relative = f'results/{arm}-warmed-model.json'
+        assert sha(BASE / 'evidence' / relative) == inventory[relative]['sha256']
+        data = read('evidence/' + relative)
+        actual = hashlib.sha256(json.dumps(data['timing'], sort_keys=True).encode()).hexdigest()
+        assert actual == digest
+        assert data['dispatch_startup'] == read(snapshots[arm])['dispatch_startup']
+        bindings.append({'arm': arm, 'final_report_sha256': inventory[relative]['sha256'],
+                         'canonical_timing_sha256': actual,
+                         'timing_matches_preliminary': True,
+                         'startup_matches_preliminary': True})
+    latency = read('latency-review-v1.json')
+    resources = read('resource-review.json')
+    profiles = read('fresh-profile-review.json')
+    compact = read('compact-review.json')
+    jit = read('jit-window-review.json')
+    assert len(compact['numerical_comparisons']) == 46
+    assert all(x['passed'] for x in compact['numerical_comparisons'])
+    assert not compact['observed_speed_gate_passed']
+    assert len(profiles['profiles']) == 12 and latency['paired_output_sequences_equal'] == 300
+    table = []
+    for case in ['c1-short', 'c1-long', 'c8-short', 'c8-long', 'c16-short', 'c16-long']:
+        rows = {x['arm']: x for x in latency['summaries'] if x['case'] == case}
+        c, t = rows['control'], rows['candidate']
+        request_means = {arm: row['mean_of_trial_mean_request_components_seconds']
+                         for arm, row in rows.items()}
+        table.append({
+            'case': case, 'trials_per_arm': 6,
+            'control_tps': c['median_tps'], 'candidate_tps': t['median_tps'],
+            'TPS_change_percent': 100 * (t['median_tps'] / c['median_tps'] - 1),
+            'control_TTFT_seconds': c['median_ttft_seconds'],
+            'candidate_TTFT_seconds': t['median_ttft_seconds'],
+            'TTFT_change_percent': 100 * (t['median_ttft_seconds'] / c['median_ttft_seconds'] - 1),
+            'mean_request_components_seconds': request_means,
+            'mean_request_TTFT_change_percent': 100 * (
+                request_means['candidate']['ttft_seconds'] /
+                request_means['control']['ttft_seconds'] - 1),
+            'last32_mean_gap_ms': {arm: row['median_request_last32_mean_gap_seconds'] * 1000
+                                   for arm, row in rows.items()},
+        })
+    startup_matches = {}
+    for arm, filename in [('control', 'reference-startup-comparison.json'),
+                          ('candidate', 'candidate-startup-comparison.json')]:
+        result = read(filename)
+        assert result['all_prompts_conditioning_outputs_and_hashes_match']
+        assert result['matching_payload_hashes'] == result['full_vocabulary_rows'] == 576
+        startup_matches[arm] = 576
+    delta = resources['control_minus_candidate']
+    cuda_values = delta['CUDA_allocated_bytes']
+    assert set(cuda_values.values()) == {10057913856}
+    rss = {stage: -row['VmRSS'] / 2**20
+           for stage, row in delta['process_memory_bytes'].items()}
+    final = {
+        'status': 'complete', 'archive_sha256': proof['archive_sha256'],
+        'source_sha256': sha(Path(__file__)), 'preliminary_bindings': bindings,
+        'numerical_comparisons_passed': 46, 'timed_output_pairs_equal': 300,
+        'startup_unchanged_full_vocabulary_rows_per_arm': startup_matches,
+        'recognized_JIT_events_overlap_timing': not jit['no_recognized_JIT_event_overlaps_timed_envelopes'],
+        'dispatch_cache_unchanged': proof['dispatch_cache_unchanged_after_startup'],
+        'CUDA_allocation_saving_GiB_TP2': 10057913856 / 2**30,
+        'candidate_extra_process_RSS_MiB_TP2': rss,
+        'timing_table': table,
+        'original_speed_gate_passed': False, 'automatic_promotion_allowed': False,
+        'GPU_experiment_run': False, 'original_measurements_or_gates_changed': False,
+        'limitations': [
+            'Finite matched-grouping numerical qualification; no universal zero-loss or batch-invariance claim.',
+            'Startup warmup leaves all retained before/after raw output rows unchanged in each arm.',
+            'No recognized timed JIT event is not proof against unlogged JIT or all future latency stalls.',
+            'C16-short mean TTFT is supplementary; the original median TTFT failure remains unchanged.',
+            'Fixed control-then-candidate load order and different admission remain confounders.',
+            'Process RSS and CUDA allocation overlap on Spark and must not be added.',
+            'Profiles are separate from ordinary timing; kernel sums are not API latency or a TP critical path.',
+            'Current PPL, task accuracy and SQNR were not measured by this finite experiment.',
+        ],
+    }
+    with (BASE / 'final-findings.json').open('x') as stream:
+        json.dump(final, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps({k: v for k, v in final.items()
+                      if k not in ['timing_table', 'limitations', 'preliminary_bindings']}))
+
+
+if __name__ == '__main__':
+    main()

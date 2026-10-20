@@ -1,0 +1,37 @@
+{
+  "method": "Read-only standard-library source inspection in the original restored GLM container; no GPU work.",
+  "container_id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+  "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+  "sources": [
+    {
+      "path": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/kernels/mhc/tilelang_kernels.py",
+      "sha256": "03aeb3f7c0eabfe8391006ff80f8d4cfedba7cf3d0a168e0dee2d678d3e3bd24",
+      "facts": [
+        "mhc_pre_big_fuse_with_norm_tilelang is a tilelang.jit function at lines 202-225.",
+        "num_tokens is already T.dynamic at line 226.",
+        "n_splits is a scalar specialization parameter at line 222."
+      ]
+    },
+    {
+      "path": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/kernels/mhc/tilelang.py",
+      "sha256": "c8ce81539c779436eb2b9fbba84738f3114bf3ac0a149f2b606f7d38bd1067ce",
+      "facts": [
+        "When DeepGEMM is supported, lines 167-172 derive n_splits from hidden size and ceil(num_tokens/64).",
+        "Lines 232-250 pass n_splits, normalization parameters and hc_mult to the measured JIT function."
+      ]
+    },
+    {
+      "path": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/warmup/deepseek_v4_mhc_warmup.py",
+      "sha256": "36e837b52a20ed08ae760b2dbb5a3628e92ffed02b2002bd97f2ec459a60fc9e",
+      "facts": [
+        "The early model_type gate accepts only deepseek_v4.",
+        "The module walks select DeepseekV4DecoderLayer and DeepseekV4Model by class name."
+      ]
+    }
+  ],
+  "inference": "Warm the actual GLM split/normalization variants and reuse cache before timing; do not assume every token count requires a new static kernel.",
+  "limits": [
+    "The missing JIT specialization keys were not logged in v4.",
+    "No warmup patch has been GPU-qualified by this inspection."
+  ]
+}

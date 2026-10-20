@@ -1,0 +1,61 @@
+"""Supplement the frozen fresh-pair review without changing any measurement or gate."""
+from __future__ import annotations
+import collections,hashlib,json,pathlib,statistics
+BASE=pathlib.Path("/private/tmp/mxwave-matched-c8-v1")
+EVIDENCE=BASE/"evidence"
+def digest(path):
+ with path.open("rb") as stream:return hashlib.file_digest(stream,"sha256").hexdigest()
+def main():
+ inventory=json.loads((EVIDENCE/"evidence-inventory.json").read_bytes())
+ expected={x["path"]:x["sha256"] for x in inventory["files"]}
+ def read(relative):
+  path=EVIDENCE/relative
+  assert digest(path)==expected[relative]
+  return json.loads(path.read_bytes())
+ data={a:read("results/"+a+"-matched-c8.json") for a in ("control","candidate")}
+ verified=json.loads((BASE/"mac-independent-review.json").read_bytes())
+ review=verified["recomputed_review"]
+ token_pairs=[]
+ left={(x["case"],x["repeat"]):x for x in data["control"]["timing"]}
+ for right in data["candidate"]["timing"]:
+  key=right["case"],right["repeat"]
+  a=left[key]["measurement"]["requests"];b=right["measurement"]["requests"]
+  assert len(a)==len(b)
+  for i,(x,y) in enumerate(zip(a,b,strict=True)):
+   token_pairs.append({"case":key[0],"repeat":key[1],"request":i,"match":x["token_ids"]==y["token_ids"],"tokens":len(x["token_ids"])})
+ assert len(token_pairs)==102
+ quality=[]
+ for count in (1,8):
+  rows=[x for x in review["numerical_comparisons"] if x["reference"].startswith("control-c"+str(count)+"-r") and x["candidate"].startswith("candidate-c"+str(count)+"-r")]
+  assert len(rows)==9
+  quality.append({"concurrency":count,"cross_pairs":9,"KL_min":min(x["mean_decode_kl"] for x in rows),"KL_max":max(x["mean_decode_kl"] for x in rows),"NLL_difference_min":min(x["mean_decode_nll_difference"] for x in rows),"NLL_difference_max":max(x["mean_decode_nll_difference"] for x in rows)})
+ memory={}
+ telemetry={}
+ timing=[]
+ for arm,d in data.items():
+  memory[arm]={}
+  for stage in ("source_before","source_after"):
+   memory[arm][stage]={key:[r["allocation"][key] for r in d[stage]] for key in ("cuda_allocated_bytes","cuda_reserved_bytes","cuda_peak_allocated_bytes")}
+  memory[arm]["process_before"]=[x["process_memory_kib"] for x in d["telemetry_before"]]
+  memory[arm]["process_after"]=[x["process_memory_kib"] for x in d["telemetry_after"]]
+  memory[arm]["container_memory_before_bytes"]=[x["container_memory_current_bytes"] for x in d["telemetry_before"]]
+  memory[arm]["container_memory_after_bytes"]=[x["container_memory_current_bytes"] for x in d["telemetry_after"]]
+  memory[arm]["container_memory_peak_after_bytes"]=[x["container_memory_peak_bytes"] for x in d["telemetry_after"]]
+  telemetry[arm]=[]
+  for rank in (0,1):
+   samples=[t[key][rank] for t in d["timing"] for key in ("telemetry_before","telemetry_after")]
+   telemetry[arm].append({"rank":rank,"samples":len(samples),"SM_MHz_min":min(x["sm_MHz"] for x in samples),"SM_MHz_max":max(x["sm_MHz"] for x in samples),"temperature_C_min":min(x["temperature_C"] for x in samples),"temperature_C_max":max(x["temperature_C"] for x in samples),"pstates":sorted({x["pstate"] for x in samples})})
+  for t in d["timing"]:
+   timing.append({"arm":arm,"case":t["case"],"repeat":t["repeat"],**{key:t["measurement"][key] for key in ("wall_seconds","aggregate_tokens_per_second","median_ttft_seconds")},"admission_events":t["admission"]["events"],"telemetry_before":[{key:x[key] for key in ("epoch","sm_MHz","temperature_C","pstate")} for x in t["telemetry_before"]],"telemetry_after":[{key:x[key] for key in ("epoch","sm_MHz","temperature_C","pstate")} for x in t["telemetry_after"]]})
+ slow=min((x for x in timing if x["arm"]=="candidate" and x["case"]=="c8-short"),key=lambda x:x["aggregate_tokens_per_second"])
+ raw=next(x for x in data["candidate"]["timing"] if x["case"]==slow["case"] and x["repeat"]==slow["repeat"])
+ slow["request_TTFT_seconds"]=[x["ttft_seconds"] for x in raw["measurement"]["requests"]]
+ slow["request_elapsed_seconds"]=[x["elapsed_seconds"] for x in raw["measurement"]["requests"]]
+ profiles=[]
+ for p in verified["profiles"]:
+  profiles.append({"path":p["path"],"rank":p["rank"],"labels":p["labels"],"steps":len(p["steps"]),"graph_launches":sum(s["cuda_graph_launches"] for s in p["steps"]),"forwards":[{"label":s["label"],"sequence":s["sequence"],"physical_rows":s["batch"]["num_tokens_after_padding"],"actual_rows":s["batch"]["num_tokens"],"requests":s["batch"]["num_reqs"],"has_prefill":s["batch"]["has_prefill"],"graph_launches":s["cuda_graph_launches"],"reconstruction_calls":sum(v["count"] for v in s["kernel_variants"] if "reconstruct" in v["name"].lower() or "bf16triplebitmap_decompress_kernel" in v["name"].lower()),"compressed_KDA_calls":sum(v["count"] for v in s["kernel_variants"] if "BF16TripleBitmap_MM_Kernel" in v["name"])} for s in p["steps"]]})
+ result={"status":"passed","source_sha256":digest(pathlib.Path(__file__)),"parent_archive_sha256":json.loads((BASE/"cross-host-verification.json").read_bytes())["archive_sha256"],"frozen_payloads_changed":False,"all_numerical_comparisons_pass":all(x["passed"] for x in review["numerical_comparisons"]),"numerical_comparisons":len(review["numerical_comparisons"]),"cross_arm_quality":quality,"timed_token_sequence_pairs":len(token_pairs),"timed_token_sequence_matches":sum(x["match"] for x in token_pairs),"timed_token_mismatches":[x for x in token_pairs if not x["match"]],"timing_tokens_per_arm":sum(x["tokens"] for x in token_pairs),"memory":memory,"timing_telemetry":telemetry,"timing_groups":timing,"slow_candidate_C8_short":slow,"profiles":profiles,"limits":["All original trials, including the slow split-admission C8 trial, remain in frozen median summaries.","Telemetry samples bracket trials; they cannot rule out an unsampled transient.","The slow trial admitted six of eight prompts in its initial three-ms window. Its actual forward shapes were not traced; this observation alone does not prove the cause of all slowdown.","Linux process/container memory and CUDA counters overlap on Spark. Do not add them.","No GPU experiment or new quality gate is introduced by this read-only analysis."]}
+ out=BASE/"supplemental-review-v2.json";out.write_text(json.dumps(result,indent=2)+"\n")
+ print(json.dumps({key:result[key] for key in ("status","cross_arm_quality","timed_token_sequence_pairs","timed_token_sequence_matches","timing_tokens_per_arm","timing_telemetry")}))
+ print(json.dumps({"memory_GiB":{a:{"allocated":sum(m["source_before"]["cuda_allocated_bytes"])/2**30,"reserved":sum(m["source_before"]["cuda_reserved_bytes"])/2**30,"initial_RSS_sum":sum(x["VmRSS"] for x in m["process_before"])/2**20,"final_RSS_sum":sum(x["VmRSS"] for x in m["process_after"])/2**20} for a,m in memory.items()},"slow_C8":slow}))
+if __name__=="__main__":main()

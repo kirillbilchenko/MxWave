@@ -1,0 +1,91 @@
+{
+  "status": "verified",
+  "all_arithmetic_passed": true,
+  "per_matrix_eligible_tested_rows": {
+    "kda-input-l0-r0": [
+      16
+    ]
+  },
+  "shared_eligible_tested_rows": [
+    16
+  ],
+  "measurements": [
+    {
+      "case": "kda-input-l0-r0",
+      "tokens": 16,
+      "arithmetic_passed": true,
+      "relative_l2": 0.0,
+      "controls_passed": true,
+      "fused_5_percent_faster_all_conditions": true,
+      "component_eligible": true,
+      "timings": {
+        "eager_warm": {
+          "reference_us": 1339.951992034912,
+          "raw_dense_us": 465.05599468946457,
+          "fused_us": 436.0400065779686,
+          "control_ratios": [
+            1.0012836541372767,
+            1.0011036847165176,
+            1.001517634413631
+          ],
+          "fused_ratios": [
+            0.3253218162270475,
+            0.3244220618992401,
+            0.32625156873439615
+          ]
+        },
+        "eager_pressure": {
+          "reference_us": 1384.6880495548248,
+          "raw_dense_us": 514.0559822320938,
+          "fused_us": 484.3359962105751,
+          "control_ratios": [
+            1.0009217865188105,
+            1.0009922316844897,
+            1.000900305496248
+          ],
+          "fused_ratios": [
+            0.35058664570356424,
+            0.3502314350049995,
+            0.350958278045586
+          ]
+        },
+        "graph_warm": {
+          "reference_us": 1340.4319882392883,
+          "raw_dense_us": 463.0719944834709,
+          "fused_us": 434.9360018968582,
+          "control_ratios": [
+            0.9991112920449501,
+            0.9979654503346614,
+            0.9997354318526763
+          ],
+          "fused_ratios": [
+            0.32464400305383145,
+            0.323796623078226,
+            0.3246705353839658
+          ]
+        },
+        "graph_pressure": {
+          "reference_us": 1382.5759887695312,
+          "raw_dense_us": 513.5599970817566,
+          "fused_us": 487.1919974684715,
+          "control_ratios": [
+            0.9993090129842306,
+            0.9987674064770913,
+            0.9998953044819863
+          ],
+          "fused_ratios": [
+            0.3514003678113242,
+            0.3560208047412313,
+            0.3502385636107963
+          ]
+        }
+      }
+    }
+  ],
+  "event_samples": 24576,
+  "serving_routing_qualified": false,
+  "original_service_restored": true,
+  "source_files": 19,
+  "verifier_sha256": "7b5862b8576abd685cc783e316279dcb0edff7f57ae8378d4eed497744a0842d",
+  "quality_qualified": false
+}

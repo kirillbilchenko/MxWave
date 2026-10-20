@@ -1,0 +1,83 @@
+{
+  "preliminary_only": true,
+  "observation": "arm-progress-1792391263.json",
+  "all_72_timing_groups_included": true,
+  "source_snapshots": [
+    {
+      "arm": "control",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-fp32inputmodelv1/results/control-warmed-model.json",
+      "source_sha256": "13c8b1f985b494f39705ecc9d16f72c19b7dc4d606c53288a972949fb400bb15",
+      "source_bytes": 11747868,
+      "status": "complete"
+    },
+    {
+      "arm": "candidate",
+      "source_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-fp32inputmodelv1/results/candidate-warmed-model.json",
+      "source_sha256": "5b14b29d631194070bca2321a407ce3fefdcae56406b5990337ccab4fbb58343",
+      "source_bytes": 11054192,
+      "status": "running"
+    }
+  ],
+  "summaries": [
+    {
+      "case": "c1-short",
+      "stock_tps": 14.855635156139655,
+      "candidate_tps": 17.051780280394553,
+      "tps_change_percent": 14.783246230621504,
+      "stock_ttft_seconds": 0.39090010049403645,
+      "candidate_ttft_seconds": 0.43194308248348534,
+      "ttft_change_ms": 41.04298198944889,
+      "ttft_change_percent": 10.499608963409578
+    },
+    {
+      "case": "c1-long",
+      "stock_tps": 12.602060332185516,
+      "candidate_tps": 14.144984108880813,
+      "tps_change_percent": 12.243424773603785,
+      "stock_ttft_seconds": 1.1573828904947732,
+      "candidate_ttft_seconds": 1.2219435150327627,
+      "ttft_change_ms": 64.5606245379895,
+      "ttft_change_percent": 5.5781561200019425
+    },
+    {
+      "case": "c8-short",
+      "stock_tps": 61.33831205094452,
+      "candidate_tps": 63.25698954858459,
+      "tps_change_percent": 3.1280246121649258,
+      "stock_ttft_seconds": 1.1632411907339701,
+      "candidate_ttft_seconds": 1.2009418332454516,
+      "ttft_change_ms": 37.70064251148142,
+      "ttft_change_percent": 3.2409996148514475
+    },
+    {
+      "case": "c8-long",
+      "stock_tps": 31.861713132597853,
+      "candidate_tps": 31.39371704136195,
+      "tps_change_percent": -1.468835304894811,
+      "stock_ttft_seconds": 6.4482551532564685,
+      "candidate_ttft_seconds": 6.7651360797462985,
+      "ttft_change_ms": 316.88092648983,
+      "ttft_change_percent": 4.914211968330684
+    },
+    {
+      "case": "c16-short",
+      "stock_tps": 80.6426176718177,
+      "candidate_tps": 81.322337059355,
+      "tps_change_percent": 0.8428786256709397,
+      "stock_ttft_seconds": 2.0792305469949497,
+      "candidate_ttft_seconds": 2.211434171986184,
+      "ttft_change_ms": 132.2036249912344,
+      "ttft_change_percent": 6.3582956292318915
+    },
+    {
+      "case": "c16-long",
+      "stock_tps": 37.15818225484926,
+      "candidate_tps": 36.4045938330638,
+      "tps_change_percent": -2.02805513094525,
+      "stock_ttft_seconds": 11.153408779748133,
+      "candidate_ttft_seconds": 11.672427395766135,
+      "ttft_change_ms": 519.0186160180019,
+      "ttft_change_percent": 4.653452825654636
+    }
+  ]
+}

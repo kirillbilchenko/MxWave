@@ -1,0 +1,423 @@
+{
+  "status": "complete",
+  "rows": [
+    {
+      "tokens": 1,
+      "arm": "current",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 278.753,
+      "first_to_last_GPU_event_span_us": 281.72900390625,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 4.896
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 1.024
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<int>, std::array<char*, 1ul> >(int, at::native::FillFunctor<int>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.768
+        },
+        {
+          "category": "kernel",
+          "name": "void mxwave_grouped_aligned::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "calls": 2,
+          "duration_sum_us": 269.505
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, true, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+          "calls": 1,
+          "duration_sum_us": 1.184
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_sum_vec_kernel<c10::BFloat16, int, 8, false>(c10::BFloat16*, c10::BFloat16 const*, long, int, long, long, int const*, int const*, long, long)",
+          "calls": 1,
+          "duration_sum_us": 1.376
+        }
+      ],
+      "trace_sha256": "9bc95e2972ba6e9af8b3eb95e4f57eec0873acbc7bdf71732bc6a04b23234ed8",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 1,
+      "arm": "native",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 1084.291,
+      "first_to_last_GPU_event_span_us": 1087.203125,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "mxwave_grouped_aligned::mxwave_decode_moe_scales(mxwave_grouped_aligned::MxWaveMoeScales const*, int4*, int)",
+          "calls": 2,
+          "duration_sum_us": 772.1310000000001
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.608
+        },
+        {
+          "category": "kernel",
+          "name": "route_assign_decode_kernel",
+          "calls": 1,
+          "duration_sum_us": 1.856
+        },
+        {
+          "category": "kernel",
+          "name": "_mxfp8_q0_route_direct_kernel",
+          "calls": 1,
+          "duration_sum_us": 1.632
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc1_act_q1CuteDslSm120MoeMxfp8Mxfp4Fc1ActQ1_object_at__Tiled_MMA_Thr_Layout_VMNK_328111_0",
+          "calls": 1,
+          "duration_sum_us": 221.568
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc2_finalizeCuteDslSm120MoeMxfp8Mxfp4Fc2Finalize_object_at__Tiled_MMA_Thr_Layout_VMNK_3_0",
+          "calls": 1,
+          "duration_sum_us": 86.496
+        }
+      ],
+      "trace_sha256": "9bc95e2972ba6e9af8b3eb95e4f57eec0873acbc7bdf71732bc6a04b23234ed8",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 8,
+      "arm": "current",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 1531.756,
+      "first_to_last_GPU_event_span_us": 1531.787841796875,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 3.52
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 0.992
+        },
+        {
+          "category": "kernel",
+          "name": "_canonicalize",
+          "calls": 1,
+          "duration_sum_us": 2.368
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<int>, std::array<char*, 1ul> >(int, at::native::FillFunctor<int>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.768
+        },
+        {
+          "category": "kernel",
+          "name": "void mxwave_grouped_aligned::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "calls": 2,
+          "duration_sum_us": 1518.38
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, true, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+          "calls": 1,
+          "duration_sum_us": 2.592
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_sum_vec_kernel<c10::BFloat16, int, 8, false>(c10::BFloat16*, c10::BFloat16 const*, long, int, long, long, int const*, int const*, long, long)",
+          "calls": 1,
+          "duration_sum_us": 3.136
+        }
+      ],
+      "trace_sha256": "0e3fba1379798f57241f100b759c64dcba52b84c24a6c88956316d7b1a99752f",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 8,
+      "arm": "native",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 2401.459,
+      "first_to_last_GPU_event_span_us": 2401.394775390625,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "mxwave_grouped_aligned::mxwave_decode_moe_scales(mxwave_grouped_aligned::MxWaveMoeScales const*, int4*, int)",
+          "calls": 2,
+          "duration_sum_us": 706.758
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.992
+        },
+        {
+          "category": "kernel",
+          "name": "route_assign_decode_kernel",
+          "calls": 1,
+          "duration_sum_us": 2.208
+        },
+        {
+          "category": "kernel",
+          "name": "_mxfp8_q0_route_direct_kernel",
+          "calls": 1,
+          "duration_sum_us": 1.888
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc1_act_q1CuteDslSm120MoeMxfp8Mxfp4Fc1ActQ1_object_at__Tiled_MMA_Thr_Layout_VMNK_328111_0",
+          "calls": 1,
+          "duration_sum_us": 1159.369
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc2_finalizeCuteDslSm120MoeMxfp8Mxfp4Fc2Finalize_object_at__Tiled_MMA_Thr_Layout_VMNK_3_0",
+          "calls": 1,
+          "duration_sum_us": 530.244
+        }
+      ],
+      "trace_sha256": "0e3fba1379798f57241f100b759c64dcba52b84c24a6c88956316d7b1a99752f",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 16,
+      "arm": "current",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 2307.891,
+      "first_to_last_GPU_event_span_us": 2307.89111328125,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 3.36
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 0.96
+        },
+        {
+          "category": "kernel",
+          "name": "_canonicalize",
+          "calls": 1,
+          "duration_sum_us": 2.432
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<int>, std::array<char*, 1ul> >(int, at::native::FillFunctor<int>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.736
+        },
+        {
+          "category": "kernel",
+          "name": "void mxwave_grouped_aligned::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "calls": 2,
+          "duration_sum_us": 2291.635
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, true, false>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+          "calls": 1,
+          "duration_sum_us": 3.488
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_sum_vec_kernel<c10::BFloat16, int, 8, false>(c10::BFloat16*, c10::BFloat16 const*, long, int, long, long, int const*, int const*, long, long)",
+          "calls": 1,
+          "duration_sum_us": 5.28
+        }
+      ],
+      "trace_sha256": "d4e03c7bb864833f950c1de3295f8e3f919753e4156ba24be2c9349d4c22902a",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 16,
+      "arm": "native",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 3500.652,
+      "first_to_last_GPU_event_span_us": 3500.652099609375,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "mxwave_grouped_aligned::mxwave_decode_moe_scales(mxwave_grouped_aligned::MxWaveMoeScales const*, int4*, int)",
+          "calls": 2,
+          "duration_sum_us": 727.389
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.96
+        },
+        {
+          "category": "kernel",
+          "name": "route_assign_decode_kernel",
+          "calls": 1,
+          "duration_sum_us": 2.208
+        },
+        {
+          "category": "kernel",
+          "name": "_mxfp8_q0_route_direct_kernel",
+          "calls": 1,
+          "duration_sum_us": 3.68
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc1_act_q1CuteDslSm120MoeMxfp8Mxfp4Fc1ActQ1_object_at__Tiled_MMA_Thr_Layout_VMNK_328111_0",
+          "calls": 1,
+          "duration_sum_us": 1872.949
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc2_finalizeCuteDslSm120MoeMxfp8Mxfp4Fc2Finalize_object_at__Tiled_MMA_Thr_Layout_VMNK_3_0",
+          "calls": 1,
+          "duration_sum_us": 893.466
+        }
+      ],
+      "trace_sha256": "d4e03c7bb864833f950c1de3295f8e3f919753e4156ba24be2c9349d4c22902a",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 256,
+      "arm": "current",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 6265.477,
+      "first_to_last_GPU_event_span_us": 6265.47705078125,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_align_block_size_kernel<int>(int const*, int*, int*, int*, int*, int, int, int, int, unsigned long, int*, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 4.48
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::count_and_sort_expert_tokens_kernel<int>(int const*, int*, int*, int*, unsigned long, int, int, int, bool)",
+          "calls": 1,
+          "duration_sum_us": 1.536
+        },
+        {
+          "category": "kernel",
+          "name": "_canonicalize",
+          "calls": 1,
+          "duration_sum_us": 3.552
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<int>, std::array<char*, 1ul> >(int, at::native::FillFunctor<int>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 0.768
+        },
+        {
+          "category": "kernel",
+          "name": "void mxwave_grouped_aligned::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "calls": 2,
+          "duration_sum_us": 6147.3330000000005
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, true, true>(c10::BFloat16*, c10::BFloat16 const*, int, float, float, float)",
+          "calls": 1,
+          "duration_sum_us": 37.12
+        },
+        {
+          "category": "kernel",
+          "name": "void vllm::moe::moe_sum_vec_kernel<c10::BFloat16, int, 8, false>(c10::BFloat16*, c10::BFloat16 const*, long, int, long, long, int const*, int const*, long, long)",
+          "calls": 1,
+          "duration_sum_us": 70.688
+        }
+      ],
+      "trace_sha256": "71f0e95dfd210fe933a46e59492fb4ac558076feb5d9b921761f26de89ef41e7",
+      "unassigned_GPU_events": 0
+    },
+    {
+      "tokens": 256,
+      "arm": "native",
+      "graph_launches": 1,
+      "kernel_duration_sum_us": 7536.397,
+      "first_to_last_GPU_event_span_us": 7536.620849609375,
+      "groups": [
+        {
+          "category": "kernel",
+          "name": "mxwave_grouped_aligned::mxwave_decode_moe_scales(mxwave_grouped_aligned::MxWaveMoeScales const*, int4*, int)",
+          "calls": 2,
+          "duration_sum_us": 763.717
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)",
+          "calls": 1,
+          "duration_sum_us": 9.216
+        },
+        {
+          "category": "kernel",
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<int>, std::array<char*, 1ul> >(int, at::native::FillFunctor<int>, std::array<char*, 1ul>)",
+          "calls": 2,
+          "duration_sum_us": 1.76
+        },
+        {
+          "category": "kernel",
+          "name": "count_routes_kernel",
+          "calls": 1,
+          "duration_sum_us": 1.6
+        },
+        {
+          "category": "kernel",
+          "name": "prefix_cursor_kernel",
+          "calls": 1,
+          "duration_sum_us": 0.896
+        },
+        {
+          "category": "kernel",
+          "name": "route_assign_kernel",
+          "calls": 1,
+          "duration_sum_us": 3.168
+        },
+        {
+          "category": "kernel",
+          "name": "_mxfp8_q0_route_direct_kernel",
+          "calls": 1,
+          "duration_sum_us": 67.809
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc1_act_q1CuteDslSm120MoeMxfp8Mxfp4Fc1ActQ1_object_at__Tiled_MMA_Thr_Layout_VMNK_328111_0",
+          "calls": 1,
+          "duration_sum_us": 4606.3
+        },
+        {
+          "category": "kernel",
+          "name": "kernel_cutlass_kernel_mxwave_flashinfer_probefused_moecute_dslblackwell_sm12xkernel_moe_mxfp8_mxfp4_fc2_finalizeCuteDslSm120MoeMxfp8Mxfp4Fc2Finalize_object_at__Tiled_MMA_Thr_Layout_VMNK_3_0",
+          "calls": 1,
+          "duration_sum_us": 2081.931
+        }
+      ],
+      "trace_sha256": "71f0e95dfd210fe933a46e59492fb4ac558076feb5d9b921761f26de89ef41e7",
+      "unassigned_GPU_events": 0
+    }
+  ],
+  "source_sha256": "e5e011a27d89a5518cab34250f6fab8653e43b3049c348290a59b2f5845dc1d6",
+  "report_sha256": "648e4af1d30151340a0ae2483834f0e4a063d3194b5ecc49edbe2bb1be9f6dfa",
+  "limits": [
+    "One profiled graph replay per arm/shape; speed comes from the separate unprofiled trials.",
+    "Kernel sums and GPU spans are component diagnostics, not model latency or throughput."
+  ]
+}

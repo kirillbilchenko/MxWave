@@ -1,0 +1,94 @@
+"""Start the authorized full benchmark only after speed evidence is retained."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+PARENT = ROOT.parent / "kda-mxfp8-speed-v1"
+
+
+def save(phase, **details):
+    """Publish queue status atomically without editing the parent experiment."""
+    path = ROOT / "queue.json"
+    value = {"phase": phase, "pid": os.getpid(), "updated_epoch": time.time(), **details}
+    temporary = path.with_suffix(".incomplete")
+    temporary.write_text(json.dumps(value, indent=2) + "\n")
+    temporary.replace(path)
+
+
+def run(name, *args):
+    """Retain a subprocess log and preserve its nonzero exit status."""
+    with (ROOT / (name.removesuffix(".py") + "-queue.log")).open("xb") as output:
+        subprocess.run(
+            ["python3", "-S", "-B", "-u", str(ROOT / name), *args],
+            stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, check=True,
+        )
+
+
+def main():
+    """Wait for restoration, run both full arms, then retain all raw evidence."""
+    assert not (ROOT / "queue.json").exists()
+    for name, digest in json.loads((ROOT / "source-manifest.json").read_bytes()).items():
+        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+    deadline = time.time() + 4 * 3600
+    try:
+        save("waiting_for_speed")
+        while True:
+            parent = json.loads((PARENT / "controller.json").read_bytes())
+            if parent["phase"] in ("failed_restored", "preparation_failed"):
+                raise RuntimeError("Speed attempt failed; preserve it before starting quality")
+            if parent["phase"] == "complete_restored":
+                assert not parent["service_paused"] and len(parent["measurements"]) == 9
+                if (PARENT / "postprocess-complete.json").exists():
+                    receipt = json.loads((PARENT / "postprocess-complete.json").read_bytes())
+                    assert receipt["controller_phase"] == "complete_restored"
+                    break
+            assert time.time() < deadline, "Speed-wait deadline exceeded"
+            time.sleep(15)
+        save("preparing", parent_phase=parent["phase"])
+        run("prepare.py")
+        save("running_full_gsm8k")
+        try:
+            run("control.py")
+        finally:
+            if (ROOT / "controller.json").exists():
+                # The controller and independent watchdog own restoration.
+                restoration_deadline = time.time() + 1500
+                while True:
+                    state = json.loads((ROOT / "controller.json").read_bytes())
+                    if state["phase"] in (
+                        "complete_restored", "failed_restored", "preparation_failed",
+                    ):
+                        break
+                    assert time.time() < restoration_deadline, "Restoration is still pending"
+                    time.sleep(5)
+                assert not state["service_paused"]
+                if state["phase"] != "preparation_failed":
+                    save("retaining", controller_phase=state["phase"])
+                    try:
+                        if state["phase"] == "complete_restored":
+                            run("analyze.py", "--root", str(ROOT),
+                                "--output", str(ROOT / "spark-review.json"))
+                    finally:
+                        run("finalize.py")
+                    marker = {
+                        "status": "complete", "controller_phase": state["phase"],
+                        "epoch": time.time(),
+                    }
+                    (ROOT / "postprocess-complete.json").write_text(
+                        json.dumps(marker) + "\n"
+                    )
+        save("complete", controller_phase=state["phase"])
+    except BaseException as exc:
+        save("failed", error=repr(exc))
+        raise
+
+
+if __name__ == "__main__":
+    main()

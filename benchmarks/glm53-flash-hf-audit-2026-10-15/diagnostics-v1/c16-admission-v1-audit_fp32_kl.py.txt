@@ -1,0 +1,133 @@
+"""Audit retained FP32 arithmetic and per-row KL without another GPU experiment."""
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+BASE = Path(__file__).parent
+OLD = Path('/private/tmp/mxwave-warmed-model-v1')
+NEW = Path('/private/tmp/mxwave-fp32-input-model-v1')
+NATIVE = Path('/private/tmp/mxwave-fp32-split-v1')
+
+
+def sha(p):
+    with p.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    roots = (OLD, NEW, NATIVE)
+    proofs = [json.loads((p / 'cross-host-verification.json').read_bytes()) for p in roots]
+    assert all(p['status'] == 'passed' for p in proofs)
+    inventories = [
+        {r['path']: r for r in json.loads((p / 'evidence' / ('inventory.json' if p == NATIVE else 'evidence-inventory.json')).read_bytes())['files']}
+        for p in roots
+    ]
+    checked = {}
+
+    def bound(i, rel):
+        p = roots[i] / 'evidence' / rel
+        row = inventories[i][rel]
+        digest = sha(p)
+        assert digest == row['sha256'] and p.stat().st_size == row['bytes']
+        checked[f'{i}:{rel}'] = digest
+        return p
+
+    sys.path.insert(0, str(NEW / 'evidence/source'))
+    bound(1, 'source/decode_quality.py')
+    from decode_quality import compare
+
+    summary = []
+    for count in (1, 8, 16):
+        comparisons = []
+        metadata = []
+        for i in (0, 1):
+            pair = [json.loads(bound(i, f'results/{arm}-c{count}-r0-decode-quality.json').read_bytes())
+                    for arm in ('control', 'candidate')]
+            metadata.append(pair)
+            for d in pair:
+                for context in d['contexts']:
+                    for step in context['steps']:
+                        assert sha(bound(i, 'results/' + step['file'])) == step['sha256']
+            comparisons.append(compare(*pair, roots[i] / 'evidence/results'))
+        for old, new in zip(metadata[0][0]['contexts'], metadata[1][0]['contexts'], strict=True):
+            assert old['prompt_sha256'] == new['prompt_sha256'] and old['token_ids'] == new['token_ids']
+            assert all(a['sha256'] == b['sha256'] for a, b in zip(old['steps'], new['steps'], strict=True))
+        rows = []
+        for a, b in zip(comparisons[0]['steps'], comparisons[1]['steps'], strict=True):
+            assert (a['index'], a['position'], a['kind']) == (b['index'], b['position'], b['kind'])
+            if a['kind'] != 'decode':
+                continue
+            rows.append({'context': a['index'], 'position': a['position'],
+                         'qualified_KL': a['kl'], 'FP32_KL': b['kl'],
+                         'FP32_minus_qualified_KL': b['kl'] - a['kl']})
+        assert len(rows) == 48
+        total = sum(r['FP32_KL'] for r in rows)
+        largest = max(rows, key=lambda r: r['FP32_KL'])
+        summary.append({'concurrency': count,
+            'qualified_mean_decode_KL': comparisons[0]['mean_decode_kl'],
+            'FP32_mean_decode_KL': comparisons[1]['mean_decode_kl'],
+            'reference_rows_bitwise_equal': True,
+            'decode_rows': len(rows),
+            'rows_with_higher_FP32_KL': sum(r['FP32_KL'] > r['qualified_KL'] for r in rows),
+            'largest_FP32_KL_row': largest,
+            'largest_row_share_of_total_FP32_KL': largest['FP32_KL'] / total,
+            'rows': rows})
+
+    builder_path = bound(1, 'source/build_bf16_fp32_split.py')
+    spec = importlib.util.spec_from_file_location('audited_fp32_builder', builder_path)
+    builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(builder)
+    prefix = 'native-inputs/fp32-split-v1-native/build/'
+    build = json.loads(bound(2, prefix + 'native-build.json').read_bytes())
+    adaptation = []
+    for filename, patcher in [('L_Kernel.cuh', builder.patch_kernel), ('L_API.cu', builder.patch_api)]:
+        original = bound(2, prefix + 'control/' + filename)
+        candidate = bound(2, prefix + 'fp32/' + filename)
+        assert patcher(original.read_bytes()) == candidate.read_bytes()
+        assert sha(original) == builder.SOURCE_SHA[filename]
+        for arm, p in [('control', original), ('fp32', candidate)]:
+            manifest = next(r for r in build['arms'] if r['arm'] == arm)
+            assert manifest['source_sha256'][filename] == sha(p)
+        adaptation.append({'file': filename, 'original_sha256': sha(original),
+                           'FP32_sha256': sha(candidate), 'exact_declared_patch_reproduced': True})
+    kernel = (NATIVE / 'evidence' / prefix / 'fp32/L_Kernel.cuh').read_text()
+    reducer = builder.REDUCER
+    assert 'BatchID * (M_Global * N_Global)' in kernel
+    assert 'partial[split * count + index]' in reducer
+    assert 'value += partial' in reducer and '__float2bfloat16_rn(value)' in reducer
+    result = {
+        'status': 'complete', 'source_sha256': sha(Path(__file__)),
+        'new_GPU_experiment': False, 'runtime_changed': False,
+        'archive_sha256': [p['archive_sha256'] for p in proofs],
+        'checked_files': len(checked), 'verified_inputs': checked,
+        'arithmetic_patch': adaptation, 'numerical': summary,
+        'findings': [
+            'The qualified fused kernel also accumulates MMA results in FP32; its final store rounds to BF16.',
+            'The experimental route changes split-K from one to two and stores each split accumulator in FP32.',
+            'The separate reducer adds the two FP32 partials and rounds once to BF16. The MMA loop itself is unchanged.',
+            'The producer split stride and reducer split stride agree in the retained source.',
+            'FP32 partials avoid BF16 partial-store loss, but split-K still changes the accumulation grouping.',
+            'The tested restoration is the complete qualified route, which retains compressed weights and memory savings.',
+            'Changing only the physical-16 route would need fresh qualification: smaller admitted batches can affect later state.',
+            'Exact stock arithmetic would require matching its GEMM arithmetic or using stock GEMM on reconstructed weights.',
+        ],
+        'limits': [
+            'This source and retained-output audit does not locate the first differing model layer or prove the absence of a kernel bug.',
+            'Per-row concentration is descriptive; no row is removed and no gate is changed.',
+            'Lower error in a component does not guarantee smaller final-model KL.',
+            'Reference agreement is not a direct measure of task accuracy; no task metric is newly evaluated.',
+        ],
+    }
+    with (BASE / 'fp32-kl-audit.json').open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+    print(json.dumps({'status': result['status'], 'checked_files': len(checked),
+                      'numerical': [{k: v for k, v in r.items() if k != 'rows'} for r in summary],
+                      'arithmetic_patch': adaptation}))
+
+
+if __name__ == '__main__':
+    main()

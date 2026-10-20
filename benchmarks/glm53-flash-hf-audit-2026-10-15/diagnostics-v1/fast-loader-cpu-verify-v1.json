@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "gpu_used": false,
+  "pinned": false,
+  "reader_sha256": "c30f33fb19007efaf4563d1bfb2236762116b30d77c87ff79fb9491a92efcf26",
+  "cases": [
+    {
+      "file": "model-00001-of-00120.safetensors",
+      "tensors": 265,
+      "bytes": 3845891720,
+      "dtypes": {
+        "torch.bfloat16": 39,
+        "torch.float32": 16,
+        "torch.float8_e4m3fn": 6,
+        "torch.uint8": 204
+      },
+      "tensor_sha256_digest": "5fc3f7bb6cefcb39af1298e05dce29b8db4d8e74d60c0a2fe2e568cffc40812d"
+    },
+    {
+      "file": "model-00061-of-00120.safetensors",
+      "tensors": 640,
+      "bytes": 1426063360,
+      "dtypes": {
+        "torch.uint8": 640
+      },
+      "tensor_sha256_digest": "5b39631e871f57de81ad8901096361a93ad0ae50eaf9bb48f9c870d71977319b"
+    },
+    {
+      "file": "model-00120-of-00120.safetensors",
+      "tensors": 696,
+      "bytes": 2153008768,
+      "dtypes": {
+        "torch.uint8": 327,
+        "torch.float32": 3,
+        "torch.bfloat16": 363,
+        "torch.float8_e4m3fn": 3
+      },
+      "tensor_sha256_digest": "70a3d4f957d112027aac43b7f6256e47c2fe67e3dc4de6be6dc2c2023d074ca5"
+    }
+  ],
+  "limits": [
+    "Three full representative shards, not all 120 files.",
+    "CPU slab bytes and ordering; not a measured pinned H2D or model startup speedup.",
+    "The existing production reader is used read-only; its implementation is not copied."
+  ],
+  "seconds": 9.730533661000663,
+  "peak_rss_bytes": 6042107904,
+  "tensors": 1601,
+  "eager_tensors": 1576,
+  "passthrough_tensors": 25
+}

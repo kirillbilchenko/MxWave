@@ -1,0 +1,82 @@
+"""Freeze both GPU component sources without changing the running model."""
+from __future__ import annotations
+import hashlib,json,pathlib,shutil,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='stable-warmup-v1'
+sys.path.insert(0,str(ROOT/'full-latencyprobev1-src'))
+import full_model_control as c
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+ receipt=ROOT/(DIR+'-preparation.json');assert not receipt.exists()
+ state=dict(status='running',service_paused=False,GPU_controller_launched=False,started_epoch=time.time())
+ c.write(receipt,state)
+ try:
+  archive=ROOT/(DIR+'-source-only.tar.gz');wanted=sys.argv[1];assert sha(archive)==wanted
+  parent=json.loads((ROOT/'latency-probe-v1-prepared.json').read_bytes())
+  assert [c.preflight(rank,ROOT/'full-latencyprobev1-src') for rank in (0,1)]==parent['bindings']
+  previous=json.loads((ROOT/'latency-probe-v1-evidence-check.json').read_bytes())
+  assert previous['status']=='complete' and previous['restored_health']==200
+  assert json.loads((ROOT/'quality-model-controller-latencyprobev1.json').read_bytes())['phase']=='complete'
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+  assert c.health(8000) and all(v['State']['Running'] for v in originals)
+  identities=[c.identity(v) for v in originals];assert identities==parent['originals']
+  subprocess.run(['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=8','-i','/home/kirya/.ssh/id_glm_cluster',str(archive),'kirya@192.168.192.2:'+str(archive)],check=True,timeout=120)
+  setup=r'''import hashlib,json,pathlib,shutil,sys,tarfile
+r=pathlib.Path(sys.argv[1]);a=r/'stable-warmup-v1-source-only.tar.gz';assert hashlib.sha256(a.read_bytes()).hexdigest()==sys.argv[2]
+assert shutil.disk_usage(r).free>=4*1024**3
+o=r/'stable-warmup-v1-overlay';o.mkdir()
+with tarfile.open(a) as tf:
+ seen=set();size=0
+ for m in tf.getmembers():
+  p=pathlib.PurePosixPath(m.name);assert m.isfile() and not p.is_absolute() and '..' not in p.parts and m.name not in seen
+  seen.add(m.name);size+=m.size
+ assert size<8*1024**2
+ tf.extractall(o,filter='data')
+for row in json.loads((o/'inventory.json').read_bytes())['files']:
+ p=o/row['path'];assert p.stat().st_size==row['bytes'] and hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256']
+plan=json.loads((o/'plan.json').read_bytes());parent=json.loads((r/'latency-probe-v1-prepared.json').read_bytes())
+assert plan['parent_source_sha256']==parent['bindings'][0]['code']
+proof=json.loads((o/'parent-cross-host-verification.json').read_bytes())
+assert proof['status']=='passed' and proof['all_decisions_identical'] and proof['original_service_restored']
+assert proof['archive_sha256']==plan['parent_evidence_archive_sha256']
+proof_target=r/'latency-probe-v1-cross-host-verification.json'
+if proof_target.exists():assert proof_target.read_bytes()==(o/'parent-cross-host-verification.json').read_bytes()
+else:shutil.copyfile(o/'parent-cross-host-verification.json',proof_target)
+code=r/'stable-warmup-v1-src';shutil.copytree(r/'full-latencyprobev1-src',code,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+for p in (o/'src').glob('*.py'):
+ assert not (code/p.name).exists();assert hashlib.sha256(p.read_bytes()).hexdigest()==plan['source_sha256'][p.name]
+ compile(p.read_text(),p.name,'exec');shutil.copyfile(p,code/p.name)
+print('assembled')
+'''
+  for rank in (0,1):assert c.run(rank,['python3','-S','-c',setup,str(ROOT),wanted],timeout=120).strip()=='assembled'
+  code=ROOT/(DIR+'-src');sys.path.insert(0,str(code))
+  from benchmark_stable_warmup import protocol
+  plan=json.loads((ROOT/(DIR+'-overlay')/'plan.json').read_bytes())
+  assert plan['protocol']==protocol()
+  checks=json.loads((ROOT/(DIR+'-overlay')/'local-checks.json').read_bytes())
+  assert checks['ruff_passed'] and checks['mypy_passed'] and checks['pytest_passed']
+  assert checks['source_sha256']==plan['source_sha256']
+  bindings=[c.preflight(rank,code) for rank in (0,1)]
+  assert bindings[0]==bindings[1] and len(bindings[0]['code'])==plan['expected_source_files']==203
+  assert all(bindings[0]['code'][n]==v for n,v in parent['bindings'][0]['code'].items())
+  assert all(bindings[0]['code'][n]==v for n,v in plan['source_sha256'].items())
+  state['CPU_describe_checks']=[]
+  for rank in (0,1):
+   argv=['docker','run','--rm','--network','none','--cpus','1','--memory','256m','--memory-swap','256m','--pids-limit','128','-v',str(code)+':/src:ro','-e','PYTHONPATH=/src','-e','PYTHONDONTWRITEBYTECODE=1','--entrypoint','/usr/bin/python3',c.IMAGE,'-S','-u','/src/benchmark_stable_warmup.py','--describe']
+   descriptor=json.loads(c.run(rank,argv,timeout=60));assert descriptor==protocol()
+   state['CPU_describe_checks'].append({'rank':rank,'passed':True,'GPU_used':False})
+  prepared=dict(status='prepared',bindings=bindings,protocol=protocol(),source_archive_sha256=wanted,
+   parent_revision='latencyprobev1',parent_prepared_sha256=sha(ROOT/'latency-probe-v1-prepared.json'),
+   parent_proof_sha256=sha(ROOT/'latency-probe-v1-cross-host-verification.json'),
+   originals=identities,all_parent_sources_unchanged=True,new_sources=sorted(plan['source_sha256']),
+   GPU_controller_launched=False,prepared_epoch=time.time())
+  target=ROOT/(DIR+'-prepared.json');c.write(target,prepared)
+  c.run(1,['python3','-S','-c','import pathlib,sys;p=pathlib.Path(sys.argv[1]);assert not p.exists();p.write_text(sys.argv[2])',str(target),target.read_text()])
+  state.update(status='passed',source_files=203,prepared_sha256=sha(target),plan_sha256=sha(ROOT/(DIR+'-overlay')/'plan.json'),original_health=200,finished_epoch=time.time())
+  c.write(receipt,state);print(json.dumps(state))
+ except BaseException as exc:
+  state.update(status='failed',error=repr(exc),finished_epoch=time.time());c.write(receipt,state);raise
+if __name__=='__main__':main()

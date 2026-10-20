@@ -1,0 +1,18 @@
+"""Own one retention attempt after the already-running collector becomes terminal."""
+import json,os,pathlib,shlex,subprocess,sys,time
+b=pathlib.Path(__file__).parent;r='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1';statepath=b/'retainer-state.json';assert not statepath.exists()
+state={'phase':'waiting_for_collector','pid':os.getpid(),'started_epoch':time.time()}
+def save():statepath.write_text(json.dumps(state,indent=2)+'\n')
+save()
+try:
+ deadline=time.monotonic()+1200
+ while time.monotonic()<deadline:
+  status=json.loads(subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['cat',r+'/fp32-speed-v1-evidence-check.json'])],text=True,timeout=30))
+  if status['status']=='complete':break
+  if status['status']=='failed':raise RuntimeError(status)
+  time.sleep(10)
+ else:raise TimeoutError('Collector not terminal within retention observation bound')
+ state.update(phase='retaining',collector=status);save()
+ with (b/'retention.log').open('xb') as f:subprocess.run([sys.executable,'-B',str(b/'retain_and_review.py')],stdout=f,stderr=subprocess.STDOUT,check=True,timeout=600)
+ state.update(phase='complete',finished_epoch=time.time());save();print((b/'cross-host-verification.json').read_text())
+except BaseException as exc:state.update(phase='failed',error=repr(exc),finished_epoch=time.time());save();raise

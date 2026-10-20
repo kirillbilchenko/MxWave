@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "archive_payloads_verified": 15,
+  "archive": {
+    "status": "complete",
+    "payloads": 15,
+    "bytes": 3502373,
+    "sha256": "83a197b9adb3eea005dedf365532250ad127651d05c1d4854b28b8158d6ba141"
+  },
+  "full_scale_bytes_scanned": 19025362944,
+  "target_scale_tensors": 36288,
+  "sample_roundtrips_verified_by_auditor": 1008,
+  "independent_recomputation": [
+    "inventory byte sums and exact scale coverage",
+    "global entropy from retained histogram",
+    "layer histogram reconciliation",
+    "weighted reduction of recorded per-tensor entropies",
+    "all layout byte counts and sample aggregate sizes"
+  ],
+  "limitations": [
+    "No second full raw-source read performed on Mac",
+    "Per-tensor entropy recomputed as weighted reduction, not from per-tensor histograms",
+    "CPU encodings describe original source layout; post-Marlin layout and GPU kernel remain unqualified"
+  ],
+  "global_entropy_bits_per_byte": 3.7725162720819205,
+  "weighted_tensor_entropy_bits_per_byte": 3.3586758201888394,
+  "scale_bits_histogram": {
+    "5": 35718,
+    "6": 569,
+    "7": 1
+  },
+  "tensor_distinct_range": [
+    22,
+    67
+  ],
+  "global_distinct": 78,
+  "groups_bytes": {
+    "expert_auxiliary": 290304,
+    "head": 1268776960,
+    "extra_model_layer": 14865185408,
+    "expert_scales": 19025362944,
+    "expert_weights": 152202903552,
+    "embedding": 1268776960,
+    "other": 1988554240,
+    "projection_scales_or_auxiliary": 172838984,
+    "projection_weights": 6998720512
+  },
+  "layouts": [
+    {
+      "layout": "fixed_index",
+      "stored_bytes_TP2": 11929281199,
+      "saved_GiB_per_rank_estimate": 3.3043705602176487,
+      "scale_byte_reduction_percent": 37.29800985078122,
+      "expert_weight_and_scale_byte_reduction_percent": 4.144223316753469
+    },
+    {
+      "layout": "palette4_escape32",
+      "stored_bytes_TP2": 12041307456,
+      "saved_GiB_per_rank_estimate": 3.252204269170761,
+      "scale_byte_reduction_percent": 36.709183990639985,
+      "expert_weight_and_scale_byte_reduction_percent": 4.078798221182221
+    },
+    {
+      "layout": "palette2_escape32",
+      "stored_bytes_TP2": 16260706881,
+      "saved_GiB_per_rank_estimate": 1.2873933012597263,
+      "scale_byte_reduction_percent": 14.531423506282625,
+      "expert_weight_and_scale_byte_reduction_percent": 1.6146026118091805
+    },
+    {
+      "layout": "five_bit_or_raw_with_TP_metadata_estimate",
+      "stored_bytes_TP2": 12006365568,
+      "saved_GiB_per_rank_estimate": 3.268475353717804,
+      "scale_byte_reduction_percent": 36.89284349875475,
+      "expert_weight_and_scale_byte_reduction_percent": 4.099204833194973
+    }
+  ],
+  "sample_zlib_ratios": {
+    "1": 0.517651189571966,
+    "6": 0.4962925986638145
+  },
+  "duration_seconds": 45.15372157096863,
+  "maximum_RSS_MiB": 417.765625,
+  "service_unchanged": true
+}

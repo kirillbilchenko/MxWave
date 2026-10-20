@@ -1,0 +1,14 @@
+import hashlib,json,pathlib,shlex,subprocess
+B=pathlib.Path(__file__).parent;R='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+ssh=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark']
+files={'source.tar.gz':'fp32-speed-v1-source.tar.gz','prepare.py':'prepare-fp32-speed-v1.py','verify.py':'verify-fp32-speed-v1.py','collect.py':'collect-fp32-speed-v1.py','cpu-protocol-check.py':'fp32-speed-v1-cpu-protocol-check.py','cpu-protocol-check.json':'fp32-speed-v1-cpu-protocol-check.json','reclaim_duplicate.py':'fp32-speed-v1-reclaim-duplicate.py'}
+for name,dest in files.items():
+ data=(B/name).read_bytes();code='import hashlib,pathlib,sys;p=pathlib.Path(sys.argv[1]);data=sys.stdin.buffer.read();assert hashlib.sha256(data).hexdigest()==sys.argv[2];p.open("xb").write(data)'
+ subprocess.run([*ssh,shlex.join(['python3','-S','-c',code,R+'/'+dest,hashlib.sha256(data).hexdigest()])],input=data,check=True,timeout=60)
+remote=['scp','-q','-o','BatchMode=yes','-o','ConnectTimeout=8','-i','/home/kirya/.ssh/id_glm_cluster',R+'/fp32-speed-v1-source.tar.gz','kirya@192.168.192.2:'+R+'/fp32-speed-v1-source.tar.gz']
+subprocess.run([*ssh,shlex.join(remote)],check=True,timeout=60)
+sha=json.loads((B/'freeze.json').read_bytes())['archive_sha256']
+result=subprocess.run([*ssh,shlex.join(['python3','-S',R+'/prepare-fp32-speed-v1.py',sha])],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=400)
+(B/'preparation.log').write_bytes(result.stdout);print(result.stdout.decode());result.check_returncode()
+for name in ['prepared.json','preparation.json']:
+ data=subprocess.check_output([*ssh,shlex.join(['cat',R+'/fp32-speed-v1-'+name])],timeout=30);(B/name).write_bytes(data)

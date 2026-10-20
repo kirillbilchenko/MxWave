@@ -1,0 +1,108 @@
+"""Relocate explicit completed evidence with verified copies; retain model inputs and protocols."""
+from __future__ import annotations
+import fcntl,hashlib,json,os,pathlib,shutil,subprocess,sys,time
+
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+sys.path.insert(0,str(ROOT/'fp32-input-v1-src'))
+import full_model_control as c
+
+RUNS=['run-repeatpolicyv1','run-warmedmodelv1','run-output16qualv1','run-c816retryv2',
+      'run-output16v1','run-c8tracev2','run-c816v1','run-cohortdispatchv2',
+      'run-sparsequalv2','run-decodestatev2']
+EXTRACTIONS=['warmed-model-v1-recovery-v2-evidence','warmed-model-v1-evidence',
+             'evidence-kda-memory-v1','evidence-dense-output-v1','evidence-fp32-input-v1']
+INVENTORY='''import hashlib,json,pathlib,sys
+b=pathlib.Path(sys.argv[1]);rows=[]
+assert b.is_dir() and not b.is_symlink()
+for p in sorted(b.rglob('*')):
+ assert not p.is_symlink() and (p.is_file() or p.is_dir()),p
+ if p.is_file() and (sys.argv[2]=='all' or (('traces' in p.relative_to(b).parts or p.relative_to(b).parts[0]=='results') and str(p).endswith(('.f32','.bin','.json.gz','.pt.trace.json')))):
+  with p.open('rb') as f:h=hashlib.file_digest(f,'sha256').hexdigest()
+  rows.append({'path':str(p.relative_to(b)),'bytes':p.stat().st_size,'sha256':h})
+print(json.dumps(rows))
+'''
+
+def inventory(base):
+    return json.loads(subprocess.check_output(['python3','-S','-c',INVENTORY,str(base),'all' if base.name in EXTRACTIONS else 'payloads'],timeout=300))
+
+def selected(name,relative):
+    return name in EXTRACTIONS or (('traces' in pathlib.PurePosixPath(relative).parts or pathlib.PurePosixPath(relative).parts[0]=='results') and relative.endswith(('.f32','.bin','.json.gz','.pt.trace.json')))
+
+def main():
+    lock=(ROOT/'diagnostics-v1/component.lock').open('a+')
+    fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    receipt=ROOT/'fp32-input-model-v1-storage-relocation-v2.json'
+    assert not receipt.exists()
+    previous=json.loads((ROOT/'fp32-input-model-v1-storage-relocation.json').read_bytes())
+    assert previous['status']=='failed' and not previous['directories']
+    original=json.loads((ROOT/'fp32-input-v1-prepared.json').read_bytes())['originals']
+    assert c.health(8000) and [c.identity(c.inspect(i,c.ORIGINAL_IDS[i])) for i in (0,1)]==original
+    current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+    assert current['active_experiment'] is None and not current['service_paused']
+    backup=ROOT/'retained-fp32-input-model-v1-v2'
+    create="import pathlib,shutil,sys;p=pathlib.Path(sys.argv[1]);assert shutil.disk_usage(p.parent).free>30*1024**3;p.mkdir()"
+    c.run(1,['python3','-S','-c',create,str(backup)])
+    state={'status':'running','pid':os.getpid(),'started_epoch':time.time(),
+           'head_free_before':shutil.disk_usage(ROOT).free,'worker_backup_root':str(backup),
+           'canonical_archives_unchanged':True,'model_files_touched':False,
+           'service_paused':False,'directories':[],'prior_failure_preserved':True}
+    c.write(receipt,state)
+    try:
+        for name in RUNS+EXTRACTIONS:
+            source=ROOT/name
+            files=inventory(source)
+            remove=[x for x in files if selected(name,x['path'])]
+            assert remove and all(os.access((source/x['path']).parent,os.W_OK) for x in remove)
+            destination=backup/name
+            state['current_directory']=name;state['phase']='copying';c.write(receipt,state)
+            manifests=ROOT/'fp32-input-model-v1-storage-manifests-v2';manifests.mkdir(exist_ok=True)
+            manifest=manifests/(name+'.json');c.write(manifest,files)
+            pack="import json,pathlib,sys,tarfile;b=pathlib.Path(sys.argv[1]);rows=json.loads(pathlib.Path(sys.argv[2]).read_bytes());t=tarfile.open(fileobj=sys.stdout.buffer,mode='w|');[(t.add(b/x['path'],arcname=x['path'],recursive=False)) for x in rows];t.close()"
+            extract="""import pathlib,sys,tarfile
+b=pathlib.Path(sys.argv[1]);b.mkdir();seen=set()
+with tarfile.open(fileobj=sys.stdin.buffer,mode='r|') as tf:
+ for m in tf:
+  p=pathlib.PurePosixPath(m.name);assert m.isfile() and not p.is_absolute() and '..' not in p.parts and m.name not in seen
+  seen.add(m.name);target=b/m.name;target.parent.mkdir(parents=True,exist_ok=True)
+  with target.open('xb') as f:
+   source=tf.extractfile(m)
+   while chunk:=source.read(1024*1024):f.write(chunk)
+"""
+            import shlex
+            producer=subprocess.Popen(['python3','-S','-c',pack,str(source),str(manifest)],stdout=subprocess.PIPE)
+            try:
+                subprocess.run([*c.SSH,shlex.join(['python3','-S','-c',extract,str(destination)])],stdin=producer.stdout,check=True,timeout=900)
+            finally:
+                producer.stdout.close()
+            assert producer.wait(timeout=30)==0
+            state['phase']='verifying';c.write(receipt,state)
+            copied=json.loads(c.run(1,['python3','-S','-c',INVENTORY,str(destination),'all'],timeout=300))
+            assert copied==files,('Backup differs',name)
+            assert inventory(source)==files,('Source changed during backup',name)
+            entry={'directory':name,'worker_backup':str(destination),'files':files,
+                   'selected_for_relocation':[x['path'] for x in remove],
+                   'relocated_bytes':sum(x['bytes'] for x in remove),
+                   'status':'copy_verified','restore':'Copy the selected relative paths from the worker backup to the original head directory.'}
+            state['directories'].append(entry);state['phase']='removing_verified_copies';c.write(receipt,state)
+            for row in remove:
+                path=source/row['path']
+                assert path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(source.resolve())
+                path.unlink()
+            remaining=inventory(source)
+            expected=[x for x in files if not selected(name,x['path'])]
+            assert remaining==expected
+            entry['status']='relocated_verified';entry['head_unselected_files_untouched']=True
+            c.write(receipt,state)
+            print(json.dumps({'directory':name,'files_relocated':len(remove),
+                              'bytes_relocated':entry['relocated_bytes'],
+                              'head_free_bytes':shutil.disk_usage(ROOT).free}),flush=True)
+        assert c.health(8000) and [c.identity(c.inspect(i,c.ORIGINAL_IDS[i])) for i in (0,1)]==original
+        state.update(status='complete',phase='complete',head_free_after=shutil.disk_usage(ROOT).free,
+                     original_health=200,finished_epoch=time.time(),
+                     relocated_bytes=sum(x['relocated_bytes'] for x in state['directories']))
+        c.write(receipt,state)
+        print(json.dumps({k:v for k,v in state.items() if k!='directories'}),flush=True)
+    except BaseException as exc:
+        state.update(status='failed',error=repr(exc),finished_epoch=time.time());c.write(receipt,state);raise
+
+if __name__=='__main__':main()

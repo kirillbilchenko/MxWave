@@ -1,0 +1,28 @@
+"""Retain descriptive complete-cell timing without treating it as independently verified."""
+from __future__ import annotations
+import json,pathlib,shlex,subprocess,time
+BASE=pathlib.Path(__file__).parent
+ROOT='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+program=r'''
+import hashlib,json,pathlib,statistics,sys,time
+r=pathlib.Path(sys.argv[1]);out={'status':'preliminary','independent_archive_verification_complete':False,'checked_epoch':time.time(),'arms':[],'summaries':[]}
+for arm in ('control','candidate'):
+ p=r/'run-c16admissionv1/results'/f'{arm}-c16-admission.json'
+ if not p.exists():continue
+ raw=p.read_bytes();d=json.loads(raw)
+ out['arms'].append({'arm':arm,'status':d['status'],'timing_groups':len(d['timing']),'report_sha256':hashlib.sha256(raw).hexdigest()})
+ for case,repeats in [('c16-short',12),('c1-short',6)]:
+  for window in (3,10):
+   rows=[t for t in d['timing'] if (t['case'],t['window_ms'])==(case,window)]
+   if len(rows)!=repeats:continue
+   assert {t['repeat'] for t in rows}==set(range(repeats))
+   out['summaries'].append({'arm':arm,'case':case,'window_ms':window,'trials':repeats,
+    'median_TPS':statistics.median(t['measurement']['aggregate_tokens_per_second'] for t in rows),
+    'median_TTFT_seconds':statistics.median(t['measurement']['median_ttft_seconds'] for t in rows),
+    'first_cohort_requests':[t['admission']['events'][0]['final_requests'] for t in rows]})
+print(json.dumps(out))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','-o','ConnectTimeout=10','spark',shlex.join(['python3','-B','-c',program,ROOT])],timeout=45)
+value=json.loads(raw)
+(BASE/f'preliminary-{int(time.time())}.json').write_bytes(raw)
+print(json.dumps(value))

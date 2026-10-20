@@ -1,0 +1,101 @@
+{
+  "status": "complete",
+  "mode": "raw",
+  "tp": 2,
+  "rank": 0,
+  "experts_resident": 16,
+  "routing_experts": 288,
+  "comparison": "Installed engine complete MoE block, identical sorted alignment",
+  "cases": [
+    {
+      "tokens": 1,
+      "concentrated": false,
+      "stock_eager_stream_graph_bits_exact": true
+    },
+    {
+      "tokens": 1,
+      "concentrated": true,
+      "stock_eager_stream_graph_bits_exact": true
+    },
+    {
+      "tokens": 64,
+      "concentrated": false,
+      "stock_eager_stream_graph_bits_exact": true
+    },
+    {
+      "tokens": 64,
+      "concentrated": true,
+      "stock_eager_stream_graph_bits_exact": true
+    },
+    {
+      "tokens": 128,
+      "concentrated": false,
+      "stock_eager_stream_graph_bits_exact": true
+    },
+    {
+      "tokens": 128,
+      "concentrated": true,
+      "stock_eager_stream_graph_bits_exact": true
+    }
+  ],
+  "allocation": {
+    "layers": [
+      {
+        "layer": "fixture.layers.23.mlp.experts",
+        "mode": "raw",
+        "scales": [
+          {
+            "name": "w13_weight_scale",
+            "shape": [
+              16,
+              128,
+              2048
+            ],
+            "raw_bytes": 4194304,
+            "retained_bytes": 4194304,
+            "compressed": false
+          },
+          {
+            "name": "w2_weight_scale",
+            "shape": [
+              16,
+              32,
+              4096
+            ],
+            "raw_bytes": 2097152,
+            "retained_bytes": 2097152,
+            "compressed": false
+          }
+        ]
+      }
+    ],
+    "layers_seen": 1,
+    "scale_raw_bytes": 6291456,
+    "scale_retained_bytes": 6291456,
+    "scratch_bytes": 163577856,
+    "scratch_streams": 13,
+    "cuda_allocated_bytes": 277989376,
+    "cuda_reserved_bytes": 364904448,
+    "cuda_peak_allocated_bytes": 288477184
+  },
+  "torch": "2.13.0+cu130",
+  "vllm": "0.1.dev20051+g487ecf187",
+  "code_sha256": {
+    "benchmark_moe.py": "b1d5e971019dbe16dd94a9f7da7f3032c86c78790071209b0ad9ce59f9d4d626",
+    "download_full_model.py": "f125808c0450dc4c7981c4b162279c69a8d6960e2069bb390ba2c24b90921c4b",
+    "benchmark_model_plugin.py": "5a9864876c18559297c2579e466531cbd99cff3e568f96fc7fe30aa2e5c2bcb4",
+    "streaming_loader.py": "0354dca0ddc7f00a322c09b28fceb28943c38e81d1d3b4fa15ae178d97442de9",
+    "model_plugin.py": "b19eff00a0cce7f6677aabfe8ec1c03a6ab859ba2d7081ac2d464d96d61eede3",
+    "checkpoint_stream.py": "032c019527c6db5d9f52f2bc34d841d4f2ee20a56a58763d4b9d5698bbcb3adb",
+    "audit_checkpoint.py": "34e81b368996dc37d222b9a6591e116c69b2ad75425f80b1a7db4829fed3e653",
+    "moe_runtime.py": "cd4a208b7d108ed6e8c97fe9a46ffe1d81e69e79bc94535e066d4368f069c844"
+  },
+  "library_sha256": {
+    "MXWAVE_MOE_RAW_LIBRARY": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+    "MXWAVE_MOE_ALIGNED_LIBRARY": "53ebb8478607104723786934c96ae7dc973a9d16ff93a2ec8c93a2a653dae658"
+  },
+  "limitations": [
+    "Integration fixture, not full-model quality or throughput.",
+    "Both fixture comparison arms intentionally remain resident."
+  ]
+}

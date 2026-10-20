@@ -1,0 +1,42 @@
+"""Verify archived bytes, independent numerical reviews and cross-diagnostic controls."""
+from __future__ import annotations
+import hashlib,json,math,sys
+from pathlib import Path
+import numpy as np
+from safetensors.numpy import load_file
+root,review,old,output=map(Path,sys.argv[1:])
+manifest=json.loads((root/'evidence-manifest.json').read_bytes())
+for row in manifest['files']:
+ p=root/row['path'];assert p.stat().st_size==row['bytes'];assert hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256'],p
+mac=json.loads((review/'mac-review-v2.json').read_bytes());spark=json.loads((review/'spark-review-v2.json').read_bytes())
+count=0;max_abs=0.;nonexact=[]
+def compare(a,b,path=''):
+ global count,max_abs
+ assert type(a) is type(b),path
+ if isinstance(a,dict):
+  assert a.keys()==b.keys(),path
+  for k in a:compare(a[k],b[k],path+'/'+k)
+ elif isinstance(a,list):
+  assert len(a)==len(b),path
+  for i,(x,y) in enumerate(zip(a,b)):compare(x,y,path+f'/{i}')
+ elif isinstance(a,(float,int)) and not isinstance(a,bool):
+  count+=1;delta=abs(a-b);max_abs=max(max_abs,delta)
+  assert math.isclose(a,b,rel_tol=1e-11,abs_tol=1e-11),(path,a,b)
+  if delta:nonexact.append({'path':path,'mac':a,'spark':b,'abs_difference':delta})
+ else:assert a==b,(path,a,b)
+compare(mac,spark);assert mac['controls_pass']
+checks=[]
+for rank in [0,1]:
+ assert not mac['ranks'][str(rank)]['runtime_weight_mismatches']
+ for arm,rows in mac['ranks'][str(rank)]['raw_argmax_sample_checks'].items():assert len(rows)==4 and all(rows)
+ for i in range(4):
+  a=old/f'head-r{rank}/frame-code_256-{i:04d}-r{rank}.safetensors'
+  b=root/f'ct-r{rank}/context-code_32-{i:04d}-r{rank}.safetensors'
+  x,y=load_file(a),load_file(b)
+  pairs={'hidden':'draft_hidden','graph_ids':'draft_ids','graph_values':'draft_values','graph_scores':'draft_scores'}
+  exact={k:np.array_equal(x[k],y[v]) for k,v in pairs.items()};assert all(exact.values())
+  checks.append({'rank':rank,'index':i,'previous_payload_sha256':hashlib.sha256(a.read_bytes()).hexdigest(),'current_payload_sha256':hashlib.sha256(b.read_bytes()).hexdigest(),'exact':exact})
+state=json.loads((root/'controller.json').read_bytes());assert state['phase']=='complete_restored' and not state['service_paused']
+assert any(m['max_model_len']==500000 for m in state['restoration']['models']['data'])
+proof={'status':'verified','payloads':len(manifest['files']),'numeric_fields_compared':count,'max_absolute_difference':max_abs,'numeric_tolerance':1e-11,'nonexact_numeric_fields':nonexact,'controls_pass':True,'runtime_weight_tensors_equal_per_rank':88,'raw_argmax_sample_checks_passed':16,'cross_diagnostic_CT_bit_checks':checks,'production_restoration_epoch':state['restoration']['epoch'],'original_production_healthy_500000_context':True,'source_sha256':{'verifier':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'mac_review':hashlib.sha256((review/'mac-review-v2.json').read_bytes()).hexdigest(),'spark_review':hashlib.sha256((review/'spark-review-v2.json').read_bytes()).hexdigest(),'manifest':hashlib.sha256((root/'evidence-manifest.json').read_bytes()).hexdigest()}}
+assert not output.exists();output.write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({k:v for k,v in proof.items() if k not in ['nonexact_numeric_fields','cross_diagnostic_CT_bit_checks','source_sha256']}))

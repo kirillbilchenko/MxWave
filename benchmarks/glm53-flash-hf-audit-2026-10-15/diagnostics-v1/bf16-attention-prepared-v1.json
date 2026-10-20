@@ -1,0 +1,174 @@
+{
+  "status": "packed_gpu_verification_pending",
+  "device": "cpu",
+  "cases": [
+    {
+      "name": "kda-input-l0-r0",
+      "rank": 0,
+      "source_tensors": [
+        {
+          "name": "model.language_model.layers.0.self_attn.q_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            4096
+          ]
+        },
+        {
+          "name": "model.language_model.layers.0.self_attn.k_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            4096
+          ]
+        },
+        {
+          "name": "model.language_model.layers.0.self_attn.v_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            4096
+          ]
+        },
+        {
+          "name": "model.language_model.layers.0.self_attn.b_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "model.language_model.layers.0.self_attn.f_a_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            128
+          ]
+        },
+        {
+          "name": "model.language_model.layers.0.self_attn.g_a_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            128
+          ]
+        }
+      ],
+      "logical_shape": [
+        12576,
+        4096
+      ],
+      "native_shape": [
+        12608,
+        4096
+      ],
+      "logical_weight_sha256": "26b5f3140aa59b6c1f90050c8fcd288ad52e9610d2cc929a8b1bb8f9d42a4af9",
+      "padded_weight_sha256": "7c70ae9cf66b2e89e7d4d2fb103bc8a82ee2b602fc50c79e59baea8c688e61b0",
+      "raw_bytes": 103022592,
+      "native_padding_rows": 32,
+      "retained_bytes": 73394904,
+      "saving_fraction": 0.28758437760913647,
+      "native_metadata": [
+        12608,
+        4096,
+        4048,
+        2464,
+        115
+      ],
+      "artifact": "kda-input-l0-r0.safetensors",
+      "artifact_sha256": "9abe983bffdd76c5298eff33887276cef9bb5bd8dbc62839fb5453f5a63e2c7a"
+    },
+    {
+      "name": "mla-input-l3-replicated",
+      "rank": "replicated",
+      "source_tensors": [
+        {
+          "name": "model.language_model.layers.3.self_attn.q_a_proj.weight",
+          "axis": 0,
+          "range": [
+            0,
+            1536
+          ]
+        },
+        {
+          "name": "model.language_model.layers.3.self_attn.kv_a_proj_with_mqa.weight",
+          "axis": 0,
+          "range": [
+            0,
+            512
+          ]
+        }
+      ],
+      "nope_rows": 0,
+      "logical_shape": [
+        2048,
+        4096
+      ],
+      "native_shape": [
+        2048,
+        4096
+      ],
+      "logical_weight_sha256": "800d897600de1db5696be5fc042d9cb59c617978fc61b2ed1bb14c43b1a25fad",
+      "padded_weight_sha256": "800d897600de1db5696be5fc042d9cb59c617978fc61b2ed1bb14c43b1a25fad",
+      "raw_bytes": 16777216,
+      "native_padding_rows": 0,
+      "retained_bytes": 11882136,
+      "saving_fraction": 0.29176950454711914,
+      "native_metadata": [
+        2048,
+        4096,
+        4048,
+        176,
+        115
+      ],
+      "artifact": "mla-input-l3-replicated.safetensors",
+      "artifact_sha256": "e79a34db850bd73a655d86337ed9656c5d111865199c8cd15330d603d1db1f1d"
+    },
+    {
+      "name": "kda-output-l0-r0",
+      "rank": 0,
+      "source_tensors": [
+        {
+          "name": "model.language_model.layers.0.self_attn.o_proj.weight",
+          "axis": 1,
+          "range": [
+            0,
+            4096
+          ]
+        }
+      ],
+      "logical_shape": [
+        4096,
+        4096
+      ],
+      "native_shape": [
+        4096,
+        4096
+      ],
+      "logical_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+      "padded_weight_sha256": "37bc1f4bf2fc18889b9b6d82c35fa4baa3f4fd7ff116db83a3e284165d7445d2",
+      "raw_bytes": 33554432,
+      "native_padding_rows": 0,
+      "retained_bytes": 23809768,
+      "saving_fraction": 0.29041361808776855,
+      "native_metadata": [
+        4096,
+        4096,
+        4032,
+        232,
+        115
+      ],
+      "artifact": "kda-output-l0-r0.safetensors",
+      "artifact_sha256": "3943d44dc1678fb0cd2db54bb6589d5b898227385676abded660f144c1541f60"
+    }
+  ],
+  "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+  "code_sha256": "6575222a0b43bffae2e9bc83b1c83f7b97d51970f7b68993f46c6634c21481d5",
+  "source_config_sha256": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198",
+  "source_index_sha256": "6d1364a27eef78675390422b1b5230601817fb7460ce816951b2cd515934c85d",
+  "scope": "Real full projection fixtures; native decode/GEMM correctness pending GPU gate",
+  "seconds": 2.33301208098419,
+  "peak_rss_bytes": 929992704
+}

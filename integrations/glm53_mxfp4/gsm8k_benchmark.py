@@ -1,0 +1,104 @@
+"""Prospective full-test GSM8K protocol, transparent answer extraction and paired summaries."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import re
+from decimal import Decimal
+from typing import Any
+
+from quality_suite import numeric_answer
+
+
+def freeze(raw: bytes, manifest: dict[str, Any]) -> dict[str, Any]:
+    """Freeze every pinned test question in source order without selecting favorable examples."""
+    digest = hashlib.sha256(raw).hexdigest()
+    if digest != manifest["files"]["gsm8k-test.jsonl"]["sha256"]:
+        raise ValueError("Pinned GSM8K source payload changed")
+    rows = [json.loads(line) for line in raw.splitlines()]
+    if len(rows) != 1319 or len({row["question"] for row in rows}) != 1319:
+        raise ValueError("Require the complete unique 1,319-question GSM8K test set")
+    cases = []
+    for index, row in enumerate(rows):
+        answer = row["answer"].rsplit("####", 1)[1].strip()
+        if numeric_answer(answer) is None:
+            raise ValueError("Non-numeric ground-truth final answer")
+        cases.append({"source_index": index, "question": row["question"], "expected": answer,
+            "prompt": row["question"] + "\nSolve the problem. End your final answer with #### "
+            "followed by the numeric answer."})
+    return {"version": 1, "dataset": "GSM8K main/test", "dataset_manifest": manifest,
+        "source_sha256": digest, "cases": cases, "questions_per_arm": 1319,
+        "arms_in_order": ["control", "candidate"], "concurrency": 4, "fewshot": 0,
+        "seed": 42, "temperature": 0, "max_tokens": 1024, "reasoning_effort": "low",
+        "capture_sizes": [1, 4], "speculative_decoding": False,
+        "primary_score": "Natural stop and final numeric answer match; last-number extraction",
+        "secondary_score": "Original strict bare-number / ####-tail instruction contract",
+        "all_questions_and_errors_counted": True, "retries": 0,
+        "qualification_attempted": False, "previous_failed_gates_preserved": True,
+        "known_reference_repeat_kl": 0.000011791085357822653,
+        "limits": ["Zero-shot chat protocol, not a published few-shot leaderboard setting.",
+            "Natural variable-length request groups; admission may differ between arms.",
+            "Reference floating-point repeatability remains unresolved; compare answer outcomes.",
+            "This benchmark cannot amend earlier strict qualification failures.",
+            "Same imported MXFP4 weights in both arms; BF16-source quantization cost unmeasured."]}
+
+
+def body(case: dict[str, Any], protocol: dict[str, Any]) -> dict[str, Any]:
+    """Build the same bounded natural-stop chat request for either model arm."""
+    return {"model": "mxwave-glm53-pilot", "temperature": protocol["temperature"],
+        "seed": protocol["seed"], "max_tokens": protocol["max_tokens"],
+        "messages": [{"role": "user", "content": case["prompt"]}],
+        "chat_template_kwargs": {"reasoning_effort": protocol["reasoning_effort"]}}
+
+
+def score(response: dict[str, Any], expected: str) -> dict[str, Any]:
+    """Score finished final text separately from the old strict output-format requirement."""
+    choice = response["choices"][0]
+    text = choice["message"].get("content") or ""
+    if not isinstance(text, str):
+        raise TypeError("Expected text response")
+    if "</think>" in text:
+        final = text.rsplit("</think>", 1)[1].strip()
+    else:
+        final = "" if "<think>" in text else text.strip()
+    numeric = final.rsplit("####", 1)[-1] if "####" in final else final
+    values = re.findall(r"[-+]?\d[\d,]*(?:\.\d+)?", numeric)
+    predicted = Decimal(values[-1].replace(",", "")) if values else None
+    stopped = choice["finish_reason"] == "stop"
+    truth = numeric_answer(expected)
+    if truth is None:
+        raise ValueError("Expected numeric ground truth")
+    return {"answer_exact_match": bool(stopped and predicted == truth),
+        "strict_format_match": bool(stopped and numeric_answer(final) == truth),
+        "final_answer": final, "extracted_numeric_answer": (
+            str(predicted) if predicted is not None else None),
+        "finish_reason": choice["finish_reason"],
+        "naturally_stopped": stopped, "truncated": choice["finish_reason"] == "length"}
+
+
+def interval(passed: int, count: int) -> list[float]:
+    """Return descriptive 95% Wilson bounds; these do not measure temporal run variability."""
+    if not 0 <= passed <= count or not count:
+        raise ValueError("Invalid score count")
+    z = 1.959963984540054
+    p = passed / count
+    divisor = 1 + z * z / count
+    center = (p + z * z / (2 * count)) / divisor
+    radius = z * math.sqrt(p * (1 - p) / count + z * z / (4 * count * count)) / divisor
+    return [max(0., center - radius), min(1., center + radius)]
+
+
+def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Count every received result, including API errors and truncated completions."""
+    count = len(rows)
+    if not count:
+        return {"completed_questions": 0}
+    passed = sum(row["answer_exact_match"] for row in rows)
+    strict = sum(row["strict_format_match"] for row in rows)
+    return {"completed_questions": count, "answer_exact_matches": passed,
+        "accuracy": passed / count, "accuracy_wilson95": interval(passed, count),
+        "strict_format_matches": strict, "strict_accuracy": strict / count,
+        "truncations": sum(row.get("truncated", False) for row in rows),
+        "api_errors": sum(row.get("api_error", False) for row in rows)}

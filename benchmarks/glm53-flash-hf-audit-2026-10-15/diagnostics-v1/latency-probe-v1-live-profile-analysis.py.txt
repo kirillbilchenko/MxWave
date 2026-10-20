@@ -1,0 +1,29 @@
+"""Attribute a closed diagnostic trace; final archive verification remains separate."""
+from pathlib import Path
+import argparse,collections,gzip,hashlib,importlib.util,json,sys
+B=Path('/private/tmp/mxwave-latency-probe-v1')
+p=argparse.ArgumentParser();p.add_argument('--data',type=Path,required=True);p.add_argument('--trace',type=Path,required=True);p.add_argument('--rank',type=int,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+def sha(p):
+ with p.open('rb')as f:return hashlib.file_digest(f,'sha256').hexdigest()
+assert sha(B/'verify.py')=='b67178259184c339a9e6445a5e15b6c6f12da7caf7fe14e0a8db9b776b54bf7c'
+sys.path.insert(0,'/private/tmp/mxwave-matched-c8-v1/evidence/source')
+spec=importlib.util.spec_from_file_location('verify_latency',B/'verify.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+d=json.loads(a.data.read_bytes());assert d['status']=='complete'
+groups={g['label']:g for g in d['groups']};r=v.trace_review(a.trace,groups,a.rank)
+assert len(r['labels'])==3
+assert all(x['profiled_steps']==x['recorded_steps']for x in r['coverage'].values())
+with gzip.open(a.trace,'rt')as f:events=json.load(f)['traceEvents']
+annotations={e['name']:e for e in events if e.get('cat')=='user_annotation'and e.get('name','').startswith('mxwave_c8_')}
+categories=collections.Counter(e.get('cat')for e in events)
+for row in r['steps']:
+ if not row['batch']['has_prefill']:continue
+ key=f"mxwave_c8_{row['label']}_step_{row['sequence']}";annotation=annotations[key];lo,hi=annotation['ts'],annotation['ts']+annotation['dur']
+ host=[e for e in events if e.get('cat')in('cpu_op','python_function','user_annotation')and (e.get('pid'),e.get('tid'))==(annotation['pid'],annotation['tid'])and lo<=e.get('ts',-1)<=hi and e.get('name')!=key]
+ row['longest_nested_host_events']=[{'name':e.get('name'),'cat':e.get('cat'),'duration_us':e.get('dur',0),'start_since_annotation_us':e['ts']-lo}for e in sorted(host,key=lambda e:-e.get('dur',0))[:20]]
+ r.update(input_sha256=sha(a.data),trace_sha256=sha(a.trace),analysis_source_sha256=sha(Path(__file__)),final_archive_verified=False,only_one_rank=True,event_categories=dict(categories))
+with a.output.open('x')as f:json.dump(r,f,indent=2);f.write('\n')
+print(json.dumps({'rank':a.rank,'labels':r['labels'],'coverage':r['coverage'],'event_categories':dict(categories),'trace_sha256':r['trace_sha256']}))
+for row in r['steps']:
+ if row['batch']['has_prefill']:
+  keys=['label','sequence','host_elapsed_us','host_thread_cpu_us','kernel_union_us','first_to_last_kernel_span_us','first_kernel_since_annotation_start_us','last_kernel_since_annotation_start_us','largest_owned_kernel_gaps','longest_host_runtime_calls','longest_nested_host_events']
+  print(json.dumps({**{k:row[k]for k in keys},'rows':row['batch']['num_tokens']}))

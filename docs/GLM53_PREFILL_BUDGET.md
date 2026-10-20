@@ -1,0 +1,183 @@
+# Bounded prefill-budget latency experiment
+
+**Complete and independently verified, 19 October 2026, 11:33 UTC / 13:33 Berlin.** The 2,080-token
+scheduler cap passes the prospective scheduling gate and preserves the full
+**9.367162 GiB CUDA allocation saving across TP2**. All **42 matched, same-budget
+numerical comparisons pass**. However, the evidence does **not establish a
+meaningful average-latency reduction or elimination of a prefill pass**.
+
+Compressed short-C16 headline TTFT improves **1.819 -> 1.430 s (-21.35%)**,
+but the mean over all 192 requests per condition improves only **13.7 ms**
+(1.884 -> 1.870 s). A descriptive paired bootstrap 95% interval for the mean
+change is **-46.3 to +14.4 ms**, including no improvement. Ordinary traces still
+show **three prefill forwards / 204 KDA reconstructions per rank** at both caps.
+The original service is restored healthy. No configuration is promoted, no
+additional compression experiment is running, and MTP has not started.
+
+## What was measured
+
+Fresh stock and qualified warmed exact16 compressed loads compare scheduler caps
+**2,048 / 2,080**, balanced and interleaved within each arm, at fixed **10 ms
+admission**. Worker allocation capacity is 2,080 for both conditions. Caps change
+only between completed, idle request groups. Native mHC and all parent
+floating-point/compression kernels remain unchanged; the rejected input-FP32
+variant is excluded. No resident BF16 weight cache is used.
+
+There are twelve C16 and six C1 trials per cap and arm, with 256 prompt / 64
+output tokens: **72 timing groups, 792 requests, 50,688 output tokens**. Separate
+ordinary and controlled profiles follow timing. Every trial remains included.
+The frozen headline is the **median of trial medians**, distinct from the pooled
+median and mean. Stock and compressed loads are separated in time; only cap
+comparisons within an arm use the balanced/interleaved design.
+
+## Timing results
+
+| Arm | Case | Token cap | tok/s | Headline TTFT (s) | Mean TTFT (s) | Pooled P50 (s) | Pooled P95 (s) | Maximum (s) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Stock | c1-short | 2,048 | 14.862885 | 0.392302 | 0.389588 | 0.392302 | 0.394620 | 0.394786 |
+| Stock | c1-short | 2,080 | 14.877478 | 0.384100 | 0.386477 | 0.384100 | 0.399300 | 0.400749 |
+| Stock | c16-short | 2,048 | 80.942647 | 1.668527 | 1.800324 | 1.622181 | 2.670699 | 2.894374 |
+| Stock | c16-short | 2,080 | 80.787778 | 1.383766 | 1.842296 | 1.564393 | 2.674555 | 2.983368 |
+| Compressed | c1-short | 2,048 | 16.736411 | 0.423254 | 0.424027 | 0.423254 | 0.436113 | 0.439628 |
+| Compressed | c1-short | 2,080 | 16.737840 | 0.416666 | 0.422099 | 0.416666 | 0.436799 | 0.438647 |
+| Compressed | c16-short | 2,048 | 84.297251 | 1.818560 | 1.883896 | 2.000272 | 2.767247 | 3.039843 |
+| Compressed | c16-short | 2,080 | 84.820935 | 1.430270 | 1.870199 | 1.414799 | 2.759958 | 2.763769 |
+
+The compressed C16 median changes substantially while its mean changes by less
+than 1%. Stock C16 also has a lower headline (1.669 -> 1.384 s), but its mean
+**worsens by 42.0 ms**, with descriptive interval +6.5 to +78.5 ms. The narrower
+compressed-versus-stock gap therefore partly reflects stock becoming slower on
+the mean. At 2,080 the compression gap is **+46.5 ms headline / +27.9 ms mean**;
+these are measured short-C16 results, not a claim that latency is solved.
+
+Compressed C1 headline TTFT changes 423.3 -> 416.7 ms; mean changes
+424.0 -> 422.1 ms. Its mean-change interval also includes zero. Compared with
+stock at 2,080, C1 retains **+12.50% throughput** and **+32.6 ms headline TTFT**.
+C16 throughput is 84.821 versus stock 80.788 tok/s (**+4.9923%**, below 5%).
+Mean request completion time slightly worsens with the cap change in both C16
+arms: stock 12.496 -> 12.560 s; compressed 12.034 -> 12.083 s.
+
+The prospective policy gate **passes**: at least 5% compressed C16 headline
+TTFT improvement, at most 5% stock C16 headline regression, at least 98%
+throughput retention, at most 15 ms added C1 headline TTFT, matched numerics,
+timed-output equality and memory bounds. The **original combined compression
+speed/TTFT gate remains false at both caps**. No gate was changed after results.
+The bootstrap is supplementary (20,000 paired trial resamples, seed 2080), not
+a replacement gate; twelve trials and possible serial dependence limit it.
+
+## Numerical qualification and its limits
+
+Twenty captures retain 94 comparisons: **42 same-budget matched comparisons
+are gated**, and **52 cross-budget comparisons are diagnostics** because prefill
+grouping deliberately changes. The unchanged gates are mean decode KL <=1e-5
+and absolute mean NLL difference <=1e-4. All 42 pass; all within-budget
+self-repeats have KL zero. All **1,188 paired timed output sequences match**.
+
+| Matched stock versus compressed | Mean decode KL | Mean NLL difference |
+|---|---:|---:|
+| C1 / 2,048 | 5.803778255e-6 | -3.650990665e-6 |
+| C1 / 2,080 | 5.803778255e-6 | -3.650990665e-6 |
+| C16 / 2,048 | 8.919345724e-7 | -1.417605708e-6 |
+| C16 / 2,080 | 0 | 0 |
+
+The C16/2,080 fixture has bitwise-equal full-vocabulary rows (16 prefill and
+48 decode rows in each cross-arm comparison). This finite fixture does not
+establish universal zero loss. Between different budgets, C16 same-arm KL is
+**2.911e-5 to 3.530e-5 for stock** and **2.854e-5 to 3.453e-5 for compressed**.
+Those diagnostics exceed 1e-5 in both arms and remain retained. Do not describe
+all 94 as numerical passes or claim general serving batch invariance. PPL,
+task accuracies and SQNR were not remeasured; the broad `quality_qualified`
+field remains false, separate from the passing matched numerical gate.
+
+## What the traces show
+
+| Ordinary C16 profile | Prefill row counts | Prefill forwards | KDA reconstructions/rank |
+|---|---|---:|---:|
+| Stock / 2,048 | 2,048 / 520 / 1,546 | 3 | 0 |
+| Stock / 2,080 | 2,080 / 232 / 1,801 | 3 | 0 |
+| Compressed / 2,048 | 2,048 / 2,048 / 23 | 3 | 204 |
+| Compressed / 2,080 | 2,080 / 488 / 1,546 | 3 | 204 |
+
+Both ranks agree on these shapes. Compressed 2,048 finishes prompts in cohorts
+8 / 7 / 1; compressed 2,080 finishes them 8 / 2 / 6. The latter's second
+forward contains 480 prompt tokens and eight decode tokens. The extra capacity
+changes admission/grouping but does not remove the third pass in this profile.
+This supports a redistribution explanation for the median shift, rather than
+a uniform removal of reconstruction cost; one separate ordinary profile per
+arm/cap does not identify every unprofiled trial's schedule.
+
+Compressed reconstruction kernel-duration sums across the three passes are
+107.029 / 107.176 ms on ranks 0 / 1 at 2,048 and 108.091 / 107.152 ms at 2,080.
+These are kernel sums, not API wall time or a TP critical path. All 16 worker
+traces verify full forward coverage. The 118 retained physical-16 decode graph
+ranges each contain 68 fused KDA calls and **zero reconstruction**. Ordinary
+compressed profiles replay 16 / 15 covered decode graphs per rank at
+2,048 / 2,080; stock replays 15 at each cap.
+
+All 38 integer-dispatch startup variants pass exact metadata/guard checks on
+both ranks and arms. Dispatch caches remain unchanged. No recognized JIT event
+overlaps a timing window. Boundary telemetry is retained: stock SM clocks
+2,457-2,515 MHz / 56-74 C; compressed 2,444-2,515 MHz / 59-76 C. Both compressed
+C16 caps have a 2,470 MHz median sampled clock. Boundary samples cannot exclude
+brief throttling between samples; no result is discarded on that basis.
+
+## Memory and source integrity
+
+The stock-minus-compressed CUDA allocation saving is **10,057,913,856 bytes
+(9.367162 GiB across TP2)**. Raising worker capacity from the historical 2,048
+allocation to 2,080 adds about **8.03 MiB total**, while preserving that saving.
+The maximum observed compressed allocated peak is **23.37 MiB/rank lower** at
+the 2,080 scheduler cap than at 2,048. All prospective memory bounds pass:
+at least 9.242162 GiB TP2 saving and no more than 128 MiB/rank extra peak or
+historical-capacity allocation. Per-trial peaks were reset outside timing,
+without emptying the allocator cache. Reserved CUDA and host-memory counters
+remain separate; overlapping Spark CPU/CUDA counters are not added.
+
+All 207 parent source bindings are preserved except the plugin metadata entry:
+206 bindings unchanged, one metadata change, nine added modules = **216 bindings**.
+All parent Python and kernel sources are unchanged. The integer shape guard
+extends to 2,080 with the same Triton kernel and four additional warmup variants.
+Local verification passes **810 tests / one GPU skip, Ruff, and strict core
+mypy**. CPU protocol and pinned native-RPC fixtures check idle switches,
+queued-work rejection, native passthrough and negative numerical/grouping cases.
+
+## Retention and operational closure
+
+Spark and Mac independently verify **1,601 payloads / 216 source bindings /
+16 worker traces**. All decisions agree; maximum float64 review difference is
+1.776e-15. The source and plan were frozen before the single GPU experiment.
+Initial v1 CPU packaging omitted a repeat-count field and was rejected before
+GPU launch; it remains retained. V2 corrects packaging only.
+
+GPU collection ran from 09:23 UTC; original service restoration completed at
+10:15:42 UTC and collection at 10:16:25 UTC. The later archive download suffered
+an SSH reset after 98,304,000 bytes. Verified-prefix resumption recovered it and
+the final complete SHA matched; this was a transfer interruption after the
+measurements. Final service checks at 11:21 UTC confirm HTTP 200, exact original
+service identities/configuration, and terminal controller/collector/watchdog.
+The owned awake lease is released. All earlier failures and measurements remain.
+
+- [Final findings](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-final-findings.json.gz)
+- [Independent verification](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-cross-host-verification.json)
+- [Supplementary uncertainty review](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-uncertainty-review.json)
+- [Fresh trace review](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-fresh-profile-review.json.gz)
+- [Memory, clock and thermal review](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-resource-review.json)
+- [Source freeze](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-source-freeze.json)
+- [Final retention manifest](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-budget-v2-final-retention.json)
+
+Working evidence: `/private/tmp/mxwave-prefill-budget-v2`.
+Remote revision: `prefillbudgetv2` under
+`/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.
+The complete archive is retained on both hosts (461,945,864 bytes).
+
+- Evidence SHA256: `7b2f77dfc3105536f19fa46c5a5bb508a878ef74cb7c9abfe3c1943eaaf6541f`.
+- Source SHA256: `e437cee5fabb7aa9154084eaa40d983a835c4d34a61d3ab87bc545089b248fcb`.
+- Plan SHA256: `44011c1d30c80053e799f7c3e739fb550dca96214bbffe09acb887896b05e24c`.
+- Prepared SHA256: `150ab6b301e824a1ead23b4d3fbc7a57b118ce7772e350f67c5157df16ac0887`.
+- Verifier SHA256: `36c7eb6f9e4d8da9bcf40c81004ef4af4e9f77390f969ecf9fa12d53512755ab`.
+
+**Decision:** retain this as a measured opt-in scheduling candidate. The memory
+and matched-numerics requirements are met, but the remaining prefill cost is
+not solved. Leave the serving configuration unchanged; this bounded follow-up
+is complete. Further compression throughput/kernel work and MTP remain outside
+this completed experiment.

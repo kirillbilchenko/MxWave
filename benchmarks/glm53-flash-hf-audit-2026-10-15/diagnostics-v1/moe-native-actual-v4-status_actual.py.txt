@@ -1,0 +1,56 @@
+"""Read bounded component progress and retain its live operational handoff."""
+from __future__ import annotations
+import datetime
+import json
+import pathlib
+import shlex
+import subprocess
+
+base=pathlib.Path(__file__).parent
+root='/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+program=r'''
+import json,pathlib,sys,time
+r=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(r/'full-prefillbudgetv3-src'));import full_model_control as c
+p=r/'moe-native-actual-v4-controller.json'
+if not p.exists():print(json.dumps({'phase':'not_launched','epoch':time.time()}));sys.exit(0)
+d=json.loads(p.read_bytes());out={k:d.get(k)for k in ('phase','service_paused','pid','watchdog_pid','error','measurement_complete','restoration')};out['epoch']=time.time();out['cases']=[]
+try:
+ report=c.remote_json(1,r/'moe-native-actual-v4/rank1/report.json')
+ out.update(component_status=report['status'],component_phase=report.get('phase'),component_error=report.get('error'),component_memory=report.get('component_memory'))
+ for row in report['cases']:
+  out['cases'].append({k:row.get(k)for k in ('tokens','status','median_current_ms','median_native_ms','time_reduction_fraction','control_stable','layer_time_gate_passed')})
+  out['cases'][-1]['native_vs_current']=row['numerics'].get('native_vs_current')
+except Exception as e:out['component_report_pending']=type(e).__name__
+print(json.dumps(out))
+'''
+raw=subprocess.check_output(['ssh','-o','BatchMode=yes','spark',shlex.join(['python3','-S','-B','-c',program,root])],timeout=45)
+data=json.loads(raw)
+(base/'actual-latest-status.json').write_bytes(raw)
+(base/f"actual-status-{int(data['epoch'])}.json").write_bytes(raw)
+stamp=datetime.datetime.fromtimestamp(data['epoch'],datetime.timezone.utc).strftime('%d %B %Y, %H:%M UTC')
+note=f'''<!-- MOE_BACKEND_STATUS_BEGIN -->
+**Native expert comparison: {data['phase']}, {stamp}.**
+Revision `nativeactualv4` compares the complete routed layer 23 on actual captured
+C1/C8/C16/P256 inputs, all 288 experts, TP rank 1. Both arms include routing,
+activation and reduction; native scale reconstruction and quantization are timed.
+Original service paused for this component: **{data.get('service_paused',False)}**.
+The independent watchdog restores the exact original containers on every exit.
+Component phase: `{data.get('component_phase','pending')}`.
+Component status: `{data.get('component_status','pending')}`.
+No result is promoted. Full-model native KL and memory remain unqualified.
+See [backend investigation](GLM53_MOE_BACKENDS.md). Working evidence:
+`/private/tmp/mxwave-moe-native-actual-v4`. The preceding budget run is separately retained.
+<!-- MOE_BACKEND_STATUS_END -->
+
+'''
+if data.get('cases'):
+ details='\nCompleted component observations, pending independent archive review:\n'
+ for row in data['cases']:
+  if row.get('status')=='complete':
+   details+=f"- M={row['tokens']}: current {row['median_current_ms']:.6f} ms, native {row['median_native_ms']:.6f} ms; stable control {row['control_stable']}; time gate {row['layer_time_gate_passed']}.\n"
+ note=note.replace('<!-- MOE_BACKEND_STATUS_END -->',details+'<!-- MOE_BACKEND_STATUS_END -->')
+repo=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/docs')
+for name in ['GLM53_HANDOFF.md','GLM53_CURRENT_STATE.md']:
+ p=repo/name;s=p.read_text();a=s.index('<!-- MOE_BACKEND_STATUS_BEGIN -->');b=s.index('<!-- MOE_BACKEND_STATUS_END -->',a)+len('<!-- MOE_BACKEND_STATUS_END -->')
+ s=s[:a]+s[b:].lstrip('\n');at=s.index('\n')+1;p.write_text(s[:at]+'\n'+note+s[at:].lstrip('\n'))
+print(json.dumps(data))

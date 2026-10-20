@@ -1,0 +1,475 @@
+{
+  "status": "complete",
+  "run": "nsysv2",
+  "purpose": "Candidate-only instrumentation and critical-path diagnostic; no fresh stock efficacy/quality comparison",
+  "source": {
+    "repository": "INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound",
+    "revision": "35d1b0d5cb4a0db075fd2749c897e970dc15bfa5"
+  },
+  "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+  "protocol": {
+    "batch": 4,
+    "prompt_tokens": 256,
+    "generated_tokens": 64,
+    "warmup_batches": 2,
+    "before_trials": 5,
+    "captured_trials": 1,
+    "after_trials": 5,
+    "graph_sizes": [
+      1
+    ],
+    "kv_bytes_per_rank": 4294967296,
+    "moe_dispatch": "dispatcher",
+    "kda_fused_limit": 8,
+    "profiler": "cuda",
+    "kineto_enabled": false,
+    "nsight": "2025.3.2",
+    "trace": [
+      "cuda",
+      "nvtx",
+      "osrt"
+    ],
+    "python_sampling_hz": 500,
+    "startup_guard": 0.85
+  },
+  "correctness": {
+    "source_checks": [
+      "passed",
+      "passed"
+    ],
+    "chat_checks_passed": 3,
+    "generated_ids_match": true,
+    "timed_completions": 44,
+    "token_ids_compared": 2816,
+    "formal_quality_status": "unchanged: unqualified_unstable_control; no new KL screen"
+  },
+  "stages": [
+    {
+      "label": "before",
+      "trials": 5,
+      "trial_tps": [
+        39.24625609612412,
+        39.296498796020806,
+        41.46646895049509,
+        39.297680366698195,
+        38.93285180958237
+      ],
+      "median_tokens_per_second": 39.296498796020806,
+      "median_trial_ttft_seconds": 0.6774395059910603,
+      "trial_middle48_interarrival_ms": [
+        83.26677948934957,
+        83.38510000612587,
+        84.02941998792812,
+        85.90706146787852,
+        85.5503655038774
+      ],
+      "median_middle48_interarrival_ms": 84.02941998792812
+    },
+    {
+      "label": "captured",
+      "trials": 1,
+      "trial_tps": [
+        37.79853366237749
+      ],
+      "median_tokens_per_second": 37.79853366237749,
+      "median_trial_ttft_seconds": 1.1378192650154233,
+      "trial_middle48_interarrival_ms": [
+        90.27741599129513
+      ],
+      "median_middle48_interarrival_ms": 90.27741599129513
+    },
+    {
+      "label": "after",
+      "trials": 5,
+      "trial_tps": [
+        39.26245076420816,
+        39.015462120283516,
+        39.63557717607255,
+        38.09860504255227,
+        38.90447900707587
+      ],
+      "median_tokens_per_second": 39.015462120283516,
+      "median_trial_ttft_seconds": 1.1001678529719356,
+      "trial_middle48_interarrival_ms": [
+        83.21024500764906,
+        83.73290102463216,
+        83.10044402605854,
+        83.0259085050784,
+        84.27575751557015
+      ],
+      "median_middle48_interarrival_ms": 83.21024500764906
+    }
+  ],
+  "ranks": [
+    {
+      "rank": 0,
+      "events": {
+        "kernels": 124961,
+        "cuda_apis": 342742,
+        "osrt": 23561,
+        "forward_ranges": 68,
+        "python_samples": 56562
+      },
+      "verified_m4_forwards": 61,
+      "m4_median": {
+        "cpu_ms": 87.5788,
+        "gpu_ms": 87.359072,
+        "main_activity_gaps_ms": 7.759779,
+        "late_launch_ms": 2.715488,
+        "osrt_overlap_late_ms": 0.168304,
+        "communication_ms": 1.99552
+      },
+      "m4_median_kernel_sum_ms": {
+        "bf16_compressed_linear": 21.358688,
+        "communication": 1.99552,
+        "embedding_lookup": 0.008864,
+        "other": 20.271709,
+        "routed_expert_gemm": 34.523392
+      },
+      "m4_kernel_calls": {
+        "other": 1655,
+        "embedding_lookup": 1,
+        "communication": 91,
+        "bf16_compressed_linear": 68,
+        "routed_expert_gemm": 84
+      },
+      "head_outside_forward": {
+        "rank": 0,
+        "m4_head_kernels": 61,
+        "median_gpu_ms": 2.389056,
+        "minimum_gpu_ms": 2.346976,
+        "maximum_gpu_ms": 2.745664
+      },
+      "kv_position_copy": {
+        "median_api_ms": 0.48312,
+        "median_gpu_us": 1.44,
+        "max_api_ms": 289.374224,
+        "sample_leaves": [
+          {
+            "function": "_kv_lens_host",
+            "file": "/usr/local/lib/python3.12/dist-packages/vllm/v1/attention/backends/mla/flashinfer_mla_sparse_sm90.py",
+            "line": 348,
+            "samples": 213
+          }
+        ]
+      },
+      "captured_gc_events": 0,
+      "thread_counters_entire_capture_bracket": [
+        {
+          "kind": "main",
+          "tid": 353,
+          "cpu_ms": 6732.274896,
+          "runqueue_wait_ms": 1.436112
+        },
+        {
+          "kind": "roce_proxy",
+          "tid": 433,
+          "cpu_ms": 6274.061472,
+          "runqueue_wait_ms": 216.010816
+        }
+      ],
+      "late_launch_sample_count": 117,
+      "late_python_leaves": [
+        {
+          "function": "__call__",
+          "file": "/usr/local/lib/python3.12/dist-packages/torch/_ops.py",
+          "line": 1279,
+          "samples": 26
+        },
+        {
+          "function": "_launch_moe",
+          "file": "/audit/full-model-v1/full-nsysv2-src/model_plugin.py",
+          "line": 46,
+          "samples": 13
+        },
+        {
+          "function": "plan",
+          "file": "/usr/local/lib/python3.12/dist-packages/flashinfer/mla/_core.py",
+          "line": 2253,
+          "samples": 5
+        },
+        {
+          "function": "moe_align_block_size",
+          "file": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/moe_align_block_size.py",
+          "line": 88,
+          "samples": 5
+        },
+        {
+          "function": "__torch_function__",
+          "file": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/parameter.py",
+          "line": 126,
+          "samples": 5
+        },
+        {
+          "function": "_linear",
+          "file": "/experiment/triple-v2/src/integrations/zipserv/mxwave_zipserv/runtime.py",
+          "line": 161,
+          "samples": 5
+        },
+        {
+          "function": "_resize_cache",
+          "file": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/utils.py",
+          "line": 127,
+          "samples": 4
+        },
+        {
+          "function": "gather_rows",
+          "file": "/audit/full-model-v1/full-nsysv2-src/mxwave/lossless_bf16_rows_gpu.py",
+          "line": 195,
+          "samples": 4
+        },
+        {
+          "function": "__call__",
+          "file": "/usr/local/lib/python3.12/dist-packages/triton/backends/nvidia/driver.py",
+          "line": 328,
+          "samples": 4
+        },
+        {
+          "function": "forward_impl",
+          "file": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/attention/mla_attention.py",
+          "line": 919,
+          "samples": 3
+        }
+      ],
+      "outside_forward_kernels": {
+        "bf16_compressed_linear": {
+          "calls": 66,
+          "sum_ms": 160.9648
+        },
+        "communication": {
+          "calls": 66,
+          "sum_ms": 9.457568
+        },
+        "other": {
+          "calls": 858,
+          "sum_ms": 3.279392
+        }
+      },
+      "diagnostic_missing_event_warnings": 11
+    },
+    {
+      "rank": 1,
+      "events": {
+        "kernels": 124961,
+        "cuda_apis": 389670,
+        "osrt": 17878,
+        "forward_ranges": 68,
+        "python_samples": 26556
+      },
+      "verified_m4_forwards": 61,
+      "m4_median": {
+        "cpu_ms": 88.503248,
+        "gpu_ms": 87.313696,
+        "main_activity_gaps_ms": 5.555266,
+        "late_launch_ms": 0.496192,
+        "osrt_overlap_late_ms": 0.0,
+        "communication_ms": 4.194816
+      },
+      "m4_median_kernel_sum_ms": {
+        "bf16_compressed_linear": 21.606464,
+        "communication": 4.194816,
+        "embedding_lookup": 0.009472,
+        "other": 20.599998,
+        "routed_expert_gemm": 34.149376
+      },
+      "m4_kernel_calls": {
+        "other": 1655,
+        "embedding_lookup": 1,
+        "communication": 91,
+        "bf16_compressed_linear": 68,
+        "routed_expert_gemm": 84
+      },
+      "head_outside_forward": {
+        "rank": 1,
+        "m4_head_kernels": 61,
+        "median_gpu_ms": 2.39408,
+        "minimum_gpu_ms": 2.36256,
+        "maximum_gpu_ms": 2.906752
+      },
+      "kv_position_copy": {
+        "median_api_ms": 10.25048,
+        "median_gpu_us": 1.536,
+        "max_api_ms": 289.788432,
+        "sample_leaves": [
+          {
+            "function": "_kv_lens_host",
+            "file": "/usr/local/lib/python3.12/dist-packages/vllm/v1/attention/backends/mla/flashinfer_mla_sparse_sm90.py",
+            "line": 348,
+            "samples": 433
+          }
+        ]
+      },
+      "captured_gc_events": 0,
+      "thread_counters_entire_capture_bracket": [
+        {
+          "kind": "main",
+          "tid": 288,
+          "cpu_ms": 6673.93552,
+          "runqueue_wait_ms": 1.046864
+        },
+        {
+          "kind": "roce_proxy",
+          "tid": 366,
+          "cpu_ms": 6280.542,
+          "runqueue_wait_ms": 119.453616
+        }
+      ],
+      "late_launch_sample_count": 20,
+      "late_python_leaves": [
+        {
+          "function": "__call__",
+          "file": "/usr/local/lib/python3.12/dist-packages/torch/_ops.py",
+          "line": 1279,
+          "samples": 3
+        },
+        {
+          "function": "_linear",
+          "file": "/experiment/triple-v2/src/integrations/zipserv/mxwave_zipserv/runtime.py",
+          "line": 161,
+          "samples": 2
+        },
+        {
+          "function": "_launch_moe",
+          "file": "/audit/full-model-v1/full-nsysv2-src/model_plugin.py",
+          "line": 46,
+          "samples": 2
+        },
+        {
+          "function": "plan",
+          "file": "/usr/local/lib/python3.12/dist-packages/flashinfer/mla/_core.py",
+          "line": 2253,
+          "samples": 2
+        },
+        {
+          "function": "gather_rows",
+          "file": "/audit/full-model-v1/full-nsysv2-src/mxwave/lossless_bf16_rows_gpu.py",
+          "line": 195,
+          "samples": 2
+        },
+        {
+          "function": "__call__",
+          "file": "/usr/local/lib/python3.12/dist-packages/tilelang/3rdparty/tvm/python/tvm/runtime/executable.py",
+          "line": 46,
+          "samples": 1
+        },
+        {
+          "function": "__iter__",
+          "file": "/usr/local/lib/python3.12/dist-packages/tvm_ffi/container.py",
+          "line": 504,
+          "samples": 1
+        },
+        {
+          "function": "forward",
+          "file": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/vocab_parallel_embedding.py",
+          "line": 501,
+          "samples": 1
+        },
+        {
+          "function": "fn",
+          "file": "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/guards.py",
+          "line": 2545,
+          "samples": 1
+        },
+        {
+          "function": "moe_align_block_size",
+          "file": "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/moe_align_block_size.py",
+          "line": 88,
+          "samples": 1
+        }
+      ],
+      "outside_forward_kernels": {
+        "bf16_compressed_linear": {
+          "calls": 66,
+          "sum_ms": 162.619584
+        },
+        "communication": {
+          "calls": 66,
+          "sum_ms": 11.184352
+        },
+        "other": {
+          "calls": 858,
+          "sum_ms": 3.355104
+        }
+      },
+      "diagnostic_missing_event_warnings": 8
+    }
+  ],
+  "memory": {
+    "cuda_allocated_before_bytes": 181139446272,
+    "cuda_allocated_after_bytes": 181139442176,
+    "note": "Stable candidate allocation; no fresh stock memory control was loaded"
+  },
+  "restoration": {
+    "epoch": 1792178049.27756,
+    "original_identities_match": true,
+    "both_originals_running": true,
+    "health": 200,
+    "active_experiment_containers": [],
+    "containers": [
+      {
+        "id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "4b40a22de7b00a4375e483adf0b2042c0a4d89f20a4b88ef9339ed50fbfc41b7",
+        "host_config_sha256": "3153de3473462884186b00e6186e68d2a0816ae45766cdf351e8a1c79261e44c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      },
+      {
+        "id": "fb147a890d8bdd2b475588935a3e1d6d7c60828f894bc980bc7b6e7a40d00224",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config_sha256": "e96790b994df9c4c2c2a17c43331073950ee20515009d284ecc0a07305f447a9",
+        "host_config_sha256": "dafd8cf637f4e576fef02612c7e2776bcb2e53aafb253e09f69872021604381c",
+        "mounts_sha256": "58a0d78a4aaeba326b6b1e713426daa4d9131cb97595e60f3a5f4db4b536d19a"
+      }
+    ]
+  },
+  "evidence": {
+    "file": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/nsysv2-evidence-v1.tar.gz",
+    "bytes": 79463998,
+    "sha256": "8b608cc06798c28d21fdd625f989d7e66c9a16cd469b10815137415f8f4b4239",
+    "payload_files": 123,
+    "manifest_sha256": "8e0d8eb64d89a464f3b3e40ef83e9fc8616177063a0f0d8ebdbf7b34b364297f"
+  },
+  "payload_exports": [
+    {
+      "file": "run-nsysv2/kda/traces/nsys-r0-payload.sqlite",
+      "bytes": 75055104,
+      "sha256": "c10b15942f20551925fbeaf0af3f006976c9cb003cb5494f67c202758e3dfef0"
+    },
+    {
+      "file": "run-nsysv2/kda/traces-worker/nsys-r1-payload.sqlite",
+      "bytes": 58228736,
+      "sha256": "96169a9636585bc2d675070e26ec114453556b497f9e7168c076eb2f31ab9612"
+    }
+  ],
+  "source_sha256": {
+    "analysis": "da4b00e1ee5462bf222ae967bf11d518356332d3df35abf5382c29be5238e149",
+    "measurement": "a199aff66496127de6d6fcf5381c6efcac817dfacd5e25827e6401cedf9d17f8",
+    "frozen_source_overlay": "4ceaf7392c138174ebe0647458f6132ad7c70667b55a1fcfb5989cac377f61e0",
+    "attention_backend": "4449ea25921dcae1ec7988581ff26a6ff5a9e5d6d4a0ac4a68a0017ea108f136"
+  },
+  "limitations": [
+    "Before/after retain Nsight injection and CUDA NVTX annotation; this is not an uninjected baseline.",
+    "There is one active capture. Prefill scheduling varies across trials.",
+    "Middle-decode latency is an SSE-arrival proxy, not CUDA-event latency.",
+    "Kernel sums can overlap; do not add rank timings or independent medians.",
+    "Native/API host durations can wait for prior GPU work; they are not removable-overhead estimates.",
+    "GPU bandwidth/occupancy/roofline counters were not collected.",
+    "Nsight warns some CUDA/NVTX/OSRT events may be missing. Verified 61 M4 forwards per rank, each with all 84 expert kernels.",
+    "Precise OS scheduler events are unavailable. Per-thread schedstat counters are interval totals.",
+    "Transport proxy auto-pinning is inherited here; old saved controls omitted it, so cross-run profiler/configuration changes prevent causal speedup claims."
+  ],
+  "instrumentation_observations": {
+    "captured_e2e_tps_change_percent_vs_before": -3.811955720072968,
+    "captured_e2e_tps_change_percent_vs_after": -3.119092769308418,
+    "middle_decode_latency_change_percent_vs_before": 7.435486290711757,
+    "middle_decode_latency_change_percent_vs_after": 8.493150071840816,
+    "scope": "Observed capture perturbation, not an isolated estimate of every profiler/preload cost"
+  },
+  "analysis_reproduced_head_and_position_queries": true,
+  "next_counter_profile": {
+    "tool_both_hosts": "/opt/nvidia/nsight-compute/2025.3.1/ncu",
+    "version": "2025.3.1.0",
+    "RmProfilingAdminOnly": 1,
+    "counter_access_qualified": false
+  }
+}

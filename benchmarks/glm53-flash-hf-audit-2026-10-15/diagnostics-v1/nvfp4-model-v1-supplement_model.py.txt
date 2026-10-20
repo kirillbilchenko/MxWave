@@ -1,0 +1,77 @@
+"""Summarize retained telemetry, real cache reuse, speculative work and GPU traces."""
+from __future__ import annotations
+import collections,gzip,json,re,statistics,sys
+from pathlib import Path
+r=Path(sys.argv[1]);state=json.loads((r/'controller.json').read_bytes());result={}
+
+def metric(text,name):
+ return sum(float(line.rsplit(' ',1)[1])for line in text.splitlines()if line.startswith(name+'{'))
+
+for arm in ['stock_a','packed','stock_b']:
+ d=json.loads((r/(arm+'-measurement.json')).read_bytes())
+ rows=[x for group in d['trials']for x in group['requests']]
+ counters={name:metric(d['metrics_after'],name)-metric(d['metrics_before'],name)for name in [
+ 'vllm:spec_decode_num_drafts_total','vllm:spec_decode_num_draft_tokens_total',
+ 'vllm:spec_decode_num_accepted_tokens_total','vllm:prefix_cache_hits_total']}
+ draft=counters['vllm:spec_decode_num_draft_tokens_total'];accept=counters['vllm:spec_decode_num_accepted_tokens_total']
+ totals={'timed_requests':len(rows),'cached_prompt_tokens':sum(x['usage'].get('prompt_tokens_details',{}).get('cached_tokens',0)for x in rows),
+ 'measured_interval_counters':counters,'accepted_draft_fraction':accept/draft if draft else None,
+ 'accepted_tokens_per_draft_call':accept/counters['vllm:spec_decode_num_drafts_total'],
+ 'counter_interval_note':'Includes sanity, cold requests and warmups before timed groups; excludes quality and profile.'}
+ telemetry={}
+ windows=[(min(x['start_epoch_ns']for x in g['requests'])/1e9,
+           max(x['start_epoch_ns']/1e9+x['latency_seconds']for x in g['requests']))for g in d['trials']]
+ for rank in (0,1):
+  snapshots=[x for group in state['resources'][arm]['during']for x in group if x['rank']==rank]
+  readings=[];timed_readings=[]
+  for x in snapshots:
+   values=x['GPU_boundary_telemetry'].split(',')
+   if len(values)==4:
+    readings.append([float(t.strip())for t in values[:3]])
+    if any(lo<=x['epoch']<=hi for lo,hi in windows):timed_readings.append(readings[-1])
+  telemetry[str(rank)]={'sample_count':len(readings),
+   **{label:{'minimum':min(x[i]for x in readings),'maximum':max(x[i]for x in readings),
+    'median':statistics.median(x[i]for x in readings)}for i,label in enumerate(['SM_clock_MHz','temperature_C','power_W'])},
+   'sample_scope':'Entire measurement client, including CPU serialization of quality; not proof of throttle reasons.',
+   'timing_only':{'sample_count':len(timed_readings),**{label:{'minimum':min(x[i]for x in timed_readings),'maximum':max(x[i]for x in timed_readings),'median':statistics.median(x[i]for x in timed_readings)}for i,label in enumerate(['SM_clock_MHz','temperature_C','power_W'])}}}
+ traces=[]
+ for p in sorted(r.glob(arm+'-r*/*.trace.json.gz')):
+  with gzip.open(p,'rt')as f:events=json.load(f)['traceEvents']
+  kernels=[e for e in events if e.get('cat')=='kernel' and e.get('ph')=='X']
+  counts=collections.Counter();duration=collections.Counter()
+  for e in kernels:counts[e['name']]+=1;duration[e['name']]+=e.get('dur',0)
+  groups={}
+  for name in counts:
+   label='expert_gemm'if('marlin_moe_wna16::Marlin' in name or ('nv_'in name and '::Marlin' in name))else'other'
+   if 'nv_decode_all' in name:label='standalone_scale_reconstruction'
+   if label not in groups:groups[label]={'calls':0,'sum_ms':0}
+   groups[label]['calls']+=counts[name];groups[label]['sum_ms']+=duration[name]/1000
+  traces.append({'file':str(p.relative_to(r)),'kernel_count':len(kernels),
+   'cuda_graph_launches':sum(e.get('ph')=='X'and e.get('name')=='cudaGraphLaunch'for e in events),
+   'groups':groups,'top_kernels':[{'name':name,'calls':counts[name],'sum_ms':ms/1000}for name,ms in duration.most_common(15)],
+   'all_kernel_counts':dict(counts),'profile_request_tokens':len(d['profile_request']['requests'][0]['token_ids']),
+   'scope':'One profiled C1 request with prefill and decode; totals depend on generated sequence and speculative steps.'})
+ log=(r/(arm+'-r0.log')).read_text(errors='replace')
+ running=[int(x)for x in re.findall(r'Running: (\d+) reqs',log)]
+ waiting=[int(x)for x in re.findall(r'Waiting: (\d+) reqs',log)]
+ result[arm]={'workload':totals,'telemetry':telemetry,'profiles':traces,
+  'logged_queue_samples':{'max_running':max(running,default=None),'max_waiting':max(waiting,default=None)},
+  'jit_compile_log_lines':[line for line in log.splitlines()if ('Compiling' in line or 'compilation' in line) and 'kernel' in line]}
+comparisons=[]
+for rank in (0,1):
+ profiles={a:next(p for p in result[a]['profiles']if '/'+a+'-r' in '/'+p['file'] and '-r'+str(rank)+'/' in p['file'])for a in result}
+ def normalized(profile):
+  counts=collections.Counter()
+  for name,n in profile['all_kernel_counts'].items():
+   if '::Marlin<' in name and ('nv_delta5::' in name or 'marlin_moe_wna16::' in name):
+    name=name.replace('nv_delta5::','marlin_moe_wna16::').split('(int4',1)[0]
+   counts[name]+=n
+  return counts
+ reports={a:json.loads((r/(a+'-measurement.json')).read_bytes())for a in result}
+ comparisons.append({'rank':rank,'normalized_kernel_counts_equal':normalized(profiles['stock_a'])==normalized(profiles['packed'])==normalized(profiles['stock_b']),
+  'generated_tokens_equal':reports['stock_a']['profile_request']['requests'][0]['token_ids']==reports['packed']['profile_request']['requests'][0]['token_ids']==reports['stock_b']['profile_request']['requests'][0]['token_ids']})
+result['profile_comparisons']=comparisons
+(r/'supplement-review.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps({a:{'acceptance':x['workload']['accepted_draft_fraction'],'cached_tokens':x['workload']['cached_prompt_tokens'],
+ 'profiles':[{'file':t['file'],'groups':t['groups'],'graphs':t['cuda_graph_launches']}for t in x['profiles']],
+ 'queues':x['logged_queue_samples']}for a,x in result.items()if a!='profile_comparisons'},indent=2))

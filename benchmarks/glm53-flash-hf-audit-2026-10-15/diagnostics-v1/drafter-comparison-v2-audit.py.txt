@@ -1,0 +1,153 @@
+"""Compare retained draft configuration and position counters after both benchmarks."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+from pathlib import Path
+
+
+def file_hash(path):
+    """Hash a retained evidence file."""
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def selected_command(command):
+    """Extract only nonsecret serving and draft arguments."""
+    flags = (
+        "--speculative-config", "--seed", "--dtype", "--kv-cache-dtype",
+        "--compilation-config", "--linear-backend", "--moe-backend",
+        "--max-num-seqs", "--max-num-batched-tokens",
+    )
+    result = {}
+    for flag in flags:
+        if flag in command:
+            value = command[command.index(flag) + 1]
+            if flag in ("--speculative-config", "--compilation-config"):
+                value = json.loads(value)
+            result[flag] = value
+    return result
+
+
+def selected_environment(environment):
+    """Retain only allowlisted nonsecret arithmetic settings."""
+    exact = {
+        "VLLM_TEST_FORCE_FP8_MARLIN", "VLLM_DISABLED_KERNELS", "QMIX_FP8_BLOCK",
+        "MXWAVE_GLM53_VOCAB_MODE", "MXWAVE_GLM53_KDA_MODE",
+    }
+    return {
+        k: v for k, v in environment.items()
+        if k in exact or k.startswith(("GLM_LV_", "GLM_DFLASH_", "GLM_DRAFT_"))
+    }
+
+
+def counters(text):
+    """Keep every position label instead of summing all positions together."""
+    result = {}
+    for line in text.splitlines():
+        if not line.startswith("vllm:spec_decode_"):
+            continue
+        name, value = line.rsplit(" ", 1)
+        if name.split("{", 1)[0].endswith("_total"):
+            result[name] = float(value)
+    return result
+
+
+def audit(root, partial=False):
+    """Retain facts and unresolved questions without assigning an unsupported cause."""
+    plan = json.loads((root / "plan.json").read_bytes())
+    prepared_path = root / "prepared.json"
+    prepared = json.loads(prepared_path.read_bytes()) if prepared_path.exists() else None
+    if not partial:
+        state = json.loads((root / "controller.json").read_bytes())
+        assert state["phase"] == "complete_restored" and len(state["measurements"]) == 9
+        assert not state["service_paused"]
+        assert prepared is not None
+    result = {
+        "status": "partial_fixture" if partial else "retained_evidence_audited",
+        "source_sha256": {"plan.json": file_hash(root / "plan.json")},
+        "loads": {},
+        "limits": [
+            "Read-only comparison; no inference requests or runtime policy changes.",
+            "Post-run checkpoint hashes do not prove runtime draft tensors were bitwise equal.",
+            "Position counters are aggregate windows, not per-token proposal captures.",
+            "Shared head/embedding methods can differ even with one physical draft checkpoint.",
+            "Different target hidden states and output histories can change drafter proposals.",
+            "Separating those effects causally may require matched-token replay after this audit.",
+        ],
+    }
+    for arm in plan["arms"]:
+        path = root / f"{arm}-measurement.json"
+        if partial and not path.exists():
+            continue
+        measurement = json.loads(path.read_bytes())
+        if partial and measurement["status"] != "complete":
+            continue
+        assert measurement["status"] == "complete"
+        result["source_sha256"][path.name] = file_hash(path)
+        startup_path = root / f"{arm}-startup.json"
+        startup = json.loads(startup_path.read_bytes())
+        result["source_sha256"][startup_path.name] = file_hash(startup_path)
+        keys = (
+            "rank", "draft_class", "shared_head", "shared_embedding", "head_method",
+            "draft_context_buffer_dtype", "draft_context_buffer_numel", "draft_quant_method",
+            "physical_graph_token_counts",
+        )
+        block = {
+            "mode": plan["modes"][arm],
+            "startup_by_rank": [{k: s["trial"][k] for k in keys} for s in startup],
+            "trials": [],
+        }
+        if prepared is not None:
+            block["launches_by_rank"] = [{
+                "rank": e["rank"],
+                "command": selected_command(e["command"]),
+                "environment": selected_environment(e["environment"]),
+                "draft_mounts": [m for m in e["mounts"] if m[1] == "/draft"],
+            } for e in prepared["launches"][arm]]
+        for group in measurement["trials"]:
+            before, after = counters(group["metrics_before"]), counters(group["metrics_after"])
+            delta = {k: v - before.get(k, 0) for k, v in after.items()}
+            assert all(v >= 0 for v in delta.values())
+            positions = {}
+            for name, value in delta.items():
+                if name.startswith("vllm:spec_decode_num_accepted_tokens_per_pos_total"):
+                    match = re.search(r'\bposition="([^"]+)"', name)
+                    label = match.group(1) if match else name
+                    positions[label] = positions.get(label, 0) + value
+            block["trials"].append({
+                "case": group["case"], "trial": group["trial"], "batch": group["batch"],
+                "counter_deltas_with_labels": delta, "accepted_by_position": positions,
+                "output_token_sha256": [
+                    hashlib.sha256(json.dumps(r["token_ids"]).encode()).hexdigest()
+                    for r in group["requests"]
+                ],
+            })
+        result["loads"][arm] = block
+    if prepared is not None:
+        result["source_sha256"]["prepared.json"] = file_hash(prepared_path)
+        configurations = [
+            e["command"].get("--speculative-config")
+            for block in result["loads"].values() for e in block["launches_by_rank"]
+        ]
+        result["all_matched_speculative_configs_equal"] = all(
+            c == configurations[0] for c in configurations
+        )
+    result["draft_contexts_share_target_head_and_embedding"] = all(
+        s["shared_head"] and s["shared_embedding"]
+        for block in result["loads"].values() for s in block["startup_by_rank"]
+    )
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--partial", action="store_true")
+    args = parser.parse_args()
+    report = audit(args.root, args.partial)
+    args.output.write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps({"status": report["status"], "loads": list(report["loads"])}))

@@ -1,0 +1,47 @@
+"""Attribute retained KDA GEMMs by source order, checked against all packed calls."""
+from pathlib import Path
+import json
+import hashlib
+import statistics
+
+ROOT=Path('/private/tmp/mxwave-dflash-c1-v1')
+p=ROOT/'analyze_profiles.py'
+s=p.read_text().replace('output_rows.append(dict(**row, **summarize(kernels)))','output_rows.append(dict(**row, kernels=kernels, **summarize(kernels)))')
+ns={'__name__':'profile_audit'};exec(compile(s,str(p),'exec'),ns)
+linear={'dense_bf16_linear','other_marlin_linear','compressed_bf16_gemm'}
+result={'status':'source_order_attribution_complete','method':'For every recurrent KDA core, select the third preceding non-expert GEMM (merged input; the following two are f_b and g_b) and first following non-expert GEMM (output after gated norm). Check 34 cores, common stream, and full coverage of all 68 compressed KDA GEMMs in each candidate graph.','scope':'Primary GEMM kernel durations only; auxiliary quantization, copies and reductions excluded. Existing common-settings 8-row DFlash C1 profiles, one per arm; this is source-order inference rather than module-labelled trace scopes.','native_source_sha256':hashlib.sha256(Path('/private/tmp/mxwave-nvfp4-decode-v1/source-audit/models_glm5next_nvidia_kda.py').read_bytes()).hexdigest(),'arms':{}}
+for arm in ('current','ct_stock','candidate'):
+ for rank in (0,1):
+  directory=ROOT/'final-evidence'/f'{arm}-r{rank}'
+  trace=next(directory.glob('*.trace.json.gz'))
+  report=ns['profile'](trace,json.loads((directory/f'phase-trace-r{rank}.json').read_bytes()))
+  graphs=[]
+  for call in report['calls']:
+   if call['label']!='target_graph':continue
+   kernels=sorted(call['kernels'],key=lambda e:e['ts'])
+   anchors=[i for i,k in enumerate(kernels) if k['name']=='fused_recurrent_gated_delta_rule_fwd_kernel']
+   assert len(anchors)==34
+   selected=[]
+   for index in anchors:
+    before=[i for i in range(index) if kernels[i]['group'] in linear]
+    after=[i for i in range(index+1,len(kernels)) if kernels[i]['group'] in linear]
+    assert len(before)>=3 and after
+    input_index=before[-3];output_index=after[0]
+    assert all(kernels[i]['group']=='dense_bf16_linear' for i in before[-2:])
+    assert kernels[input_index]['stream']==kernels[index]['stream']==kernels[output_index]['stream']
+    if arm=='candidate':
+     assert kernels[input_index]['group']==kernels[output_index]['group']=='compressed_bf16_gemm'
+    if arm=='current':
+     assert kernels[input_index]['group']==kernels[output_index]['group']=='other_marlin_linear'
+    if arm=='ct_stock':
+     assert kernels[input_index]['group']==kernels[output_index]['group']=='dense_bf16_linear'
+    selected.extend([input_index,output_index])
+   assert len(set(selected))==68
+   if arm=='candidate':
+    assert set(selected)=={i for i,k in enumerate(kernels) if k['group']=='compressed_bf16_gemm'}
+   selected_set=set(selected)
+   graphs.append({'graph_index':call['index'],'input_gemm_ms':sum(kernels[i]['dur'] for i in selected[::2])/1000,'output_gemm_ms':sum(kernels[i]['dur'] for i in selected[1::2])/1000,'other_linear_gemm_ms':sum(k['dur'] for i,k in enumerate(kernels) if k['group'] in linear and i not in selected_set)/1000,'selected':[{key:kernels[i][key] for key in ('name','ts','dur','stream','group')} for i in selected]})
+  assert len(graphs)==9
+  result['arms'][f'{arm}_r{rank}']={'trace_sha256':hashlib.sha256(trace.read_bytes()).hexdigest(),'graphs':graphs,'means':{key:statistics.mean(g[key] for g in graphs) for key in ('input_gemm_ms','output_gemm_ms','other_linear_gemm_ms')}}
+Path('/private/tmp/mxwave-dflash-c1-v1/kda-attribution-review.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps({key:value['means'] for key,value in result['arms'].items()},indent=2))

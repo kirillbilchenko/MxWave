@@ -1,0 +1,59 @@
+"""Read the completed stock result while the existing candidate run continues."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import shlex
+import subprocess
+
+BASE = Path(__file__).parent
+REMOTE = '''import hashlib,json,pathlib,statistics,time
+p=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-fp32inputmodelv1/results/control-warmed-model.json')
+raw=p.read_bytes(); d=json.loads(raw)
+assert d['status']=='complete' and len(d['timing'])==36
+summary=[]
+for case in sorted({r['case'] for r in d['timing']}):
+ rows=sorted((r for r in d['timing'] if r['case']==case),key=lambda r:r['repeat'])
+ assert [r['repeat'] for r in rows]==list(range(6))
+ tps=[r['measurement']['aggregate_tokens_per_second'] for r in rows]
+ ttft=[r['measurement']['median_ttft_seconds'] for r in rows]
+ samples=[s for r in rows for phase in ('telemetry_before','telemetry_after') for s in r[phase]]
+ summary.append({'case':case,'trials':6,'tps':tps,'ttft_seconds':ttft,
+ 'median_tps':statistics.median(tps),'median_ttft_seconds':statistics.median(ttft),
+ 'clock_MHz_range':[min(s['sm_MHz'] for s in samples),max(s['sm_MHz'] for s in samples)],
+ 'temperature_C_range':[min(s['temperature_C'] for s in samples),max(s['temperature_C'] for s in samples)]})
+print(json.dumps({'checked_epoch':time.time(),'status':d['status'],
+ 'source_path':str(p),'source_sha256':hashlib.sha256(raw).hexdigest(),'source_bytes':len(raw),
+ 'timing_groups':len(d['timing']),'summaries':summary,
+ 'candidate_result_included':False,'final_archive_verification_pending':True},indent=2))
+'''
+
+
+def main() -> None:
+    """Keep the source digest for reconciliation with the final archive."""
+    raw = subprocess.check_output(
+        ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+         shlex.join(['python3', '-c', REMOTE])], timeout=30,
+    )
+    result = json.loads(raw)
+    with (BASE / 'completed-stock-observation.json').open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    old_path = Path('/private/tmp/mxwave-warmed-model-v1/evidence/results/control-warmed-model.json')
+    old = json.loads(old_path.read_bytes())
+    from statistics import median
+    for row in result['summaries']:
+        previous = [t['measurement']['aggregate_tokens_per_second']
+                    for t in old['timing'] if t['case'] == row['case']]
+        print(json.dumps({
+            'case': row['case'], 'median_tps': row['median_tps'],
+            'tps_range': [min(row['tps']), max(row['tps'])],
+            'stock_change_from_previous_run_percent': 100 * (row['median_tps'] / median(previous) - 1),
+            'clock_MHz_range': row['clock_MHz_range'],
+            'temperature_C_range': row['temperature_C_range'],
+        }))
+
+
+if __name__ == '__main__':
+    main()

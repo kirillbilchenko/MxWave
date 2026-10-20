@@ -1,0 +1,693 @@
+{
+  "status": "passed",
+  "cases": [
+    {
+      "rank": 0,
+      "kind": "head",
+      "qualification": {
+        "kind": "head",
+        "rank": 0,
+        "prefix": "language_model.lm_head",
+        "source_key": "lm_head.weight",
+        "shape": [
+          77440,
+          4096
+        ],
+        "source_sha256": "39d08c9cb373c189c4e6faa2061f45d90923549c7dac53db35c73ab20ac3bb00",
+        "raw_bytes": 634388480,
+        "retained_bytes": 447464872,
+        "metadata": [
+          77440,
+          4096,
+          4048,
+          200,
+          115
+        ],
+        "artifact": "head-r0.safetensors",
+        "artifact_bytes": 447465424,
+        "artifact_sha256": "d5d67d6d59012dd29bd5d0b28539b80c19c8fdbec0133ff9497bc504991b61d1",
+        "loaded_source_bits_exact": true,
+        "dense_parameter_removed": true
+      },
+      "measurements": [
+        {
+          "tokens": 0,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 1,
+          "bits_exact": false,
+          "finite": true,
+          "relative_l2": 0.00013232136552687734,
+          "passed": true,
+          "paired": {
+            "dense_ms": 4.375808080037435,
+            "zipserv_ms": 3.397493362426758,
+            "speedup": 1.2976685613181467,
+            "trials": [
+              {
+                "dense_ms": 4.132597287495931,
+                "zipserv_ms": 3.397493362426758
+              },
+              {
+                "dense_ms": 4.4618345896403,
+                "zipserv_ms": 3.217866579691569
+              },
+              {
+                "dense_ms": 4.338656107584636,
+                "zipserv_ms": 3.7065280278523765
+              },
+              {
+                "dense_ms": 4.375808080037435,
+                "zipserv_ms": 3.3624960581461587
+              },
+              {
+                "dense_ms": 4.662997245788574,
+                "zipserv_ms": 3.5933653513590493
+              }
+            ]
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00013232136552687734,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 2,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 3,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 4,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "paired": {
+            "dense_ms": 2.6740585962931314,
+            "zipserv_ms": 2.5447999636332193,
+            "speedup": 1.1094475863411979,
+            "trials": [
+              {
+                "dense_ms": 3.8420372009277344,
+                "zipserv_ms": 3.4500694274902344
+              },
+              {
+                "dense_ms": 2.815999984741211,
+                "zipserv_ms": 3.399242719014486
+              },
+              {
+                "dense_ms": 2.672053337097168,
+                "zipserv_ms": 2.5447999636332193
+              },
+              {
+                "dense_ms": 2.6740585962931314,
+                "zipserv_ms": 2.410261313120524
+              },
+              {
+                "dense_ms": 2.67191473642985,
+                "zipserv_ms": 2.395946661631266
+              }
+            ]
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 7,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 8,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 16,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 128,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "paired": {
+            "dense_ms": 3.0526720682779946,
+            "zipserv_ms": 2.7169278462727866,
+            "speedup": 1.1235749497233791,
+            "trials": [
+              {
+                "dense_ms": 3.0677226384480796,
+                "zipserv_ms": 2.6164372762044272
+              },
+              {
+                "dense_ms": 2.994112014770508,
+                "zipserv_ms": 2.817013422648112
+              },
+              {
+                "dense_ms": 3.0526720682779946,
+                "zipserv_ms": 2.7169278462727866
+              },
+              {
+                "dense_ms": 3.0526933670043945,
+                "zipserv_ms": 2.6940479278564453
+              },
+              {
+                "dense_ms": 3.014922777811686,
+                "zipserv_ms": 2.8252906799316406
+              }
+            ]
+          }
+        }
+      ],
+      "constructor_quant_config_explicit": true,
+      "full_gpu_sha256": "39d08c9cb373c189c4e6faa2061f45d90923549c7dac53db35c73ab20ac3bb00",
+      "dense_parameter_removed": true
+    },
+    {
+      "rank": 0,
+      "kind": "embedding",
+      "qualification": {
+        "kind": "embedding",
+        "rank": 0,
+        "prefix": "language_model.model.embed_tokens",
+        "source_key": "model.language_model.embed_tokens.weight",
+        "shape": [
+          77440,
+          4096
+        ],
+        "source_sha256": "c21eff0e5e9082aa49ef691a6a16c02ba9d3acf0b05086a734850ff3ef9034a6",
+        "raw_bytes": 634388480,
+        "retained_bytes": 446944786,
+        "metadata": [
+          77440,
+          4096,
+          512
+        ],
+        "artifact": "embedding-r0.mxb",
+        "artifact_bytes": 446945094,
+        "artifact_sha256": "5334f898b7e1fe0a4f4468686635dee7c34ff73777f41e0061d3b900b4670219",
+        "loaded_source_bits_exact": true,
+        "dense_parameter_removed": true
+      },
+      "measurements": [
+        {
+          "shape": [
+            7
+          ],
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "non_default_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "shape": [
+            1,
+            7
+          ],
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "non_default_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "shape": [
+            7,
+            1
+          ],
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "non_default_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        }
+      ],
+      "constructor_quant_config_explicit": false,
+      "full_gpu_sha256": "c21eff0e5e9082aa49ef691a6a16c02ba9d3acf0b05086a734850ff3ef9034a6",
+      "dense_parameter_removed": true
+    },
+    {
+      "rank": 1,
+      "kind": "head",
+      "qualification": {
+        "kind": "head",
+        "rank": 1,
+        "prefix": "language_model.lm_head",
+        "source_key": "lm_head.weight",
+        "shape": [
+          77440,
+          4096
+        ],
+        "source_sha256": "b4ee0f3ed236614ba6daa491f93bfbc5684022a954fa9b0e71eb8f0afee89877",
+        "raw_bytes": 634388480,
+        "retained_bytes": 447795656,
+        "metadata": [
+          77440,
+          4096,
+          4048,
+          360,
+          115
+        ],
+        "artifact": "head-r1.safetensors",
+        "artifact_bytes": 447796208,
+        "artifact_sha256": "fa46304937045805a3836534020e0fcd930d2f547bdd8fdca7b4c3d959446ff0",
+        "loaded_source_bits_exact": true,
+        "dense_parameter_removed": true
+      },
+      "measurements": [
+        {
+          "tokens": 0,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 1,
+          "bits_exact": false,
+          "finite": true,
+          "relative_l2": 0.00014329397527035326,
+          "passed": true,
+          "paired": {
+            "dense_ms": 3.8181333541870117,
+            "zipserv_ms": 2.5008959770202637,
+            "speedup": 1.5145761066746188,
+            "trials": [
+              {
+                "dense_ms": 3.8181333541870117,
+                "zipserv_ms": 2.582848072052002
+              },
+              {
+                "dense_ms": 3.7524693806966147,
+                "zipserv_ms": 2.50876792271932
+              },
+              {
+                "dense_ms": 3.787797292073568,
+                "zipserv_ms": 2.5008959770202637
+              },
+              {
+                "dense_ms": 3.8639148076375327,
+                "zipserv_ms": 2.4843947092692056
+              },
+              {
+                "dense_ms": 3.82530148824056,
+                "zipserv_ms": 2.4884160359700522
+              }
+            ]
+          },
+          "graph": {
+            "bits_exact": false,
+            "finite": true,
+            "relative_l2": 0.00014329397527035326,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 2,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 3,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 4,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "paired": {
+            "dense_ms": 2.8724053700764975,
+            "zipserv_ms": 2.5119786262512207,
+            "speedup": 1.1434832048563899,
+            "trials": [
+              {
+                "dense_ms": 2.84224001566569,
+                "zipserv_ms": 2.5363732973734536
+              },
+              {
+                "dense_ms": 2.8778133392333984,
+                "zipserv_ms": 2.5189226468404136
+              },
+              {
+                "dense_ms": 2.8724053700764975,
+                "zipserv_ms": 2.5119786262512207
+              },
+              {
+                "dense_ms": 2.8799893061319985,
+                "zipserv_ms": 2.458581288655599
+              },
+              {
+                "dense_ms": 2.8712746302286782,
+                "zipserv_ms": 2.4768640200297036
+              }
+            ]
+          },
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "tokens": 7,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 8,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 16,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true
+        },
+        {
+          "tokens": 128,
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "paired": {
+            "dense_ms": 3.08844788869222,
+            "zipserv_ms": 2.7474133173624673,
+            "speedup": 1.1236285545520655,
+            "trials": [
+              {
+                "dense_ms": 3.1399361292521157,
+                "zipserv_ms": 2.5917654037475586
+              },
+              {
+                "dense_ms": 3.0821654001871743,
+                "zipserv_ms": 2.776714642842611
+              },
+              {
+                "dense_ms": 3.1704107920328775,
+                "zipserv_ms": 2.659050623575846
+              },
+              {
+                "dense_ms": 3.0870720545450845,
+                "zipserv_ms": 2.7474133173624673
+              },
+              {
+                "dense_ms": 3.08844788869222,
+                "zipserv_ms": 2.780405362447103
+              }
+            ]
+          }
+        }
+      ],
+      "constructor_quant_config_explicit": true,
+      "full_gpu_sha256": "b4ee0f3ed236614ba6daa491f93bfbc5684022a954fa9b0e71eb8f0afee89877",
+      "dense_parameter_removed": true
+    },
+    {
+      "rank": 1,
+      "kind": "embedding",
+      "qualification": {
+        "kind": "embedding",
+        "rank": 1,
+        "prefix": "language_model.model.embed_tokens",
+        "source_key": "model.language_model.embed_tokens.weight",
+        "shape": [
+          77440,
+          4096
+        ],
+        "source_sha256": "9cbe8f6742566eadb02dd778cde6235ebce6b035a421298f1c230efd3bd022ea",
+        "raw_bytes": 634388480,
+        "retained_bytes": 446716254,
+        "metadata": [
+          77440,
+          4096,
+          512
+        ],
+        "artifact": "embedding-r1.mxb",
+        "artifact_bytes": 446716562,
+        "artifact_sha256": "69c70cee74d030e0070ddc0ea85cebf156b0d19796bcc03b02fcf13627f49bd8",
+        "loaded_source_bits_exact": true,
+        "dense_parameter_removed": true
+      },
+      "measurements": [
+        {
+          "shape": [
+            7
+          ],
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "non_default_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "shape": [
+            1,
+            7
+          ],
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "non_default_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        },
+        {
+          "shape": [
+            7,
+            1
+          ],
+          "bits_exact": true,
+          "finite": true,
+          "relative_l2": 0.0,
+          "passed": true,
+          "graph": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          },
+          "non_default_stream": {
+            "bits_exact": true,
+            "finite": true,
+            "relative_l2": 0.0,
+            "passed": true
+          }
+        }
+      ],
+      "constructor_quant_config_explicit": false,
+      "full_gpu_sha256": "9cbe8f6742566eadb02dd778cde6235ebce6b035a421298f1c230efd3bd022ea",
+      "dense_parameter_removed": true
+    }
+  ],
+  "rejections": [
+    "head-r0-unloaded",
+    "head-source-cast",
+    "head-r0-duplicate",
+    "embedding-r0-unloaded",
+    "embedding-source-cast",
+    "embedding-r0-duplicate",
+    "head-r1-unloaded",
+    "head-r1-duplicate",
+    "embedding-r1-unloaded",
+    "embedding-r1-duplicate"
+  ],
+  "manifest_sha256": "06731dc5cb5d00fb5edcede73038006b4689f35fc1195a0dbc8bae5557588b6d",
+  "combined_kda_selected_prefixes": [
+    "language_model.model.layers.0.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.0.self_attn.o_proj",
+    "language_model.model.layers.1.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.1.self_attn.o_proj",
+    "language_model.model.layers.2.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.2.self_attn.o_proj",
+    "language_model.model.layers.4.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.4.self_attn.o_proj",
+    "language_model.model.layers.5.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.5.self_attn.o_proj",
+    "language_model.model.layers.6.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.6.self_attn.o_proj",
+    "language_model.model.layers.8.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.8.self_attn.o_proj",
+    "language_model.model.layers.9.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.9.self_attn.o_proj",
+    "language_model.model.layers.10.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.10.self_attn.o_proj",
+    "language_model.model.layers.12.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.12.self_attn.o_proj",
+    "language_model.model.layers.13.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.13.self_attn.o_proj",
+    "language_model.model.layers.14.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.14.self_attn.o_proj",
+    "language_model.model.layers.16.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.16.self_attn.o_proj",
+    "language_model.model.layers.17.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.17.self_attn.o_proj",
+    "language_model.model.layers.18.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.18.self_attn.o_proj",
+    "language_model.model.layers.20.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.20.self_attn.o_proj",
+    "language_model.model.layers.21.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.21.self_attn.o_proj",
+    "language_model.model.layers.22.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.22.self_attn.o_proj",
+    "language_model.model.layers.24.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.24.self_attn.o_proj",
+    "language_model.model.layers.25.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.25.self_attn.o_proj",
+    "language_model.model.layers.26.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.26.self_attn.o_proj",
+    "language_model.model.layers.28.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.28.self_attn.o_proj",
+    "language_model.model.layers.29.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.29.self_attn.o_proj",
+    "language_model.model.layers.30.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.30.self_attn.o_proj",
+    "language_model.model.layers.32.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.32.self_attn.o_proj",
+    "language_model.model.layers.33.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.33.self_attn.o_proj",
+    "language_model.model.layers.34.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.34.self_attn.o_proj",
+    "language_model.model.layers.36.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.36.self_attn.o_proj",
+    "language_model.model.layers.37.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.37.self_attn.o_proj",
+    "language_model.model.layers.38.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.38.self_attn.o_proj",
+    "language_model.model.layers.40.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.40.self_attn.o_proj",
+    "language_model.model.layers.41.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.41.self_attn.o_proj",
+    "language_model.model.layers.42.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.42.self_attn.o_proj",
+    "language_model.model.layers.44.self_attn.in_proj_qkvbfg_a",
+    "language_model.model.layers.44.self_attn.o_proj"
+  ],
+  "gates": {
+    "full_gpu_weight_sha256_matches_source": true,
+    "embedding_outputs_bits_exact": true,
+    "head_maximum_relative_l2": 0.001,
+    "original_dense_parameters_released": true
+  },
+  "code_sha256": {
+    "vocab_policy.py": "e80b7d685a072abdd750777f75f7bd74a09653a4067aaf8e543298369b9d2003",
+    "vocab_adapter.py": "a889b1c4984786bc7ad929f1e4877ebb8f09a04f5ef7f73a49d9f5ec7b624934",
+    "vocab_runtime.py": "ffff9324346de220df0ca127b36f41fde5e53388dd02e402329270de07e14c87",
+    "model_plugin.py": "f9dc030801361e3fc364b0d585f6e84f3178309de529122ed662e800c251bdde",
+    "kda_policy.py": "0a82783be8da8e86dc56928d0a3f6f86e7c1d24e5ba71064a26b4cecea8760bb",
+    "kda_adapter.py": "69f7506236efe591569aa99bd3e0bdcf3dbced8330191e60614ebeeca69d0a20",
+    "kda_runtime.py": "a3ddf07e196c7a13f6fcc3798fc54e4d311275283436ad103abab00126a93449",
+    "moe_runtime.py": "cd4a208b7d108ed6e8c97fe9a46ffe1d81e69e79bc94535e066d4368f069c844",
+    "diagnose_vocab.py": "19cf3badac0069217856e67e0e6ed4f65a41fd6066aed8e940b20c284c36446c"
+  },
+  "core_sha256": {
+    "lossless_bf16_rows.py": "bcefee4ba11b3421d47d697bda3a8967b870e7c6d07795b9dab968eb835ff918",
+    "lossless_bf16_rows_gpu.py": "f68abdae13b44fabe3cc263393424a7ecb96f6833a71022769e98dd9e3dab2ca"
+  },
+  "vocab_source_sha256": "b3e8a07296607153424b4b7ca5f75f00dcec1bce0f49e54b5eff6262fdf80201",
+  "limits": [
+    "Both TP2 shards tested sequentially on Spark2; collectives are mocked here.",
+    "The actual stock forward, vocabulary mask and shard loader are exercised.",
+    "Random head activations; full-model decode quality remains a separate gate.",
+    "Simultaneous KDA/expert selection installed; no full model in this fixture."
+  ],
+  "seconds": 49.65738816402154,
+  "cuda_peak_allocated_bytes": 1158170624,
+  "code_scope": "All four full source vocabulary shards"
+}

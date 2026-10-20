@@ -1,0 +1,1860 @@
+{
+  "status": "complete",
+  "source_sha256": "9ac68075666ad091eed8c608edb62fd15307c3604362d4e78731d51d3242610f",
+  "archive_sha256": "bfbbafa8f53bdbd2c82bd2e6cc3d6f48b678433b015beb0ff7863bce9ebca8c2",
+  "verified_inputs": [
+    {
+      "path": "results/control-warmed-model.json",
+      "bytes": 11747868,
+      "sha256": "13c8b1f985b494f39705ecc9d16f72c19b7dc4d606c53288a972949fb400bb15"
+    },
+    {
+      "path": "results/candidate-warmed-model.json",
+      "bytes": 12142929,
+      "sha256": "b7da4a76b86e9cc2c687f14399532058d87137e2ede42d7adc6f678277a35811"
+    }
+  ],
+  "new_GPU_experiment": false,
+  "original_measurements_or_gates_changed": false,
+  "arms": {
+    "control": {
+      "startup": [
+        {
+          "rank": 0,
+          "warmup_seconds": 31.27999795001233,
+          "trim_seconds": 0.03293101995950565,
+          "trim_return": 1,
+          "glibc": "2.39",
+          "process_memory_before_trim_bytes": {
+            "VmRSS": 6918426624,
+            "RssAnon": 3303776256,
+            "RssFile": 881287168,
+            "RssShmem": 2733363200,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_after_trim_bytes": {
+            "VmRSS": 6867996672,
+            "RssAnon": 3253346304,
+            "RssFile": 881287168,
+            "RssShmem": 2733363200,
+            "RSS_breakdown_residual": 0
+          },
+          "process_bytes_reclaimed_by_trim": {
+            "VmRSS": 50429952,
+            "RssAnon": 50429952,
+            "RssFile": 0,
+            "RssShmem": 0,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_stages_bytes": {
+            "telemetry_before": {
+              "VmRSS": 6789353472,
+              "RssAnon": 3176800256,
+              "RssFile": 879190016,
+              "RssShmem": 2733363200,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after_warmup": {
+              "VmRSS": 6918426624,
+              "RssAnon": 3303776256,
+              "RssFile": 881287168,
+              "RssShmem": 2733363200,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after": {
+              "VmRSS": 6870839296,
+              "RssAnon": 3256188928,
+              "RssFile": 881287168,
+              "RssShmem": 2733363200,
+              "RSS_breakdown_residual": 0
+            }
+          },
+          "CUDA_allocated_before_bytes": 94439704064,
+          "CUDA_allocated_after_bytes": 94439704064,
+          "CUDA_reserved_before_bytes": 94912905216,
+          "CUDA_reserved_after_bytes": 94912905216,
+          "post_trim_all_variant_repeat_seconds": 0.013894302013795823,
+          "startup_checks": {
+            "both_complete": true,
+            "all_34_specializations": true,
+            "exact_integer_metadata_and_guards": true,
+            "kernel_and_sources_unchanged": true,
+            "no_persistent_scratch_allocation": true,
+            "model_allocation_unchanged": true,
+            "all_34_variants_cached": true,
+            "cache_unchanged_after_trim": true,
+            "trim_return_valid": true,
+            "warm_calls_under_component_bound": true
+          }
+        },
+        {
+          "rank": 1,
+          "warmup_seconds": 31.451314167992678,
+          "trim_seconds": 0.0331821670406498,
+          "trim_return": 1,
+          "glibc": "2.39",
+          "process_memory_before_trim_bytes": {
+            "VmRSS": 6913527808,
+            "RssAnon": 3289206784,
+            "RssFile": 891318272,
+            "RssShmem": 2733002752,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_after_trim_bytes": {
+            "VmRSS": 6861631488,
+            "RssAnon": 3237310464,
+            "RssFile": 891318272,
+            "RssShmem": 2733002752,
+            "RSS_breakdown_residual": 0
+          },
+          "process_bytes_reclaimed_by_trim": {
+            "VmRSS": 51896320,
+            "RssAnon": 51896320,
+            "RssFile": 0,
+            "RssShmem": 0,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_stages_bytes": {
+            "telemetry_before": {
+              "VmRSS": 6783922176,
+              "RssAnon": 3161698304,
+              "RssFile": 889221120,
+              "RssShmem": 2733002752,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after_warmup": {
+              "VmRSS": 6913527808,
+              "RssAnon": 3289206784,
+              "RssFile": 891318272,
+              "RssShmem": 2733002752,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after": {
+              "VmRSS": 6865092608,
+              "RssAnon": 3240771584,
+              "RssFile": 891318272,
+              "RssShmem": 2733002752,
+              "RSS_breakdown_residual": 0
+            }
+          },
+          "CUDA_allocated_before_bytes": 94439704064,
+          "CUDA_allocated_after_bytes": 94439704064,
+          "CUDA_reserved_before_bytes": 94906613760,
+          "CUDA_reserved_after_bytes": 94906613760,
+          "post_trim_all_variant_repeat_seconds": 0.013644245045725256,
+          "startup_checks": {
+            "both_complete": true,
+            "all_34_specializations": true,
+            "exact_integer_metadata_and_guards": true,
+            "kernel_and_sources_unchanged": true,
+            "no_persistent_scratch_allocation": true,
+            "model_allocation_unchanged": true,
+            "all_34_variants_cached": true,
+            "cache_unchanged_after_trim": true,
+            "trim_return_valid": true,
+            "warm_calls_under_component_bound": true
+          }
+        }
+      ],
+      "summed_process_memory_bytes": {
+        "before_startup": {
+          "VmRSS": 13573275648,
+          "RssAnon": 6338498560,
+          "RssFile": 1768411136,
+          "RssShmem": 5466365952,
+          "RSS_breakdown_residual": 0
+        },
+        "after_startup_before_quality": {
+          "VmRSS": 13736517632,
+          "RssAnon": 6497464320,
+          "RssFile": 1772605440,
+          "RssShmem": 5466447872,
+          "RSS_breakdown_residual": 0
+        },
+        "after_unprofiled_timing": {
+          "VmRSS": 14014545920,
+          "RssAnon": 6581145600,
+          "RssFile": 1774788608,
+          "RssShmem": 5658611712,
+          "RSS_breakdown_residual": 0
+        },
+        "after_timing_and_profiles": {
+          "VmRSS": 15990018048,
+          "RssAnon": 8551247872,
+          "RssFile": 1778331648,
+          "RssShmem": 5660438528,
+          "RSS_breakdown_residual": 0
+        }
+      },
+      "summed_RSS_reclaimed_by_trim_bytes": 102326272,
+      "CUDA_allocated_bytes": {
+        "snapshot_before": 188879408128,
+        "snapshot_before_profiles": 188879404032,
+        "snapshot_after": 188879404032
+      },
+      "timing_boundary_telemetry": {
+        "samples": 144,
+        "SM_clock_MHz_min": 2437,
+        "SM_clock_MHz_max": 2496,
+        "temperature_C_min": 66,
+        "temperature_C_max": 76,
+        "transient_throttling_excluded": false
+      },
+      "timing_boundary_telemetry_by_case": [
+        {
+          "case": "c1-long",
+          "samples": 24,
+          "SM_clock_MHz_min": 2463,
+          "SM_clock_MHz_median": 2489.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 66,
+          "temperature_C_median": 71.0,
+          "temperature_C_max": 75
+        },
+        {
+          "case": "c1-short",
+          "samples": 24,
+          "SM_clock_MHz_min": 2470,
+          "SM_clock_MHz_median": 2489.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 66,
+          "temperature_C_median": 71.0,
+          "temperature_C_max": 75
+        },
+        {
+          "case": "c16-long",
+          "samples": 24,
+          "SM_clock_MHz_min": 2463,
+          "SM_clock_MHz_median": 2476.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 68,
+          "temperature_C_median": 72.0,
+          "temperature_C_max": 76
+        },
+        {
+          "case": "c16-short",
+          "samples": 24,
+          "SM_clock_MHz_min": 2437,
+          "SM_clock_MHz_median": 2470.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 68,
+          "temperature_C_median": 72.0,
+          "temperature_C_max": 76
+        },
+        {
+          "case": "c8-long",
+          "samples": 24,
+          "SM_clock_MHz_min": 2463,
+          "SM_clock_MHz_median": 2476.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 67,
+          "temperature_C_median": 72.0,
+          "temperature_C_max": 76
+        },
+        {
+          "case": "c8-short",
+          "samples": 24,
+          "SM_clock_MHz_min": 2437,
+          "SM_clock_MHz_median": 2476.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 66,
+          "temperature_C_median": 72.0,
+          "temperature_C_max": 76
+        }
+      ],
+      "unprofiled_trial_process_memory_bytes": [
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14010126336,
+            "RssAnon": 6576861184,
+            "RssFile": 1774788608,
+            "RssShmem": 5658476544,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010126336,
+            "RssAnon": 6576861184,
+            "RssFile": 1774788608,
+            "RssShmem": 5658476544,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14010404864,
+            "RssAnon": 6577106944,
+            "RssFile": 1774788608,
+            "RssShmem": 5658509312,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010408960,
+            "RssAnon": 6577111040,
+            "RssFile": 1774788608,
+            "RssShmem": 5658509312,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14010408960,
+            "RssAnon": 6577111040,
+            "RssFile": 1774788608,
+            "RssShmem": 5658509312,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010437632,
+            "RssAnon": 6577123328,
+            "RssFile": 1774788608,
+            "RssShmem": 5658525696,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14010437632,
+            "RssAnon": 6577123328,
+            "RssFile": 1774788608,
+            "RssShmem": 5658525696,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010437632,
+            "RssAnon": 6577123328,
+            "RssFile": 1774788608,
+            "RssShmem": 5658525696,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14010437632,
+            "RssAnon": 6577123328,
+            "RssFile": 1774788608,
+            "RssShmem": 5658525696,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010466304,
+            "RssAnon": 6577127424,
+            "RssFile": 1774788608,
+            "RssShmem": 5658550272,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14010466304,
+            "RssAnon": 6577127424,
+            "RssFile": 1774788608,
+            "RssShmem": 5658550272,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010470400,
+            "RssAnon": 6577131520,
+            "RssFile": 1774788608,
+            "RssShmem": 5658550272,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14010474496,
+            "RssAnon": 6577135616,
+            "RssFile": 1774788608,
+            "RssShmem": 5658550272,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14010503168,
+            "RssAnon": 6577139712,
+            "RssFile": 1774788608,
+            "RssShmem": 5658574848,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14010503168,
+            "RssAnon": 6577139712,
+            "RssFile": 1774788608,
+            "RssShmem": 5658574848,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011609088,
+            "RssAnon": 6578245632,
+            "RssFile": 1774788608,
+            "RssShmem": 5658574848,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14011609088,
+            "RssAnon": 6578245632,
+            "RssFile": 1774788608,
+            "RssShmem": 5658574848,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011617280,
+            "RssAnon": 6578249728,
+            "RssFile": 1774788608,
+            "RssShmem": 5658578944,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14011645952,
+            "RssAnon": 6578249728,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011650048,
+            "RssAnon": 6578253824,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14011650048,
+            "RssAnon": 6578253824,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011654144,
+            "RssAnon": 6578257920,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14011654144,
+            "RssAnon": 6578257920,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011654144,
+            "RssAnon": 6578257920,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14011654144,
+            "RssAnon": 6578257920,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011658240,
+            "RssAnon": 6578262016,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14011658240,
+            "RssAnon": 6578262016,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011662336,
+            "RssAnon": 6578266112,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14011662336,
+            "RssAnon": 6578266112,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011662336,
+            "RssAnon": 6578266112,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14011662336,
+            "RssAnon": 6578266112,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011666432,
+            "RssAnon": 6578270208,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14011666432,
+            "RssAnon": 6578270208,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011760640,
+            "RssAnon": 6578364416,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14011760640,
+            "RssAnon": 6578364416,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011797504,
+            "RssAnon": 6578401280,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14011797504,
+            "RssAnon": 6578401280,
+            "RssFile": 1774788608,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011805696,
+            "RssAnon": 6578405376,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14011805696,
+            "RssAnon": 6578405376,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011809792,
+            "RssAnon": 6578409472,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14011813888,
+            "RssAnon": 6578413568,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011850752,
+            "RssAnon": 6578450432,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14011850752,
+            "RssAnon": 6578450432,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011854848,
+            "RssAnon": 6578454528,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14011854848,
+            "RssAnon": 6578454528,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011858944,
+            "RssAnon": 6578458624,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14011858944,
+            "RssAnon": 6578458624,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011858944,
+            "RssAnon": 6578458624,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14011858944,
+            "RssAnon": 6578458624,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011863040,
+            "RssAnon": 6578462720,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14011863040,
+            "RssAnon": 6578462720,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011867136,
+            "RssAnon": 6578466816,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14011867136,
+            "RssAnon": 6578466816,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011867136,
+            "RssAnon": 6578466816,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14011871232,
+            "RssAnon": 6578470912,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14011875328,
+            "RssAnon": 6578475008,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14011875328,
+            "RssAnon": 6578475008,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14012063744,
+            "RssAnon": 6578663424,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14012129280,
+            "RssAnon": 6578728960,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014377984,
+            "RssAnon": 6580977664,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14014377984,
+            "RssAnon": 6580977664,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014382080,
+            "RssAnon": 6580981760,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14014382080,
+            "RssAnon": 6580981760,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014451712,
+            "RssAnon": 6581051392,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14014484480,
+            "RssAnon": 6581084160,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014537728,
+            "RssAnon": 6581137408,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14014537728,
+            "RssAnon": 6581137408,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014541824,
+            "RssAnon": 6581141504,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14014541824,
+            "RssAnon": 6581141504,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014541824,
+            "RssAnon": 6581141504,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14014541824,
+            "RssAnon": 6581141504,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14014545920,
+            "RssAnon": 6581145600,
+            "RssFile": 1774788608,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "startup": [
+        {
+          "rank": 0,
+          "warmup_seconds": 31.47168551100185,
+          "trim_seconds": 0.031860831019002944,
+          "trim_return": 1,
+          "glibc": "2.39",
+          "process_memory_before_trim_bytes": {
+            "VmRSS": 7005626368,
+            "RssAnon": 3372163072,
+            "RssFile": 900075520,
+            "RssShmem": 2733387776,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_after_trim_bytes": {
+            "VmRSS": 6956425216,
+            "RssAnon": 3322961920,
+            "RssFile": 900075520,
+            "RssShmem": 2733387776,
+            "RSS_breakdown_residual": 0
+          },
+          "process_bytes_reclaimed_by_trim": {
+            "VmRSS": 49201152,
+            "RssAnon": 49201152,
+            "RssFile": 0,
+            "RssShmem": 0,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_stages_bytes": {
+            "telemetry_before": {
+              "VmRSS": 6878363648,
+              "RssAnon": 3246997504,
+              "RssFile": 897978368,
+              "RssShmem": 2733387776,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after_warmup": {
+              "VmRSS": 7005626368,
+              "RssAnon": 3372163072,
+              "RssFile": 900075520,
+              "RssShmem": 2733387776,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after": {
+              "VmRSS": 6959468544,
+              "RssAnon": 3326005248,
+              "RssFile": 900075520,
+              "RssShmem": 2733387776,
+              "RSS_breakdown_residual": 0
+            }
+          },
+          "CUDA_allocated_before_bytes": 89411542528,
+          "CUDA_allocated_after_bytes": 89411542528,
+          "CUDA_reserved_before_bytes": 90500497408,
+          "CUDA_reserved_after_bytes": 90500497408,
+          "post_trim_all_variant_repeat_seconds": 0.014080694993026555,
+          "startup_checks": {
+            "both_complete": true,
+            "all_34_specializations": true,
+            "exact_integer_metadata_and_guards": true,
+            "kernel_and_sources_unchanged": true,
+            "no_persistent_scratch_allocation": true,
+            "model_allocation_unchanged": true,
+            "all_34_variants_cached": true,
+            "cache_unchanged_after_trim": true,
+            "trim_return_valid": true,
+            "warm_calls_under_component_bound": true
+          }
+        },
+        {
+          "rank": 1,
+          "warmup_seconds": 31.40791739098495,
+          "trim_seconds": 0.04436023597372696,
+          "trim_return": 1,
+          "glibc": "2.39",
+          "process_memory_before_trim_bytes": {
+            "VmRSS": 7077658624,
+            "RssAnon": 3437527040,
+            "RssFile": 907128832,
+            "RssShmem": 2733002752,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_after_trim_bytes": {
+            "VmRSS": 7027482624,
+            "RssAnon": 3387351040,
+            "RssFile": 907128832,
+            "RssShmem": 2733002752,
+            "RSS_breakdown_residual": 0
+          },
+          "process_bytes_reclaimed_by_trim": {
+            "VmRSS": 50176000,
+            "RssAnon": 50176000,
+            "RssFile": 0,
+            "RssShmem": 0,
+            "RSS_breakdown_residual": 0
+          },
+          "process_memory_stages_bytes": {
+            "telemetry_before": {
+              "VmRSS": 6949093376,
+              "RssAnon": 3311058944,
+              "RssFile": 905031680,
+              "RssShmem": 2733002752,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after_warmup": {
+              "VmRSS": 7077658624,
+              "RssAnon": 3437527040,
+              "RssFile": 907128832,
+              "RssShmem": 2733002752,
+              "RSS_breakdown_residual": 0
+            },
+            "telemetry_after": {
+              "VmRSS": 7030452224,
+              "RssAnon": 3390320640,
+              "RssFile": 907128832,
+              "RssShmem": 2733002752,
+              "RSS_breakdown_residual": 0
+            }
+          },
+          "CUDA_allocated_before_bytes": 89409951744,
+          "CUDA_allocated_after_bytes": 89409951744,
+          "CUDA_reserved_before_bytes": 90496303104,
+          "CUDA_reserved_after_bytes": 90496303104,
+          "post_trim_all_variant_repeat_seconds": 0.01616035000188276,
+          "startup_checks": {
+            "both_complete": true,
+            "all_34_specializations": true,
+            "exact_integer_metadata_and_guards": true,
+            "kernel_and_sources_unchanged": true,
+            "no_persistent_scratch_allocation": true,
+            "model_allocation_unchanged": true,
+            "all_34_variants_cached": true,
+            "cache_unchanged_after_trim": true,
+            "trim_return_valid": true,
+            "warm_calls_under_component_bound": true
+          }
+        }
+      ],
+      "summed_process_memory_bytes": {
+        "before_startup": {
+          "VmRSS": 13827457024,
+          "RssAnon": 6558056448,
+          "RssFile": 1803010048,
+          "RssShmem": 5466390528,
+          "RSS_breakdown_residual": 0
+        },
+        "after_startup_before_quality": {
+          "VmRSS": 13990457344,
+          "RssAnon": 6716805120,
+          "RssFile": 1807204352,
+          "RssShmem": 5466447872,
+          "RSS_breakdown_residual": 0
+        },
+        "after_unprofiled_timing": {
+          "VmRSS": 14277238784,
+          "RssAnon": 6804250624,
+          "RssFile": 1814372352,
+          "RssShmem": 5658615808,
+          "RSS_breakdown_residual": 0
+        },
+        "after_timing_and_profiles": {
+          "VmRSS": 15840141312,
+          "RssAnon": 8362475520,
+          "RssFile": 1817223168,
+          "RssShmem": 5660442624,
+          "RSS_breakdown_residual": 0
+        }
+      },
+      "summed_RSS_reclaimed_by_trim_bytes": 99377152,
+      "CUDA_allocated_bytes": {
+        "snapshot_before": 178821494272,
+        "snapshot_before_profiles": 178821490176,
+        "snapshot_after": 178821490176
+      },
+      "timing_boundary_telemetry": {
+        "samples": 144,
+        "SM_clock_MHz_min": 2457,
+        "SM_clock_MHz_max": 2496,
+        "temperature_C_min": 68,
+        "temperature_C_max": 79,
+        "transient_throttling_excluded": false
+      },
+      "timing_boundary_telemetry_by_case": [
+        {
+          "case": "c1-long",
+          "samples": 24,
+          "SM_clock_MHz_min": 2463,
+          "SM_clock_MHz_median": 2476.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 68,
+          "temperature_C_median": 75.0,
+          "temperature_C_max": 79
+        },
+        {
+          "case": "c1-short",
+          "samples": 24,
+          "SM_clock_MHz_min": 2470,
+          "SM_clock_MHz_median": 2476.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 68,
+          "temperature_C_median": 76.0,
+          "temperature_C_max": 79
+        },
+        {
+          "case": "c16-long",
+          "samples": 24,
+          "SM_clock_MHz_min": 2463,
+          "SM_clock_MHz_median": 2473.0,
+          "SM_clock_MHz_max": 2476,
+          "temperature_C_min": 70,
+          "temperature_C_median": 75.0,
+          "temperature_C_max": 79
+        },
+        {
+          "case": "c16-short",
+          "samples": 24,
+          "SM_clock_MHz_min": 2457,
+          "SM_clock_MHz_median": 2470.0,
+          "SM_clock_MHz_max": 2489,
+          "temperature_C_min": 70,
+          "temperature_C_median": 75.0,
+          "temperature_C_max": 79
+        },
+        {
+          "case": "c8-long",
+          "samples": 24,
+          "SM_clock_MHz_min": 2457,
+          "SM_clock_MHz_median": 2470.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 68,
+          "temperature_C_median": 75.0,
+          "temperature_C_max": 79
+        },
+        {
+          "case": "c8-short",
+          "samples": 24,
+          "SM_clock_MHz_min": 2463,
+          "SM_clock_MHz_median": 2476.0,
+          "SM_clock_MHz_max": 2496,
+          "temperature_C_min": 68,
+          "temperature_C_median": 75.0,
+          "temperature_C_max": 79
+        }
+      ],
+      "unprofiled_trial_process_memory_bytes": [
+        {
+          "case": "c1-short",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14267531264,
+            "RssAnon": 6798880768,
+            "RssFile": 1810178048,
+            "RssShmem": 5658472448,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14267531264,
+            "RssAnon": 6798880768,
+            "RssFile": 1810178048,
+            "RssShmem": 5658472448,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14267924480,
+            "RssAnon": 6799273984,
+            "RssFile": 1810178048,
+            "RssShmem": 5658472448,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14267928576,
+            "RssAnon": 6799278080,
+            "RssFile": 1810178048,
+            "RssShmem": 5658472448,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14267928576,
+            "RssAnon": 6799278080,
+            "RssFile": 1810178048,
+            "RssShmem": 5658472448,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14267944960,
+            "RssAnon": 6799282176,
+            "RssFile": 1810178048,
+            "RssShmem": 5658484736,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14267973632,
+            "RssAnon": 6799282176,
+            "RssFile": 1810178048,
+            "RssShmem": 5658513408,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14267977728,
+            "RssAnon": 6799286272,
+            "RssFile": 1810178048,
+            "RssShmem": 5658513408,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14267977728,
+            "RssAnon": 6799286272,
+            "RssFile": 1810178048,
+            "RssShmem": 5658513408,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14268010496,
+            "RssAnon": 6799294464,
+            "RssFile": 1810178048,
+            "RssShmem": 5658537984,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 0,
+          "before": {
+            "VmRSS": 14268043264,
+            "RssAnon": 6799294464,
+            "RssFile": 1810178048,
+            "RssShmem": 5658570752,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14268051456,
+            "RssAnon": 6799298560,
+            "RssFile": 1810178048,
+            "RssShmem": 5658574848,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14268051456,
+            "RssAnon": 6799298560,
+            "RssFile": 1810178048,
+            "RssShmem": 5658574848,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14268088320,
+            "RssAnon": 6799302656,
+            "RssFile": 1810178048,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14268088320,
+            "RssAnon": 6799302656,
+            "RssFile": 1810178048,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14272782336,
+            "RssAnon": 6799802368,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14272983040,
+            "RssAnon": 6800003072,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273007616,
+            "RssAnon": 6800027648,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14273007616,
+            "RssAnon": 6800027648,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273011712,
+            "RssAnon": 6800031744,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14273011712,
+            "RssAnon": 6800031744,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273015808,
+            "RssAnon": 6800035840,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 1,
+          "before": {
+            "VmRSS": 14273024000,
+            "RssAnon": 6800044032,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273024000,
+            "RssAnon": 6800044032,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14273028096,
+            "RssAnon": 6800048128,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273028096,
+            "RssAnon": 6800048128,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14273028096,
+            "RssAnon": 6800048128,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273032192,
+            "RssAnon": 6800052224,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14273040384,
+            "RssAnon": 6800060416,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273044480,
+            "RssAnon": 6800064512,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14273044480,
+            "RssAnon": 6800064512,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273044480,
+            "RssAnon": 6800064512,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14273044480,
+            "RssAnon": 6800064512,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273179648,
+            "RssAnon": 6800199680,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 2,
+          "before": {
+            "VmRSS": 14273179648,
+            "RssAnon": 6800199680,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14273183744,
+            "RssAnon": 6800203776,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14273187840,
+            "RssAnon": 6800207872,
+            "RssFile": 1814372352,
+            "RssShmem": 5658607616,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14274301952,
+            "RssAnon": 6801317888,
+            "RssFile": 1814372352,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14274301952,
+            "RssAnon": 6801317888,
+            "RssFile": 1814372352,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14276755456,
+            "RssAnon": 6803771392,
+            "RssFile": 1814372352,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14277128192,
+            "RssAnon": 6804144128,
+            "RssFile": 1814372352,
+            "RssShmem": 5658611712,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277169152,
+            "RssAnon": 6804180992,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14277169152,
+            "RssAnon": 6804180992,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277173248,
+            "RssAnon": 6804185088,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14277173248,
+            "RssAnon": 6804185088,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277177344,
+            "RssAnon": 6804189184,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 3,
+          "before": {
+            "VmRSS": 14277177344,
+            "RssAnon": 6804189184,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277177344,
+            "RssAnon": 6804189184,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14277177344,
+            "RssAnon": 6804189184,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277181440,
+            "RssAnon": 6804193280,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14277185536,
+            "RssAnon": 6804197376,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277189632,
+            "RssAnon": 6804201472,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14277189632,
+            "RssAnon": 6804201472,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277189632,
+            "RssAnon": 6804201472,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14277189632,
+            "RssAnon": 6804201472,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277193728,
+            "RssAnon": 6804205568,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14277193728,
+            "RssAnon": 6804205568,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277214208,
+            "RssAnon": 6804226048,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 4,
+          "before": {
+            "VmRSS": 14277214208,
+            "RssAnon": 6804226048,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277218304,
+            "RssAnon": 6804230144,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-long",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14277218304,
+            "RssAnon": 6804230144,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277222400,
+            "RssAnon": 6804234240,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c16-short",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14277222400,
+            "RssAnon": 6804234240,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277222400,
+            "RssAnon": 6804234240,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-long",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14277222400,
+            "RssAnon": 6804234240,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277226496,
+            "RssAnon": 6804238336,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c8-short",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14277226496,
+            "RssAnon": 6804238336,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277230592,
+            "RssAnon": 6804242432,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-long",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14277230592,
+            "RssAnon": 6804242432,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277230592,
+            "RssAnon": 6804242432,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        },
+        {
+          "case": "c1-short",
+          "repeat": 5,
+          "before": {
+            "VmRSS": 14277234688,
+            "RssAnon": 6804246528,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          },
+          "after": {
+            "VmRSS": 14277238784,
+            "RssAnon": 6804250624,
+            "RssFile": 1814372352,
+            "RssShmem": 5658615808,
+            "RSS_breakdown_residual": 0
+          }
+        }
+      ]
+    }
+  },
+  "control_minus_candidate": {
+    "process_memory_bytes": {
+      "before_startup": {
+        "VmRSS": -254181376,
+        "RssAnon": -219557888,
+        "RssFile": -34598912,
+        "RssShmem": -24576,
+        "RSS_breakdown_residual": 0
+      },
+      "after_startup_before_quality": {
+        "VmRSS": -253939712,
+        "RssAnon": -219340800,
+        "RssFile": -34598912,
+        "RssShmem": 0,
+        "RSS_breakdown_residual": 0
+      },
+      "after_unprofiled_timing": {
+        "VmRSS": -262692864,
+        "RssAnon": -223105024,
+        "RssFile": -39583744,
+        "RssShmem": -4096,
+        "RSS_breakdown_residual": 0
+      },
+      "after_timing_and_profiles": {
+        "VmRSS": 149876736,
+        "RssAnon": 188772352,
+        "RssFile": -38891520,
+        "RssShmem": -4096,
+        "RSS_breakdown_residual": 0
+      }
+    },
+    "CUDA_allocated_bytes": {
+      "snapshot_before": 10057913856,
+      "snapshot_before_profiles": 10057913856,
+      "snapshot_after": 10057913856
+    },
+    "positive_means_candidate_uses_less": true
+  },
+  "limits": [
+    "RSS and CUDA counters overlap on unified-memory Spark; never add them.",
+    "Rank RSS totals are closely sampled process totals, not an independently measured physical-memory peak.",
+    "Trim before/after is a direct same-process observation; persistence is checked separately after inference.",
+    "Memory after ordinary timing is reported separately from the later profiler-influenced snapshot.",
+    "Model arms load sequentially with a time gap; all original speed and numerical gates remain unchanged.",
+    "Clock and thermal readings occur at timing boundaries and cannot exclude transient throttling within a trial.",
+    "No clock normalization or removal of temperature outliers is applied to throughput."
+  ]
+}

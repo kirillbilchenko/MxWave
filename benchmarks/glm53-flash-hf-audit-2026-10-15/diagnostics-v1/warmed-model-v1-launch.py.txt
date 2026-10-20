@@ -1,0 +1,41 @@
+"""Launch the authorized paired run only after frozen source and CPU checks pass."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+ROOT=pathlib.Path("/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1")
+REV="warmedmodelv1";sys.path.insert(0,str(ROOT/f"full-{REV}-src"));import full_model_control as c
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ receipt=ROOT/"warmed-model-v1-launch.json";assert not receipt.exists()
+ assert not(ROOT/f"quality-model-controller-{REV}.json").exists()
+ state=json.loads((ROOT/"warmed-model-v1-preparation.json").read_bytes())
+ path=ROOT/"warmed-model-v1-prepared.json";prepared=json.loads(path.read_bytes())
+ assert state["status"]=="passed"and state["source_files"]==207 and sha(path)==state["prepared_sha256"]
+ checks=json.loads((ROOT/"warmed-model-v1-local-checks.json").read_bytes())
+ assert checks["ruff_passed"]and checks["mypy_passed"]and checks["pytest_passed"]
+ assert checks["CPU_protocol_simulation_passed"]
+ mechanism=json.loads((ROOT/"warmed-model-v1-mechanism-CPU-check.json").read_bytes());assert mechanism["status"]=="passed"
+ plan=json.loads((ROOT/"run-warmedmodelv1/results/warmed-model-plan.json").read_bytes())
+ assert checks["sources"]==plan["source_sha256"]
+ assert [c.preflight(rank,ROOT/f"full-{REV}-src")for rank in(0,1)]==prepared["bindings"]
+ assert sha(ROOT/"verify-warmed-model-v1.py")==mechanism["verifier_sha256"]
+ assert sha(ROOT/"warmed-model-v1-source-only.tar.gz")==prepared["source_archive_sha256"]
+ assert c.health(8000)
+ originals=[c.inspect(rank,c.ORIGINAL_IDS[rank])for rank in(0,1)]
+ assert all(x["State"]["Running"]for x in originals)
+ assert [c.identity(x)for x in originals]==prepared["originals"]
+ collect=subprocess.Popen(["python3","-S","-u",str(ROOT/"collect-warmed-model-v1.py")],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/"warmed-model-v1-collector.log").open("xb"),stderr=subprocess.STDOUT,start_new_session=True)
+ run=subprocess.Popen(["python3","-S","-u",str(ROOT/f"full-{REV}-src/run_warmed_model.py"),"--revision",REV,"--profile"],
+  stdin=subprocess.DEVNULL,stdout=(ROOT/"warmed-model-v1-controller.log").open("xb"),stderr=subprocess.STDOUT,start_new_session=True)
+ result={"controller_pid":run.pid,"collector_pid":collect.pid,"started_epoch":time.time(),"source_files":207,
+ "prepared_sha256":sha(path),"plan_sha256":state["plan_sha256"],"source_archive_sha256":prepared["source_archive_sha256"],
+ "collector_sha256":sha(ROOT/"collect-warmed-model-v1.py"),"verifier_sha256":sha(ROOT/"verify-warmed-model-v1.py"),
+ "launcher_sha256":sha(pathlib.Path(__file__)),"model_loads":2,"startup_warmup_both_arms":True,"startup_trim_once_both_arms":True,"candidate_exact16_input_output_enabled":True,"native_mhc":True,"consistent_mhc_policy_enabled":False,
+ "quality_groups":20,"numerical_comparisons":46,"timing_groups":72,"profile_sessions":6,"worker_profiles_expected":12,
+ "quality_qualified":False,"automatic_promotion_allowed":False,"MTP_deferred_by_user":True}
+ c.write(receipt,result)
+ status=json.loads((ROOT/"CURRENT_LOSSLESS_STATUS.json").read_bytes())
+ status.update(active_experiment=REV,launch=result,state="Fresh C1/C8/C16 quality, ordinary short/long API speed and CPU/CUDA memory comparison with identical qualified startup warmup and one-time heap trimming launched.",
+ user_resumed_work=True,work_paused_by_user=False,updated_epoch=time.time())
+ c.write(ROOT/"CURRENT_LOSSLESS_STATUS.json",status);print(json.dumps(result))
+if __name__=="__main__":main()

@@ -1,0 +1,459 @@
+{
+  "status": "passed",
+  "passed": true,
+  "seconds": 5.128096546017332,
+  "cuda_peak_bytes": 1030934016,
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GB10",
+  "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+  "code_sha256": "61097ffd4bcbe77e3b9446bd07431638549112ed77166415332e79c8e14ec1f3",
+  "prepared_sha256": "9511784249f49a84633d74fb1104429970c6b954d686fa26af3111c91ef3afce",
+  "gate": "Exact GPU decoded weights and exact stock-GEMM output bytes at every shape",
+  "limits": [
+    "Component only, random BF16 activations, one Spark.",
+    "Candidate owns a transient full projection, not a persistent dense model.",
+    "Paired comparison retains a separate dense control; peak is not net saving.",
+    "Profiling is separate from five paired timing trials."
+  ],
+  "raw_report_sha256": "949eedc686b8367603495be820d77c79147be6dbb3a4d398b898969a3ae21fec",
+  "raw_report_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/diagnostics-v1/bf16prefillv1-attempt1/report.json",
+  "evidence_archive": {
+    "bytes": 72311,
+    "sha256": "bdd8cf182a1a1c49e23496201fefde9e48da354c91bcd022dcd23733f72687b0",
+    "spark2_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/diagnostics-v1/bf16prefillv1-evidence.tar.gz"
+  },
+  "guard": {
+    "phase": "complete_idle",
+    "attempts": 1,
+    "production_stopped": false,
+    "interrupted_attempts": 0
+  },
+  "cases": [
+    {
+      "name": "kda-input-l0-r0",
+      "gpu_decode_bits_exact": true,
+      "raw_bytes": 103022592,
+      "retained_bytes": 73394904,
+      "scratch_weight_bytes": 103284736,
+      "measurements": [
+        {
+          "tokens": 1,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.5977279841899872,
+            "zipserv_ms": 1.334384024143219,
+            "speedup": 0.4474815725638003,
+            "latency_ratio": 2.2324268888824292
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.6001920104026794,
+            "zipserv_ms": 1.3137919902801514,
+            "speedup": 0.45717493706769846,
+            "latency_ratio": 2.1889528142813917
+          }
+        },
+        {
+          "tokens": 128,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.4734079986810684,
+            "zipserv_ms": 1.3050400018692017,
+            "speedup": 0.3651148736669117,
+            "latency_ratio": 2.7566919137511188
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.4827199876308441,
+            "zipserv_ms": 1.2611199617385864,
+            "speedup": 0.38346170949912606,
+            "latency_ratio": 2.61252899000117
+          }
+        },
+        {
+          "tokens": 512,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.6435839831829071,
+            "zipserv_ms": 1.4862719774246216,
+            "speedup": 0.4338728576742448,
+            "latency_ratio": 2.309367567033162
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.648639976978302,
+            "zipserv_ms": 1.4615039825439453,
+            "speedup": 0.4457042310868275,
+            "latency_ratio": 2.2531820954859754
+          }
+        },
+        {
+          "tokens": 2048,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 2.226288080215454,
+            "zipserv_ms": 3.0890079736709595,
+            "speedup": 0.719682396110294,
+            "latency_ratio": 1.3875149407313063
+          },
+          "eager_cuda_events": {
+            "dense_ms": 2.259455919265747,
+            "zipserv_ms": 3.0183041095733643,
+            "speedup": 0.7481033581888352,
+            "latency_ratio": 1.3358543903588167
+          }
+        }
+      ],
+      "traces": [
+        {
+          "file": "kda-input-l0-r0-m1.trace.json.gz",
+          "bytes": 6457,
+          "sha256": "87378542945f3cd2997a6b132bf2d0a655d6fd51a5bcbe3872021f9c43e20bff",
+          "kernel_totals": {
+            "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 6, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)": {
+              "calls": 6,
+              "sum_us": 3398.651
+            },
+            "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)": {
+              "calls": 3,
+              "sum_us": 2351.581
+            },
+            "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)": {
+              "calls": 3,
+              "sum_us": 2.144
+            },
+            "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)": {
+              "calls": 3,
+              "sum_us": 1212.446
+            },
+            "SplitK_Reduction_BF16(__nv_bfloat16*, __nv_bfloat16*, int, int, int)": {
+              "calls": 3,
+              "sum_us": 7.648
+            }
+          },
+          "note": "Three calls per path, sequential scopes; profiled durations are not timing medians",
+          "mean_us_per_call_by_family": {
+            "dense_gemm_pooled_across_two_paths": 566.4418333333333,
+            "decode": 783.8603333333334,
+            "other:void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array": 0.7146666666666667,
+            "fused_gemm": 404.14866666666666,
+            "splitk_reduction": 2.5493333333333332
+          }
+        },
+        {
+          "file": "kda-input-l0-r0-m2048.trace.json.gz",
+          "bytes": 6152,
+          "sha256": "1fb92c50797e52f428895e9b8f4155ed1ed6ba901e12927f70244e772e60586e",
+          "kernel_totals": {
+            "nvjet_sm121_tst_mma_128x208x64_2_32x104x64_tmaAB_bz_TNNN": {
+              "calls": 6,
+              "sum_us": 13616.579999999998
+            },
+            "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)": {
+              "calls": 3,
+              "sum_us": 2377.878
+            },
+            "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)": {
+              "calls": 3,
+              "sum_us": 30956.695
+            },
+            "SplitK_Reduction_BF16(__nv_bfloat16*, __nv_bfloat16*, int, int, int)": {
+              "calls": 3,
+              "sum_us": 3238.642
+            },
+            "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1} const&)::{lambda(int)#1})": {
+              "calls": 3,
+              "sum_us": 1305.307
+            }
+          },
+          "note": "Three calls per path, sequential scopes; profiled durations are not timing medians",
+          "mean_us_per_call_by_family": {
+            "dense_gemm_pooled_across_two_paths": 2269.43,
+            "decode": 792.6260000000001,
+            "fused_gemm": 10318.898333333333,
+            "splitk_reduction": 1079.5473333333332,
+            "other:void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::direct_co": 435.1023333333333
+          }
+        }
+      ]
+    },
+    {
+      "name": "mla-input-l3-replicated",
+      "gpu_decode_bits_exact": true,
+      "raw_bytes": 16777216,
+      "retained_bytes": 11882136,
+      "scratch_weight_bytes": 16777216,
+      "measurements": [
+        {
+          "tokens": 1,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.10622400045394897,
+            "zipserv_ms": 0.12855999916791916,
+            "speedup": 0.8221889767176326,
+            "latency_ratio": 1.2102726184150205
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.10995200276374817,
+            "zipserv_ms": 0.13648000359535217,
+            "speedup": 0.7944180343112186,
+            "latency_ratio": 1.2412689188445638
+          }
+        },
+        {
+          "tokens": 128,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.11585600301623344,
+            "zipserv_ms": 0.15476800501346588,
+            "speedup": 0.7378424906715912,
+            "latency_ratio": 1.3358652204821893
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.10367999970912933,
+            "zipserv_ms": 0.16012799739837646,
+            "speedup": 0.6394315936514938,
+            "latency_ratio": 1.5444444236845105
+          }
+        },
+        {
+          "tokens": 512,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.14760000258684158,
+            "zipserv_ms": 0.2370240017771721,
+            "speedup": 0.6067708382727187,
+            "latency_ratio": 1.6058536424328125
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.1467839926481247,
+            "zipserv_ms": 0.24607999622821808,
+            "speedup": 0.5961788175677168,
+            "latency_ratio": 1.676477058490492
+          }
+        },
+        {
+          "tokens": 2048,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.36660799384117126,
+            "zipserv_ms": 0.4705920070409775,
+            "speedup": 0.7838504286086789,
+            "latency_ratio": 1.2836381501404361
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.3729279935359955,
+            "zipserv_ms": 0.4752959907054901,
+            "speedup": 0.7841775034122951,
+            "latency_ratio": 1.274498023596649
+          }
+        }
+      ],
+      "traces": [
+        {
+          "file": "mla-input-l3-replicated-m1.trace.json.gz",
+          "bytes": 6329,
+          "sha256": "95b876040d86d65c66316ffb43e34a1f44ebf4f3b03c0136d77e03ea5684ae92",
+          "kernel_totals": {
+            "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 6, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)": {
+              "calls": 6,
+              "sum_us": 472.2460000000001
+            },
+            "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)": {
+              "calls": 3,
+              "sum_us": 178.941
+            },
+            "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)": {
+              "calls": 3,
+              "sum_us": 2.144
+            },
+            "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)": {
+              "calls": 3,
+              "sum_us": 148.159
+            },
+            "SplitK_Reduction_BF16(__nv_bfloat16*, __nv_bfloat16*, int, int, int)": {
+              "calls": 3,
+              "sum_us": 4.671
+            }
+          },
+          "note": "Three calls per path, sequential scopes; profiled durations are not timing medians",
+          "mean_us_per_call_by_family": {
+            "dense_gemm_pooled_across_two_paths": 78.70766666666668,
+            "decode": 59.647,
+            "other:void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array": 0.7146666666666667,
+            "fused_gemm": 49.38633333333333,
+            "splitk_reduction": 1.5570000000000002
+          }
+        },
+        {
+          "file": "mla-input-l3-replicated-m2048.trace.json.gz",
+          "bytes": 5333,
+          "sha256": "5c32004dbf1fd6b020c7626d54d5470f0262a763927659e1c4a5a672ba66d2f3",
+          "kernel_totals": {
+            "nvjet_sm121_tst_mma_128x176x64_2_32x88x64_tmaAB_bz_TNNN": {
+              "calls": 6,
+              "sum_us": 2186.502
+            },
+            "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)": {
+              "calls": 3,
+              "sum_us": 345.116
+            },
+            "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)": {
+              "calls": 3,
+              "sum_us": 4013.4610000000002
+            },
+            "SplitK_Reduction_BF16(__nv_bfloat16*, __nv_bfloat16*, int, int, int)": {
+              "calls": 3,
+              "sum_us": 471.74
+            }
+          },
+          "note": "Three calls per path, sequential scopes; profiled durations are not timing medians",
+          "mean_us_per_call_by_family": {
+            "dense_gemm_pooled_across_two_paths": 364.417,
+            "decode": 115.03866666666666,
+            "fused_gemm": 1337.8203333333333,
+            "splitk_reduction": 157.24666666666667
+          }
+        }
+      ]
+    },
+    {
+      "name": "kda-output-l0-r0",
+      "gpu_decode_bits_exact": true,
+      "raw_bytes": 33554432,
+      "retained_bytes": 23809768,
+      "scratch_weight_bytes": 33554432,
+      "measurements": [
+        {
+          "tokens": 1,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.2024800032377243,
+            "zipserv_ms": 0.36478400230407715,
+            "speedup": 0.5538057767910666,
+            "latency_ratio": 1.8015803855741632
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.20822399854660034,
+            "zipserv_ms": 0.3728640079498291,
+            "speedup": 0.560181646601969,
+            "latency_ratio": 1.7906870031908568
+          }
+        },
+        {
+          "tokens": 128,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.18147200345993042,
+            "zipserv_ms": 0.3561920076608658,
+            "speedup": 0.5077446571840313,
+            "latency_ratio": 1.962793162965846
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.1836480051279068,
+            "zipserv_ms": 0.36006399989128113,
+            "speedup": 0.4859384122422561,
+            "latency_ratio": 1.9606202617910522
+          }
+        },
+        {
+          "tokens": 512,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.2271680012345314,
+            "zipserv_ms": 0.5002880096435547,
+            "speedup": 0.45508463101284463,
+            "latency_ratio": 2.20228204203395
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.235167995095253,
+            "zipserv_ms": 0.5049920082092285,
+            "speedup": 0.4668956363066433,
+            "latency_ratio": 2.1473670684001256
+          }
+        },
+        {
+          "tokens": 2048,
+          "output_bits_exact": true,
+          "graph_replay": {
+            "dense_ms": 0.719760000705719,
+            "zipserv_ms": 0.9917439818382263,
+            "speedup": 0.7251735842092447,
+            "latency_ratio": 1.3778814894768106
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.7284799814224243,
+            "zipserv_ms": 1.0103360414505005,
+            "speedup": 0.7190459665246609,
+            "latency_ratio": 1.3869098221171792
+          }
+        }
+      ],
+      "traces": [
+        {
+          "file": "kda-output-l0-r0-m1.trace.json.gz",
+          "bytes": 6379,
+          "sha256": "068440b3422b2517ac6f1a28c138ab99435224490f5b5e60f832ce8e84615fed",
+          "kernel_totals": {
+            "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 6, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)": {
+              "calls": 6,
+              "sum_us": 906.8310000000001
+            },
+            "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)": {
+              "calls": 3,
+              "sum_us": 622.896
+            },
+            "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul> >(int, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1ul>)": {
+              "calls": 3,
+              "sum_us": 2.208
+            },
+            "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)": {
+              "calls": 3,
+              "sum_us": 425.623
+            },
+            "SplitK_Reduction_BF16(__nv_bfloat16*, __nv_bfloat16*, int, int, int)": {
+              "calls": 3,
+              "sum_us": 4.768000000000001
+            }
+          },
+          "note": "Three calls per path, sequential scopes; profiled durations are not timing medians",
+          "mean_us_per_call_by_family": {
+            "dense_gemm_pooled_across_two_paths": 151.13850000000002,
+            "decode": 207.63199999999998,
+            "other:void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array": 0.7360000000000001,
+            "fused_gemm": 141.87433333333334,
+            "splitk_reduction": 1.5893333333333335
+          }
+        },
+        {
+          "file": "kda-output-l0-r0-m2048.trace.json.gz",
+          "bytes": 5344,
+          "sha256": "487a77bbf47b815e9a823320537e74a86d658e089e7be21665dff85edd3907f0",
+          "kernel_totals": {
+            "nvjet_sm121_tst_mma_192x144x64_2_48x72x64_tmaAB_bz_TNNN": {
+              "calls": 6,
+              "sum_us": 4824.228
+            },
+            "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)": {
+              "calls": 3,
+              "sum_us": 744.317
+            },
+            "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)": {
+              "calls": 3,
+              "sum_us": 7930.870000000001
+            },
+            "SplitK_Reduction_BF16(__nv_bfloat16*, __nv_bfloat16*, int, int, int)": {
+              "calls": 3,
+              "sum_us": 942.715
+            }
+          },
+          "note": "Three calls per path, sequential scopes; profiled durations are not timing medians",
+          "mean_us_per_call_by_family": {
+            "dense_gemm_pooled_across_two_paths": 804.038,
+            "decode": 248.10566666666668,
+            "fused_gemm": 2643.6233333333334,
+            "splitk_reduction": 314.23833333333334
+          }
+        }
+      ]
+    }
+  ]
+}

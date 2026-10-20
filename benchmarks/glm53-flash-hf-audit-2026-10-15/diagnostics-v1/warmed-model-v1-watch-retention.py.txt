@@ -1,0 +1,121 @@
+"""Observe only the existing run; retain and analyze its terminal evidence once."""
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import shlex
+import subprocess
+import sys
+import time
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+REMOTE = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+
+POLL = '''import pathlib,json,subprocess,time
+r=pathlib.Path(ROOT)
+s=json.loads((r/'quality-model-controller-warmedmodelv1.json').read_bytes())
+c=json.loads((r/'warmed-model-v1-evidence-check.json').read_bytes())
+jobs={}
+for label,pid,needle in [('controller',3129756,'run_warmed_model.py'),('collector',3129755,'collect-warmed-model-v1.py'),('watchdog',3134792,'run_warmed_model.py')]:
+ p=subprocess.run(['ps','-p',str(pid),'-o','stat=,args='],capture_output=True,text=True)
+ raw=p.stdout.strip();jobs[label]={'pid':pid,'live':p.returncode==0 and not raw.startswith('Z') and needle in raw,'ps':raw}
+arms={}
+for arm in ('control','candidate'):
+ p=r/'run-warmedmodelv1/results'/f'{arm}-warmed-model.json'
+ if not p.exists():continue
+ d=json.loads(p.read_bytes())
+ arms[arm]={'phase':d.get('phase'),'status':d.get('status'),'error':d.get('error'),
+ 'quality_complete':sum(x.get('status')=='complete'for x in d.get('quality',[])),
+ 'timing_complete':len(d.get('timing',[])),'profiles_complete':sum(x.get('status')=='complete'for x in d.get('profiles',[])),
+ 'self_comparisons':[{k:v for k,v in x.items()if k!='steps'}for x in d.get('self_comparisons',[])],
+ 'startup_complete':len(d.get('dispatch_startup',[]))==2}
+print(json.dumps({'epoch':time.time(),'controller_phase':s['phase'],'service_paused':s['service_paused'],'error':s.get('error'),'collector_status':c['status'],'collector_error':c.get('error'),'jobs':jobs,'arms':arms}))
+'''.replace('ROOT', repr(REMOTE))
+
+
+def save(value):
+    temp = BASE / 'retention-pipeline-status.tmp'
+    temp.write_text(json.dumps(value, indent=2) + '\n')
+    temp.replace(BASE / 'retention-pipeline-status.json')
+
+
+def main():
+    status_path = BASE / 'retention-pipeline-status.json'
+    assert not status_path.exists(), 'Preserve any earlier pipeline run'
+    status = {'status': 'waiting', 'started_epoch': time.time(), 'pid': os.getpid(),
+              'experiments_started': 0, 'automatic_promotion_allowed': False}
+    save(status)
+    previous = None
+    deadline = time.monotonic() + 10800
+    failures = 0
+    while time.monotonic() < deadline:
+        try:
+            raw = subprocess.check_output(
+                ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+                 'python3 -S -c ' + shlex.quote(POLL)], text=True, timeout=30)
+            observed = json.loads(raw)
+            failures = 0
+        except (subprocess.SubprocessError, json.JSONDecodeError) as exc:
+            failures += 1
+            status.update(observation_error=repr(exc), consecutive_observation_failures=failures,
+                          updated_epoch=time.time())
+            save(status)
+            # A polling failure is never interpreted as a stopped model or permission to restart.
+            print(json.dumps({'observation_error':repr(exc),'retrying_same_run':True}), flush=True)
+            time.sleep(30)
+            continue
+        with (BASE / 'live-observations.jsonl').open('a') as stream:
+            stream.write(json.dumps(observed) + '\n')
+        status.update(last_observation=observed, updated_epoch=time.time())
+        save(status)
+        key = (observed['controller_phase'], observed['collector_status'],
+               tuple((a,v['phase'],v['quality_complete'],v['timing_complete'],v['profiles_complete'])
+                     for a,v in observed['arms'].items()))
+        if key != previous:
+            print(json.dumps({'epoch':observed['epoch'],'controller':observed['controller_phase'],
+                              'collector':observed['collector_status'],
+                              'arms':{a:{k:v for k,v in x.items()if k!='self_comparisons'}
+                                      for a,x in observed['arms'].items()}}), flush=True)
+            previous = key
+        if not observed['jobs']['collector']['live']:
+            assert observed['collector_status'] == 'complete', observed
+            assert not observed['jobs']['controller']['live'] and not observed['service_paused'], observed
+            break
+        time.sleep(45)
+    else:
+        raise TimeoutError('Existing-run retention observation deadline; no restart attempted')
+    status.update(status='retaining', updated_epoch=time.time())
+    save(status)
+    env = dict(os.environ, OPENBLAS_NUM_THREADS='1', OMP_NUM_THREADS='1')
+    with (BASE / 'automatic-retention.log').open('x') as log:
+        done = subprocess.run([sys.executable,'-B',str(BASE/'retain_and_review.py')],
+                              stdout=log,stderr=subprocess.STDOUT,env=env,timeout=1500)
+    assert done.returncode == 0, 'Independent retention failed; inspect automatic-retention.log'
+    proof = json.loads((BASE / 'cross-host-verification.json').read_bytes())
+    status['cross_host_verification'] = proof
+    status['analyses'] = {}
+    if proof['measurement_complete']:
+        for name in ('analyze_latency.py','analyze_resources.py','analyze_profiles.py'):
+            status.update(status='analyzing', current_analysis=name, updated_epoch=time.time())
+            save(status)
+            with (BASE / (name + '.log')).open('x') as log:
+                result = subprocess.run([sys.executable,'-B',str(BASE/name)],
+                                        stdout=log,stderr=subprocess.STDOUT,env=env,timeout=900)
+            status['analyses'][name] = {'exit_code':result.returncode}
+            save(status)
+    status.update(status='complete' if all(x['exit_code']==0 for x in status['analyses'].values())
+                  else 'retained_with_analysis_failure', finished_epoch=time.time())
+    save(status)
+    print(json.dumps(status), flush=True)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except BaseException as exc:
+        p=BASE/'retention-pipeline-status.json'
+        state=json.loads(p.read_bytes())if p.exists()else{}
+        state.update(status='failed',error=repr(exc),finished_epoch=time.time())
+        save(state)
+        raise

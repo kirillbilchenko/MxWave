@@ -1,0 +1,19 @@
+{
+  "status": "released",
+  "checked_epoch": 1792395546.6555562,
+  "proof_sha256": "f1215e4b523e7396ac18001a1e4c3bef03a2ca4986571eaeb4de0f60a126855b",
+  "service_restored_health": 200,
+  "remote_recovery_pid_confirmed_absent": 1893667,
+  "owned_processes": [
+    {
+      "pid": 75605,
+      "command": "/usr/bin/caffeinate -i -t 10800",
+      "action": "TERM_after_verified_completion"
+    },
+    {
+      "pid": 41123,
+      "command": "ssh -o BatchMode=yes -o ConnectTimeout=10 spark python3 -B -u /home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/fp32-input-model-v1-recovery-v2-src/recover.py",
+      "action": "TERM_after_verified_completion"
+    }
+  ]
+}

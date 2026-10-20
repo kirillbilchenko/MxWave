@@ -1,0 +1,275 @@
+{
+  "status": "complete",
+  "analysis_code_sha256": "adeeb2091ea0c8a8fcd1d83740184a8d2bcbb8ca9cab2a06fa3bf1963ab041ef",
+  "scope": "Profiled M4 count groups with 84 routed-expert kernels each; context lengths and scheduling differ. Includes copy activities on the annotated stream. Late API entry indicates work had not been submitted; it does not separate Python, driver, profiler, scheduling or CPU waits.",
+  "reports": [
+    {
+      "mode": "stock",
+      "rank": 0,
+      "steps": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1046sqsq4sqsk1046)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 92937.178,
+          "idle_after_including_copies_us": 5751.14697265625,
+          "before_launch_api_entered_us": 634.33740234375,
+          "unlinked_gaps": 4
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1034sqsq4sqsk1034)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 92998.586,
+          "idle_after_including_copies_us": 6841.0927734375,
+          "before_launch_api_entered_us": 446.065185546875,
+          "unlinked_gaps": 4
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1042sqsq4sqsk1042)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 91180.376,
+          "idle_after_including_copies_us": 6249.09130859375,
+          "before_launch_api_entered_us": 485.767822265625,
+          "unlinked_gaps": 2
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1038sqsq4sqsk1038)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 93304.09,
+          "idle_after_including_copies_us": 6774.24755859375,
+          "before_launch_api_entered_us": 581.55859375,
+          "unlinked_gaps": 4
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1030sqsq4sqsk1030)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 94922.811,
+          "idle_after_including_copies_us": 6172.136474609375,
+          "before_launch_api_entered_us": 519.673583984375,
+          "unlinked_gaps": 3
+        }
+      ],
+      "median_idle_us": 6249.09130859375,
+      "median_before_launch_api_us": 519.673583984375,
+      "largest_preceding_ops_us": {
+        "triton_poi_fused_add_bitwise_and_bitwise_not_bitwise_or_ge_lt_mul_sub_0": 933.519775390625,
+        "vllm::mhc_pre_tilelang": 477.793701171875,
+        "vllm::all_reduce": 375.309814453125,
+        "unknown": 297.353759765625,
+        "aten::mm": 214.647705078125,
+        "aten::index_select": 179.10205078125,
+        "aten::masked_fill_": 84.0576171875,
+        "_C::marlin_gemm": 62.2978515625,
+        "aten::copy_": 43.3203125,
+        "aten::fill_": 0.0,
+        "aten::arange": 0.0,
+        "aten::floor_divide": 0.0
+      }
+    },
+    {
+      "mode": "stock",
+      "rank": 1,
+      "steps": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1046sqsq4sqsk1046)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 93003.422,
+          "idle_after_including_copies_us": 15675.748291015625,
+          "before_launch_api_entered_us": 10379.2275390625,
+          "unlinked_gaps": 12
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1034sqsq4sqsk1034)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 93027.23,
+          "idle_after_including_copies_us": 10217.442138671875,
+          "before_launch_api_entered_us": 5264.1298828125,
+          "unlinked_gaps": 12
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1042sqsq4sqsk1042)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 91245.565,
+          "idle_after_including_copies_us": 8907.0126953125,
+          "before_launch_api_entered_us": 3813.947021484375,
+          "unlinked_gaps": 7
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1038sqsq4sqsk1038)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 93271.646,
+          "idle_after_including_copies_us": 11407.42431640625,
+          "before_launch_api_entered_us": 6288.929443359375,
+          "unlinked_gaps": 11
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1030sqsq4sqsk1030)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 94912.991,
+          "idle_after_including_copies_us": 15580.335205078125,
+          "before_launch_api_entered_us": 10070.356201171875,
+          "unlinked_gaps": 9
+        }
+      ],
+      "median_idle_us": 11407.42431640625,
+      "median_before_launch_api_us": 6288.929443359375,
+      "largest_preceding_ops_us": {
+        "_moe_C::grouped_topk": 6747.55126953125,
+        "_moe_C::moe_wna16_marlin_gemm": 6464.180419921875,
+        "_moe_C::moe_align_block_size": 5977.0341796875,
+        "aten::mm": 2633.929931640625,
+        "aten::bmm": 1787.030517578125,
+        "vllm::sparse_attn_indexer_kpool": 1650.605224609375,
+        "vllm::unified_mla_attention_with_output": 1545.053466796875,
+        "aten::fill_": 1439.2646484375,
+        "triton_poi_fused_add_bitwise_and_bitwise_not_bitwise_or_ge_lt_mul_sub_0": 1060.326416015625,
+        "_C_cache_ops::concat_and_cache_mla": 1037.125732421875,
+        "triton_per_fused__to_copy_native_layer_norm_0": 900.006103515625,
+        "aten::copy_": 874.81201171875
+      }
+    },
+    {
+      "mode": "kda",
+      "rank": 0,
+      "steps": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1049sqsq4sqsk1049)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 100213.373,
+          "idle_after_including_copies_us": 26704.193603515625,
+          "before_launch_api_entered_us": 20347.66357421875,
+          "unlinked_gaps": 14
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1041sqsq4sqsk1041)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 100849.661,
+          "idle_after_including_copies_us": 29713.062744140625,
+          "before_launch_api_entered_us": 23008.632568359375,
+          "unlinked_gaps": 25
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1045sqsq4sqsk1045)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 104160.765,
+          "idle_after_including_copies_us": 30642.880615234375,
+          "before_launch_api_entered_us": 23991.7998046875,
+          "unlinked_gaps": 22
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1033sqsq4sqsk1033)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 114601.761,
+          "idle_after_including_copies_us": 40857.754150390625,
+          "before_launch_api_entered_us": 32760.232177734375,
+          "unlinked_gaps": 49
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1037sqsq4sqsk1037)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 107987.678,
+          "idle_after_including_copies_us": 32870.728271484375,
+          "before_launch_api_entered_us": 25870.300048828125,
+          "unlinked_gaps": 28
+        }
+      ],
+      "median_idle_us": 30642.880615234375,
+      "median_before_launch_api_us": 23991.7998046875,
+      "largest_preceding_ops_us": {
+        "mxwave_glm53::moe_gemm": 35825.1259765625,
+        "_moe_C::grouped_topk": 23453.3505859375,
+        "_moe_C::moe_align_block_size": 18613.5673828125,
+        "aten::mm": 10446.03662109375,
+        "aten::fill_": 8276.74169921875,
+        "vllm::sparse_attn_indexer_kpool": 5055.783935546875,
+        "vllm::mhc_fused_post_pre_tilelang": 3393.975341796875,
+        "aten::bmm": 3163.177978515625,
+        "vllm::unified_mla_attention_with_output": 2369.73046875,
+        "unknown": 2271.269775390625,
+        "_C_cache_ops::concat_and_cache_mla": 2236.306884765625,
+        "aten::copy_": 2228.623779296875
+      }
+    },
+    {
+      "mode": "kda",
+      "rank": 1,
+      "steps": [
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1049sqsq4sqsk1049)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 100190.784,
+          "idle_after_including_copies_us": 5507.744140625,
+          "before_launch_api_entered_us": 367.44921875,
+          "unlinked_gaps": 3
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1041sqsq4sqsk1041)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 100815.713,
+          "idle_after_including_copies_us": 5495.28955078125,
+          "before_launch_api_entered_us": 382.18603515625,
+          "unlinked_gaps": 3
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1045sqsq4sqsk1045)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 104142.789,
+          "idle_after_including_copies_us": 5724.839599609375,
+          "before_launch_api_entered_us": 378.676513671875,
+          "unlinked_gaps": 3
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1033sqsq4sqsk1033)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 114636.787,
+          "idle_after_including_copies_us": 5643.932373046875,
+          "before_launch_api_entered_us": 394.619384765625,
+          "unlinked_gaps": 3
+        },
+        {
+          "annotation": "execute_4_context_0(sq0sk0sqsq0sqsk0)_generation_4(sq4sk1037sqsq4sqsk1037)",
+          "stream": 17,
+          "expert_kernel_calls": 84,
+          "gpu_range_us": 108199.914,
+          "idle_after_including_copies_us": 5632.4794921875,
+          "before_launch_api_entered_us": 375.767578125,
+          "unlinked_gaps": 3
+        }
+      ],
+      "median_idle_us": 5632.4794921875,
+      "median_before_launch_api_us": 378.676513671875,
+      "largest_preceding_ops_us": {
+        "triton_poi_fused_add_bitwise_and_bitwise_not_bitwise_or_ge_lt_mul_sub_0": 939.849853515625,
+        "mxwave_glm53::embedding_rows": 364.50439453125,
+        "vllm::all_reduce": 363.57763671875,
+        "unknown": 161.511962890625,
+        "aten::masked_fill_": 63.784912109375,
+        "mxwave_zipserv::linear": 5.469970703125,
+        "aten::fill_": 0.0,
+        "aten::arange": 0.0,
+        "aten::floor_divide": 0.0,
+        "aten::sub": 0.0,
+        "aten::copy_": 0.0,
+        "vllm::mhc_pre_tilelang": 0.0
+      }
+    }
+  ]
+}

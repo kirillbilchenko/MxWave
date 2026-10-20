@@ -1,0 +1,28 @@
+"""CPU-only explicit-format export; preserve original archive and failed reviewer."""
+from __future__ import annotations
+import csv,hashlib,json,pathlib,subprocess
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+E=ROOT/'evidence-kda-memory-v1';S=ROOT/'kda-memory-v1-attribution-v2';NCU=pathlib.Path('/opt/nvidia/nsight-compute/2025.3.1/ncu')
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+def write(p,obj):
+ with p.open('x') as f:f.write(json.dumps(obj,indent=2)+'\n')
+def main():
+ prepared=json.loads((E/'prepared.json').read_bytes())
+ for rank in (0,1):
+  binary=E/f'rank{rank}/kda-memory.ncu-rep';dest=S/f'rank{rank}-ncu-nvtx.csv'
+  assert sha(NCU)==prepared['input_bindings'][rank]['ncu_sha256']
+  before=sha(binary)
+  if rank==0:
+   command=json.loads((S/'rank0-export-command.json').read_bytes());assert command['returncode']==0 and dest.read_text()==command['stdout'];argv=command['argv']
+  else:
+   argv=[str(NCU),'--import',str(binary),'--print-nvtx-rename','kernel','--csv','--page','raw','--print-units','base','--print-fp','false']
+   p=subprocess.run(argv,capture_output=True,text=True,timeout=30);p.check_returncode()
+   with dest.open('x') as f:f.write(p.stdout)
+   write(S/'rank1-export-command.json',{'argv':argv,'returncode':p.returncode,'stderr':p.stderr})
+  assert before==sha(binary)
+  write(S/f'rank{rank}-export-receipt.json',{'status':'complete','command':argv,'binary_report_sha256':before,'export_sha256':sha(dest),'profiler_sha256':sha(NCU),'GPU_workload_run':False})
+ files=[{'path':p.name,'bytes':p.stat().st_size,'sha256':sha(p)} for p in sorted(S.iterdir()) if p.is_file()]
+ write(S/'inventory.json',{'files':files})
+ print(json.dumps({'status':'complete','files':len(files),'inventory_sha256':sha(S/'inventory.json'),'GPU_workload_run':False}))
+if __name__=='__main__':main()

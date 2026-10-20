@@ -1,0 +1,49 @@
+"""Independently check retained warmup source, caches, reports and restoration."""
+from __future__ import annotations
+import argparse,hashlib,json,pathlib,sys
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+ p=argparse.ArgumentParser();p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);a=p.parse_args();r=a.root
+ inv=json.loads((r/'inventory.json').read_bytes())['files']
+ assert len({x['path'] for x in inv})==len(inv)
+ for row in inv:
+  relative=pathlib.PurePosixPath(row['path']);assert not relative.is_absolute() and '..' not in relative.parts
+  f=r/relative;assert f.is_file() and not f.is_symlink() and f.stat().st_size==row['bytes'] and sha(f)==row['sha256'],row['path']
+ prepared=json.loads((r/'prepared.json').read_bytes())
+ actual={str(f.relative_to(r/'source')):sha(f) for f in (r/'source').rglob('*') if f.is_file() and f.suffix in ('.py','.toml')}
+ assert actual==prepared['bindings'][0]['code']==prepared['bindings'][1]['code'] and len(actual)==203
+ sys.path.insert(0,str(r/'source'));from benchmark_stable_warmup import assess,protocol
+ assert prepared['protocol']==protocol()
+ state=json.loads((r/'controller.json').read_bytes());post=json.loads((r/'post-restoration-check.json').read_bytes())
+ assert state['phase'] in ('complete','failed_restored') and not state['service_paused']
+ assert post['status']=='passed' and post['health']==200 and post['originals']==prepared['originals']
+ assert post['controller_terminal'] and post['watchdog_terminal']
+ assert state['restoration']['status']=='complete' and state['restoration']['health']==200
+ assert state.get('source_after')==prepared['bindings']
+ reports=[]
+ for rank in (0,1):
+  report=json.loads((r/f'rank{rank}-report.json').read_bytes());entry=state['runs'][rank]
+  assert entry['rank']==rank and entry['report']==report
+  if report['status']!='complete':
+   reports.append({'rank':rank,'status':report['status'],'error':report.get('error'),'component_passed':False});continue
+  assert report['source_sha256']==actual['benchmark_stable_warmup.py']
+  for run in report['runs']:
+   assert run['warmup']['source_sha256']=={n:actual[n] for n in ('stable_dispatch.py','stable_dispatch_gpu.py','stable_dispatch_warmup.py')}
+  assessment=assess(report);assert assessment==report['assessment']==entry['independent_assessment']
+  for row in report['runs'][-1]['cache_after']:
+   f=r/f'cache/rank{rank}'/row['path'];assert f.stat().st_size==row['bytes'] and sha(f)==row['sha256']
+  reports.append({'rank':rank,'status':report['status'],'exit_code':entry['exit_code'],'OOMKilled':entry['OOMKilled'],**assessment,
+   'trim':report['trim'],'cold_CPU_before':report['runs'][0]['CPU_before'],'cold_CPU_after':report['runs'][0]['CPU_after'],
+   'after_trim_probe_CPU':report['runs'][-1]['CPU_after'],'cold_CUDA_reserved_before':report['runs'][0]['CUDA_reserved_before'],
+   'cold_CUDA_reserved_after':report['runs'][0]['CUDA_reserved_after'],'cache_files':len(report['runs'][-1]['cache_after']),
+   'cache_bytes':sum(x['bytes'] for x in report['runs'][-1]['cache_after'])})
+ passed=all(x['component_passed'] and not x.get('exit_code') and not x.get('OOMKilled') for x in reports)
+ assert state['component_passed']==passed
+ result={'status':'complete','component_passed':passed,'payloads':len(inv),'source_files':len(actual),'ranks':reports,
+ 'original_service_restored':True,'model_quality_or_serving_speed_qualified':False,'model_CPU_saving_demonstrated':False,
+ 'limits':['Component uses aligned scratch metadata with unchanged kernels, not a loaded model.','CPU RSS and CUDA allocations overlap on unified-memory Spark; do not add them.','Warm-call timings include host launch and synchronization under a two-CPU limit.','Fresh full-model numerical, memory and ordinary serving-speed validation remains required.']}
+ a.output.write_text(json.dumps(result,indent=2,allow_nan=False)+'\n');print(json.dumps(result))
+if __name__=='__main__':main()

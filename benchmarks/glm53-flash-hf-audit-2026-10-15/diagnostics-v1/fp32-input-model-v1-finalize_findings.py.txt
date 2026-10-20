@@ -1,0 +1,138 @@
+"""Summarize verified model results and descriptive admission/trace evidence."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from statistics import mean, median
+import time
+
+BASE = Path(__file__).parent
+
+
+def sha(path: Path) -> str:
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main() -> None:
+    proof = json.loads((BASE / 'cross-host-verification.json').read_bytes())
+    assert proof['status'] == 'passed' and proof['all_decisions_identical']
+    review = json.loads((BASE / 'mac-independent-review.json').read_bytes())['recomputed_review']
+    latency = json.loads((BASE / 'latency-review-v1.json').read_bytes())
+    resources = json.loads((BASE / 'resource-review.json').read_bytes())
+    profiles = json.loads((BASE / 'fresh-profile-review.json').read_bytes())
+    parent = json.loads((BASE / 'parent-model-output-comparison.json').read_bytes())
+    assert latency['all_timed_outputs_equal'] and latency['paired_output_sequences_equal'] == 300
+    preliminary = json.loads((BASE / 'preliminary-paired-timing-summary.json').read_bytes())
+    summaries = {(r['arm'], r['case']): r for r in review['summaries']}
+    for row in preliminary['summaries']:
+        for arm, prefix in [('control', 'stock'), ('candidate', 'candidate')]:
+            assert row[prefix + '_tps'] == summaries[arm, row['case']]['median_tps']
+            assert row[prefix + '_ttft_seconds'] == summaries[arm, row['case']]['median_ttft_seconds']
+    assert sha(BASE / 'evidence/results/control-warmed-model.json') == json.loads(
+        (BASE / 'completed-stock-observation.json').read_bytes())['source_sha256']
+    assert sha(BASE / 'evidence/results/quality-model-review.json') == sha(BASE / 'controller-review.json')
+    arms = {a: json.loads((BASE / f'evidence/results/{a}-warmed-model.json').read_bytes())
+            for a in ('control', 'candidate')}
+    admission = {}
+    arrivals = {}
+    for arm, data in arms.items():
+        assert all(t['admission']['window_ms'] == 3 for t in data['timing'])
+        rows = []
+        for t in data['timing']:
+            if t['case'] != 'c16-short':
+                continue
+            assert len(t['admission']['events']) == 1
+            e = t['admission']['events'][0]
+            rows.append({'repeat': t['repeat'], 'first_cohort_requests': e['final_requests'],
+                         'end_reason': e['end_reason'], 'collection_seconds': e['elapsed_seconds'],
+                         'median_ttft_seconds': t['measurement']['median_ttft_seconds'],
+                         'mean_ttft_seconds': mean(r['ttft_seconds'] for r in t['measurement']['requests'])})
+        assert sorted(r['repeat'] for r in rows) == list(range(6))
+        admission[arm] = rows
+        arrivals[arm] = {}
+        for case in ('c1-short', 'c1-long'):
+            ts = [t for t in data['timing'] if t['case'] == case]
+            arrivals[arm][case] = [median(t['measurement']['requests'][0]['arrivals'][i]['seconds']
+                                         for t in ts) for i in range(64)]
+    crossover = {}
+    for case in ('c1-short', 'c1-long'):
+        deltas = [b-a for a, b in zip(arrivals['control'][case], arrivals['candidate'][case], strict=True)]
+        crossover[case] = {'all_6_trials_included': True, 'candidate_minus_stock_median_arrival_seconds': deltas,
+                           'first_ordinal_with_all_later_medians_earlier': next(
+                               (i+1 for i in range(64) if all(x < 0 for x in deltas[i:])), None)}
+    stages = []
+    prefill = []
+    for p in profiles['profiles']:
+        if p['arm'] != 'candidate':
+            continue
+        for f in p['forwards']:
+            if f['has_prefill']:
+                prefill.append({'rank': p['rank'], 'kind': p['kind'], 'rows': f['physical_rows'],
+                                'groups': f['groups']})
+        if not p['kind'].startswith('mixed'):
+            continue
+        expected = 8 if p['kind'] == 'mixed-C8' else 16
+        selected = [f for f in p['forwards'] if not f['has_prefill']
+                    and f['physical_rows'] == f['requests'] == expected]
+        measures = []
+        for f in selected:
+            values = {'input_us': 0., 'output_us': 0., 'reduction_us': 0.}
+            for k in f['KDA_grids']:
+                if 'BF16TripleBitmap_MM_FP32_Kernel' in k['name']:
+                    assert k['grid'] == [1, 394, 1]
+                    values['input_us'] += k['duration_sum_us']
+                elif 'MxWaveReduceFP32' in k['name']:
+                    values['reduction_us'] += k['duration_sum_us']
+                elif k['grid'] == [1, 64, 1]:
+                    values['output_us'] += k['duration_sum_us']
+            values['total_KDA_us'] = sum(values.values())
+            measures.append(values)
+        assert measures
+        stages.append({'rank': p['rank'], 'kind': p['kind'], 'samples': len(measures),
+                       **{k: median(r[k] for r in measures) for k in measures[0]}})
+    numerical = []
+    for c in (1, 8, 16):
+        row = next(r for r in review['numerical_comparisons']
+                   if r['reference'] == f'control-c{c}-r0' and r['candidate'] == f'candidate-c{c}-r0')
+        numerical.append({k: v for k, v in row.items() if k != 'steps'})
+    result = {
+        'status': 'complete', 'created_epoch': time.time(), 'source_sha256': sha(Path(__file__)),
+        'archive_sha256': proof['archive_sha256'], 'verified_proof': proof,
+        'numerical': numerical, 'numerical_comparisons': len(review['numerical_comparisons']),
+        'failed_numerical_comparisons': sum(not r['passed'] for r in review['numerical_comparisons']),
+        'all_mean_NLL_limits_pass': all(abs(r['mean_decode_nll_difference']) <= 1e-4
+                                       for r in review['numerical_comparisons']),
+        'timing': preliminary['summaries'], 'preliminary_timing_reconciled_to_final_archive': True,
+        'CUDA_saving_GiB_TP2': review['combined_cuda_saving_bytes'] / 1024**3,
+        'candidate_extra_RSS_MiB_TP2': {stage: -r['VmRSS'] / 1024**2
+                                       for stage, r in resources['control_minus_candidate']['process_memory_bytes'].items()},
+        'timing_boundary_telemetry': {a: d['timing_boundary_telemetry'] for a, d in resources['arms'].items()},
+        'short_C16_admission': admission, 'C1_descriptive_crossover': crossover,
+        'mixed_decode_KDA_kernel_sums': stages, 'candidate_prefill_forwards': prefill,
+        'parent_output_comparison': parent['summaries'],
+        'GPU_experiment_rerun': False, 'configuration_promoted': False,
+        'recommendation': 'Keep the previously qualified warmed exact16 route; reject global input-FP32 promotion. No new experiment launched.',
+        'limits': ['Fixed stock-then-candidate loads and six trials/case; no statistical significance claim.',
+                   'Cross-run candidate speed changes are descriptive, not a paired kernel treatment estimate.',
+                   'Matched finite contexts do not qualify universal equivalence or broad task quality.',
+                   'C16 first-cohort sizes do not count all prefill forwards; admission remains a confounder.',
+                   'Kernel sums are not API time; profiling is separate from ordinary timing.',
+                   'CPU RSS and CUDA overlap on Spark; post-profile memory is profiler-influenced.',
+                   'Boundary telemetry cannot exclude transient throttling. No clock correction or trial filtering.'],
+    }
+    with (BASE / 'final-findings.json').open('x') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    print(json.dumps({k: result[k] for k in ('status', 'failed_numerical_comparisons',
+        'CUDA_saving_GiB_TP2', 'candidate_extra_RSS_MiB_TP2', 'mixed_decode_KDA_kernel_sums')}, indent=2))
+    print(json.dumps({'C16_first_cohorts': {a: [r['first_cohort_requests'] for r in rows]
+                                          for a, rows in admission.items()},
+                      'C1_crossover': {c: r['first_ordinal_with_all_later_medians_earlier']
+                                       for c, r in crossover.items()}}))
+
+
+if __name__ == '__main__':
+    main()

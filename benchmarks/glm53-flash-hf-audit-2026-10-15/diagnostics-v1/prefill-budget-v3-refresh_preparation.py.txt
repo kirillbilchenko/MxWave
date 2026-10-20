@@ -1,0 +1,13 @@
+from __future__ import annotations
+import pathlib,shutil
+BASE=pathlib.Path(__file__).parent;REPO=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4/integrations/glm53_mxfp4')
+for p in [*REPO.glob('*budget*.py'),REPO/'moe_capture.py']:shutil.copyfile(p,BASE/'cpu-source'/p.name)
+p=BASE/'simulate.py';s=p.read_text().replace('cpu-simulation-final','cpu-simulation-capture')
+s=s.replace('cohort.controlled_request=controlled','cohort.controlled_request=controlled;client.controlled_request=controlled')
+s=s.replace('def rpc(baseurl,name,args=None):','def rpc(baseurl,name,args=None):\n if name=="mxwave_moe_operand_capture":return [{"status":"complete","armed":args[0],"synthetic":True}for _ in(0,1)]')
+p.write_text(s)
+p=BASE/'build_preparation.py';s=p.read_text().replace("sorted((BASE/'cpu-source').glob('*budget*.py'))","sorted([*(BASE/'cpu-source').glob('*budget*.py'),BASE/'cpu-source/moe_capture.py'])").replace('len(sources)==9','len(sources)==10').replace('216','217').replace("'tests_passed':812","'tests_passed':814")
+s=s.replace("no_BF16_resident_cache=True,automatic_promotion_allowed=False)","no_BF16_resident_cache=True,automatic_promotion_allowed=False,\n  latency_primary='mean TTFT with nearest-rank p95 TTFT and single-token ITL guards; all request/trial values retained',\n  operand_capture='stock only, after every measured snapshot; separate eager C1/C8/C16 and P256 forwards, layer23, <=8 MiB per rank; not graph operands',\n  capture_source='moe_capture.py',component_dispatch_4096_checked=True)")
+# Adapt original admission templates from 211 to the newly declared 217 bindings.
+s=s.replace(".replace('==211','==217')", ".replace('==211','==217')")
+p.write_text(s)

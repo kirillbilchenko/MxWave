@@ -1,0 +1,190 @@
+"""Recompute descriptive client latency from immutable matchedc8v1 arrivals."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+from collections import Counter
+from pathlib import Path
+from statistics import mean, median
+
+ROOT = Path('/private/tmp/mxwave-matched-c8-v1')
+EVIDENCE = ROOT / 'evidence'
+ARCHIVE_SHA = 'eb244b63a6aeb58c337f89820de93cead3210ee0d7121a49677fcbb88ac8341b'
+
+
+def digest(path: Path) -> str:
+    """Hash the exact consumed bytes."""
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def quantile(values: list[float], probability: float) -> float:
+    """Return the linearly interpolated empirical quantile."""
+    ordered = sorted(values)
+    position = (len(ordered) - 1) * probability
+    lo, hi = math.floor(position), math.ceil(position)
+    return ordered[lo] + (ordered[hi] - ordered[lo]) * (position - lo)
+
+
+def close(left: float, right: float) -> None:
+    """Require stored and arrival-recomputed numbers to agree."""
+    if not math.isclose(left, right, rel_tol=1e-10, abs_tol=1e-10):
+        raise ValueError(f'Inconsistent latency field: {left} != {right}')
+
+
+def main() -> None:
+    """Validate all trials and retain trial-level descriptive decompositions."""
+    inventory = json.loads((EVIDENCE / 'evidence-inventory.json').read_bytes())
+    entries = {item['path']: item for item in inventory['files']}
+    cross = json.loads((ROOT / 'cross-host-verification.json').read_bytes())
+    assert cross['archive_sha256'] == ARCHIVE_SHA
+    assert cross['all_decisions_identical'] and cross['measurement_complete']
+    inputs = []
+    for relative in ['results/control-matched-c8.json', 'results/candidate-matched-c8.json',
+                     'source/benchmark_full_model.py', 'results/matched-c8-plan.json']:
+        path = EVIDENCE / relative
+        expected = entries[relative]
+        assert path.stat().st_size == expected['bytes']
+        assert digest(path) == expected['sha256']
+        inputs.append(expected)
+    trials, requests, chunks, token_pairs = [], [], Counter(), {}
+    for arm in ['control', 'candidate']:
+        data = json.loads((EVIDENCE / f'results/{arm}-matched-c8.json').read_bytes())
+        assert data['status'] == 'complete' and len(data['timing']) == 18
+        for trial in data['timing']:
+            case, repeat = trial['case'], trial['repeat']
+            measurement = trial['measurement']
+            outputs = measurement['requests']
+            assert len(outputs) == trial['concurrency']
+            per_request, all_gaps, gap_columns = [], [], [[] for _ in range(63)]
+            for index, output in enumerate(outputs):
+                arrivals = output['arrivals']
+                chunks.update(item['tokens'] for item in arrivals)
+                # No token-wise interpolation or fabricated arrivals is allowed.
+                assert len(arrivals) == 64 and all(item['tokens'] == 1 for item in arrivals)
+                assert len(output['token_ids']) == 64
+                assert output['usage']['completion_tokens'] == 64
+                assert output['usage']['prompt_tokens'] == trial['prompt_tokens']
+                times = [item['seconds'] for item in arrivals]
+                assert all(math.isfinite(t) and t >= 0 for t in times)
+                assert times == sorted(times)
+                gaps = [b - a for a, b in zip(times, times[1:])]
+                close(output['ttft_seconds'], times[0])
+                close(output['decode_tokens_per_second'], 63 / (times[-1] - times[0]))
+                assert output['elapsed_seconds'] >= times[-1]
+                token_pairs[arm, case, repeat, index] = output['token_ids']
+                record = {
+                    'arm': arm, 'case': case, 'repeat': repeat, 'request_index': index,
+                    'ttft_seconds': times[0], 'after_first_to_last_seconds': sum(gaps),
+                    'stream_finish_seconds': output['elapsed_seconds'] - times[-1],
+                    'elapsed_seconds': output['elapsed_seconds'],
+                    'mean_gap_seconds': mean(gaps), 'median_gap_seconds': median(gaps),
+                    'p95_gap_seconds': quantile(gaps, .95), 'max_gap_seconds': max(gaps),
+                    'first8_mean_gap_seconds': mean(gaps[:8]),
+                    'last32_mean_gap_seconds': mean(gaps[-32:]),
+                    'last32_median_gap_seconds': median(gaps[-32:]),
+                    'last32_p95_gap_seconds': quantile(gaps[-32:], .95),
+                    'gap_over_250ms_count': sum(gap > .250 for gap in gaps),
+                    'gap_over_250ms_total_seconds': sum(gap for gap in gaps if gap > .250),
+                    'gap_below_1ms_count': sum(gap < .001 for gap in gaps),
+                    'gaps_over_250ms': [
+                        {'arriving_token_ordinal': n + 2, 'seconds': gap}
+                        for n, gap in enumerate(gaps) if gap > .250
+                    ],
+                }
+                close(record['ttft_seconds'] + record['after_first_to_last_seconds']
+                      + record['stream_finish_seconds'], record['elapsed_seconds'])
+                per_request.append(record)
+                requests.append(record)
+                all_gaps.extend(gaps)
+                for column, gap in zip(gap_columns, gaps):
+                    column.append(gap)
+            close(measurement['median_ttft_seconds'], median(r['ttft_seconds'] for r in per_request))
+            close(measurement['aggregate_tokens_per_second'], len(outputs) * 64 / measurement['wall_seconds'])
+            assert measurement['wall_seconds'] >= max(r['elapsed_seconds'] for r in per_request)
+            ordered = sorted(per_request, key=lambda r: r['ttft_seconds'])
+            trials.append({
+                'arm': arm, 'case': case, 'repeat': repeat, 'requests': len(outputs),
+                'aggregate_tokens_per_second': measurement['aggregate_tokens_per_second'],
+                'wall_seconds': measurement['wall_seconds'],
+                'median_ttft_seconds': measurement['median_ttft_seconds'],
+                'mean_request_components_seconds': {
+                    key: mean(r[key] for r in per_request)
+                    for key in ['ttft_seconds', 'after_first_to_last_seconds',
+                                'stream_finish_seconds', 'elapsed_seconds']
+                },
+                'pooled_within_trial_gap_seconds': {
+                    'median': median(all_gaps), 'p95': quantile(all_gaps, .95), 'max': max(all_gaps)
+                },
+                'median_request_first8_mean_gap_seconds': median(r['first8_mean_gap_seconds'] for r in per_request),
+                'median_request_last32_mean_gap_seconds': median(r['last32_mean_gap_seconds'] for r in per_request),
+                'median_request_last32_median_gap_seconds': median(r['last32_median_gap_seconds'] for r in per_request),
+                'gap_over_250ms_count': sum(r['gap_over_250ms_count'] for r in per_request),
+                'gap_below_1ms_count': sum(r['gap_below_1ms_count'] for r in per_request),
+                'mean_gap_by_arriving_token_ordinal_2_through_64': [mean(v) for v in gap_columns],
+                'requests_ordered_by_ttft': [
+                    {k: r[k] for k in ['request_index', 'ttft_seconds', 'elapsed_seconds',
+                                      'gap_over_250ms_count']} for r in ordered
+                ],
+                'admission_events': trial['admission']['events'],
+            })
+    assert len(trials) == 36 and len(requests) == 204
+    assert sum(chunks.values()) == 13056 and set(chunks) == {1}
+    paired = 0
+    for (arm, case, repeat, index), ids in token_pairs.items():
+        if arm == 'control':
+            assert ids == token_pairs['candidate', case, repeat, index]
+            paired += 1
+    assert paired == 102
+    summaries = []
+    for case in ['c1-short', 'c8-short', 'c8-long']:
+        for arm in ['control', 'candidate']:
+            group = [t for t in trials if t['case'] == case and t['arm'] == arm]
+            assert sorted(t['repeat'] for t in group) == list(range(6))
+            summaries.append({
+                'case': case, 'arm': arm, 'trials': len(group),
+                'median_tps': median(t['aggregate_tokens_per_second'] for t in group),
+                'median_wall_seconds': median(t['wall_seconds'] for t in group),
+                'median_ttft_seconds': median(t['median_ttft_seconds'] for t in group),
+                'median_within_trial_gap_median_seconds': median(t['pooled_within_trial_gap_seconds']['median'] for t in group),
+                'median_within_trial_gap_p95_seconds': median(t['pooled_within_trial_gap_seconds']['p95'] for t in group),
+                'median_request_last32_mean_gap_seconds': median(t['median_request_last32_mean_gap_seconds'] for t in group),
+                'median_request_last32_median_gap_seconds': median(t['median_request_last32_median_gap_seconds'] for t in group),
+                'all_trials_gap_over_250ms_count': sum(t['gap_over_250ms_count'] for t in group),
+                'all_trials_gap_below_1ms_count': sum(t['gap_below_1ms_count'] for t in group),
+                # Means preserve the additive decomposition; medians generally do not.
+                'mean_of_trial_mean_request_components_seconds': {
+                    key: mean(t['mean_request_components_seconds'][key] for t in group)
+                    for key in group[0]['mean_request_components_seconds']
+                },
+            })
+    report = {
+        'status': 'complete', 'source_sha256': digest(Path(__file__)),
+        'parent_archive_sha256': ARCHIVE_SHA, 'verified_inputs': inputs,
+        'gpu_experiment_run': False, 'original_measurements_or_gates_changed': False,
+        'all_trials_included': True, 'timed_groups': len(trials), 'requests': len(requests),
+        'arrival_events': sum(chunks.values()), 'single_token_arrivals_only': True,
+        'paired_output_sequences_equal': paired, 'summaries': summaries,
+        'trials': trials, 'request_details': requests,
+        'limits': [
+            'Descriptive reanalysis, not a new speed gate or causal experiment.',
+            'Six trials per arm/case; requests and token gaps within a trial are dependent.',
+            'Client arrival intervals include serving, scheduling, transport and buffering, not just GPU decode.',
+            'No absolute per-request start timestamp or simultaneous GPU trace was retained for timed trials.',
+            'First8/last32 windows and 250ms/1ms diagnostics are exploratory, not protocol thresholds.',
+            'Fixed stock-then-candidate order and unlocked clocks remain confounders.',
+            'The candidate C8-short repeat2 split-admission outlier is included without filtering.',
+        ],
+    }
+    output = ROOT / 'latency-review-v1.json'
+    with output.open('x') as handle:
+        json.dump(report, handle, indent=2, allow_nan=False)
+        handle.write('\n')
+    print(json.dumps({'status': report['status'], 'summaries': summaries,
+                      'counts': {'trials': len(trials), 'requests': len(requests),
+                                 'arrivals': sum(chunks.values())}}, indent=2))
+
+
+if __name__ == '__main__':
+    main()

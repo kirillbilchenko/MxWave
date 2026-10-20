@@ -1,0 +1,29 @@
+"""Stage the bounded offline collector; never start it during a GPU experiment."""
+from __future__ import annotations
+import hashlib
+import json
+import pathlib
+import shlex
+import subprocess
+
+base = pathlib.Path(__file__).parent
+root = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+source = base / 'collect_actual_remote.py'
+raw = source.read_bytes()
+digest = hashlib.sha256(raw).hexdigest()
+program = r'''
+import hashlib,json,pathlib,sys
+p=pathlib.Path(sys.argv[1]);raw=sys.stdin.buffer.read();want=sys.argv[2]
+assert hashlib.sha256(raw).hexdigest()==want
+if p.exists():assert p.read_bytes()==raw
+else:
+ with p.open('xb')as f:f.write(raw)
+print(json.dumps(dict(status='staged',path=str(p),sha256=want,started=False)))
+'''
+remote = root + '/moe-native-actual-v4-collect.py'
+result = subprocess.run(
+    ['ssh', '-o', 'BatchMode=yes', 'spark',
+     shlex.join(['python3', '-S', '-B', '-c', program, remote, digest])],
+    input=raw, capture_output=True, check=True, timeout=30)
+(base / 'actual-collector-staged.json').write_bytes(result.stdout)
+print(result.stdout.decode())

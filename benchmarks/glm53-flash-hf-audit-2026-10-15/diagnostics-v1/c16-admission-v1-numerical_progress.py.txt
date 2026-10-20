@@ -1,0 +1,36 @@
+"""Retain the completed controller review while independent archive verification is pending."""
+from __future__ import annotations
+import hashlib
+import json
+from pathlib import Path
+import shlex
+import subprocess
+import time
+
+BASE = Path(__file__).parent
+ROOT = '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1'
+program = r'''
+import hashlib,json,pathlib,sys,time
+p=pathlib.Path(sys.argv[1])/'run-c16admissionv1/results/quality-model-review.json'
+raw=p.read_bytes();d=json.loads(raw);assert d['status']=='complete'
+out={'status':'preliminary','archive_verification_pending':True,'checked_epoch':time.time(),
+ 'report_sha256':hashlib.sha256(raw).hexdigest(),
+ 'numerical_comparisons':[{k:v for k,v in r.items() if k!='steps'} for r in d['numerical_comparisons']]}
+for k in ('compression_numerical_gate_passed','policy_gate_passed','policy_checks',
+ 'all_timed_generated_ids_match','timed_token_sequence_pairs','combined_cuda_saving_bytes'):
+ out[k]=d[k]
+print(json.dumps(out))
+'''
+raw = subprocess.check_output(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+    shlex.join(['python3', '-B', '-c', program, ROOT])], timeout=45)
+d = json.loads(raw)
+with (BASE / 'paired-numerical-progress.json').open('xb') as stream:
+    stream.write(raw)
+summary = {k: v for k, v in d.items() if k != 'numerical_comparisons'}
+summary['KL_by_concurrency'] = {}
+for count in (1, 16):
+    rows = [r for r in d['numerical_comparisons'] if f'-c{count}-' in r['reference']]
+    cross = [r for r in rows if r['reference'].split('-')[0] != r['candidate'].split('-')[0]]
+    summary['KL_by_concurrency'][str(count)] = {'minimum': min(r['mean_decode_kl'] for r in cross),
+        'maximum': max(r['mean_decode_kl'] for r in cross), 'all_passed': all(r['passed'] for r in rows)}
+print(json.dumps(summary))

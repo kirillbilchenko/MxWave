@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/prepare-kda-memory-v1.py", line 84, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/prepare-kda-memory-v1.py", line 72, in main
+    inputs=[input_bindings(rank) for rank in (0,1)]
+            ^^^^^^^^^^^^^^^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/kda-memory-v1-src/run_kda_memory.py", line 89, in input_bindings
+    return json.loads(control.run(rank, ["python3", "-S", "-c", script, str(control.ROOT)],
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/full-warmedmodelv1-src/full_model_control.py", line 81, in run
+    raise RuntimeError(f"rank={rank} command={command[:2]!r} exited={result.returncode}: "
+RuntimeError: rank=0 command=['python3', '-S'] exited=1: Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/bf16-attention-v1/artifacts-v2/prepared.json'
+

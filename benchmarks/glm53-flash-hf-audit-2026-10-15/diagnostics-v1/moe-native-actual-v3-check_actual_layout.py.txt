@@ -1,0 +1,29 @@
+"""Check the different pinned FC1 branch orders with deliberately asymmetric values."""
+from __future__ import annotations
+import hashlib
+import json
+import pathlib
+import torch
+from benchmark_native_experts import NATIVE_FC1_PROJECTIONS
+
+base=pathlib.Path(__file__).parent
+# Independent dense arithmetic catches swapping SILU's nonlinear and linear branches.
+x=torch.tensor([[1.,-2.,.25,3.]],dtype=torch.float64)
+gate=torch.tensor([[.5,.25,-1.,.125],[-.25,1.,.5,-.25]],dtype=torch.float64)
+up=torch.tensor([[1.,0.,.25,-.5],[0.,-.5,1.,.25]],dtype=torch.float64)
+source={'gate_proj':gate,'up_proj':up}
+expected=torch.nn.functional.silu(x@gate.T)*(x@up.T)
+native_weights=torch.cat([source[name]for name in NATIVE_FC1_PROJECTIONS])
+linear,nonlinear=(x@native_weights.T).chunk(2,dim=-1)
+actual=torch.nn.functional.silu(nonlinear)*linear
+assert torch.equal(actual,expected)
+wrong_linear,wrong_gate=(x@torch.cat([gate,up]).T).chunk(2,dim=-1)
+assert not torch.allclose(torch.nn.functional.silu(wrong_gate)*wrong_linear,expected)
+assert torch.equal(native_weights[:2],up)and torch.equal(native_weights[2:],gate)
+result=dict(status='passed',native_FC1_order=list(NATIVE_FC1_PROJECTIONS),
+            asymmetric_SILU_contract_exact=True,wrong_branch_order_rejected=True,
+            weight_rows_preserved_exactly=True,GPU_used=False,
+            upstream_reference='tests/moe/test_unified_moe_sm12x_mxfp8_mxfp4.py::_activation',
+            upstream_reference_sha256=hashlib.sha256((base/'upstream-flashinfer/tests/moe/test_unified_moe_sm12x_mxfp8_mxfp4.py').read_bytes()).hexdigest())
+(base/'actual-layout-CPU-check.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps(result))

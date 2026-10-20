@@ -1,0 +1,46 @@
+{
+  "status": "complete",
+  "model": "glm-5.3-flash",
+  "started_epoch": 1792093601.980472,
+  "protocol_sha256": "fb3c60ecfbb1ebfe5bf86c48ec44714a764a86be238ba262879fae58120a193d",
+  "chat_checks": [
+    {
+      "prompt": "What is 2 + 2? Reply with only the number.",
+      "expected": "4",
+      "output": "4",
+      "reasoning": "",
+      "passed": true,
+      "status_code": 200,
+      "finish_reason": "stop",
+      "error_type": null
+    },
+    {
+      "prompt": "What is the capital of France? Reply with only the city name.",
+      "expected": "Paris",
+      "output": "Paris",
+      "reasoning": "",
+      "passed": true,
+      "status_code": 200,
+      "finish_reason": "stop",
+      "error_type": null
+    },
+    {
+      "prompt": "Reply with exactly the word BLUE and nothing else.",
+      "expected": "BLUE",
+      "output": "BLUE",
+      "reasoning": "",
+      "passed": true,
+      "status_code": 200,
+      "finish_reason": "stop",
+      "error_type": null
+    }
+  ],
+  "authentication": "existing documented spark_eval client settings",
+  "transport": "streaming",
+  "limits": [
+    "Same prompts and sampling, different NVFP4 checkpoint and DFlash serving configuration.",
+    "Serving sanity only; not paired quantization quality or throughput."
+  ],
+  "finished_epoch": 1792093603.27784,
+  "sanity_passed": true
+}

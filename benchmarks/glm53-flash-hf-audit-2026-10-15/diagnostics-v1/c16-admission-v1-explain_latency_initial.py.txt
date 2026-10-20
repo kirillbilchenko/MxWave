@@ -1,0 +1,73 @@
+"""Describe residual latency using all trials and separate retained profile samples."""
+from __future__ import annotations
+import hashlib
+import json
+from pathlib import Path
+from statistics import median
+
+BASE = Path(__file__).parent
+
+
+def sha(p):
+    with p.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    names = ('cross-host-verification.json', 'admission-latency-review.json',
+             'fresh-profile-review.json')
+    proof, latency, profiles = [json.loads((BASE / name).read_bytes()) for name in names]
+    assert proof['status'] == 'passed'
+    strata = []
+    for arm in ('control', 'candidate'):
+        for window in (3, 10):
+            selected = [r for r in latency['trials'] if
+                        (r['arm'], r['window_ms'], r['case']) == (arm, window, 'c16-short')]
+            assert len(selected) == 12
+            groups = []
+            for filled in (False, True):
+                chosen = [r for r in selected if (r['first_cohort_prompt_tokens'] >= 2048) == filled]
+                if chosen:
+                    groups.append({'first_budget_filled': filled, 'trials': len(chosen),
+                                   'median_trial_TTFT_s': median(r['median_TTFT_seconds'] for r in chosen),
+                                   'all_trial_TTFT_s': [r['median_TTFT_seconds'] for r in chosen]})
+            strata.append({'arm': arm, 'window_ms': window, 'groups': groups,
+                'all_trial_8th_request_TTFT_s': [sorted(r['request_TTFT_seconds'])[7] for r in selected],
+                'all_trial_9th_request_TTFT_s': [sorted(r['request_TTFT_seconds'])[8] for r in selected]})
+    ordinary = [p for p in profiles['profiles'] if p['kind'] == 'ordinary']
+    comparisons = []
+    for window in (3, 10):
+        for rank in (0, 1):
+            arms = {}
+            for arm in ('control', 'candidate'):
+                p = next(p for p in ordinary if (p['window_ms'], p['rank'], p['arm']) == (window, rank, arm))
+                forwards = [f for f in p['forwards'] if f['has_prefill']]
+                arms[arm] = [{'sequence': f['sequence'], 'rows': f['actual_rows'],
+                    'physical_rows': f['physical_rows'], 'requests': f['requests'],
+                    'host_annotation_ms': f['host_annotation_us'] / 1000,
+                    'kernel_span_ms': f['first_to_last_kernel_span_us'] / 1000,
+                    'all_kernel_sum_ms': f['all_kernel_duration_sum_us'] / 1000,
+                    'group_kernel_sums_ms': {k: v['duration_sum_us'] / 1000 for k, v in f['groups'].items()},
+                    'reconstruction_calls': f['groups'].get('bf16_weight_decode', {}).get('calls', 0)}
+                    for f in forwards]
+            signatures = [[(r['rows'], r['physical_rows'], r['requests']) for r in arms[a]]
+                          for a in ('control', 'candidate')]
+            comparisons.append({'window_ms': window, 'rank': rank,
+                                'same_prefill_shapes': signatures[0] == signatures[1], 'arms': arms})
+    out = {'status': 'complete', 'source_sha256': sha(Path(__file__)),
+           'inputs_sha256': {n: sha(BASE / n) for n in names},
+           'archive_sha256': proof['archive_sha256'], 'GPU_experiment_run': False,
+           'all_48_C16_trials_included': True, 'descriptive_admission_strata': strata,
+           'ordinary_prefill_profiles': comparisons,
+           'limits': ['Admission strata are post-hoc descriptions, not new decision gates or selected headline results.',
+                      'One profile per window/arm is separate from twelve ordinary timing trials.',
+                      'Kernel sums can overlap and do not equal API latency or a two-GPU critical path.',
+                      'Matching row shapes does not establish identical inputs or account for every host-side delay.',
+                      'No fraction of the ordinary TTFT gap is causally assigned from these samples.']}
+    with (BASE / 'remaining-latency-review.json').open('x') as stream:
+        json.dump(out, stream, indent=2, allow_nan=False)
+    print(json.dumps(out))
+
+
+if __name__ == '__main__':
+    main()

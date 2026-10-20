@@ -1,0 +1,152 @@
+"""Recover only offline verification/retention; preserve the entire initial failed evidence."""
+from __future__ import annotations
+
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tarfile
+import time
+
+ROOT = Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+SOURCE = ROOT/'fp32-input-model-v1-recovery-v2-src'
+sys.path.insert(0, str(ROOT/'full-fp32inputmodelv1-src'))
+import full_model_control as c
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    receipt = ROOT/'fp32-input-model-v1-recovery-v2-evidence-check.json'
+    assert not receipt.exists(), 'Preserve any earlier recovery attempt'
+    progress = {'status':'checking', 'started_epoch':time.time(), 'pid':os.getpid(),
+                'GPU_experiment_rerun':False, 'original_failures_preserved':True}
+    c.write(receipt, progress)
+    with (ROOT/'fp32-input-model-v1-recovery-v2.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        try:
+            assert sha(ROOT/'full-fp32inputmodelv1-src/full_model_control.py') == 'd08220b0e0e503461308d4f5356db3e7a4b947e37cf7dc8a0969da3ee0898791'
+            plan = json.loads((SOURCE/'recovery-plan.json').read_bytes())
+            assert sha(ROOT/'fp32-input-model-v1-prepared.json') == plan['original_prepared_sha256']
+            assert sha(ROOT/'collect-fp32-input-model-v1.py') == plan['original_collector_sha256']
+            initial = ROOT/'fp32-input-model-v1-evidence'
+            original = (initial/'verify.py').read_bytes()
+            corrected = (SOURCE/'verify-recovery-v2.py').read_bytes()
+            assert hashlib.sha256(original).hexdigest() == plan['original_verifier_sha256']
+            assert hashlib.sha256(corrected).hexdigest() == plan['corrected_verifier_sha256']
+            assert original.count(plan['old_helper'].encode()) == 1
+            assert corrected == original.replace(plan['old_helper'].encode(), plan['new_helper'].encode())
+            assert sha(SOURCE/'recovery-checks.json') == plan['checks_sha256']
+            assert json.loads((SOURCE/'recovery-checks.json').read_bytes())['status'] == 'passed'
+            failed = json.loads((ROOT/'fp32-input-model-v1-evidence-check.json').read_bytes())
+            assert failed['status'] == 'failed' and 'Input or output projection geometry changed' in failed['error']
+            state = json.loads((ROOT/'quality-model-controller-fp32inputmodelv1.json').read_bytes())
+            prepared = json.loads((ROOT/'fp32-input-model-v1-prepared.json').read_bytes())
+            assert state['phase'] == 'complete' and not state['service_paused'] and c.health(8000)
+            for pid in (1258389,1258388,1262165):
+                p = subprocess.run(['ps','-p',str(pid),'-o','stat='],capture_output=True,text=True)
+                assert p.returncode != 0 or p.stdout.strip().startswith('Z')
+            originals = [c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+            assert all(v['State']['Running'] for v in originals)
+            assert [c.identity(v) for v in originals] == prepared['originals'] == state['originals']
+            assert [c.preflight(rank,ROOT/'full-fp32inputmodelv1-src') for rank in (0,1)] == prepared['bindings']
+            for rank in (0,1):
+                assert not c.run(rank,['docker','ps','-q','--filter','name=fp32inputmodelv1']).strip()
+            assert shutil.disk_usage(ROOT).free >= 2*1024**3
+            operational = json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+            operational.update(active_experiment=None,service_paused=False,original_health=200,
+                active_verification='fp32-input-model-v1-recovery-v2',updated_epoch=time.time())
+            c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',operational)
+            inventory_path = initial/'evidence-inventory.json'
+            inventory = json.loads(inventory_path.read_bytes())['files']
+            destination = ROOT/'fp32-input-model-v1-recovery-v2-evidence'
+            destination.mkdir()
+            for row in inventory:
+                rel = Path(row['path'])
+                assert not rel.is_absolute() and '..' not in rel.parts
+                src = initial/rel
+                assert src.is_file() and not src.is_symlink()
+                assert src.stat().st_size == row['bytes'] and sha(src) == row['sha256']
+                target = destination/rel
+                target.parent.mkdir(parents=True,exist_ok=True)
+                os.link(src,target)
+            recovery = destination/'recovery'
+            recovery.mkdir()
+            os.link(inventory_path,recovery/'initial-evidence-inventory.json')
+            for source in SOURCE.iterdir():
+                assert source.is_file() and not source.is_symlink()
+                shutil.copyfile(source,recovery/source.name)
+            for source,name in [
+                (ROOT/'fp32-input-model-v1-evidence-check.json','initial-collector-receipt.json'),
+                (ROOT/'fp32-input-model-v1-verifier.log','initial-verifier.log'),
+                (ROOT/'fp32-input-model-v1-collector.log','initial-collector.log'),
+            ]:
+                shutil.copyfile(source,recovery/name)
+            c.write(recovery/'post-restoration-check.json',{
+                'status':'passed','checked_epoch':time.time(),'health':200,
+                'originals':[c.identity(v) for v in originals],
+                'initial_payloads_unchanged':True,'initial_payloads':len(inventory),
+                'initial_inventory_sha256':sha(inventory_path),
+                'hard_links_used_only_for_immutable_payloads':True,
+            })
+            files = [p for p in sorted(destination.rglob('*')) if p.is_file()]
+            assert not any(p.is_symlink() for p in files)
+            rows = [{'path':str(p.relative_to(destination)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in files]
+            c.write(destination/'evidence-inventory.json',{'files':rows})
+            review = ROOT/'fp32-input-model-v1-recovery-v2-independent-review.json'
+            assert not review.exists()
+            progress.update(status='verifying',payloads=len(files),updated_epoch=time.time())
+            c.write(receipt,progress)
+            command = ['docker','run','--rm','--network','none','--cpus','2','--memory','6g','--memory-swap','6g',
+                '-e','NVIDIA_VISIBLE_DEVICES=void','-e','CUDA_VISIBLE_DEVICES=',
+                '-e','OPENBLAS_NUM_THREADS=1','-e','OMP_NUM_THREADS=1',
+                '-v',str(destination)+':/evidence:ro','-v',str(ROOT)+':/output',
+                '--entrypoint','/usr/bin/timeout',c.IMAGE,'--kill-after=10','900','/usr/bin/python3',
+                '/evidence/recovery/verify-recovery-v2.py','--root','/evidence','--output','/output/'+review.name]
+            checked = subprocess.run(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=930)
+            (ROOT/'fp32-input-model-v1-recovery-v2-verifier.log').write_bytes(checked.stdout)
+            assert checked.returncode == 0, checked.stdout.decode()[-10000:]
+            verified = json.loads(review.read_bytes())
+            assert verified['status'] == 'passed' and verified['measurement_complete']
+            archive = ROOT/'evidence-fp32-input-model-v1-recovery-v2.tar.gz'
+            assert not archive.exists()
+            progress.update(status='packing',updated_epoch=time.time())
+            c.write(receipt,progress)
+            with tarfile.open(archive,'w:gz',compresslevel=1) as tf:
+                for path in [*files,destination/'evidence-inventory.json']:
+                    tf.add(path,arcname=str(path.relative_to(destination)),recursive=False)
+                tf.add(review,arcname='spark-independent-review.json',recursive=False)
+            with tarfile.open(archive) as tf:
+                for row in rows:
+                    handle = tf.extractfile(row['path'])
+                    assert handle is not None
+                    assert tf.getmember(row['path']).size == row['bytes']
+                    assert hashlib.file_digest(handle,'sha256').hexdigest() == row['sha256']
+            assert c.health(8000)
+            assert [c.identity(c.inspect(rank,c.ORIGINAL_IDS[rank])) for rank in (0,1)] == prepared['originals']
+            progress.update(status='complete',archive=str(archive),archive_sha256=sha(archive),
+                archive_bytes=archive.stat().st_size,payloads=len(files),source_files=229,
+                restored_health=200,measurements_complete=True,quality_qualified=False,
+                verified_after_pack=True,original_verifier_sha256=plan['original_verifier_sha256'],
+                corrected_verifier_sha256=plan['corrected_verifier_sha256'],finished_epoch=time.time())
+            c.write(receipt,progress)
+            status = json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+            status.update(active_experiment=None,service_paused=False,original_health=200,
+                active_verification=None,latest_fp32_input_model_recovery=progress,updated_epoch=time.time())
+            c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',status)
+            print(json.dumps(progress),flush=True)
+        except BaseException as exc:
+            progress.update(status='failed',error=repr(exc),finished_epoch=time.time())
+            c.write(receipt,progress)
+            raise
+
+
+if __name__ == '__main__':
+    main()

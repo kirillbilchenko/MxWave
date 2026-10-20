@@ -1,0 +1,62 @@
+"""Run bounded startup preparation before accepting requests; expose no control endpoint."""
+
+from __future__ import annotations
+
+import functools
+import hashlib
+import inspect
+import json
+import os
+import pathlib
+
+
+def install():
+    from vllm.v1.worker.gpu_worker import Worker
+
+    if getattr(Worker.compile_or_warm_up_model, "_mxwave_serving_trial", False):
+        return
+    # Both arms use the previously measured ten-millisecond idle admission policy.
+    import prefill_admission
+
+    parent = prefill_admission.AdmissionWindow
+    if not getattr(parent, "_mxwave_serving_trial", False):
+
+        class TrialAdmissionWindow(parent):
+            _mxwave_serving_trial = True
+
+            def __init__(self):
+                super().__init__(window_ms=10.0)
+
+        prefill_admission.AdmissionWindow = TrialAdmissionWindow
+    expected = json.loads(pathlib.Path("/trial/plan.json").read_bytes())["gpu_worker_sha256"]
+    assert (
+        hashlib.sha256(pathlib.Path(inspect.getfile(Worker)).read_bytes()).hexdigest() == expected
+    )
+    original_load = Worker.load_model
+
+    @functools.wraps(original_load)
+    def loaded(worker, *args, **kwargs):
+        result = original_load(worker, *args, **kwargs)
+        if os.environ["MXWAVE_TRIAL_ARM"] == "ct_mxfp8":
+            assert not kwargs.get("load_dummy_weights", False)
+            worker.mxwave_trial_convert_kda()
+        return result
+
+    loaded._mxwave_native_kda_before_capture = True
+    Worker.load_model = loaded
+    original = Worker.compile_or_warm_up_model
+
+    @functools.wraps(original)
+    def prepared(worker, *args, **kwargs):
+        result = original(worker, *args, **kwargs)
+        report = worker.mxwave_prepare_dispatch_startup()
+        report["trial"] = worker.mxwave_trial_snapshot()
+        target = pathlib.Path("/traces") / f"trial-startup-r{report['rank']}.json"
+        target.write_text(json.dumps(report, indent=2) + "\n")
+        print(
+            "MxWave serving trial startup complete: " + os.environ["MXWAVE_TRIAL_ARM"], flush=True
+        )
+        return result
+
+    prepared._mxwave_serving_trial = True
+    Worker.compile_or_warm_up_model = prepared

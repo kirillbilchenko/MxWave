@@ -1,0 +1,955 @@
+{
+  "status": "component_qualified_no_meaningful_model_throughput_recovery",
+  "revision": "dispatchv1",
+  "comparison": "Only PyTorch registration differs; identical native kernels, weights, routing and scratch",
+  "geometry": {
+    "tp": 2,
+    "resident_experts": 16,
+    "routing_experts": 288,
+    "topk": 8
+  },
+  "modes": {
+    "raw": {
+      "torch": "2.13.0+cu130",
+      "vllm": "0.1.dev20051+g487ecf187",
+      "source_report_sha256": "1c45f5a3f8f6e6ff5c3bc27c980e8f59de37e843b8d6ef08ab61c91d88aa42b2",
+      "spark2_report": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/plugin-fixture-raw-dispatchv1-attempt1/report.json",
+      "code_sha256": {
+        "model_plugin.py": "dd6b1756444cd5d77c0a70c7cfb81fff4f249ad6f13e2635f37eef3eef7bf058",
+        "moe_runtime.py": "cd4a208b7d108ed6e8c97fe9a46ffe1d81e69e79bc94535e066d4368f069c844",
+        "benchmark_model_plugin.py": "721d066c2df166a5fb87e43e7626a99916041fc8767216d0a4eccca898e0e05c"
+      },
+      "library_sha256": {
+        "MXWAVE_MOE_RAW_LIBRARY": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "MXWAVE_MOE_ALIGNED_LIBRARY": "53ebb8478607104723786934c96ae7dc973a9d16ff93a2ec8c93a2a653dae658"
+      },
+      "peak_cuda_allocated_bytes": 540541952,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 280.39519786834717,
+                  "host_submit_us": 274.0829,
+                  "wall_us": 280.52695
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 255.71839809417725,
+                  "host_submit_us": 69.72914999999999,
+                  "wall_us": 269.9645
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9119927874593761,
+                "host_submit_us": 0.2544089762622914,
+                "wall_us": 0.9623478243355941
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 269.4576025009155,
+                  "host_submit_us": 69.60594999999999,
+                  "wall_us": 269.6277
+                },
+                "custom": {
+                  "cuda_elapsed_us": 278.83520126342773,
+                  "host_submit_us": 273.14695,
+                  "wall_us": 279.01095000000004
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9663686696657329,
+                "host_submit_us": 0.2548296805071409,
+                "wall_us": 0.9663695994727087
+              }
+            }
+          }
+        },
+        {
+          "tokens": 1,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 282.9551935195923,
+                  "host_submit_us": 277.18295,
+                  "wall_us": 283.13015
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 254.9407958984375,
+                  "host_submit_us": 69.12835000000001,
+                  "wall_us": 255.1188
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9009935203072531,
+                "host_submit_us": 0.24939611184598479,
+                "wall_us": 0.9010654640630819
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 250.0880002975464,
+                  "host_submit_us": 69.39389999999999,
+                  "wall_us": 250.25
+                },
+                "custom": {
+                  "cuda_elapsed_us": 282.2351932525635,
+                  "host_submit_us": 277.02135,
+                  "wall_us": 282.42775
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.8860978583693155,
+                "host_submit_us": 0.2505001870794435,
+                "wall_us": 0.8860673216424377
+              }
+            }
+          }
+        },
+        {
+          "tokens": 4,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 542.3295974731445,
+                  "host_submit_us": 277.70455,
+                  "wall_us": 542.6465999999999
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 539.1759872436523,
+                  "host_submit_us": 69.7667,
+                  "wall_us": 539.4914
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9941850670806357,
+                "host_submit_us": 0.25122634828993623,
+                "wall_us": 0.994185534379097
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 534.7119808197021,
+                  "host_submit_us": 67.98830000000001,
+                  "wall_us": 535.061
+                },
+                "custom": {
+                  "cuda_elapsed_us": 539.5455837249756,
+                  "host_submit_us": 275.51095000000004,
+                  "wall_us": 539.81945
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9910413446962114,
+                "host_submit_us": 0.24677168003667369,
+                "wall_us": 0.9911851082801852
+              }
+            }
+          }
+        },
+        {
+          "tokens": 4,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 306.29119873046875,
+                  "host_submit_us": 278.02535,
+                  "wall_us": 306.5431
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 314.9519920349121,
+                  "host_submit_us": 68.6971,
+                  "wall_us": 315.2327
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 1.028276337486487,
+                "host_submit_us": 0.2470893391555842,
+                "wall_us": 1.028347074196092
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 332.7104091644287,
+                  "host_submit_us": 67.8403,
+                  "wall_us": 332.9656
+                },
+                "custom": {
+                  "cuda_elapsed_us": 327.9072046279907,
+                  "host_submit_us": 276.16695,
+                  "wall_us": 328.19435
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 1.0146480603922297,
+                "host_submit_us": 0.24564959710059442,
+                "wall_us": 1.01453787976545
+              }
+            }
+          }
+        },
+        {
+          "tokens": 8,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 576.8815994262695,
+                  "host_submit_us": 277.5093,
+                  "wall_us": 577.1756
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 539.905595779419,
+                  "host_submit_us": 69.49875,
+                  "wall_us": 540.245
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9359036521816182,
+                "host_submit_us": 0.2504375529036324,
+                "wall_us": 0.9360149666756529
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 481.3119888305664,
+                  "host_submit_us": 68.75955,
+                  "wall_us": 481.47995000000003
+                },
+                "custom": {
+                  "cuda_elapsed_us": 486.4640235900879,
+                  "host_submit_us": 275.78135,
+                  "wall_us": 486.63595000000004
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9894092173116942,
+                "host_submit_us": 0.24932632319045508,
+                "wall_us": 0.9894048107214438
+              }
+            }
+          }
+        },
+        {
+          "tokens": 8,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 281.3728094100952,
+                  "host_submit_us": 276.0877,
+                  "wall_us": 281.53575
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 252.33759880065918,
+                  "host_submit_us": 69.81155,
+                  "wall_us": 252.50285
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.8968087546543355,
+                "host_submit_us": 0.2528600513532475,
+                "wall_us": 0.8968766843997609
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 252.41758823394775,
+                  "host_submit_us": 65.2491,
+                  "wall_us": 252.59165
+                },
+                "custom": {
+                  "cuda_elapsed_us": 277.3263931274414,
+                  "host_submit_us": 271.8877,
+                  "wall_us": 277.49895000000004
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9101823500727997,
+                "host_submit_us": 0.23998547929898997,
+                "wall_us": 0.9102436243452451
+              }
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 556.8831920623779,
+                  "host_submit_us": 278.24134999999995,
+                  "wall_us": 557.0627
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 560.8816146850586,
+                  "host_submit_us": 69.06110000000001,
+                  "wall_us": 561.0523000000001
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 1.0071800023410167,
+                "host_submit_us": 0.2482057393697954,
+                "wall_us": 1.0071618509011644
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 540.5295848846436,
+                  "host_submit_us": 65.5307,
+                  "wall_us": 540.7074
+                },
+                "custom": {
+                  "cuda_elapsed_us": 545.0255870819092,
+                  "host_submit_us": 272.23415,
+                  "wall_us": 545.19625
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9917508419717734,
+                "host_submit_us": 0.24071447318420558,
+                "wall_us": 0.9917665427816131
+              }
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 525.6879806518555,
+                  "host_submit_us": 277.0485,
+                  "wall_us": 525.99135
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 484.75518226623535,
+                  "host_submit_us": 67.3251,
+                  "wall_us": 485.0767
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9221348025974205,
+                "host_submit_us": 0.24300835413294064,
+                "wall_us": 0.9222142151196974
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 415.94557762145996,
+                  "host_submit_us": 66.92435,
+                  "wall_us": 416.12359999999995
+                },
+                "custom": {
+                  "cuda_elapsed_us": 419.08321380615234,
+                  "host_submit_us": 274.58855,
+                  "wall_us": 419.2516
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.992513095057671,
+                "host_submit_us": 0.2437259310339051,
+                "wall_us": 0.992539086314757
+              }
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 1420.7088470458984,
+                  "host_submit_us": 274.97655,
+                  "wall_us": 1421.0036499999999
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 1417.7087783813477,
+                  "host_submit_us": 66.50110000000001,
+                  "wall_us": 1417.974
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9978883297089415,
+                "host_submit_us": 0.2418428044136855,
+                "wall_us": 0.9978679505854894
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 847.3263740539551,
+                  "host_submit_us": 66.73875,
+                  "wall_us": 847.5137
+                },
+                "custom": {
+                  "cuda_elapsed_us": 857.585620880127,
+                  "host_submit_us": 277.0061,
+                  "wall_us": 857.77855
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9880370582523959,
+                "host_submit_us": 0.24092880987097395,
+                "wall_us": 0.9880332167317544
+              }
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 780.2031993865967,
+                  "host_submit_us": 273.3021,
+                  "wall_us": 780.35335
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 765.2959823608398,
+                  "host_submit_us": 65.8491,
+                  "wall_us": 765.4709
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9808931608618409,
+                "host_submit_us": 0.24093887313708898,
+                "wall_us": 0.9809285754972411
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 765.6591892242432,
+                  "host_submit_us": 64.5875,
+                  "wall_us": 765.8301
+                },
+                "custom": {
+                  "cuda_elapsed_us": 770.9248065948486,
+                  "host_submit_us": 270.4357,
+                  "wall_us": 771.1101
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9931697393499846,
+                "host_submit_us": 0.2388275660351056,
+                "wall_us": 0.993152728773751
+              }
+            }
+          }
+        }
+      ]
+    },
+    "aligned": {
+      "torch": "2.13.0+cu130",
+      "vllm": "0.1.dev20051+g487ecf187",
+      "source_report_sha256": "ca4b63144d897196fef7a0af9114bf07c98712117963c70c7142cd380b29ac58",
+      "spark2_report": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/plugin-fixture-aligned-dispatchv1-attempt1/report.json",
+      "code_sha256": {
+        "model_plugin.py": "dd6b1756444cd5d77c0a70c7cfb81fff4f249ad6f13e2635f37eef3eef7bf058",
+        "moe_runtime.py": "cd4a208b7d108ed6e8c97fe9a46ffe1d81e69e79bc94535e066d4368f069c844",
+        "benchmark_model_plugin.py": "721d066c2df166a5fb87e43e7626a99916041fc8767216d0a4eccca898e0e05c"
+      },
+      "library_sha256": {
+        "MXWAVE_MOE_RAW_LIBRARY": "48d9dafefed0d259134f23e7f91a30de40443d0cbb493b337667e6ce9a9d69d2",
+        "MXWAVE_MOE_ALIGNED_LIBRARY": "53ebb8478607104723786934c96ae7dc973a9d16ff93a2ec8c93a2a653dae658"
+      },
+      "peak_cuda_allocated_bytes": 543688704,
+      "cases": [
+        {
+          "tokens": 1,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 281.19680881500244,
+                  "host_submit_us": 273.76534999999996,
+                  "wall_us": 281.35654999999997
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 266.2208080291748,
+                  "host_submit_us": 70.48355000000001,
+                  "wall_us": 266.7141
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9467419248143735,
+                "host_submit_us": 0.25745971869705214,
+                "wall_us": 0.9479576715025828
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 261.84959411621094,
+                  "host_submit_us": 70.98435,
+                  "wall_us": 262.02285
+                },
+                "custom": {
+                  "cuda_elapsed_us": 285.54561138153076,
+                  "host_submit_us": 277.1605,
+                  "wall_us": 286.37735
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9170149485027158,
+                "host_submit_us": 0.25611279385049457,
+                "wall_us": 0.9149566123158833
+              }
+            }
+          }
+        },
+        {
+          "tokens": 1,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 295.46239376068115,
+                  "host_submit_us": 278.9045,
+                  "wall_us": 295.76945
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 264.61119651794434,
+                  "host_submit_us": 69.81795,
+                  "wall_us": 264.8653
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.8955833368502196,
+                "host_submit_us": 0.25032923455878264,
+                "wall_us": 0.895512704236357
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 245.19200325012207,
+                  "host_submit_us": 70.93395,
+                  "wall_us": 245.35635
+                },
+                "custom": {
+                  "cuda_elapsed_us": 283.84480476379395,
+                  "host_submit_us": 278.9357,
+                  "wall_us": 284.00695
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.8638241712902323,
+                "host_submit_us": 0.2543021563751072,
+                "wall_us": 0.8639096684077625
+              }
+            }
+          }
+        },
+        {
+          "tokens": 4,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 470.35841941833496,
+                  "host_submit_us": 279.42535,
+                  "wall_us": 470.54470000000003
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 464.8575782775879,
+                  "host_submit_us": 70.82195,
+                  "wall_us": 465.02065000000005
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9883050012210909,
+                "host_submit_us": 0.2534557082956146,
+                "wall_us": 0.9882603076817145
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 465.32959938049316,
+                  "host_submit_us": 67.18430000000001,
+                  "wall_us": 465.4934
+                },
+                "custom": {
+                  "cuda_elapsed_us": 470.17598152160645,
+                  "host_submit_us": 275.8965,
+                  "wall_us": 470.73025
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9896924080948815,
+                "host_submit_us": 0.24351269407187118,
+                "wall_us": 0.988875051051
+              }
+            }
+          }
+        },
+        {
+          "tokens": 4,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 302.128005027771,
+                  "host_submit_us": 279.89254999999997,
+                  "wall_us": 302.39509999999996
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 298.03359508514404,
+                  "host_submit_us": 70.32430000000001,
+                  "wall_us": 298.31584999999995
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9864480952626334,
+                "host_submit_us": 0.2512546332512245,
+                "wall_us": 0.9865101980819133
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 297.7663993835449,
+                  "host_submit_us": 69.72515,
+                  "wall_us": 298.027
+                },
+                "custom": {
+                  "cuda_elapsed_us": 303.7231922149658,
+                  "host_submit_us": 277.59015000000005,
+                  "wall_us": 304.02705
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9803874284740005,
+                "host_submit_us": 0.25118020217936404,
+                "wall_us": 0.9802647494688385
+              }
+            }
+          }
+        },
+        {
+          "tokens": 8,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 568.3487892150879,
+                  "host_submit_us": 279.35495000000003,
+                  "wall_us": 568.7059499999999
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 544.6000099182129,
+                  "host_submit_us": 70.40835000000001,
+                  "wall_us": 546.6010500000001
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9582144279225562,
+                "host_submit_us": 0.2520390277673619,
+                "wall_us": 0.9611312313507537
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 553.8032054901123,
+                  "host_submit_us": 69.98115,
+                  "wall_us": 554.0147
+                },
+                "custom": {
+                  "cuda_elapsed_us": 566.2992000579834,
+                  "host_submit_us": 278.82135,
+                  "wall_us": 566.6443
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9779339356887814,
+                "host_submit_us": 0.2509892086814729,
+                "wall_us": 0.9777115908516152
+              }
+            }
+          }
+        },
+        {
+          "tokens": 8,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 300.8591890335083,
+                  "host_submit_us": 278.46535,
+                  "wall_us": 301.10545
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 297.85120487213135,
+                  "host_submit_us": 70.26675,
+                  "wall_us": 298.243
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9900020199780505,
+                "host_submit_us": 0.25233570352648904,
+                "wall_us": 0.9904935297584284
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 249.95999336242676,
+                  "host_submit_us": 69.76995,
+                  "wall_us": 250.12120000000002
+                },
+                "custom": {
+                  "cuda_elapsed_us": 282.95679092407227,
+                  "host_submit_us": 278.11975,
+                  "wall_us": 283.1198
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.8833857372573194,
+                "host_submit_us": 0.25086298258214307,
+                "wall_us": 0.8834465127483137
+              }
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 751.5103816986084,
+                  "host_submit_us": 277.9541,
+                  "wall_us": 751.7955999999999
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 745.0431823730469,
+                  "host_submit_us": 68.77795,
+                  "wall_us": 745.3884
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9913943978911589,
+                "host_submit_us": 0.24744355273046884,
+                "wall_us": 0.9914774707380571
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 723.3263969421387,
+                  "host_submit_us": 68.71075,
+                  "wall_us": 723.6459
+                },
+                "custom": {
+                  "cuda_elapsed_us": 709.2000007629395,
+                  "host_submit_us": 278.1581,
+                  "wall_us": 709.4794
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 1.0199187763169804,
+                "host_submit_us": 0.24702048942669658,
+                "wall_us": 1.0199674578289375
+              }
+            }
+          }
+        },
+        {
+          "tokens": 64,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 412.58559226989746,
+                  "host_submit_us": 279.1157,
+                  "wall_us": 412.75715
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 407.03678131103516,
+                  "host_submit_us": 68.5171,
+                  "wall_us": 407.22755
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9865511276621786,
+                "host_submit_us": 0.24547920450193234,
+                "wall_us": 0.9866032605370979
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 411.2527847290039,
+                  "host_submit_us": 65.7419,
+                  "wall_us": 411.43640000000005
+                },
+                "custom": {
+                  "cuda_elapsed_us": 414.44640159606934,
+                  "host_submit_us": 275.5621,
+                  "wall_us": 414.6268
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9922942584257782,
+                "host_submit_us": 0.23857380967847178,
+                "wall_us": 0.9923053695516065
+              }
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated": false,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 865.9296035766602,
+                  "host_submit_us": 278.89254999999997,
+                  "wall_us": 866.10015
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 861.1424446105957,
+                  "host_submit_us": 67.61795,
+                  "wall_us": 861.31135
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9944716534158303,
+                "host_submit_us": 0.2424516180156121,
+                "wall_us": 0.9944708472801903
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 852.4175643920898,
+                  "host_submit_us": 67.45389999999999,
+                  "wall_us": 852.6016999999999
+                },
+                "custom": {
+                  "cuda_elapsed_us": 857.532787322998,
+                  "host_submit_us": 278.41815,
+                  "wall_us": 857.7073
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9940349535241951,
+                "host_submit_us": 0.24227551256985216,
+                "wall_us": 0.9940473865618258
+              }
+            }
+          }
+        },
+        {
+          "tokens": 128,
+          "concentrated": true,
+          "both_dispatches_eager_stream_graph_match_stock_bits": true,
+          "paired_timings": {
+            "customthen_dispatcher": {
+              "median_us": {
+                "custom": {
+                  "cuda_elapsed_us": 799.6655941009521,
+                  "host_submit_us": 277.72375,
+                  "wall_us": 800.24625
+                },
+                "dispatcher": {
+                  "cuda_elapsed_us": 779.2895793914795,
+                  "host_submit_us": 66.74675,
+                  "wall_us": 779.53735
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9745193305054208,
+                "host_submit_us": 0.24033504516628487,
+                "wall_us": 0.9741218406209338
+              }
+            },
+            "dispatcherthen_custom": {
+              "median_us": {
+                "dispatcher": {
+                  "cuda_elapsed_us": 822.657585144043,
+                  "host_submit_us": 66.1579,
+                  "wall_us": 822.8263499999999
+                },
+                "custom": {
+                  "cuda_elapsed_us": 827.5504112243652,
+                  "host_submit_us": 277.29970000000003,
+                  "wall_us": 827.7256
+                }
+              },
+              "dispatcher_over_custom": {
+                "cuda_elapsed_us": 0.9940875794224024,
+                "host_submit_us": 0.23857905363763462,
+                "wall_us": 0.9940810698617996
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Resident component timings do not predict full-model speedup.",
+    "Host submission and CUDA elapsed times overlap and must not be summed.",
+    "The production GLM service was never stopped for these components."
+  ],
+  "full_model_review": "full-model-dispatch-v1-review.json"
+}

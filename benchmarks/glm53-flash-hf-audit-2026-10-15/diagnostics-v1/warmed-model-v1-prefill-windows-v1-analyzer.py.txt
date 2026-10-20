@@ -1,0 +1,211 @@
+"""Inspect retained prefill resource conflicts; this does not predict overlap speed."""
+from __future__ import annotations
+
+import collections
+import gzip
+import hashlib
+import json
+import pathlib
+import re
+import statistics
+import sys
+
+BASE = pathlib.Path(__file__).parent
+PARENT = pathlib.Path('/private/tmp/mxwave-warmed-model-v1')
+EVIDENCE = PARENT / 'evidence'
+sys.path.insert(0, str(EVIDENCE / 'source'))
+from analyze_full_profiles import kernel_group
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def union(intervals):
+    total, last = 0., -float('inf')
+    for start, end in sorted(intervals):
+        assert end >= start
+        total += max(0., end - max(start, last))
+        last = max(last, end)
+    return total
+
+
+def memory(event):
+    args = event['args']
+    allocated = args.get('occupancy', {}).get('allocatedSharedMemPerBlock')
+    if allocated is not None:
+        return allocated, 'allocated'
+    return args.get('shared memory'), 'requested_only'
+
+
+def category(name):
+    if 'cutlass' in name.lower() and 'bf16' in name.lower():
+        return 'bf16_dense_linear'
+    return kernel_group(name)
+
+
+def main():
+    inventory = json.loads((EVIDENCE / 'evidence-inventory.json').read_bytes())
+    entries = {x['path']: x for x in inventory['files']}
+    review_path = PARENT / 'mac-independent-review.json'
+    review = json.loads(review_path.read_bytes())
+    proof_path = PARENT / 'cross-host-verification.json'
+    proof = json.loads(proof_path.read_bytes())
+    assert proof['all_decisions_identical'] and proof['measurement_complete']
+    assert proof['archive_sha256'] == '0fc867240d04e1770e2970143f48f630551feb35f53b739403c4fb6b8bde64e0'
+    classifier = EVIDENCE / 'source/analyze_full_profiles.py'
+    assert sha(classifier) == entries['source/analyze_full_profiles.py']['sha256']
+    pattern = re.compile(r'^mxwave_c8_(.+)_step_(\d+)$')
+    profiles = []
+    for meta in review['profiles']:
+        if not meta['labels'][0].startswith('candidate-'):
+            continue
+        path = EVIDENCE / meta['path']
+        assert sha(path) == entries[meta['path']]['sha256']
+        assert path.stat().st_size == entries[meta['path']]['bytes']
+        with gzip.open(path, 'rt') as stream:
+            trace = json.load(stream)
+        devices = {d['id']: d for d in trace['deviceProperties']}
+        events = trace['traceEvents']
+        ranges = []
+        for e in events:
+            match = pattern.match(e.get('name', ''))
+            if e.get('cat') == 'user_annotation' and match:
+                ranges.append({'label': match[1], 'sequence': int(match[2]),
+                               'pid': e['pid'], 'tid': e['tid'], 'start': e['ts'],
+                               'end': e['ts'] + e['dur'], 'kernels': [], 'graphs': 0})
+        runtime = {}
+        for e in events:
+            if e.get('cat') not in ('cuda_runtime', 'cuda_driver'):
+                continue
+            corr = e.get('args', {}).get('correlation')
+            if corr is None:
+                continue
+            assert corr not in runtime
+            owners = [i for i, r in enumerate(ranges) if (r['pid'], r['tid']) ==
+                      (e['pid'], e['tid']) and r['start'] <= e['ts'] <= r['end']]
+            assert len(owners) <= 1
+            owner = owners[0] if owners else None
+            runtime[corr] = owner
+            if owner is not None and e.get('name', '').startswith('cudaGraphLaunch'):
+                ranges[owner]['graphs'] += 1
+        unassigned = total = 0
+        for e in events:
+            if e.get('cat') != 'kernel':
+                continue
+            total += 1
+            owner = runtime.get(e.get('args', {}).get('correlation'))
+            if owner is None:
+                unassigned += 1
+            else:
+                ranges[owner]['kernels'].append(e)
+        known = {(s['label'], s['sequence']): s for s in meta['steps']}
+        assert len(known) == len(ranges)
+        forwards = []
+        for r in ranges:
+            known_step = known[r['label'], r['sequence']]
+            kernels = sorted(r['kernels'], key=lambda e: e['ts'])
+            assert len(kernels) == known_step['kernel_events']
+            assert r['graphs'] == known_step['cuda_graph_launches']
+            if not known_step['batch']['has_prefill']:
+                continue
+            decoders = [e for e in kernels if 'BF16TripleBitmap_Decompress_Kernel' in e['name']]
+            grids = collections.Counter(tuple(e['args']['grid']) for e in decoders)
+            complete = len(decoders) == 68 and grids == {(64, 197, 1): 34, (64, 64, 1): 34}
+            windows = []
+            for ordinal, (previous, target) in enumerate(zip(decoders, decoders[1:])):
+                start, end = previous['ts'] + previous['dur'], target['ts']
+                target_mem, target_basis = memory(target)
+                capacity = devices[target['args']['device']]['sharedMemPerMultiprocessor']
+                groups = collections.defaultdict(lambda: {'calls': 0, 'clipped_sum_us': 0.,
+                                                           'intervals': [], 'memory_bytes': set()})
+                all_intervals = []
+                for e in kernels:
+                    if e is previous or e is target:
+                        continue
+                    lo, hi = max(start, e['ts']), min(end, e['ts'] + e['dur'])
+                    if hi <= lo:
+                        continue
+                    mem, basis = memory(e)
+                    if mem is None or target_mem is None:
+                        fit = 'unknown'
+                    else:
+                        fit = 'capacity_fits' if mem + target_mem <= capacity else 'capacity_exceeded'
+                    key = category(e['name']), fit, basis, target_basis
+                    g = groups[key]
+                    g['calls'] += 1
+                    g['clipped_sum_us'] += hi - lo
+                    g['intervals'].append((lo, hi))
+                    if mem is not None:
+                        g['memory_bytes'].add(mem)
+                    all_intervals.append((lo, hi))
+                windows.append({'target_ordinal': ordinal + 1,
+                                'target_kind_by_grid': 'input' if target['args']['grid'][1] == 197 else 'output',
+                                'target_shared_memory_bytes': target_mem,
+                                'target_memory_basis': target_basis,
+                                'device_capacity_bytes_per_SM': capacity,
+                                'gap_us': end - start, 'kernel_union_us': union(all_intervals),
+                                'groups': [{'category': k[0], 'same_SM_capacity': k[1],
+                                            'other_memory_basis': k[2], 'target_memory_basis': k[3],
+                                            'calls': g['calls'], 'clipped_sum_us': g['clipped_sum_us'],
+                                            'kernel_union_us': union(g['intervals']),
+                                            'shared_memory_bytes': sorted(g['memory_bytes'])}
+                                           for k, g in sorted(groups.items())]})
+            forwards.append({'label': r['label'], 'sequence': r['sequence'],
+                             'physical_rows': known_step['batch']['num_tokens_after_padding'],
+                             'requests': known_step['batch']['num_reqs'],
+                             'reconstructions': len(decoders), 'complete_34_input_34_output': complete,
+                             'decoder_duration_sum_us': sum(e['dur'] for e in decoders),
+                             'windows': windows})
+        assert sum(len(r['kernels']) for r in ranges) + unassigned == total
+        profiles.append({'path': meta['path'], 'sha256': sha(path), 'rank': meta['rank'],
+                         'all_kernel_events': total, 'unassigned_kernel_events': unassigned,
+                         'device_properties': trace['deviceProperties'], 'prefill_forwards': forwards})
+    summary = []
+    grouped = collections.defaultdict(list)
+    for profile in profiles:
+        for forward in profile['prefill_forwards']:
+            grouped[profile['rank'], forward['physical_rows']].append(forward)
+    for (rank, rows), forwards in sorted(grouped.items()):
+        costs = collections.defaultdict(list)
+        for forward in forwards:
+            sums = collections.Counter()
+            for window in forward['windows']:
+                for g in window['groups']:
+                    sums[g['category'], g['same_SM_capacity']] += g['clipped_sum_us']
+            for k in {k for f in forwards for w in f['windows'] for g in w['groups']
+                      for k in [(g['category'], g['same_SM_capacity'])]}:
+                costs[k].append(sums[k])
+        summary.append({'rank': rank, 'physical_rows': rows, 'forwards': len(forwards),
+                        'all_complete': all(f['complete_34_input_34_output'] for f in forwards),
+                        'median_decoder_sum_us': statistics.median(f['decoder_duration_sum_us'] for f in forwards),
+                        'between_decoder_median_category_sums_us': [
+                            {'category': k[0], 'same_SM_capacity': k[1], 'median_us': statistics.median(v)}
+                            for k, v in sorted(costs.items())]})
+    report = {'status': 'complete', 'source_sha256': sha(pathlib.Path(__file__)),
+              'parent_archive_sha256': proof['archive_sha256'], 'classifier_sha256': sha(classifier),
+              'independent_review_sha256': sha(review_path), 'cross_host_proof_sha256': sha(proof_path),
+              'GPU_experiment_run': False, 'new_model_measurement': False,
+              'original_measurements_or_gates_changed': False,
+              'profiles': profiles, 'summary': summary, 'limits': [
+                  'Historical warmedmodelv1 traces only; no active fp32inputmodelv1 result is used.',
+                  'All candidate profiled prefills are retained, including any incomplete range.',
+                  'Window spans cover consecutive reconstructions within one forward, excluding the first reconstruction.',
+                  'A shared-memory capacity fit is necessary, not sufficient, for same-SM block co-residency.',
+                  'Allocated per-block shared memory is used when available, requested memory otherwise.',
+                  'Registers, warp/block limits, scheduling, dependencies, buffer lifetime and bandwidth are not modeled.',
+                  'Blocks that cannot share one SM can still run on different SMs; this is no global overlap limit.',
+                  'Clipped duration sums may overlap and are neither API TTFT nor a speedup estimate.',
+                  'These separate profiles do not establish the cause of any individual ordinary timing trial.',
+                  'Prior failed naive overlap experiments remain failed; this does not authorize integration.'
+              ]}
+    with (BASE / 'historical-prefill-window-review.json').open('x') as stream:
+        json.dump(report, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    print(json.dumps({'profiles': len(profiles), 'prefill_forwards': sum(len(p['prefill_forwards']) for p in profiles),
+                      'summary': summary}, indent=2))
+
+
+if __name__ == '__main__':
+    main()

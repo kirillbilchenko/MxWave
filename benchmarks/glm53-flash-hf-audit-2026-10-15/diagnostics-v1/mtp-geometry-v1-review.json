@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "verifier_sha256": "320807d671e7a96de1a8677fd1fbc49bfd1eb4f8423c2ba651247dd8cdcab751",
+  "plan_sha256": "9851cce5ad96c3f35d56ccfa5552b9a22da83dd6dfa0b7af7d00a8cdbcaebbc2",
+  "report_sha256": "626401478d1cc894842216b298eac4df37df8cc548a3bb51ba37bbaa950522e9",
+  "projection_geometry": {
+    "q_rank": 1536,
+    "kv_rank": 512,
+    "rope_rows": 0,
+    "hidden_size": 4096,
+    "nope": true
+  },
+  "raw_artifacts": [
+    {
+      "path": "projection-source-0.bin.gz",
+      "raw_bytes": 12582912,
+      "raw_sha256": "68210cd70d8d247711680f403bdadf52c17a6b2e397265640b9b34f00b52e593"
+    },
+    {
+      "path": "projection-source-1.bin.gz",
+      "raw_bytes": 4194304,
+      "raw_sha256": "042cb25872e412d550815a9f67d872f3a07634d85d93bdf213648b3c4c690c38"
+    },
+    {
+      "path": "projection-native.bin.gz",
+      "raw_bytes": 16777216,
+      "raw_sha256": "63659ef42b98860f3e74d54e7585690793486478b5472bd271b0f92afed8b4f7"
+    },
+    {
+      "path": "projection-isolated_loader_bridge.bin.gz",
+      "raw_bytes": 16777216,
+      "raw_sha256": "63659ef42b98860f3e74d54e7585690793486478b5472bd271b0f92afed8b4f7"
+    }
+  ],
+  "both_native_and_bridge_projection_outputs_bits_exact": true,
+  "padding_required": false,
+  "actual_projection_checks": 2,
+  "prospective_selected_draft_checks_per_rank": 18,
+  "expert_and_shared_checks_run_here": false,
+  "quality_qualified": false,
+  "model_loads": 0,
+  "cuda_initialized": false,
+  "verified_payloads": 14,
+  "archive_sha256": "1d7aa99458c4ccef6144e26f8bc2cf85e4d76f038c92dd10e9330e12cd13b4db",
+  "archive_bytes": 40031996,
+  "source_archive_sha256": "775f4cf1125a1c262fb28395cf297c16cf09716223b253fa1c45710d8204c23c",
+  "source_sha256": {
+    "audit": "59497a8bbb8c0ca16e86a3bb286e99be44edce26eae762240e84130a304221b1",
+    "bridge": "5d353a6e0f646cb44310db08916afbb68f865ef69de05c2dd5a61dcb242ffd65",
+    "native_mtp": "b183ed6e134e7126719b3c7208eef46039805d478916a5c876ec25d60be714ce"
+  },
+  "spark_and_Mac_reviews_byte_identical": true,
+  "spark_review_sha256": "00a1347b969cad26d131ddc4b1cebe093d2d4aef89243e8e59603324b214a12c",
+  "mac_review_sha256": "00a1347b969cad26d131ddc4b1cebe093d2d4aef89243e8e59603324b214a12c",
+  "original_service_health": 200,
+  "original_service_paused": false,
+  "limits": [
+    "Real native load_weights naming/shard orchestration; bounded destination storage stand-in.",
+    "Expert mapping is stubbed; no expert/shared weight check runs in this fixture.",
+    "No model constructor, draft inference, acceptance, quality or speed measurement."
+  ]
+}

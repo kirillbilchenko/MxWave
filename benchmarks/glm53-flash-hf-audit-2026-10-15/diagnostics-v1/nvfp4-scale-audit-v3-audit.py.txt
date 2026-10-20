@@ -1,0 +1,238 @@
+"""CPU-only inventory and exact byte-distribution screen of a ModelOpt checkpoint."""
+from __future__ import annotations
+
+import collections
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import resource
+import struct
+import time
+import zlib
+
+import numpy as np
+
+MODEL = Path('/model')
+OUT = Path('/result')
+EXPECTED_CONFIG = 'f14dc13ce3bef88a5539c9e61b3e4f3dbef6958ebc3acda4b7f05f418642c3b0'
+SIZES = {'BOOL': 1, 'U8': 1, 'I8': 1, 'F8_E4M3': 1, 'F8_E5M2': 1,
+         'BF16': 2, 'F16': 2, 'I16': 2, 'U16': 2, 'F32': 4, 'I32': 4,
+         'U32': 4, 'F64': 8, 'I64': 8, 'U64': 8}
+EXPERT = re.compile(r'^(.*\.layers\.(\d+)\.mlp\.experts)\.(\d+)\.(gate_proj|up_proj|down_proj)\.(\w+)$')
+
+
+def save(name, value):
+    """Write one complete JSON checkpoint atomically."""
+    p = OUT / name
+    temporary = p.with_suffix('.pending')
+    temporary.write_text(json.dumps(value, indent=2) + '\n')
+    temporary.replace(p)
+
+
+def entropy(hist):
+    """Return zero-order empirical bits per byte, with no coding-overhead claim."""
+    counts = hist[hist > 0].astype(np.float64)
+    probabilities = counts / counts.sum()
+    return float(-(probabilities * np.log2(probabilities)).sum())
+
+
+def codec_roundtrip(raw, palette, bits):
+    """Verify 32-byte random-access blocks: fixed selectors, offset, byte escapes."""
+    a = np.frombuffer(raw, dtype=np.uint8)
+    assert len(a) % 32 == 0 and bits in (2, 4)
+    escape = (1 << bits) - 1
+    lookup = np.full(256, escape, dtype=np.uint8)
+    lookup[palette] = np.arange(len(palette), dtype=np.uint8)
+    codes = lookup[a]
+    escape_mask = codes == escape
+    exceptions = a[escape_mask].copy()
+    counts = escape_mask.reshape(-1, 32).sum(axis=1, dtype=np.uint32)
+    offsets = np.concatenate((np.zeros(1, dtype=np.uint32), np.cumsum(counts[:-1], dtype=np.uint32)))
+    width = 8 // bits
+    packed = np.bitwise_or.reduce(codes.reshape(-1, width) << (bits * np.arange(width, dtype=np.uint8)), axis=1)
+    unpacked = ((packed[:, None] >> (bits * np.arange(width, dtype=np.uint8))) & escape).reshape(-1)
+    table = np.zeros(escape + 1, dtype=np.uint8)
+    table[:len(palette)] = palette
+    decoded = table[unpacked]
+    # Independently address each block using its stored exception offset.
+    for block, offset in enumerate(offsets):
+        mask = unpacked[block * 32:(block + 1) * 32] == escape
+        decoded[block * 32:(block + 1) * 32][mask] = exceptions[int(offset):int(offset) + int(counts[block])]
+    assert decoded.tobytes() == raw
+    return int(packed.nbytes + offsets.nbytes + exceptions.nbytes + len(palette))
+
+
+def main():
+    """Read headers and every NVFP4 expert scale byte without importing a GPU library."""
+    os.nice(10)
+    started = time.time()
+    assert not (OUT / 'report.json').exists()
+    config_bytes = (MODEL / 'config.json').read_bytes()
+    assert hashlib.sha256(config_bytes).hexdigest() == EXPECTED_CONFIG
+    config = json.loads(config_bytes)
+    q = config['quantization_config']
+    assert q['quant_method'] == 'modelopt' and q['quant_algo'] == 'MIXED_PRECISION'
+    assert q['group_size'] == 16
+    index_bytes = (MODEL / 'model.safetensors.index.json').read_bytes()
+    index = json.loads(index_bytes)['weight_map']
+    quantized = q['quantized_layers']
+    groups = collections.defaultdict(lambda: {'tensors': 0, 'bytes': 0})
+    descriptors = []
+    header_records = []
+    seen = set()
+    payload_bytes = 0
+    inactive = {"tensors": 0, "bytes": 0, "by_dtype": collections.Counter()}
+    for filename in sorted(set(index.values())):
+        assert Path(filename).name == filename
+        path = MODEL / filename
+        with path.open('rb') as handle:
+            header_length = struct.unpack('<Q', handle.read(8))[0]
+            assert 0 < header_length < 128 * 1024**2
+            header_bytes = handle.read(header_length)
+        header = json.loads(header_bytes)
+        header_records.append({'file': filename, 'file_bytes': path.stat().st_size,
+                               'header_sha256': hashlib.sha256(header_bytes).hexdigest()})
+        intervals = []
+        for name, tensor in header.items():
+            if name == '__metadata__':
+                continue
+            dtype, shape = tensor['dtype'], tensor['shape']
+            start, end = tensor['data_offsets']
+            size = end - start
+            assert size == math.prod(shape) * SIZES[dtype] and start >= 0
+            assert end + 8 + header_length <= path.stat().st_size
+            intervals.append((start, end))
+            if index.get(name) != filename:
+                inactive['tensors'] += 1
+                inactive['bytes'] += size
+                inactive['by_dtype'][dtype] += size
+                continue
+            assert name not in seen
+            seen.add(name)
+            expert = EXPERT.fullmatch(name)
+            module, role = name.rsplit('.', 1)
+            algorithm = quantized.get(module, {}).get('quant_algo', 'unquantized_or_other')
+            extra_layer = re.search(r'model\.language_model\.layers\.(\d+)\.', name)
+            if extra_layer and int(extra_layer.group(1)) >= config['text_config']['num_hidden_layers']:
+                # Exported MTP/extra-layer tensors are on disk but outside the target model.
+                group = 'extra_model_layer'
+                algorithm = 'not_in_target_model_config'
+            elif expert:
+                parent, layer, expert_id, projection, role = expert.groups()
+                algorithm = quantized[parent]['quant_algo']
+                assert algorithm == 'W4A16_NVFP4' and quantized[parent]['group_size'] == 16
+                group = 'expert_weights' if role == 'weight' else 'expert_scales' if role == 'weight_scale' else 'expert_auxiliary'
+                if role == 'weight':
+                    assert dtype == 'U8'
+                if role == 'weight_scale':
+                    assert dtype == 'F8_E4M3'
+                    descriptors.append({'name': name, 'file': filename, 'offset': 8 + header_length + start,
+                                        'bytes': size, 'shape': shape, 'layer': int(layer),
+                                        'expert': int(expert_id), 'projection': projection})
+            elif name == 'lm_head.weight':
+                group = 'head'
+            elif name == 'model.language_model.embed_tokens.weight':
+                group = 'embedding'
+            elif algorithm != 'unquantized_or_other':
+                group = 'projection_weights' if role == 'weight' else 'projection_scales_or_auxiliary'
+            else:
+                group = 'other'
+            key = '|'.join((group, dtype, algorithm))
+            groups[key]['tensors'] += 1
+            groups[key]['bytes'] += size
+        ordered = sorted(intervals)
+        assert all(a[1] <= b[0] for a, b in zip(ordered, ordered[1:])), filename
+        payload_bytes += sum(end - start for start, end in ordered)
+    assert seen == set(index)
+    assert len(descriptors) == 42 * 288 * 3
+    expected_scale_bytes = 42 * 288 * 3 * 4096 * 2048 // 16
+    assert sum(d['bytes'] for d in descriptors) == expected_scale_bytes
+    inventory = {'config_sha256': EXPECTED_CONFIG, 'index_sha256': hashlib.sha256(index_bytes).hexdigest(),
+                 'source_format': {'quant_method': q['quant_method'], 'quant_algo': q['quant_algo'], 'group_size': 16},
+                 'tensor_count': len(seen), 'tensor_payload_bytes': sum(v['bytes'] for v in groups.values()),
+                 'physical_referenced_shard_payload_bytes': payload_bytes, 'inactive_payloads': inactive,
+                 'groups': dict(groups), 'shards': header_records,
+                 'nvfp4_scale_tensor_count': len(descriptors), 'nvfp4_scale_bytes': expected_scale_bytes,
+                 'TP2_even_shard_scale_bytes_estimate': expected_scale_bytes // 2}
+    save('inventory.json', inventory)
+    global_hist = np.zeros(256, dtype=np.uint64)
+    layer_hists = collections.defaultdict(lambda: np.zeros(256, dtype=np.uint64))
+    summaries, samples = [], []
+    size_totals = collections.Counter()
+    weighted_entropy_bits = 0.0
+    by_file = collections.defaultdict(list)
+    for item in descriptors:
+        by_file[item['file']].append(item)
+    for filename in sorted(by_file):
+        with (MODEL / filename).open('rb') as handle:
+            for item in sorted(by_file[filename], key=lambda x: x['offset']):
+                handle.seek(item['offset'])
+                raw = handle.read(item['bytes'])
+                assert len(raw) == item['bytes']
+                a = np.frombuffer(raw, dtype=np.uint8)
+                hist = np.bincount(a, minlength=256).astype(np.uint64)
+                global_hist += hist
+                layer_hists[str(item['layer'])] += hist
+                distinct = int(np.count_nonzero(hist))
+                bits = max(1, (distinct - 1).bit_length())
+                fixed_bytes = (len(a) * bits + 7) // 8 + distinct
+                order = np.argsort(-hist.astype(np.int64), kind='stable')
+                schemes = {}
+                for b in (2, 4):
+                    palette = order[:(1 << b) - 1].astype(np.uint8)
+                    missed = len(a) - int(hist[palette].sum())
+                    stored = (len(a) * b + 7) // 8 + math.ceil(len(a) / 32) * 4 + missed + len(palette)
+                    schemes[str(b)] = {'escape_bytes': missed, 'stored_bytes': stored, 'palette': palette.tolist()}
+                    size_totals['palette_' + str(b) + '_bit_bytes'] += stored
+                size_totals['raw_bytes'] += len(a)
+                size_totals['fixed_index_bytes'] += fixed_bytes
+                ent = entropy(hist)
+                weighted_entropy_bits += ent * len(a)
+                summaries.append({**item, 'sha256': hashlib.sha256(raw).hexdigest(), 'distinct': distinct,
+                                  'entropy_bits_per_byte': ent, 'fixed_index_bits': bits,
+                                  'fixed_index_bytes': fixed_bytes, 'schemes': schemes})
+                if item['expert'] in (0, 95, 191, 287):
+                    # Equal 16 KiB windows at the start, center and end of each selected tensor.
+                    offsets = (0, ((len(a) // 2 - 8192) // 32) * 32, len(a) - 16384)
+                    sample = b''.join(raw[o:o + 16384] for o in offsets)
+                    codecs = {str(b): codec_roundtrip(sample, np.asarray(schemes[str(b)]['palette'], dtype=np.uint8), b) for b in (2, 4)}
+                    compressed = {str(level): zlib.compress(sample, level=level) for level in (1, 6)}
+                    assert all(zlib.decompress(value) == sample for value in compressed.values())
+                    samples.append({'name': item['name'], 'bytes': len(sample),
+                                    'sha256': hashlib.sha256(sample).hexdigest(),
+                                    'zlib_bytes': {k: len(v) for k, v in compressed.items()},
+                                    'block_codec_bytes': codecs, 'all_roundtrips_exact': True})
+        save('progress.json', {'status': 'running', 'tensors_scanned': len(summaries),
+                              'total_tensors': len(descriptors), 'bytes_scanned': size_totals['raw_bytes'],
+                              'updated_epoch': time.time()})
+    assert size_totals['raw_bytes'] == expected_scale_bytes
+    assert len(samples) == 42 * 4 * 3
+    save('tensor-review.json', summaries)
+    save('samples.json', samples)
+    report = {'status': 'complete', 'started_epoch': started, 'finished_epoch': time.time(),
+              'inventory': inventory, 'scale_histogram': global_hist.tolist(),
+              'layer_histograms': {k: v.tolist() for k, v in layer_hists.items()},
+              'global_entropy_bits_per_byte': entropy(global_hist),
+              'weighted_tensor_entropy_bits_per_byte': weighted_entropy_bits / expected_scale_bytes,
+              'candidate_storage_bytes': dict(size_totals), 'sample_count': len(samples),
+              'sample_bytes': sum(s['bytes'] for s in samples),
+              'sample_zlib_bytes': {str(l): sum(s['zlib_bytes'][str(l)] for s in samples) for l in (1, 6)},
+              'all_sample_roundtrips_exact': True,
+              'maximum_RSS_KiB': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+              'gpu_used': False, 'limitations': [
+                  'Source FP8 bytes before Marlin repacking; CPU storage screen only.',
+                  'Per-tensor palettes require GPU decode/lookup and metadata; no consumer kernel measured.',
+                  'Zero-order entropy ignores coding, indexing and GPU execution cost.',
+                  'Zlib covers a frozen stratified sample, not all scales.',
+                  'TP2 bytes divide source storage evenly; do not equate with measured CUDA allocations.',
+                  'No claim of bandwidth saturation or model speed gain.']}
+    save('report.json', report)
+    print(json.dumps({k: report[k] for k in ('status', 'candidate_storage_bytes', 'global_entropy_bits_per_byte',
+                                           'weighted_tensor_entropy_bits_per_byte', 'sample_count', 'maximum_RSS_KiB')}), flush=True)
+
+
+if __name__ == '__main__':
+    main()

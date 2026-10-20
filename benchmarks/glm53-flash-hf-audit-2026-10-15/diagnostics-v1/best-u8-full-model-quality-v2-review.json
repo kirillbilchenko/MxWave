@@ -1,0 +1,1120 @@
+{
+  "status": "complete",
+  "quality_qualified": false,
+  "scale_storage_lossless": true,
+  "default_dispatch": "graph",
+  "decode_modes": {
+    "graph": {
+      "control_repeat_stable": false,
+      "candidate_repeat_stable": false,
+      "numerical_gate_passed": false,
+      "control_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 3.0838840864520684e-05,
+        "mean_decode_nll_difference": 9.700536945086936e-05
+      },
+      "candidate": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 2.9788106533619664e-05,
+        "mean_decode_nll_difference": 4.1799598731669775e-06
+      },
+      "candidate_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 2.7278187207223812e-05,
+        "mean_decode_nll_difference": -1.3810545444110083e-05
+      }
+    },
+    "eager": {
+      "control_repeat_stable": false,
+      "candidate_repeat_stable": false,
+      "numerical_gate_passed": false,
+      "control_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 3.115397970210632e-05,
+        "mean_decode_nll_difference": 2.145418854340208e-05
+      },
+      "candidate": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 2.6804165636060036e-05,
+        "mean_decode_nll_difference": -1.059789775212176e-05
+      },
+      "candidate_repeat": {
+        "decode_steps": 48,
+        "expected_decode_steps": 48,
+        "all_decode_conditioning_matches": true,
+        "all_generated_ids_match": true,
+        "mean_decode_kl": 3.349725790595563e-05,
+        "mean_decode_nll_difference": 3.3009754185721506e-05
+      }
+    }
+  },
+  "full_logprob_arrays_bitwise_equal": {
+    "graph": {
+      "control_repeat": false,
+      "candidate": false,
+      "candidate_repeat": false
+    },
+    "eager": {
+      "control_repeat": false,
+      "candidate": false,
+      "candidate_repeat": false
+    }
+  },
+  "end_to_end_bitwise_losslessness_demonstrated": false,
+  "heldout": {
+    "measurements": {
+      "control": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4596477327976731,
+        "perplexity": 4.304442947165411
+      },
+      "control-repeat": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4590868787194566,
+        "perplexity": 4.302029459654465
+      },
+      "candidate": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.4585983996217198,
+        "perplexity": 4.299928521359572
+      },
+      "candidate-repeat": {
+        "scored_tokens": 32768,
+        "mean_nll": 1.458861619591848,
+        "perplexity": 4.30106049738933
+      }
+    },
+    "control_repeat_nll_delta": -0.0005608540782164884,
+    "candidate_nll_delta": -0.0010493331759533486,
+    "candidate_repeat_nll_delta": 0.0002632199701282367,
+    "candidate_perplexity_change_percent": -0.10487828184159102,
+    "absolute_candidate_nll_limit": 0.002804270391082442,
+    "gate_passed": false
+  },
+  "practical": {
+    "scores": {
+      "control": [
+        {
+          "name": "json",
+          "kind": "json",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b4216428ec1fc1348158f98bf7fc3a2e095e8d7fc2efc0a97a1bf27d3229db04",
+          "error": null
+        },
+        {
+          "name": "json_types",
+          "kind": "json",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a4545f24078d4f0e8251476a7a81c3d42ffa8c26fcbab1a8950b63c63d68058b",
+          "error": "JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+        },
+        {
+          "name": "constraints",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f52f7fad9159972befbfab0531b8d56b216cb1df5b4bf183f15908fd4f694eb7",
+          "error": null
+        },
+        {
+          "name": "unicode_copy",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "23d18920a425f89c76485a81237ef7ab3462ffba66741943243170d797138e23",
+          "error": null
+        },
+        {
+          "name": "slugify",
+          "kind": "code",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": false,
+          "answer_sha256": "3de16923604ab4b0ef24fa61c2622669470010a3bba7de705e70eff57ebd03c0",
+          "error": null
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "code",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": true,
+          "answer_sha256": "b2a52258ff6f17754060d25f8d36cb803486f7a6e6807bbc4aa9855ffbc9f59f",
+          "error": null
+        },
+        {
+          "name": "retrieval_120",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f90b664918a0c69aa03e5e8e4c605577b6b5277342628f05fc50c97a9b97feac",
+          "error": null
+        },
+        {
+          "name": "retrieval_400",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d36831b2c7a9c451b8da30d99bc60e4524d0877b5db611ee187409d43d3b1717",
+          "error": null
+        },
+        {
+          "name": "tool_berlin",
+          "kind": "tool",
+          "passed": false,
+          "finish_reason": null,
+          "semantic_passed": false,
+          "inference_completed": false,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": "<HTTPError 400: 'Bad Request'>"
+        },
+        {
+          "name": "tool_boston",
+          "kind": "tool",
+          "passed": false,
+          "finish_reason": null,
+          "semantic_passed": false,
+          "inference_completed": false,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": "<HTTPError 400: 'Bad Request'>"
+        },
+        {
+          "name": "gsm8k_0062",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "87409c81e78b526938d68b7bd0c041f1c7998ba4417955e86b6ba84a79d5ab7c",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0176",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "502929c3112208e187b2a654d84b7736159e5a4ace3fd2c9bf0a2d78d0650000",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0248",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "7a7e80092c98b67531c132d2aa586429c788e21388a24b02c2710bb06c7fb47e",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0335",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "61a623971f453f87ee6ee211b83081b26d92181e9f5bc3363e1721593290717b",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0361",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "7444ea55ba10e72eae09f42287d0d54b5922a073c6e6bc556084407e71d2ea2c",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0365",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a8c4f351a8a2c6539fe65426b166f4100a68e55e98ed1f156fe6757a559d90db",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0374",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3e3abf3546d56dc7b17131b0d301f6bd0b1f7bdebc24de5c0d991f92a634d3c9",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0379",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "6fbb1a4d1a8b4208e677074ade0e20290e5a4fef060e645a25cb057967ecdf83",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0517",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3892538dd84ce676c74d6d8bde78785a4cf5286ef6dbed58640e5a99e6880b7d",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0574",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "128effbcb35bea4db208ab84e942756bfafd6bcb9c0bfb081337c4f7f87dc764",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0675",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "4a5324969a7f59744595aed856962b2d248335b6f125e1dd12d6148a7ba95fcd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0812",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "796cce719dfa3a2b090cd9584c6bd54f0ea96dfcb323a33f71f3136bfe5174ca",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0896",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "040625f259410aeaf9d479866da8b0ad15b9ef3fa03f5577eb2e7920c51945bc",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0978",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a639ae28f2944041e25c4f61c9f58bfb6c80f295d1bba23c47d10ee1c891fb33",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0992",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b31a3888fb95b03a385553abf2d2b52eaf49e9ad0ddea28e36ac4e4edf187530",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1050",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d768c3c099187f2c762da4205d0a55f1e975a5263db87febfc56d774faf8c5bd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1068",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "673dd018defd9b56ce803c4564697a8d0ef8004cb7df7b3ee8cb9d611844aff8",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1072",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "9ad51fb6934225ab36400adbe4f9662021f8c85d45ce3ef08e2728f8216ce9f1",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1086",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "8f21ccc5513605782d9da7ac40651e6b04233d0fce9bd52efb86d01675de3cfd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1126",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "57413547991256e89f2cacde7ab1ab6b78399f4ada3b8e3bda22428c114a5ff7",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1133",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b0159c2462a6d4a7e3a7075b41fad1295a537b1ebf3ea15e65bc4d0e20276464",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1136",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "dcff46f12a935021d6d63961bacf756a87e4407eb7ef1c257f67590874422ed3",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1153",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b28a42c13e1aa51030ae8a79d6fea67807573ab3e2c6257e850775c11e7e324a",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1202",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "3bfdb2393c571571cbc328681e0de89a796b651e1927909e9a9f47db096ad39f",
+          "error": null
+        }
+      ],
+      "candidate": [
+        {
+          "name": "json",
+          "kind": "json",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b4216428ec1fc1348158f98bf7fc3a2e095e8d7fc2efc0a97a1bf27d3229db04",
+          "error": null
+        },
+        {
+          "name": "json_types",
+          "kind": "json",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a4545f24078d4f0e8251476a7a81c3d42ffa8c26fcbab1a8950b63c63d68058b",
+          "error": "JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+        },
+        {
+          "name": "constraints",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f52f7fad9159972befbfab0531b8d56b216cb1df5b4bf183f15908fd4f694eb7",
+          "error": null
+        },
+        {
+          "name": "unicode_copy",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "23d18920a425f89c76485a81237ef7ab3462ffba66741943243170d797138e23",
+          "error": null
+        },
+        {
+          "name": "slugify",
+          "kind": "code",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": false,
+          "answer_sha256": "3de16923604ab4b0ef24fa61c2622669470010a3bba7de705e70eff57ebd03c0",
+          "error": null
+        },
+        {
+          "name": "merge_intervals",
+          "kind": "code",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": true,
+          "answer_sha256": "b2a52258ff6f17754060d25f8d36cb803486f7a6e6807bbc4aa9855ffbc9f59f",
+          "error": null
+        },
+        {
+          "name": "retrieval_120",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f90b664918a0c69aa03e5e8e4c605577b6b5277342628f05fc50c97a9b97feac",
+          "error": null
+        },
+        {
+          "name": "retrieval_400",
+          "kind": "exact",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d36831b2c7a9c451b8da30d99bc60e4524d0877b5db611ee187409d43d3b1717",
+          "error": null
+        },
+        {
+          "name": "tool_berlin",
+          "kind": "tool",
+          "passed": false,
+          "finish_reason": null,
+          "semantic_passed": false,
+          "inference_completed": false,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": "<HTTPError 400: 'Bad Request'>"
+        },
+        {
+          "name": "tool_boston",
+          "kind": "tool",
+          "passed": false,
+          "finish_reason": null,
+          "semantic_passed": false,
+          "inference_completed": false,
+          "format_passed": null,
+          "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "error": "<HTTPError 400: 'Bad Request'>"
+        },
+        {
+          "name": "gsm8k_0062",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e432f94ddb3a6aa1cc181e690bd170f919b78a8eed0415a45037fece0df1845b",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0176",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "9919f8ece2adfe6f447613a42b7951f21064aaa44b809823747c6b1cb1887602",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0248",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "7a7e80092c98b67531c132d2aa586429c788e21388a24b02c2710bb06c7fb47e",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0335",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "61a623971f453f87ee6ee211b83081b26d92181e9f5bc3363e1721593290717b",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0361",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d6cb7e5a7e6021609bd22b811a670dc8e6cdd5d4590722da76e01f3b698b9f73",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0365",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a8c4f351a8a2c6539fe65426b166f4100a68e55e98ed1f156fe6757a559d90db",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0374",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e0999637897e2c37fedebc99850632f3a70db3d04a6ceccb64d293cb27baad23",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0379",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "923a58d0b95680d535892a775b3b4022046baaaf418dbe2ba3a4d26195190686",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0517",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "1fbb201fd36247a63bd7d2033dfd999af221918c0c08b59365f223b8f9660aa4",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0574",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "0e5ddbd0808ee6223670a0a4bcbfe4eb4a1d675ff14ba2f3b46a630ff2201c00",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0675",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "e42ed0f33a2c6c7638c58094b4099042ff5ab4472e85c48c433e752f20c915c6",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0812",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "21412516f1674aa9331fe3a973663333513fab782db82a89576304ac0773f1e6",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0896",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "040625f259410aeaf9d479866da8b0ad15b9ef3fa03f5577eb2e7920c51945bc",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0978",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "a639ae28f2944041e25c4f61c9f58bfb6c80f295d1bba23c47d10ee1c891fb33",
+          "error": null
+        },
+        {
+          "name": "gsm8k_0992",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "b31a3888fb95b03a385553abf2d2b52eaf49e9ad0ddea28e36ac4e4edf187530",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1050",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d768c3c099187f2c762da4205d0a55f1e975a5263db87febfc56d774faf8c5bd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1068",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "673dd018defd9b56ce803c4564697a8d0ef8004cb7df7b3ee8cb9d611844aff8",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1072",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "d7b4f314d79ba706a746ce4a32678951198bae1dfb308f2887ce476e50659cb3",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1086",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "8f21ccc5513605782d9da7ac40651e6b04233d0fce9bd52efb86d01675de3cfd",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1126",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "57413547991256e89f2cacde7ab1ab6b78399f4ada3b8e3bda22428c114a5ff7",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1133",
+          "kind": "math",
+          "passed": false,
+          "finish_reason": "stop",
+          "semantic_passed": false,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "f31252433f6a4be228d10fbf1a819601577f6e04ca0d56999f37b6d3f76e40cb",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1136",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "dcff46f12a935021d6d63961bacf756a87e4407eb7ef1c257f67590874422ed3",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1153",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "17a1c0ffcc6a4a462d94a1ebff0ead714d89568b8270b8d1c9f89c1294948494",
+          "error": null
+        },
+        {
+          "name": "gsm8k_1202",
+          "kind": "math",
+          "passed": true,
+          "finish_reason": "stop",
+          "semantic_passed": true,
+          "inference_completed": true,
+          "format_passed": null,
+          "answer_sha256": "09fdef1aa97fff6f710dbb76d437c288573172e1fa6ecf0a76206b9a4f5e733b",
+          "error": null
+        }
+      ]
+    },
+    "categories": {
+      "control": {
+        "code": {
+          "passed": 1,
+          "total": 2
+        },
+        "exact": {
+          "passed": 4,
+          "total": 4
+        },
+        "json": {
+          "passed": 1,
+          "total": 2
+        },
+        "math": {
+          "passed": 22,
+          "total": 24
+        },
+        "tool": {
+          "passed": 0,
+          "total": 2
+        }
+      },
+      "candidate": {
+        "code": {
+          "passed": 1,
+          "total": 2
+        },
+        "exact": {
+          "passed": 4,
+          "total": 4
+        },
+        "json": {
+          "passed": 1,
+          "total": 2
+        },
+        "math": {
+          "passed": 22,
+          "total": 24
+        },
+        "tool": {
+          "passed": 0,
+          "total": 2
+        }
+      }
+    },
+    "reference_passed_candidate_failed": [],
+    "reference_failed_candidate_passed": [],
+    "no_reference_pass_lost": true,
+    "all_inference_requests_completed": false,
+    "inference_failures": {
+      "control": [
+        "tool_berlin",
+        "tool_boston"
+      ],
+      "candidate": [
+        "tool_berlin",
+        "tool_boston"
+      ]
+    }
+  },
+  "allocated_cuda_bytes_after_inference": {
+    "control": 188834497536,
+    "candidate": 178776583680
+  },
+  "combined_cuda_saving_bytes": 10057913856,
+  "repeat_fingerprints": {
+    "control": {
+      "status": "complete",
+      "intrusive_cpu_sync": true,
+      "first_difference_by_rank": {
+        "0": {
+          "event": 13,
+          "module": "language_model.model.layers.4.mlp",
+          "other_module": "language_model.model.layers.4.mlp",
+          "left": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "70f7e9e68371ce5883a3ccae1dd06b72c4a652d6e9fa4f0fe746bff6f260f141"
+            }
+          ],
+          "right": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "bcf05995f3a992e86fe90cd3d126166d2bf7557731a7688a5209a3449560c4ac"
+            }
+          ]
+        },
+        "1": {
+          "event": 13,
+          "module": "language_model.model.layers.4.mlp",
+          "other_module": "language_model.model.layers.4.mlp",
+          "left": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "70f7e9e68371ce5883a3ccae1dd06b72c4a652d6e9fa4f0fe746bff6f260f141"
+            }
+          ],
+          "right": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "bcf05995f3a992e86fe90cd3d126166d2bf7557731a7688a5209a3449560c4ac"
+            }
+          ]
+        }
+      }
+    },
+    "candidate": {
+      "status": "complete",
+      "intrusive_cpu_sync": true,
+      "first_difference_by_rank": {
+        "0": {
+          "event": 16,
+          "module": "language_model.model.layers.5.mlp",
+          "other_module": "language_model.model.layers.5.mlp",
+          "left": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "fa6ed1fc6ce7a0b043c026cb3fc5a051cc5d7568b5ea192e44a4717ef37475e7"
+            }
+          ],
+          "right": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "9bcb55a324e1122a6a83414dc6fc2eecc93ad751d958d36b1b3e8e6b5a03e8e2"
+            }
+          ]
+        },
+        "1": {
+          "event": 16,
+          "module": "language_model.model.layers.5.mlp",
+          "other_module": "language_model.model.layers.5.mlp",
+          "left": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "fa6ed1fc6ce7a0b043c026cb3fc5a051cc5d7568b5ea192e44a4717ef37475e7"
+            }
+          ],
+          "right": [
+            {
+              "shape": [
+                258,
+                4096
+              ],
+              "dtype": "torch.bfloat16",
+              "sha256": "9bcb55a324e1122a6a83414dc6fc2eecc93ad751d958d36b1b3e8e6b5a03e8e2"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "quality_protocol_sha256": "183608ad7e4dc9ebd0046f34997f2d0f76fa041dbb42027946c0eadcf7d03f60",
+  "limits": [
+    "Sampled WikiText test windows, not full-corpus standard PPL.",
+    "24 fixed GSM8K test questions, not the full benchmark.",
+    "Reference is already quantized MXFP4; pre-existing quantization error remains.",
+    "Strict numerical repeat floors remain KL <= 1e-5 and absolute NLL <= 1e-4.",
+    "Unstable reference repeats prevent qualification even if practical tasks pass.",
+    "No fresh speed benchmark was run; allocation includes configured KV and scratch.",
+    "Hooks in optional eager fingerprints synchronize the GPU and can alter drift."
+  ],
+  "independent_verification": {
+    "status": "passed",
+    "archive_sha256": "0a25c69d9c8ea39dae86c9b61d9e6683369fb6d3778acb2cb160b1a8c52aee14",
+    "manifest_payloads": 826,
+    "original_review_sha256": "9a03eb9681e80b69c16391e26d7f84184c02ade2e4805267da27d6d41473f4a8",
+    "analysis_sha256": "e0501ee836bdf84b1d3c77af1da31a689469004efe0d0bebdd127efeec982713",
+    "verifier_sha256": "d88d6419c85face14269afb556ad9bcce77cb77a52c3e38335aa2d3b75783307",
+    "source_audit_sha256": "a83ec4b65d4520ead1e63f99ddd8cb1e10424664afb65f2763f9fe0c25cee927",
+    "complete_source_groups_checked": 672,
+    "independent_logaddexp_decode_metrics": {
+      "graph_control_repeat": {
+        "steps": 48,
+        "mean_kl": 3.083884086462192e-05,
+        "mean_nll_difference": 9.70053694509705e-05
+      },
+      "graph_candidate": {
+        "steps": 48,
+        "mean_kl": 2.9788106533753804e-05,
+        "mean_nll_difference": 4.179959873301104e-06
+      },
+      "graph_candidate_repeat": {
+        "steps": 48,
+        "mean_kl": 2.727818720717911e-05,
+        "mean_nll_difference": -1.3810545444154854e-05
+      },
+      "eager_control_repeat": {
+        "steps": 48,
+        "mean_kl": 3.115397970207748e-05,
+        "mean_nll_difference": 2.1454188543373424e-05
+      },
+      "eager_candidate": {
+        "steps": 48,
+        "mean_kl": 2.680416563593976e-05,
+        "mean_nll_difference": -1.0597897752241972e-05
+      },
+      "eager_candidate_repeat": {
+        "steps": 48,
+        "mean_kl": 3.3497257905996406e-05,
+        "mean_nll_difference": 3.3009754185762224e-05
+      }
+    },
+    "all_task_scores_recomputed": true,
+    "review_recompute_max_absolute_error": 1.997642502804542e-15,
+    "review_recompute_absolute_tolerance": 1e-12,
+    "independent_logaddexp_absolute_tolerance": 1e-10,
+    "final_service_check_sha256": "49d668d777ecf0b6b09ce17df270d5be9313982b58b77a1eb3ed2eecd56434c3",
+    "original_service_restored": true,
+    "analysis_difference": "Adds explicit API-inference completion requirement; frozen model engines and measurements are unchanged."
+  },
+  "retained_step_records": "All full per-step records and arrays are in the hash-verified Spark archive; compact review retains aggregate metrics.",
+  "tool_api_setup_proof": {
+    "status": "passed",
+    "proof": {
+      "False": {
+        "parser_available": false,
+        "class": null
+      },
+      "True": {
+        "parser_available": true,
+        "class": "Glm47MoeModelToolParser"
+      }
+    },
+    "epoch": 1792228009.973557
+  },
+  "tool_api_setup_proof_sha256": "33b0a7c196504b0681636ba2f4a45e58f53cd7f9b051ab7b2bdaa2d8fa67abca",
+  "candidate_library_sha256": "9f5d96dcb0762d7e5ed5436ca296f70d590e73797d40522e4d8c7d6f3902f5f0"
+}

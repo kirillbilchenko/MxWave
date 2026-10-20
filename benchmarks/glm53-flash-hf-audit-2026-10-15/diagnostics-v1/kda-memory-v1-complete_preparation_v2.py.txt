@@ -1,0 +1,65 @@
+"""Complete CPU preparation after binding the worker-only fixtures on the head."""
+from __future__ import annotations
+import hashlib,json,pathlib,shlex,shutil,subprocess,sys,tarfile,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='kda-memory-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+import full_model_control as c
+from run_kda_memory import input_bindings
+from kda_memory_probe import protocol
+
+def sha(p):
+ with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
+
+def main():
+ target=ROOT/(DIR+'-preparation-v2.json');assert not target.exists()
+ first=json.loads((ROOT/(DIR+'-preparation.json')).read_bytes())
+ assert first['status']=='failed' and not first['service_paused'] and not first['GPU_controller_launched']
+ assert all(x['passed'] and not x['GPU_used'] for x in first['CPU_CLI_checks'])
+ assert not (ROOT/(DIR+'-prepared.json')).exists() and not (ROOT/(DIR+'-controller.json')).exists()
+ assert c.health(8000) and shutil.disk_usage(ROOT).free>4*1024**3
+ state={'status':'running','first_failed_preparation_preserved':True,'service_paused':False,'GPU_controller_launched':False,'started_epoch':time.time()};c.write(target,state)
+ try:
+  fixture=ROOT/'bf16-attention-v1/artifacts-v2'
+  expected={'prepared.json':'9511784249f49a84633d74fb1104429970c6b954d686fa26af3111c91ef3afce','kda-input-l0-r0.safetensors':'9abe983bffdd76c5298eff33887276cef9bb5bd8dbc62839fb5453f5a63e2c7a','kda-output-l0-r0.safetensors':'3943d44dc1678fb0cd2db54bb6589d5b898227385676abded660f144c1541f60'}
+  assert all(not (fixture/n).exists() for n in expected)
+  archive=ROOT/(DIR+'-worker-fixtures.tar.gz');assert not archive.exists()
+  pack="""import pathlib,hashlib,json,sys,tarfile
+r=pathlib.Path(sys.argv[1]);expected=json.loads(sys.argv[2])
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as tf:
+ for name,digest in expected.items():
+  p=r/name
+  with p.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==digest
+  tf.add(p,arcname=name,recursive=False)
+"""
+  with archive.open('xb') as f:subprocess.run([*c.SSH,shlex.join(['python3','-S','-c',pack,str(fixture),json.dumps(expected)])],stdout=f,check=True,timeout=120)
+  fixture.mkdir(parents=True,exist_ok=True)
+  with tarfile.open(archive) as tf:
+   assert {m.name for m in tf.getmembers()}==set(expected)
+   assert all(m.isfile() for m in tf.getmembers()) and sum(m.size for m in tf.getmembers())<128*1024**2
+   for name,digest in expected.items():
+    stream=tf.extractfile(name);assert stream is not None
+    with (fixture/name).open('xb') as out:shutil.copyfileobj(stream,out)
+    assert sha(fixture/name)==digest
+  state['fixture_transfer']={'source_rank':1,'destination_rank':0,'files':expected,'archive_sha256':sha(archive),'existing_inputs_overwritten':False}
+  plan=json.loads((ROOT/(DIR+'-overlay/plan.json')).read_bytes())
+  bindings=[c.preflight(rank,ROOT/(DIR+'-src')) for rank in (0,1)]
+  assert bindings[0]==bindings[1] and len(bindings[0]['code'])==plan['expected_source_files']
+  assert bindings[0]['code']=={**plan['parent_source_sha256'],**plan['source_sha256']}
+  assert plan['protocol']==protocol()
+  inputs=[input_bindings(rank) for rank in (0,1)];assert inputs[0]==inputs[1]
+  parent=json.loads((ROOT/'warmed-model-v1-prepared.json').read_bytes())
+  originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)];identities=[c.identity(x) for x in originals]
+  assert c.health(8000) and all(x['State']['Running'] for x in originals) and identities==parent['originals']
+  prepared={'status':'prepared','bindings':bindings,'input_bindings':inputs,'protocol':protocol(),'originals':identities,
+    'source_archive_sha256':sha(ROOT/(DIR+'-source-only.tar.gz')),'parent_revision':'warmedmodelv1',
+    'parent_proof_sha256':sha(ROOT/'warmed-model-v1-recovery-v2-evidence-check.json'),
+    'parent_prepared_sha256':sha(ROOT/'warmed-model-v1-prepared.json'),'all_parent_sources_unchanged':True,
+    'new_sources':sorted(plan['source_sha256']),'GPU_controller_launched':False,'prepared_epoch':time.time()}
+  path=ROOT/(DIR+'-prepared.json');c.write(path,prepared)
+  c.run(1,['python3','-S','-c','import pathlib,sys;p=pathlib.Path(sys.argv[1]);assert not p.exists();p.write_text(sys.argv[2])',str(path),path.read_text()])
+  state.update(status='passed',source_files=len(bindings[0]['code']),prepared_sha256=sha(path),plan_sha256=sha(ROOT/(DIR+'-overlay/plan.json')),original_health=200,finished_epoch=time.time())
+  c.write(target,state);print(json.dumps(state))
+ except BaseException as exc:
+  state.update(status='failed',error=repr(exc),finished_epoch=time.time());c.write(target,state);raise
+
+if __name__=='__main__':main()

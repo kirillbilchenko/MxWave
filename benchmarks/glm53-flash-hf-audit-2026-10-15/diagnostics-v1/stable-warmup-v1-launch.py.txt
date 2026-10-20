@@ -1,0 +1,37 @@
+"""Launch only the authorized, frozen two-GPU startup-warmup component."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+ROOT=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+DIR='stable-warmup-v1';sys.path.insert(0,str(ROOT/(DIR+'-src')))
+import full_model_control as c
+from run_stable_warmup import preflight
+
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ receipt=ROOT/(DIR+'-launch.json');assert not receipt.exists()
+ assert not (ROOT/(DIR+'-controller.json')).exists() and not (ROOT/DIR).exists()
+ assert sha(ROOT/(DIR+'-source-only.tar.gz'))=='9657d52355cb67de93298990494fc96609b55063fa88894574f89ee6346f9f3c'
+ state=json.loads((ROOT/(DIR+'-preparation.json')).read_bytes())
+ assert state['status']=='passed' and state['source_files']==203
+ prepared=ROOT/(DIR+'-prepared.json')
+ assert sha(prepared)==state['prepared_sha256']=='5caef95a645dc07b37cc3c59cc682abc3421feae29449e6db7bee44b9cda16c0'
+ bound=preflight();assert c.health(8000)
+ originals=[c.inspect(rank,c.ORIGINAL_IDS[rank]) for rank in (0,1)]
+ assert all(v['State']['Running'] for v in originals)
+ assert [c.identity(v) for v in originals]==bound['originals']
+ collect=subprocess.Popen(['python3','-S','-u',str(ROOT/('collect-'+DIR+'.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-collector.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ run=subprocess.Popen(['python3','-S','-u',str(ROOT/(DIR+'-src/run_stable_warmup.py'))],stdin=subprocess.DEVNULL,
+  stdout=(ROOT/(DIR+'-controller.log')).open('xb'),stderr=subprocess.STDOUT,start_new_session=True)
+ result={'controller_pid':run.pid,'collector_pid':collect.pid,'started_epoch':time.time(),'source_files':203,
+ 'prepared_sha256':sha(prepared),'plan_sha256':state['plan_sha256'],
+ 'collector_sha256':sha(ROOT/('collect-'+DIR+'.py')),'verifier_sha256':sha(ROOT/('verify-'+DIR+'.py')),
+ 'launcher_sha256':sha(pathlib.Path(__file__)),'protocol':bound['protocol'],'automatic_promotion_allowed':False}
+ c.write(receipt,result)
+ current=json.loads((ROOT/'CURRENT_LOSSLESS_STATUS.json').read_bytes())
+ current.update(active_experiment='stablewarmv1',launch=result,updated_epoch=time.time(),
+  state='GPU component qualification of all 34 deterministic expert-order startup variants; model quality and speed remain unqualified for this intervention.',
+  user_resumed_work=True,work_paused_by_user=False)
+ c.write(ROOT/'CURRENT_LOSSLESS_STATUS.json',current)
+ print(json.dumps({k:v for k,v in result.items() if k!='protocol'}))
+if __name__=='__main__':main()

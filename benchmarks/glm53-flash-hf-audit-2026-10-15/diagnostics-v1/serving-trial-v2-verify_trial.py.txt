@@ -1,0 +1,119 @@
+"""Recompute API metrics from retained token arrivals without a model runtime."""
+from __future__ import annotations
+import argparse
+import hashlib
+import json
+import math
+import pathlib
+import statistics
+import re
+
+
+def speculative_metrics(report):
+    """Recompute counters across sanity, warmup and timing; not timing-only acceptance."""
+    def counters(raw):
+        result={}
+        for line in raw.splitlines():
+            match=re.match(r'(vllm:spec_decode_[a-z_]+_total)(?:\{[^}]*\})?\s+([0-9.eE+-]+)$',line)
+            if match and 'per_pos'not in match[1]:
+                result[match[1]]=result.get(match[1],0.0)+float(match[2])
+        return result
+    before=counters(report['metrics_before']);after=counters(report['metrics_after'])
+    delta={k:v-before.get(k,0.0)for k,v in after.items()}
+    drafted=delta['vllm:spec_decode_num_draft_tokens_total']
+    accepted=delta['vllm:spec_decode_num_accepted_tokens_total']
+    drafts=delta['vllm:spec_decode_num_drafts_total']
+    assert drafted>0 and 0<=accepted<=drafted and drafts>0
+    return dict(scope='chat sanity plus warmups plus timed cases',counters=delta,
+        acceptance_fraction=accepted/drafted,accepted_tokens_per_draft=accepted/drafts)
+
+
+def percentile(values,p):
+    ordered=sorted(values);position=(len(ordered)-1)*p;lower=math.floor(position)
+    return ordered[lower]+(ordered[min(lower+1,len(ordered)-1)]-ordered[lower])*(position-lower)
+
+
+def close(a,b):
+    assert math.isclose(a,b,rel_tol=1e-10,abs_tol=1e-10),(a,b)
+
+
+def verify(report,plan):
+    assert report['status']=='complete'and all(r['passed']for r in report['sanity'])
+    expected={(c['prompt_tokens'],c['batch']):c for c in plan['cases']}
+    assert len(report['warmups'])==len(expected)
+    assert len(report['trials'])==len(expected)*plan['trials']
+    counts={key:[]for key in expected}
+    for row in report['warmups']+report['trials']:
+        key=(row['prompt_tokens'],row['batch']);case=expected[key]
+        assert len(row['requests'])==case['batch']
+        close(row['output_tokens_per_second'],row['output_tokens']/row['wall_seconds'])
+        assert row['output_tokens']==plan['output_tokens']*case['batch']
+        for output in row['requests']:
+            n=plan['output_tokens'];arrivals=output['arrivals']
+            assert len(output['token_ids'])==n==output['usage']['completion_tokens']
+            assert output['usage']['prompt_tokens']==case['prompt_tokens']
+            assert sum(a['tokens']for a in arrivals)==n
+            assert all(a['tokens']>0 for a in arrivals)
+            assert [a['seconds']for a in arrivals]==sorted(a['seconds']for a in arrivals)
+            assert 0<output['ttft_seconds']<=output['latency_seconds']
+            close(output['latency_seconds'],(output['end_ns']-output['start_ns'])/1e9)
+            close(output['ttft_seconds'],arrivals[0]['seconds'])
+            close(output['tpot_seconds'],(arrivals[-1]['seconds']-arrivals[0]['seconds'])/(n-1))
+        span=(max(r['end_ns']for r in row['requests'])-min(r['start_ns']for r in row['requests']))/1e9
+        assert row['wall_seconds']>=span
+        if 'trial'in row:counts[key].append(row['trial'])
+    assert all(sorted(v)==list(range(plan['trials']))for v in counts.values())
+    summaries=[]
+    for length,batch in sorted(expected):
+        groups=[r for r in report['trials']if(r['prompt_tokens'],r['batch'])==(length,batch)]
+        outputs=[r for g in groups for r in g['requests']]
+        chunks=[b['seconds']-a['seconds']for r in outputs for a,b in zip(r['arrivals'],r['arrivals'][1:])]
+        summary=dict(prompt_tokens=length,batch=batch,
+            median_output_tokens_per_second=statistics.median(g['output_tokens_per_second']for g in groups),
+            mean_ttft_seconds=statistics.mean(r['ttft_seconds']for r in outputs),
+            p95_ttft_seconds=percentile([r['ttft_seconds']for r in outputs],.95),
+            mean_tpot_seconds=statistics.mean(r['tpot_seconds']for r in outputs),
+            p95_stream_chunk_gap_seconds=percentile(chunks,.95),
+            mean_request_latency_seconds=statistics.mean(r['latency_seconds']for r in outputs))
+        recorded=next(r for r in report['summary']if(r['prompt_tokens'],r['batch'])==(length,batch))
+        for k,v in summary.items():close(v,recorded[k])
+        summary.update(trial_tps_min=min(g['output_tokens_per_second']for g in groups),
+            trial_tps_max=max(g['output_tokens_per_second']for g in groups),
+            maximum_tokens_per_stream_chunk=max(a['tokens']for r in outputs for a in r['arrivals']),
+            cached_prompt_tokens=(sum(r['usage']['prompt_tokens_details']['cached_tokens']or 0 for r in outputs)
+                if all(r['usage'].get('prompt_tokens_details')is not None and 'cached_tokens'in r['usage']['prompt_tokens_details']for r in outputs)else None))
+        summaries.append(summary)
+    return summaries
+
+
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--root',type=pathlib.Path,required=True)
+    parser.add_argument('--output',type=pathlib.Path,required=True);args=parser.parse_args()
+    root=args.root;plan=json.loads((root/'plan.json').read_bytes());plan_hash=hashlib.sha256((root/'plan.json').read_bytes()).hexdigest()
+    prepared=json.loads((root/'prepared.json').read_bytes());state=json.loads((root/'controller.json').read_bytes())
+    assert state['phase']=='complete_live'and state['handover_committed']
+    assert prepared['launches']['current'][0]['command']==prepared['launches']['candidate'][0]['command']
+    result=dict(status='passed',plan_sha256=plan_hash,matched_serving_commands=True,arms={},comparison=[],speculation={})
+    for arm in('production','current','candidate'):
+        raw=(root/(arm+'-measurement.json')).read_bytes();report=json.loads(raw)
+        assert report['plan_sha256']==plan_hash
+        assert hashlib.sha256(raw).hexdigest()==state['measurements'][arm]['report_sha256']
+        result['arms'][arm]=verify(report,plan)
+        result['speculation'][arm]=speculative_metrics(report)
+    for current,candidate in zip(result['arms']['current'],result['arms']['candidate'],strict=True):
+        assert(current['prompt_tokens'],current['batch'])==(candidate['prompt_tokens'],candidate['batch'])
+        result['comparison'].append(dict(prompt_tokens=current['prompt_tokens'],batch=current['batch'],
+            current_tok_s=current['median_output_tokens_per_second'],candidate_tok_s=candidate['median_output_tokens_per_second'],
+            throughput_change_percent=100*(candidate['median_output_tokens_per_second']/current['median_output_tokens_per_second']-1),
+            mean_ttft_change_ms=1000*(candidate['mean_ttft_seconds']-current['mean_ttft_seconds']),
+            p95_ttft_change_ms=1000*(candidate['p95_ttft_seconds']-current['p95_ttft_seconds']),
+            mean_tpot_change_ms=1000*(candidate['mean_tpot_seconds']-current['mean_tpot_seconds'])))
+    result.update(full_model_KL_qualified=False,zero_loss_claim=False,
+        production_reference_uses_different_settings=True,
+        source_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+        resources=state['resources'])
+    result['startup']={arm:json.loads((root/(arm+'-startup.json')).read_bytes()) for arm in ('current','candidate')}
+    args.output.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result['comparison']))
+
+
+if __name__=='__main__':main()

@@ -1,0 +1,77 @@
+"""Exercise evidence recomputation and reject wrong bytes, controls and trial order on CPU."""
+from __future__ import annotations
+import copy
+import hashlib
+import json
+import os
+import pathlib
+import tempfile
+import numpy as np
+from verify_native_actual import assess, verify
+
+base = pathlib.Path(__file__).parent
+checks = {}
+with tempfile.TemporaryDirectory(prefix='mxwave-native-audit-') as temp:
+    root = pathlib.Path(temp)
+    operands = root / 'operands'
+    operands.mkdir()
+    report = dict(status='complete', high_concurrency_layer_time_gate_passed=True, cases=[])
+    source = dict(status='complete', layer=23, rows=[])
+    for m in (1, 8, 16, 256):
+        def record(name, bits):
+            p = root / name
+            raw = np.full((m, 4096), bits, dtype='<u2').tobytes()
+            p.write_bytes(raw)
+            return dict(path=name, shape=[m,4096], dtype='torch.bfloat16', bytes=len(raw),
+                        sha256=hashlib.sha256(raw).hexdigest())
+        current = record(f'm{m}-current.bin', 16256)
+        native = record(f'm{m}-native.bin', 16257)
+        error = dict(finite=True, changed_values=m*4096, values=m*4096, max_abs=1/128,
+                     relative_l2=1/128, rms_error=1/128, reference_rms=1.0)
+        zero = dict(finite=True, changed_values=0, values=m*4096, max_abs=0.0,
+                    relative_l2=0.0, rms_error=0.0, reference_rms=1.0)
+        native_zero = {**zero, 'reference_rms': 129/128}
+        numerics = dict(current_output=current, captured_output=current,
+                        reference_reproducer_bitwise_exact=True, captured_model_vs_replay=zero,
+                        native_first_output=native, native_final_output=native,
+                        native_vs_current=error, current_repeats=[], native_repeat_metrics=[])
+        for repeat in range(20):
+            for kind, original in [('current', current), ('native', native)]:
+                p = root / f'm{m}-{kind}-{repeat}.bin'
+                os.link(root / original['path'], p)
+                retained = {**original, 'path': p.name}
+                if kind == 'current':
+                    numerics['current_repeats'].append(dict(bitwise_exact=True, payload=retained))
+                else:
+                    numerics['native_repeat_metrics'].append({**native_zero, 'payload': retained})
+        timing = []
+        for trial in range(16):
+            for arm in (('current','native') if trial % 2 == 0 else ('native','current')):
+                timing.append(dict(trial=trial, arm=arm, replays=40, layer_ms=1.0 if arm=='current' else .8))
+        report['cases'].append(dict(tokens=m, status='complete', timing=timing,
+            control_stable=True, layer_time_gate_passed=True, time_reduction_fraction=1-.8,
+            numerics=numerics))
+        source['rows'].append(dict(tokens=m, tensors={'output': current}))
+    (operands/'manifest.json').write_text(json.dumps(source))
+    report['operand_manifest_sha256'] = hashlib.sha256((operands/'manifest.json').read_bytes()).hexdigest()
+    (root/'report.json').write_text(json.dumps(report))
+    valid = verify(root, operands)
+    assert valid['evidence_complete'] and valid['high_concurrency_layer_time_gate_passed']
+    checks['valid_complete_evidence'] = True
+    bad = copy.deepcopy(report)
+    bad['cases'][0]['timing'].reverse()
+    try: assess(bad)
+    except AssertionError: checks['wrong_trial_order_rejected'] = True
+    else: raise AssertionError('Wrong order accepted')
+    bad = copy.deepcopy(report)
+    for row in bad['cases'][1]['timing']:
+        if row['arm']=='current' and row['trial']>=8: row['layer_ms']=1.1
+    try: assess(bad)
+    except AssertionError: checks['falsely_stable_control_rejected'] = True
+    else: raise AssertionError('Unstable control accepted')
+    (root/'m1-native.bin').write_bytes(b'bad')
+    try: verify(root, operands)
+    except AssertionError: checks['corrupt_payload_rejected'] = True
+    else: raise AssertionError('Corrupt payload accepted')
+(base/'actual-verifier-CPU-check.json').write_text(json.dumps(dict(status='passed', checks=checks),indent=2)+'\n')
+print(json.dumps(checks))

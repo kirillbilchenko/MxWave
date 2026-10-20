@@ -1,0 +1,160 @@
+"""Regrade every raw answer and compare fresh and historical CT outcomes."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import re
+import statistics
+from decimal import Decimal
+from pathlib import Path
+
+from gsm8k_benchmark import body, score, summarize
+
+
+def marker_diagnostic(response, expected):
+    """Describe an empty trailing marker without changing either declared score."""
+    primary = score(response, expected)
+    text = primary["final_answer"]
+    empty_tail = "####" in text and not text.rsplit("####", 1)[1].strip()
+    values = re.findall(r"[-+]?\d[\d,]*(?:\.\d+)?", text)
+    last = Decimal(values[-1].replace(",", "")) if values else None
+    return {
+        "empty_trailing_marker": empty_tail,
+        "empty_marker_with_correct_preceding_number": bool(
+            empty_tail and primary["naturally_stopped"] and last == Decimal(expected.replace(",", ""))
+        ),
+    }
+
+
+def compare(left, right):
+    """Report paired gains and losses without declaring equivalence from a p-value."""
+    lost = [i for i in left if left[i]["answer_exact_match"] and not right[i]["answer_exact_match"]]
+    gained = [i for i in left if not left[i]["answer_exact_match"] and right[i]["answer_exact_match"]]
+    n = len(lost) + len(gained)
+    p = min(1.0, 2 * sum(math.comb(n, k) for k in range(min(len(lost), len(gained)) + 1)) / 2**n) if n else 1.0
+    return {
+        "correct_to_wrong": lost, "wrong_to_correct": gained,
+        "net_correct_change": len(gained) - len(lost),
+        "accuracy_change_percentage_points": 100 * (len(gained) - len(lost)) / len(left),
+        "mcnemar_exact_two_sided_p": p,
+        "all_extracted_answers_equal": all(
+            left[i].get("extracted_numeric_answer") == right[i].get("extracted_numeric_answer")
+            for i in left
+        ),
+    }
+
+
+def analyze(root):
+    sources = {}
+
+    def read(name):
+        raw = (root / name).read_bytes()
+        sources[name] = hashlib.sha256(raw).hexdigest()
+        return json.loads(raw)
+
+    plan = read("plan.json")
+    protocol = read("historical-gsm8k-protocol.json")
+    assert protocol == plan["protocol"]
+    assert sources["historical-gsm8k-protocol.json"] == plan["historical_protocol_sha256"]
+    result = {
+        "status": "complete", "full_model_KL_qualified": False,
+        "questions_per_arm": 1319, "speculation": False, "scores": {}, "timing": {},
+        "source_sha256": sources, "numeric_grader_unchanged": True,
+        "limits": [
+            "One fresh full pass per arm; natural batch layouts and temporal rounding may differ.",
+            "Historical results used older runtime/admission settings; their comparisons are contextual.",
+            "The old uncompressed baseline and historical compressed candidate are different runtime modes.",
+            "The failed 1e-5 KL gate remains. Task accuracy cannot establish losslessness.",
+            "Empty-marker diagnostics never amend the frozen primary or strict-format scores.",
+            "This zero-shot low-reasoning protocol is not a published few-shot leaderboard recipe.",
+        ],
+    }
+    arms = {}
+    historical = {}
+    for label in ("control", "candidate"):
+        old = read(f"historical-{label}-gsm8k.json")
+        assert old["status"] == "complete"
+        assert summarize(old["cases"]) == old["summary"]
+        historical[label] = {r["source_index"]: r for r in old["cases"]}
+        assert list(historical[label]) == list(range(1319))
+        result["scores"]["historical_" + label] = old["summary"]
+        report = read(f"{label}-measurement.json")
+        assert report["status"] == "complete" and len(report["cases"]) == 1319
+        assert report["plan_sha256"] == sources["plan.json"]
+        assert report["speculation"] is False and report["mode"] == plan["modes"][label]
+        rows = []
+        diagnostics = []
+        tokens = 0
+        for compact, case in zip(report["cases"], protocol["cases"], strict=True):
+            assert compact["source_index"] == case["source_index"]
+            assert Path(compact["file"]).name == compact["file"]
+            name = f"{label}/gsm8k/{compact['file']}"
+            raw = (root / name).read_bytes()
+            assert hashlib.sha256(raw).hexdigest() == compact["sha256"]
+            row = json.loads(raw)
+            assert all(row[k] == v for k, v in compact.items() if k not in ("file", "sha256"))
+            payload = body(case, protocol)
+            assert row["request"] == payload
+            assert row["prompt_sha256"] == hashlib.sha256(case["prompt"].encode()).hexdigest()
+            assert row["request_sha256"] == hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+            assert row["expected"] == case["expected"]
+            if not row["api_error"]:
+                recalculated = score(row["response"], case["expected"])
+                assert all(row[k] == v for k, v in recalculated.items())
+                diagnostics.append({"source_index": case["source_index"], **marker_diagnostic(row["response"], case["expected"])})
+                tokens += row["response"].get("usage", {}).get("completion_tokens", 0)
+            else:
+                assert not row["answer_exact_match"] and not row["strict_format_match"]
+            rows.append(row)
+        arms[label] = {r["source_index"]: r for r in rows}
+        computed = summarize(rows)
+        assert computed == report["summary"]
+        result["scores"][label] = computed
+        seconds = report["benchmark_finished_epoch"] - report["benchmark_started_epoch"]
+        result["timing"][label] = {
+            "wall_seconds": seconds, "questions_per_minute": 1319 * 60 / seconds,
+            "completion_tokens": tokens, "output_tokens_per_second": tokens / seconds,
+            "median_request_seconds": statistics.median(r["elapsed_seconds"] for r in rows),
+        }
+        result[label + "_format_diagnostics"] = diagnostics
+        startup = read(f"{label}-startup.json")
+        assert len(startup) == 2 and all(s["status"] == "complete" for s in startup)
+        for s in startup:
+            t = s["trial"]
+            assert t["speculation"] is False and t["kv_cache_memory_bytes"] == 4 * 1024**3
+            assert {1, 4}.issubset(t["physical_graph_token_counts"])
+            if label == "candidate":
+                native = t["native_mxfp8_kda"]
+                assert native["status"] == "complete" and len(native["layers"]) == 68
+                assert native["original_BF16_parameters_alive"] == 0
+                assert native["all_68_rounding_hashes_match_quality_run"]
+                assert all(l["basis_bits_exact"] for l in native["layers"])
+        result[label + "_allocation_bytes_by_rank"] = [s["trial"]["cuda_allocated_bytes"] for s in startup]
+    result["fresh_comparison"] = compare(arms["control"], arms["candidate"])
+    result["candidate_vs_historical_reference"] = compare(historical["control"], arms["candidate"])
+    result["fresh_reference_vs_historical_reference"] = compare(historical["control"], arms["control"])
+    old_failures = [i for i, r in historical["control"].items() if not r["answer_exact_match"]]
+    assert len(old_failures) == 73
+    result["historical_failure_subset"] = {
+        "count": 73, "indices": old_failures,
+        "fresh_control_correct": [i for i in old_failures if arms["control"][i]["answer_exact_match"]],
+        "fresh_candidate_correct": [i for i in old_failures if arms["candidate"][i]["answer_exact_match"]],
+    }
+    state = read("controller.json")
+    assert state["phase"] == "complete_restored" and not state["service_paused"]
+    assert state["restoration"]["originals_running"]
+    result["restoration"] = state["restoration"]
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    result = analyze(args.root)
+    args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+    print(json.dumps({"scores": result["scores"], "fresh_comparison": result["fresh_comparison"]}, indent=2))

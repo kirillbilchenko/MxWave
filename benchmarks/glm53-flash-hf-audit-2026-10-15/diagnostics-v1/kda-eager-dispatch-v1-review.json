@@ -1,0 +1,308 @@
+{
+  "status": "complete",
+  "component_qualified": true,
+  "prototype_wired_into_adapter": false,
+  "scope": "Eager-only dispatch; original operation retained for graphs and compilation",
+  "previous_v1_v2_failures_preserved": true,
+  "source_files_per_rank": 124,
+  "prepared_sha256": "75ef95df864372b76050b265ab328f5bc3daf076b07f83bd4a4f350b030941e9",
+  "controller_sha256": "1d776a89fb9a930a26cabe03e829c9fc654a99c05e887f4ed67a9f3176c77544",
+  "attempts": [
+    {
+      "stage": "initial",
+      "exact_cases": 24,
+      "cuda_peak_allocated_bytes": 353512960,
+      "m4": [
+        {
+          "fixture": "kda-input-l0-r0",
+          "eager_ratios": [
+            {
+              "host_enqueue_us": 0.5473446084240008,
+              "gpu_event_us": 0.9481004419244072
+            },
+            {
+              "host_enqueue_us": 0.5585792349726778,
+              "gpu_event_us": 0.9438868954990887
+            }
+          ],
+          "graph_blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 432.40158557891846,
+                "reference_b": 430.7823896408081,
+                "direct": 432.2712182998657
+              },
+              "identical_control_max_min_ratio": 1.0037587328940267,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9996985041604827,
+                "reference_b": 1.00345610381218
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 430.24158477783203,
+                "reference_b": 430.0096035003662,
+                "direct": 429.964804649353
+              },
+              "identical_control_max_min_ratio": 1.0005394792943634,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9993566867121365,
+                "reference_b": 0.9998958189523013
+              },
+              "performance_gate_passed": true
+            }
+          ],
+          "compiled_targets": [
+            "mxwave_glm53.kda_linear.default"
+          ]
+        },
+        {
+          "fixture": "kda-output-l0-r0",
+          "eager_ratios": [
+            {
+              "host_enqueue_us": 0.5028962001853567,
+              "gpu_event_us": 0.8565283576338071
+            },
+            {
+              "host_enqueue_us": 0.5037999634969886,
+              "gpu_event_us": 0.8545483207966317
+            }
+          ],
+          "graph_blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 143.97839903831482,
+                "reference_b": 143.9232051372528,
+                "direct": 143.86959671974182
+              },
+              "identical_control_max_min_ratio": 1.0003834954968476,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9992443149854442,
+                "reference_b": 0.9996275206804917
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 144.21520233154297,
+                "reference_b": 144.18800473213196,
+                "direct": 143.89920234680176
+              },
+              "identical_control_max_min_ratio": 1.0001886259502761,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9978088302784145,
+                "reference_b": 0.9979970429172196
+              },
+              "performance_gate_passed": true
+            }
+          ],
+          "compiled_targets": [
+            "mxwave_glm53.kda_linear.default"
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "confirm",
+      "exact_cases": 24,
+      "cuda_peak_allocated_bytes": 353512960,
+      "m4": [
+        {
+          "fixture": "kda-input-l0-r0",
+          "eager_ratios": [
+            {
+              "host_enqueue_us": 0.5626072041166381,
+              "gpu_event_us": 0.9423141118341022
+            },
+            {
+              "host_enqueue_us": 0.5638091125026992,
+              "gpu_event_us": 0.9388778422306747
+            }
+          ],
+          "graph_blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 427.25281715393066,
+                "reference_b": 428.83598804473877,
+                "direct": 425.8647918701172
+              },
+              "identical_control_max_min_ratio": 1.003705466242105,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9967512788024206,
+                "reference_b": 0.9930714859352905
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 425.4335880279541,
+                "reference_b": 425.0839948654175,
+                "direct": 424.892783164978
+              },
+              "identical_control_max_min_ratio": 1.0008224096102403,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9987288148416233,
+                "reference_b": 0.9995501790169729
+              },
+              "performance_gate_passed": true
+            }
+          ],
+          "compiled_targets": [
+            "mxwave_glm53.kda_linear.default"
+          ]
+        },
+        {
+          "fixture": "kda-output-l0-r0",
+          "eager_ratios": [
+            {
+              "host_enqueue_us": 0.5113542769737617,
+              "gpu_event_us": 0.8556794210870684
+            },
+            {
+              "host_enqueue_us": 0.5068896478624426,
+              "gpu_event_us": 0.8530085251952755
+            }
+          ],
+          "graph_blocks": [
+            {
+              "order": [
+                "reference_a",
+                "reference_b",
+                "direct"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 141.02720022201538,
+                "reference_b": 141.0863995552063,
+                "direct": 140.8959984779358
+              },
+              "identical_control_max_min_ratio": 1.0004197724488448,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 0.9990696706459956,
+                "reference_b": 0.9986504646948907
+              },
+              "performance_gate_passed": true
+            },
+            {
+              "order": [
+                "direct",
+                "reference_b",
+                "reference_a"
+              ],
+              "medians_us_per_replay": {
+                "reference_a": 141.5888011455536,
+                "reference_b": 141.66160225868225,
+                "direct": 141.67280197143555
+              },
+              "identical_control_max_min_ratio": 1.0005141728197404,
+              "identical_controls_stable": true,
+              "direct_reference_ratios": {
+                "reference_a": 1.0005932730922384,
+                "reference_b": 1.0000790596221893
+              },
+              "performance_gate_passed": true
+            }
+          ],
+          "compiled_targets": [
+            "mxwave_glm53.kda_linear.default"
+          ]
+        }
+      ]
+    }
+  ],
+  "independent_gate_recomputation": true,
+  "source_sha256": {
+    "benchmark_kda_eager_dispatch.py": "45eec41b5e26477539d5fda9f4789f9c51563bc67adc5ac1235433d6a8c3adf3",
+    "kda_eager_dispatch.py": "792a0086d7856ba20e5f999344e5c71cee06d44bb2de83aae24a560935e21afc",
+    "kda_direct_dispatch.py": "4923a93a4881740b57127ca854a153e41fd8bb21fcfc72120d97413cc928e5d7",
+    "kda_runtime.py": "a3ddf07e196c7a13f6fcc3798fc54e4d311275283436ad103abab00126a93449",
+    "benchmark_kda_direct_dispatch.py": "8321b1aa99986da9886ead231496dc489760cd351097f513cf1678a073625daf",
+    "diagnose_kda_graph_topology.py": "e359d5a14c2cdbb5602d31527ef7bdf5f9165760d262900a5f03e9c8c790e355",
+    "prepare_bf16_attention.py": "6575222a0b43bffae2e9bc83b1c83f7b97d51970f7b68993f46c6634c21481d5"
+  },
+  "independent_verifier_sha256": "e477fc7749b5b95f89b12c0edc0580ad55007ae08797b868746c2018e991aa51",
+  "service": {
+    "health_8000": true,
+    "identities_match": true,
+    "production_stopped": false
+  },
+  "independent_archive_verification": {
+    "status": "passed",
+    "payloads_verified": 291,
+    "source_files_per_rank": 124,
+    "archives": [
+      {
+        "status": "verified",
+        "rank": 0,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/kda-eager-v1-evidence-rank0.tar.gz",
+        "bytes": 781370,
+        "sha256": "0efb88a878234ab4deedde319358665731fdff84360a43f04f2aee58070ed927",
+        "files": 136,
+        "manifest_sha256": "0c1f82e28dc184a3f9987cd33550c07adb5948fa251a31333b677a1c368aa5f7",
+        "finished_epoch": 1792241880.6469557
+      },
+      {
+        "status": "verified",
+        "rank": 1,
+        "archive": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/kda-eager-v1-evidence-rank1.tar.gz",
+        "bytes": 770966,
+        "sha256": "e19e58072ca2b12b87b68e1d0ac559b906abd80a66eb1b1a923877b6675b8117",
+        "files": 155,
+        "manifest_sha256": "f855a6b253a6fc55826024c3430ce447dffc6492a92fcfd60a15af74f5e6875a",
+        "finished_epoch": 1792241881.2532775
+      }
+    ],
+    "service": {
+      "identities": [
+        {
+          "rank": 0,
+          "running": true,
+          "identity_matches": true
+        },
+        {
+          "rank": 1,
+          "running": true,
+          "identity_matches": true
+        }
+      ],
+      "health_8000": true
+    }
+  }
+}

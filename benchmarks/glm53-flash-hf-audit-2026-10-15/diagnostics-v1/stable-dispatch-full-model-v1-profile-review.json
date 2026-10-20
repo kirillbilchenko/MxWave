@@ -1,0 +1,5883 @@
+{
+  "status": "complete",
+  "profiles": {
+    "control_rank0_b1": {
+      "path": "rank0/traces-stock/dp0_pp0_tp0_dcp0_ep0_rank0.1792233195872860089.pt.trace.json.gz",
+      "sha256": "9cc5c159ef29439c110ea7582bb75685bcf7abc817901624b510a749bf568d4c",
+      "complete_forward_count": 4,
+      "shape_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 57710.827,
+          "median_kernel_union_all_streams_us": 56215.0478515625,
+          "median_uncovered_all_streams_us": 1556.7363320312506,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 170.528
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 37850.424
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 1018.5609999999995
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4892.1410000000005
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1377.0909999999997
+            },
+            "other": {
+              "median_calls": 466,
+              "median_sum_us": 1663.2069999999985
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 249.21600000000004
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 672.866
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 11335.608
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 2235.2400000000002
+            }
+          }
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 360717.586,
+          "median_kernel_union_all_streams_us": 352378.42431640625,
+          "median_uncovered_all_streams_us": 8339.16168359376,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 5514.225000000001
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 49436.11299999996
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 20675.795000000006
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 11464.281000000004
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 9821.345
+            },
+            "other": {
+              "median_calls": 723,
+              "median_sum_us": 3523.302000000003
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 257.632
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 1853.507
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 244782.94099999993
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 5012.648999999996
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 166.01700000000005
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 42,
+        "sum_us": 166.01700000000005
+      },
+      "top_kernels": [
+        {
+          "name": "void marlin_moe_wna16::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 336,
+          "sum_us": 278854.09099999984
+        },
+        {
+          "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 6, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+          "group": "bf16_dense_linear",
+          "calls": 303,
+          "sum_us": 94441.82200000004
+        },
+        {
+          "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+          "group": "bf16_dense_linear",
+          "calls": 355,
+          "sum_us": 27180.737999999994
+        },
+        {
+          "name": "nvjet_sm121_tst_mma_192x144x64_2_48x72x64_tmaAB_bz_TNNN",
+          "group": "bf16_dense_linear",
+          "calls": 34,
+          "sum_us": 25178.39399999999
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 132,
+        "sum_us": 630.7839999999998,
+        "bytes": 74330012
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 394,
+          "sum_us": 21593.986
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 608,
+          "sum_us": 24463.088
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 892,
+          "sum_us": 146.38400000000001
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 35.568
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 340,
+          "sum_us": 9.296
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 51,
+          "sum_us": 73.024
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 145,
+          "sum_us": 139.104
+        },
+        "cuda_runtime/cudaEventSynchronize": {
+          "calls": 4,
+          "sum_us": 359785.62799999997
+        },
+        "cuda_runtime/cudaFuncGetAttributes": {
+          "calls": 252,
+          "sum_us": 394.019
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 332,
+          "sum_us": 386.193
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 340,
+          "sum_us": 70.241
+        },
+        "cuda_runtime/cudaGraphLaunch": {
+          "calls": 3,
+          "sum_us": 3091.9269999999997
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 1049,
+          "sum_us": 42396.909
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 170,
+          "sum_us": 960.16
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 132,
+          "sum_us": 294825.286
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 1,
+          "sum_us": 2.912
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 184,
+          "sum_us": 9.488
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 24,
+          "sum_us": 65.42399999999999
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 389,
+          "sum_us": 89.952
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 4,
+          "sum_us": 6.912
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 4,
+          "sum_us": 16.656
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 2211,
+            "gpu_duration_sum_us": 8868.658999999978
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 368,
+            "gpu_duration_sum_us": 24405.402000000016
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 813,
+            "gpu_duration_sum_us": 14007.556999999962
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 1024,
+            "gpu_duration_sum_us": 158061.65499999968
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 292,
+            "gpu_duration_sum_us": 19983.915000000008
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 339,
+            "gpu_duration_sum_us": 3825.2560000000044
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 156,
+            "gpu_duration_sum_us": 6050.579000000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 450,
+            "gpu_duration_sum_us": 26303.777000000027
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 885,
+            "gpu_duration_sum_us": 11716.252000000011
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 336,
+            "gpu_duration_sum_us": 278854.09099999984
+          }
+        ],
+        "attribution_evidence": {},
+        "cpu_custom_ops": {},
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_cpu_range_us": 60894.396,
+          "custom_scopes": {},
+          "apis": {
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 7,
+              "sum_us": 40.528
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1,
+              "sum_us": 0.704
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 2,
+              "sum_us": 3.52
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 3,
+              "sum_us": 1.6
+            },
+            "cuda_runtime/cudaGraphLaunch": {
+              "calls": 1,
+              "sum_us": 978.866
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 10,
+              "sum_us": 68.816
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 20,
+              "sum_us": 58392.182
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 8.032
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 11,
+              "sum_us": 1.728
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.68
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 186204.732,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 18053.465,
+              "residual_us": 1901.3204687499997
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 3888.838,
+              "residual_us": 1551.922228515625
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 394,
+              "sum_us": 21593.986
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 567,
+              "sum_us": 22097.531
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 889,
+              "sum_us": 144.144
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 9.296
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 21,
+              "sum_us": 20.416
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 108,
+              "sum_us": 81.264
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 394.019
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 332,
+              "sum_us": 386.193
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 70.241
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 987,
+              "sum_us": 41542.3
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 166,
+              "sum_us": 920.256
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 464.737
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.912
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 184,
+              "sum_us": 9.488
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 21.152
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 308,
+              "sum_us": 68.96
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.76
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "control_rank0_c4": {
+      "path": "rank0/traces-stock/dp0_pp0_tp0_dcp0_ep0_rank0.1792233296739470731.pt.trace.json.gz",
+      "sha256": "43e82482355f931b959a30903fa2b73252779948433ffd6b709ffdce4d60c28a",
+      "complete_forward_count": 10,
+      "shape_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 61370.765,
+          "median_kernel_union_all_streams_us": 59151.1123046875,
+          "median_uncovered_all_streams_us": 2219.6526953124994,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 175.68
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 37444.565999999955
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 4109.222
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4729.802
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1442.2769999999996
+            },
+            "other": {
+              "median_calls": 466,
+              "median_sum_us": 1577.8269999999995
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 258.625
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 655.1059999999999
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 11455.898000000003
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 1787.9069999999988
+            }
+          }
+        },
+        {
+          "shape": [
+            3,
+            0,
+            3
+          ],
+          "samples": 2,
+          "median_gpu_range_us": 88511.1205,
+          "median_kernel_union_all_streams_us": 83891.89184570312,
+          "median_uncovered_all_streams_us": 4619.2286542968795,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22.0,
+              "median_sum_us": 362.28850000000006
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308.0,
+              "median_sum_us": 32647.1625
+            },
+            "communication": {
+              "median_calls": 91.0,
+              "median_sum_us": 16349.139500000001
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90.0,
+              "median_sum_us": 3858.8885
+            },
+            "mhc": {
+              "median_calls": 181.0,
+              "median_sum_us": 1452.0839999999998
+            },
+            "other": {
+              "median_calls": 673.0,
+              "median_sum_us": 1163.747
+            },
+            "other_gemm": {
+              "median_calls": 23.0,
+              "median_sum_us": 796.8015
+            },
+            "recurrent": {
+              "median_calls": 79.0,
+              "median_sum_us": 1237.3934999999994
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84.0,
+              "median_sum_us": 27018.00250000001
+            },
+            "routing_activation": {
+              "median_calls": 224.0,
+              "median_sum_us": 1014.002
+            },
+            "stable_expert_order": {
+              "median_calls": 42.0,
+              "median_sum_us": 83.15200000000002
+            }
+          }
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 5,
+          "median_gpu_range_us": 90617.909,
+          "median_kernel_union_all_streams_us": 84328.17260742188,
+          "median_uncovered_all_streams_us": 6080.264044921874,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 460.64000000000004
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 35174.901000000005
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 1246.2430000000002
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4286.887999999998
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1956.3550000000012
+            },
+            "other": {
+              "median_calls": 695,
+              "median_sum_us": 2107.7510000000016
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 1057.1560000000002
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1856.8649999999998
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 36480.854999999996
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 1194.0829999999994
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 133.18400000000003
+            }
+          }
+        },
+        {
+          "shape": [
+            256,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 382597.093,
+          "median_kernel_union_all_streams_us": 375091.3405761719,
+          "median_uncovered_all_streams_us": 7505.7524238281185,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 5106.922
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 48350.83000000001
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 37381.52200000002
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 10022.645999999995
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 10302.233999999999
+            },
+            "other": {
+              "median_calls": 807,
+              "median_sum_us": 4646.8580000000065
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 188.96200000000002
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 1967.7480000000003
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 254476.28699999995
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 5462.636000000001
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 261.409
+            }
+          }
+        },
+        {
+          "shape": [
+            769,
+            3,
+            1
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 604492.687,
+          "median_kernel_union_all_streams_us": 595260.3439941406,
+          "median_uncovered_all_streams_us": 9232.34300585941,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 21781.168
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 72308.82900000001
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 45668.78300000001
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 26518.235
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 38796.859000000004
+            },
+            "other": {
+              "median_calls": 787,
+              "median_sum_us": 10211.418000000007
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 655.044
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 6857.9699999999975
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 355974.6100000001
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 16370.982999999997
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 248.41599999999997
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 378,
+        "sum_us": 1298.2110000000007
+      },
+      "top_kernels": [
+        {
+          "name": "void marlin_moe_wna16::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 756,
+          "sum_us": 500879.52299999923
+        },
+        {
+          "name": "void marlin_moe_wna16::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 2, 8, 4, false, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 84,
+          "sum_us": 355974.6100000001
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8::Params)",
+          "group": "bf16_dense_linear",
+          "calls": 1150,
+          "sum_us": 201508.78799999977
+        },
+        {
+          "name": "kernel_cutlass_kernel_b12xcommroce_oneshot_cute_RoceOneshotLaunch_object_at__ptri32gmemalign16_ptri32gmemalign16_____________0",
+          "group": "communication",
+          "calls": 819,
+          "sum_us": 89522.43400000007
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 344,
+        "sum_us": 2676.7130000000006,
+        "bytes": 294258292
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 4283,
+          "sum_us": 20170.447
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 2932,
+          "sum_us": 69713.182
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 8809,
+          "sum_us": 1613.026
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 39.488
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 680,
+          "sum_us": 70.128
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 13887,
+          "sum_us": 6797.536
+        },
+        "cuda_runtime/cudaEventRecord": {
+          "calls": 518,
+          "sum_us": 323.937
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 1524,
+          "sum_us": 941.572
+        },
+        "cuda_runtime/cudaEventSynchronize": {
+          "calls": 10,
+          "sum_us": 619796.634
+        },
+        "cuda_runtime/cudaFuncGetAttributes": {
+          "calls": 2268,
+          "sum_us": 3704.683
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 1869,
+          "sum_us": 1965.319
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 680,
+          "sum_us": 182.369
+        },
+        "cuda_runtime/cudaGetFuncBySymbol": {
+          "calls": 91,
+          "sum_us": 46.112
+        },
+        "cuda_runtime/cudaGraphLaunch": {
+          "calls": 1,
+          "sum_us": 1032.643
+        },
+        "cuda_runtime/cudaLaunchCooperativeKernel": {
+          "calls": 77,
+          "sum_us": 373.344
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 8061,
+          "sum_us": 222497.245
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 1942,
+          "sum_us": 63950.052
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 344,
+          "sum_us": 585595.341
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 2,
+          "sum_us": 8.815999999999999
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 1628,
+          "sum_us": 138.401
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 54,
+          "sum_us": 145.84
+        },
+        "cuda_runtime/cudaStreamGetCaptureInfo": {
+          "calls": 182,
+          "sum_us": 49.6
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 3333,
+          "sum_us": 698.0169999999999
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 10,
+          "sum_us": 17.44
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 864,
+          "sum_us": 526.5120000000001
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 7379,
+            "gpu_duration_sum_us": 30358.54099999987
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 920,
+            "gpu_duration_sum_us": 137785.81400000027
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 1988,
+            "gpu_duration_sum_us": 62720.793999999594
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 702,
+            "gpu_duration_sum_us": 149044.39500000005
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 2606,
+            "gpu_duration_sum_us": 286302.0829999996
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 836,
+            "gpu_duration_sum_us": 21005.840000000022
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 356,
+            "gpu_duration_sum_us": 30128.701999999997
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 990,
+            "gpu_duration_sum_us": 70091.28899999999
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 2229,
+            "gpu_duration_sum_us": 31480.097999999864
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 840,
+            "gpu_duration_sum_us": 856854.1329999998
+          }
+        ],
+        "attribution_evidence": {},
+        "cpu_custom_ops": {},
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 208107.048,
+          "custom_scopes": {},
+          "apis": {
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 7,
+              "sum_us": 2337.1730000000002
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1,
+              "sum_us": 0.4
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 13,
+              "sum_us": 10.32
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 3,
+              "sum_us": 6.96
+            },
+            "cuda_runtime/cudaGraphLaunch": {
+              "calls": 1,
+              "sum_us": 1032.643
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 10,
+              "sum_us": 2135.877
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 20,
+              "sum_us": 200682.80599999998
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 8.927999999999999
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 11,
+              "sum_us": 1.792
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.824
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            3,
+            0,
+            3
+          ],
+          "samples": 2,
+          "median_cpu_range_us": 90043.924,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90.0,
+              "inclusive_us": 3268.0675,
+              "residual_us": 1299.042353515625
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84.0,
+              "inclusive_us": 4109.937,
+              "residual_us": 1490.265125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 511.0,
+              "sum_us": 1915.899
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 218.0,
+              "sum_us": 839.6585
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1016.0,
+              "sum_us": 176.128
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 1683.0,
+              "sum_us": 805.5775
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42.0,
+              "sum_us": 20.584
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178.0,
+              "sum_us": 99.22399999999999
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252.0,
+              "sum_us": 396.91999999999996
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 185.0,
+              "sum_us": 168.848
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11.0,
+              "sum_us": 50.272000000000006
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 860.0,
+              "sum_us": 3495.142
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 217.0,
+              "sum_us": 902.458
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 23.0,
+              "sum_us": 8059.418
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 180.0,
+              "sum_us": 15.4
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3.0,
+              "sum_us": 12.576
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 372.0,
+              "sum_us": 72.29599999999999
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1.0,
+              "sum_us": 1.664
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84.0,
+              "sum_us": 52.592
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 5,
+          "median_cpu_range_us": 93013.971,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 3638.924,
+              "residual_us": 1560.014591796875
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 4085.308,
+              "residual_us": 1620.842423828125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 511,
+              "sum_us": 2051.349
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 218,
+              "sum_us": 919.281
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1016,
+              "sum_us": 186.64000000000001
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 1648,
+              "sum_us": 814.545
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42,
+              "sum_us": 20.336
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178,
+              "sum_us": 100.738
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 407.586
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 185,
+              "sum_us": 175.376
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11,
+              "sum_us": 54.352000000000004
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 860,
+              "sum_us": 3747.099
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 239,
+              "sum_us": 1060.243
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 23,
+              "sum_us": 7090.159000000001
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 180,
+              "sum_us": 15.104000000000001
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 15.264000000000001
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 372,
+              "sum_us": 75.904
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.776
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84,
+              "sum_us": 51.424
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            256,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 179092.837,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 3648.867,
+              "residual_us": 1452.875056640625
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 8833.063,
+              "residual_us": 1826.7502558593749
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 360,
+              "sum_us": 3014.887
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 601,
+              "sum_us": 7724.975
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 855,
+              "sum_us": 153.185
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 33.008
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 2231,
+              "sum_us": 1088.467
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42,
+              "sum_us": 57.728
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 192,
+              "sum_us": 112.768
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 443.49
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 242,
+              "sum_us": 327.778
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 83.073
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 897,
+              "sum_us": 21511.166
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 250,
+              "sum_us": 50737.348
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 413.345
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.784
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 184,
+              "sum_us": 15.744
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 19.52
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 476,
+              "sum_us": 98.929
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.064
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84,
+              "sum_us": 56.736
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            769,
+            3,
+            1
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 377346.983,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 80590.439,
+              "residual_us": 2145.887974609376
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 4500.406,
+              "residual_us": 1782.39086328125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 338,
+              "sum_us": 3051.321
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 748,
+              "sum_us": 48635.214
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 833,
+              "sum_us": 164.656
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 37.12
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 25,
+              "sum_us": 16.064
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 182,
+              "sum_us": 121.568
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 17,
+              "sum_us": 7.904
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 433.746
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 332,
+              "sum_us": 427.923
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 99.296
+            },
+            "cuda_runtime/cudaGetFuncBySymbol": {
+              "calls": 91,
+              "sum_us": 46.112
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1062,
+              "sum_us": 168726.40899999999
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 53,
+              "sum_us": 6017.698
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 79,
+              "sum_us": 61703.115000000005
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 6.032
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 184,
+              "sum_us": 16.112000000000002
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 15.616
+            },
+            "cuda_runtime/cudaStreamGetCaptureInfo": {
+              "calls": 182,
+              "sum_us": 49.6
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 126,
+              "sum_us": 29.008
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.184
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 182,
+              "sum_us": 99.392
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "candidate_rank0_b1": {
+      "path": "rank0/traces-candidate/dp0_pp0_tp0_dcp0_ep0_rank0.1792234255594758650.pt.trace.json.gz",
+      "sha256": "edc1d7a7617f801c982ea56e9ba55e7ce99ae6a85e8249057b39d766d52646cb",
+      "complete_forward_count": 4,
+      "shape_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 56537.975,
+          "median_kernel_union_all_streams_us": 54513.106689453125,
+          "median_uncovered_all_streams_us": 2051.9007734374973,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 230.94400000000005
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 24812.982
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 10887.095000000003
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 890.7219999999998
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 8.544
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 5246.380999999999
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1609.473000000001
+            },
+            "other": {
+              "median_calls": 601,
+              "median_sum_us": 1881.7320000000016
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 376.79999999999995
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 696.834
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 11071.765000000001
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 2284.2619999999984
+            }
+          }
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 406366.036,
+          "median_kernel_union_all_streams_us": 397847.6179199219,
+          "median_uncovered_all_streams_us": 8518.418080078147,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 5616.109000000001
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 57108.252000000015
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 37233.706000000006
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 16899.902999999995
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 24.225
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 11723.32900000001
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 10303.086999999994
+            },
+            "other": {
+              "median_calls": 722,
+              "median_sum_us": 3744.2969999999996
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 220.31999999999996
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 2144.3230000000003
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 247649.76500000004
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 5181.743
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 174.081
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 42,
+        "sum_us": 174.081
+      },
+      "top_kernels": [
+        {
+          "name": "void mxwave_grouped_sparse::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 336,
+          "sum_us": 281040.55800000014
+        },
+        {
+          "name": "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)",
+          "group": "bf16_compressed_linear",
+          "calls": 208,
+          "sum_us": 82251.436
+        },
+        {
+          "name": "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)",
+          "group": "bf16_weight_decode",
+          "calls": 68,
+          "sum_us": 37233.706000000006
+        },
+        {
+          "name": "nvjet_sm121_tst_mma_192x144x64_2_48x72x64_tmaAB_bz_TNNN",
+          "group": "bf16_dense_linear",
+          "calls": 34,
+          "sum_us": 29225.756999999998
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 136,
+        "sum_us": 685.6329999999996,
+        "bytes": 74362780
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 394,
+          "sum_us": 32121.446
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 609,
+          "sum_us": 29255.809
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 892,
+          "sum_us": 158.864
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 41.408
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 340,
+          "sum_us": 10.176
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 51,
+          "sum_us": 114.032
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 145,
+          "sum_us": 184.48
+        },
+        "cuda_runtime/cudaEventSynchronize": {
+          "calls": 4,
+          "sum_us": 357579.165
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 404,
+          "sum_us": 688.114
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 340,
+          "sum_us": 61.376
+        },
+        "cuda_runtime/cudaGraphLaunch": {
+          "calls": 3,
+          "sum_us": 3512.6320000000005
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 1120,
+          "sum_us": 30230.013
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 170,
+          "sum_us": 1098.644
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 136,
+          "sum_us": 303107.596
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 1,
+          "sum_us": 3.12
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 268,
+          "sum_us": 16.608
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 24,
+          "sum_us": 78.432
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 390,
+          "sum_us": 115.296
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 4,
+          "sum_us": 10.0
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 4,
+          "sum_us": 16.64
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 2615,
+            "gpu_duration_sum_us": 9651.994000000015
+          },
+          {
+            "component": "embedding",
+            "kernel_group": "embedding_lookup",
+            "calls": 4,
+            "gpu_duration_sum_us": 48.99300000000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 368,
+            "gpu_duration_sum_us": 19991.044999999973
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 813,
+            "gpu_duration_sum_us": 15377.780999999944
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_weight_decode",
+            "calls": 68,
+            "gpu_duration_sum_us": 37233.706000000006
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 34,
+            "gpu_duration_sum_us": 29225.756999999998
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 258,
+            "gpu_duration_sum_us": 11889.399000000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 339,
+            "gpu_duration_sum_us": 4222.823000000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 156,
+            "gpu_duration_sum_us": 6248.109000000001
+          },
+          {
+            "component": "kda",
+            "kernel_group": "other_gemm",
+            "calls": 34,
+            "gpu_duration_sum_us": 12010.139999999998
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 450,
+            "gpu_duration_sum_us": 27496.233999999986
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 885,
+            "gpu_duration_sum_us": 12051.48700000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 782,
+            "gpu_duration_sum_us": 37108.622999999985
+          },
+          {
+            "component": "expert_scales",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 336,
+            "gpu_duration_sum_us": 281040.55800000014
+          },
+          {
+            "component": "head",
+            "kernel_group": "other",
+            "calls": 4,
+            "gpu_duration_sum_us": 9.184000000000001
+          },
+          {
+            "component": "head",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 4,
+            "gpu_duration_sum_us": 10088.788
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 204,
+            "gpu_duration_sum_us": 72162.648
+          }
+        ],
+        "attribution_evidence": {
+          "cpu_external_id_and_containment": 145,
+          "distinct_expert_kernel": 336,
+          "distinct_embedding_kernel": 3,
+          "model_only_graph_assumption": 204
+        },
+        "cpu_custom_ops": {
+          "mxwave_glm53::embedding_rows": {
+            "calls": 1,
+            "median_us": 94.433,
+            "maximum_us": 94.433,
+            "sum_us": 94.433
+          },
+          "mxwave_glm53::kda_linear": {
+            "calls": 68,
+            "median_us": 142.74450000000002,
+            "maximum_us": 363.025,
+            "sum_us": 11051.859
+          },
+          "mxwave_zipserv::linear": {
+            "calls": 4,
+            "median_us": 363.825,
+            "maximum_us": 445.937,
+            "sum_us": 1390.995
+          }
+        },
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_cpu_range_us": 59409.199,
+          "custom_scopes": {},
+          "apis": {
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 7,
+              "sum_us": 42.448
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1,
+              "sum_us": 1.744
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 2,
+              "sum_us": 5.808
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 3,
+              "sum_us": 2.048
+            },
+            "cuda_runtime/cudaGraphLaunch": {
+              "calls": 1,
+              "sum_us": 1099.698
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 10,
+              "sum_us": 53.729
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 20,
+              "sum_us": 56217.048
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 11.648
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 11,
+              "sum_us": 1.824
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.56
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 215472.557,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 6263.889,
+              "residual_us": 3520.90413671875
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 94.433,
+              "residual_us": 81.632951171875
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 11051.859,
+              "residual_us": 8170.7681796875
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 20373.322,
+              "residual_us": 1231.0900664062497
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 394,
+              "sum_us": 32121.446
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 568,
+              "sum_us": 28926.224000000002
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 889,
+              "sum_us": 154.144
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 10.176
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 21,
+              "sum_us": 23.584
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 108,
+              "sum_us": 94.336
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 400,
+              "sum_us": 643.138
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 61.376
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1054,
+              "sum_us": 29467.546
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 166,
+              "sum_us": 1038.388
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 556.355
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 3.12
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 268,
+              "sum_us": 16.608
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 21.056
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 309,
+              "sum_us": 84.8
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.384
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "candidate_rank0_c4": {
+      "path": "rank0/traces-candidate/dp0_pp0_tp0_dcp0_ep0_rank0.1792234351886821224.pt.trace.json.gz",
+      "sha256": "2d403b7d96f9b434e1b1d34f5e5e1331c38cc3bb5f8526f08f7d0277bf8ec0a0",
+      "complete_forward_count": 9,
+      "shape_summary": [
+        {
+          "shape": [
+            2,
+            0,
+            2
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 90498.46,
+          "median_kernel_union_all_streams_us": 58338.62646484375,
+          "median_uncovered_all_streams_us": 32159.833535156256,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 243.48800000000003
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 21253.178
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 9458.356000000007
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 921.9539999999992
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 8.448
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4672.362999999999
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1553.0290000000002
+            },
+            "other": {
+              "median_calls": 774,
+              "median_sum_us": 1138.689999999999
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 477.538
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1005.2839999999999
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 20452.499
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 1050.8509999999994
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 83.553
+            }
+          }
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 6,
+          "median_gpu_range_us": 97105.242,
+          "median_kernel_union_all_streams_us": 74996.26147460938,
+          "median_uncovered_all_streams_us": 21358.726310546874,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22.0,
+              "median_sum_us": 369.45650000000006
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68.0,
+              "median_sum_us": 21563.4925
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240.0,
+              "median_sum_us": 9041.912000000004
+            },
+            "communication": {
+              "median_calls": 91.0,
+              "median_sum_us": 1680.6919999999996
+            },
+            "embedding_lookup": {
+              "median_calls": 1.0,
+              "median_sum_us": 8.72
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90.0,
+              "median_sum_us": 4873.371
+            },
+            "mhc": {
+              "median_calls": 181.0,
+              "median_sum_us": 1553.0915
+            },
+            "other": {
+              "median_calls": 796.0,
+              "median_sum_us": 1178.9944999999989
+            },
+            "other_gemm": {
+              "median_calls": 23.0,
+              "median_sum_us": 796.4175000000001
+            },
+            "recurrent": {
+              "median_calls": 79.0,
+              "median_sum_us": 1655.5220000000002
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84.0,
+              "median_sum_us": 35014.33900000001
+            },
+            "routing_activation": {
+              "median_calls": 224.0,
+              "median_sum_us": 1206.165000000001
+            },
+            "stable_expert_order": {
+              "median_calls": 42.0,
+              "median_sum_us": 90.24000000000001
+            }
+          }
+        },
+        {
+          "shape": [
+            512,
+            2,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 523226.76,
+          "median_kernel_union_all_streams_us": 514885.7492675781,
+          "median_uncovered_all_streams_us": 8341.010732421884,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 12608.825999999994
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 66850.056
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 36313.359
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 31357.125000000007
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 39.104
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 17475.586
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 20388.04200000001
+            },
+            "other": {
+              "median_calls": 701,
+              "median_sum_us": 6234.349000000005
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 366.4
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 4886.347999999999
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 308080.358
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 10312.468999999997
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 206.465
+            }
+          }
+        },
+        {
+          "shape": [
+            514,
+            2,
+            2
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 546869.529,
+          "median_kernel_union_all_streams_us": 538103.4926757812,
+          "median_uncovered_all_streams_us": 8766.03632421873,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 14966.818999999998
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 66625.90300000002
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 36457.96899999999
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 36654.097
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 37.28
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 20642.279999999988
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 21668.456
+            },
+            "other": {
+              "median_calls": 796,
+              "median_sum_us": 8387.531000000008
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 477.4090000000001
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 4912.645000000001
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 316720.598
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 10534.647999999997
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 241.409
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 378,
+        "sum_us": 1089.7000000000003
+      },
+      "top_kernels": [
+        {
+          "name": "void mxwave_grouped_sparse::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, false, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 168,
+          "sum_us": 624800.9559999999
+        },
+        {
+          "name": "void mxwave_grouped_sparse::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 588,
+          "sum_us": 231665.53299999988
+        },
+        {
+          "name": "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)",
+          "group": "bf16_compressed_linear",
+          "calls": 485,
+          "sum_us": 172624.52599999993
+        },
+        {
+          "name": "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)",
+          "group": "bf16_weight_decode",
+          "calls": 136,
+          "sum_us": 72771.32800000005
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 796,
+        "sum_us": 2805.12300000002,
+        "bytes": 308576380
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 3777,
+          "sum_us": 74455.91
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 2951,
+          "sum_us": 90058.787
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 8302,
+          "sum_us": 1673.365
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 39.328
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 680,
+          "sum_us": 74.896
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 3237,
+          "sum_us": 2428.779
+        },
+        "cuda_runtime/cudaEventRecord": {
+          "calls": 476,
+          "sum_us": 312.224
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 1432,
+          "sum_us": 1092.705
+        },
+        "cuda_runtime/cudaEventSynchronize": {
+          "calls": 9,
+          "sum_us": 513820.63399999996
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 2490,
+          "sum_us": 3678.207
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 680,
+          "sum_us": 165.808
+        },
+        "cuda_runtime/cudaGetFuncBySymbol": {
+          "calls": 91,
+          "sum_us": 64.624
+        },
+        "cuda_runtime/cudaLaunchCooperativeKernel": {
+          "calls": 77,
+          "sum_us": 356.209
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 9388,
+          "sum_us": 223563.179
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 1857,
+          "sum_us": 11503.923
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 796,
+          "sum_us": 500697.033
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 2,
+          "sum_us": 12.816
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 2384,
+          "sum_us": 221.824
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 51,
+          "sum_us": 212.96
+        },
+        "cuda_runtime/cudaStreamGetCaptureInfo": {
+          "calls": 182,
+          "sum_us": 70.352
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 3153,
+          "sum_us": 736.706
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 9,
+          "sum_us": 19.984
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 779,
+          "sum_us": 602.672
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 6819,
+            "gpu_duration_sum_us": 23536.52299999928
+          },
+          {
+            "component": "embedding",
+            "kernel_group": "embedding_lookup",
+            "calls": 9,
+            "gpu_duration_sum_us": 137.92100000000002
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 828,
+            "gpu_duration_sum_us": 87918.34999999966
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 1807,
+            "gpu_duration_sum_us": 53063.31099999959
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_weight_decode",
+            "calls": 136,
+            "gpu_duration_sum_us": 72771.32800000005
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 136,
+            "gpu_duration_sum_us": 93065.50700000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 2055,
+            "gpu_duration_sum_us": 80214.69100000006
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 757,
+            "gpu_duration_sum_us": 20746.505000000034
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 334,
+            "gpu_duration_sum_us": 30239.552999999993
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 900,
+            "gpu_duration_sum_us": 72108.59999999998
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 2005,
+            "gpu_duration_sum_us": 29074.5020000001
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 300,
+            "gpu_duration_sum_us": 30156.986999999997
+          },
+          {
+            "component": "expert_scales",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 756,
+            "gpu_duration_sum_us": 856466.4890000003
+          },
+          {
+            "component": "head",
+            "kernel_group": "other",
+            "calls": 9,
+            "gpu_duration_sum_us": 7.679999999999999
+          },
+          {
+            "component": "head",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 9,
+            "gpu_duration_sum_us": 21501.774999999998
+          },
+          {
+            "component": "kda",
+            "kernel_group": "other",
+            "calls": 714,
+            "gpu_duration_sum_us": 966.7839999999994
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 476,
+            "gpu_duration_sum_us": 151122.75100000002
+          }
+        ],
+        "attribution_evidence": {
+          "cpu_external_id_and_containment": 1489,
+          "distinct_expert_kernel": 756
+        },
+        "cpu_custom_ops": {
+          "mxwave_glm53::embedding_rows": {
+            "calls": 9,
+            "median_us": 68.064,
+            "maximum_us": 194.464,
+            "sum_us": 783.603
+          },
+          "mxwave_glm53::kda_linear": {
+            "calls": 612,
+            "median_us": 130.2165,
+            "maximum_us": 2718.422,
+            "sum_us": 91612.764
+          },
+          "mxwave_zipserv::linear": {
+            "calls": 485,
+            "median_us": 69.2,
+            "maximum_us": 828.562,
+            "sum_us": 36351.261
+          }
+        },
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            2,
+            0,
+            2
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 91730.772,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 3853.397,
+              "residual_us": 1797.5014921875
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 65.504,
+              "residual_us": 57.055757812500005
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 8341.274,
+              "residual_us": 3344.06745703125
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 1564.297,
+              "residual_us": 1088.0401640625
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 68,
+              "inclusive_us": 4541.269,
+              "residual_us": 2305.9169492187502
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 443,
+              "sum_us": 1492.673
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 219,
+              "sum_us": 770.802
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 948,
+              "sum_us": 195.904
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 274,
+              "sum_us": 237.505
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42,
+              "sum_us": 22.4
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178,
+              "sum_us": 123.056
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 253,
+              "sum_us": 344.849
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11,
+              "sum_us": 49.712
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1029,
+              "sum_us": 4189.708
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 217,
+              "sum_us": 907.456
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 91,
+              "sum_us": 586.624
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 264,
+              "sum_us": 21.728
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 20.064
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 373,
+              "sum_us": 82.961
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.064
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84,
+              "sum_us": 65.28
+            }
+          },
+          "kda_gpu_helpers": {
+            "gpu_memcpy/aten::copy_": {
+              "calls": 68,
+              "sum_us": 73.24799999999999,
+              "bytes": 1114112
+            },
+            "kernel/aten::copy_": {
+              "calls": 34,
+              "sum_us": 71.83999999999999,
+              "bytes": 0
+            },
+            "kernel/aten::fill_": {
+              "calls": 68,
+              "sum_us": 55.03999999999998,
+              "bytes": 0
+            }
+          }
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 6,
+          "median_cpu_range_us": 98339.378,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90.0,
+              "inclusive_us": 4168.719999999999,
+              "residual_us": 2044.7332841796874
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1.0,
+              "inclusive_us": 66.9925,
+              "residual_us": 57.56067089843749
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68.0,
+              "inclusive_us": 9425.890500000001,
+              "residual_us": 3910.80705078125
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84.0,
+              "inclusive_us": 1537.978,
+              "residual_us": 1064.5486298828125
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 68.0,
+              "inclusive_us": 4991.932,
+              "residual_us": 2465.81017578125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 443.0,
+              "sum_us": 1717.621
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 219.0,
+              "sum_us": 830.1610000000001
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 948.0,
+              "sum_us": 186.6005
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 489.5,
+              "sum_us": 353.225
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42.0,
+              "sum_us": 21.912
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178.0,
+              "sum_us": 119.6725
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 253.0,
+              "sum_us": 339.8645
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11.0,
+              "sum_us": 50.6165
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1029.0,
+              "sum_us": 4342.030500000001
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 239.0,
+              "sum_us": 1013.9785
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 91.0,
+              "sum_us": 644.4404999999999
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 264.0,
+              "sum_us": 24.32
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3.0,
+              "sum_us": 20.96
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 373.0,
+              "sum_us": 81.408
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1.0,
+              "sum_us": 2.208
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84.0,
+              "sum_us": 64.432
+            }
+          },
+          "kda_gpu_helpers": {
+            "gpu_memcpy/aten::copy_": {
+              "calls": 68.0,
+              "sum_us": 64.38399999999999,
+              "bytes": 2228224.0
+            },
+            "kernel/aten::copy_": {
+              "calls": 34.0,
+              "sum_us": 72.352,
+              "bytes": 0.0
+            },
+            "kernel/aten::fill_": {
+              "calls": 68.0,
+              "sum_us": 61.583999999999975,
+              "bytes": 0.0
+            }
+          }
+        },
+        {
+          "shape": [
+            512,
+            2,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 259053.37,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 24168.517,
+              "residual_us": 2381.3949296875007
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 92.384,
+              "residual_us": 81.103970703125
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 16163.795,
+              "residual_us": 5991.808916015625
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 8234.837,
+              "residual_us": 1202.215173828125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 338,
+              "sum_us": 31344.805
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 624,
+              "sum_us": 65632.824
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 833,
+              "sum_us": 166.449
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 26.256
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 21,
+              "sum_us": 23.599999999999998
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 108,
+              "sum_us": 91.008
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 310,
+              "sum_us": 524.832
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 65.408
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 965,
+              "sum_us": 47690.293
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 144,
+              "sum_us": 3858.23
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 625.585
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.72
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 268,
+              "sum_us": 25.52
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 26.192
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 309,
+              "sum_us": 88.416
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.176
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            514,
+            2,
+            2
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 573532.281,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 4990.012,
+              "residual_us": 2393.280798828125
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 99.568,
+              "residual_us": 86.41614453125
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 9576.36,
+              "residual_us": 6475.355849609375
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 83970.965,
+              "residual_us": 1328.8966406250015
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 338,
+              "sum_us": 31240.924
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 749,
+              "sum_us": 18234.75
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 833,
+              "sum_us": 190.657
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 48.64
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 34,
+              "sum_us": 37.616
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 182,
+              "sum_us": 151.824
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 17,
+              "sum_us": 22.176000000000002
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 400,
+              "sum_us": 723.541
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 100.4
+            },
+            "cuda_runtime/cudaGetFuncBySymbol": {
+              "calls": 91,
+              "sum_us": 64.624
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1139,
+              "sum_us": 144365.681
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 53,
+              "sum_us": 480.673
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 68,
+              "sum_us": 259207.708
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 10.096
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 268,
+              "sum_us": 26.576
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 45.04
+            },
+            "cuda_runtime/cudaStreamGetCaptureInfo": {
+              "calls": 182,
+              "sum_us": 70.352
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 127,
+              "sum_us": 40.464
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.384
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 182,
+              "sum_us": 134.736
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "control_rank1_b1": {
+      "path": "rank1/traces-stock/dp0_pp0_tp1_dcp0_ep1_rank1.1792233195874364530.pt.trace.json.gz",
+      "sha256": "131f043521169dc4c2f756e2ff9ac78c2da1baabfdb77f2c568662666f9d4a19",
+      "complete_forward_count": 4,
+      "shape_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 57687.616,
+          "median_kernel_union_all_streams_us": 56210.8125,
+          "median_uncovered_all_streams_us": 1501.823933593747,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 169.47199999999998
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 36630.416999999994
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 2449.1560000000004
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4976.329000000001
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1368.5140000000008
+            },
+            "other": {
+              "median_calls": 466,
+              "median_sum_us": 1609.188
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 236.76799999999994
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 604.9279999999999
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 11290.804000000004
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 2189.2509999999993
+            }
+          }
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 359830.388,
+          "median_kernel_union_all_streams_us": 351151.5495605469,
+          "median_uncovered_all_streams_us": 8678.838439453102,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 5209.7699999999995
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 49664.17400000002
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 17324.961999999996
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 11473.431999999997
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 9892.854000000005
+            },
+            "other": {
+              "median_calls": 723,
+              "median_sum_us": 3516.681000000002
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 224.449
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 1864.291
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 246975.324
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 4947.373000000001
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 177.792
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 42,
+        "sum_us": 177.792
+      },
+      "top_kernels": [
+        {
+          "name": "void marlin_moe_wna16::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 336,
+          "sum_us": 281001.15299999993
+        },
+        {
+          "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 6, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+          "group": "bf16_dense_linear",
+          "calls": 303,
+          "sum_us": 91964.68899999997
+        },
+        {
+          "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+          "group": "bf16_dense_linear",
+          "calls": 355,
+          "sum_us": 26887.995
+        },
+        {
+          "name": "nvjet_sm121_tst_mma_192x144x64_2_48x72x64_tmaAB_bz_TNNN",
+          "group": "bf16_dense_linear",
+          "calls": 34,
+          "sum_us": 25531.446999999993
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 132,
+        "sum_us": 587.5850000000003,
+        "bytes": 74330012
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 394,
+          "sum_us": 22817.316
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 608,
+          "sum_us": 24576.78
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 892,
+          "sum_us": 144.88
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 44.832
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 340,
+          "sum_us": 9.504
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 49,
+          "sum_us": 50.464
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 145,
+          "sum_us": 135.28
+        },
+        "cuda_runtime/cudaFuncGetAttributes": {
+          "calls": 252,
+          "sum_us": 408.064
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 332,
+          "sum_us": 381.777
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 340,
+          "sum_us": 47.952
+        },
+        "cuda_runtime/cudaGraphLaunch": {
+          "calls": 3,
+          "sum_us": 2967.751
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 1049,
+          "sum_us": 41796.549
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 170,
+          "sum_us": 1023.632
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 132,
+          "sum_us": 296369.105
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 1,
+          "sum_us": 2.992
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 184,
+          "sum_us": 9.28
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 24,
+          "sum_us": 59.04
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 389,
+          "sum_us": 87.008
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 4,
+          "sum_us": 7.488
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 4,
+          "sum_us": 9.52
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 2211,
+            "gpu_duration_sum_us": 8740.180999999995
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 368,
+            "gpu_duration_sum_us": 24790.480999999963
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 813,
+            "gpu_duration_sum_us": 14042.62199999996
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 1024,
+            "gpu_duration_sum_us": 155198.32900000003
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 292,
+            "gpu_duration_sum_us": 20104.366999999984
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 339,
+            "gpu_duration_sum_us": 3716.2620000000047
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 156,
+            "gpu_duration_sum_us": 5737.515999999998
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 450,
+            "gpu_duration_sum_us": 26441.655999999995
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 885,
+            "gpu_duration_sum_us": 11479.291000000017
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 336,
+            "gpu_duration_sum_us": 281001.15299999993
+          }
+        ],
+        "attribution_evidence": {},
+        "cpu_custom_ops": {},
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_cpu_range_us": 61815.504,
+          "custom_scopes": {},
+          "apis": {
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 7,
+              "sum_us": 40.496
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1,
+              "sum_us": 0.4
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 2,
+              "sum_us": 2.176
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 3,
+              "sum_us": 1.68
+            },
+            "cuda_runtime/cudaGraphLaunch": {
+              "calls": 1,
+              "sum_us": 940.866
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 10,
+              "sum_us": 50.32
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 20,
+              "sum_us": 59520.186
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 10.384
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 11,
+              "sum_us": 1.744
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.872
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 185244.366,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 17009.533,
+              "residual_us": 1810.1094160156256
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 3777.7690000000002,
+              "residual_us": 1528.669634765625
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 394,
+              "sum_us": 22817.316
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 567,
+              "sum_us": 22407.975000000002
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 889,
+              "sum_us": 143.648
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 9.504
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 19,
+              "sum_us": 19.2
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 108,
+              "sum_us": 89.616
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 408.064
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 332,
+              "sum_us": 381.777
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 47.952
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 987,
+              "sum_us": 40494.289
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 166,
+              "sum_us": 990.928
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 494.802
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.992
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 184,
+              "sum_us": 9.28
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 20.672
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 308,
+              "sum_us": 73.792
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.08
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "control_rank1_c4": {
+      "path": "rank1/traces-stock/dp0_pp0_tp1_dcp0_ep1_rank1.1792233296761416053.pt.trace.json.gz",
+      "sha256": "1e423d13112eb202fb5d4de45d1b080999e485b5b2504d22a4fe8a138b27bce2",
+      "complete_forward_count": 10,
+      "shape_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 61388.081,
+          "median_kernel_union_all_streams_us": 58842.5390625,
+          "median_uncovered_all_streams_us": 2545.5419374999983,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 209.569
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 39280.894999999975
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 1192.8340000000003
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4795.594000000002
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1703.2340000000006
+            },
+            "other": {
+              "median_calls": 466,
+              "median_sum_us": 1592.709000000002
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 303.71199999999993
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 717.1530000000004
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 11721.881999999998
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 1709.0910000000001
+            }
+          }
+        },
+        {
+          "shape": [
+            3,
+            0,
+            3
+          ],
+          "samples": 2,
+          "median_gpu_range_us": 88597.001,
+          "median_kernel_union_all_streams_us": 76161.20861816406,
+          "median_uncovered_all_streams_us": 12435.792381835941,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22.0,
+              "median_sum_us": 531.633
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308.0,
+              "median_sum_us": 35467.92599999999
+            },
+            "communication": {
+              "median_calls": 91.0,
+              "median_sum_us": 1025.0580000000002
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90.0,
+              "median_sum_us": 5246.794000000002
+            },
+            "mhc": {
+              "median_calls": 181.0,
+              "median_sum_us": 2103.0115000000005
+            },
+            "other": {
+              "median_calls": 673.0,
+              "median_sum_us": 1849.5899999999974
+            },
+            "other_gemm": {
+              "median_calls": 23.0,
+              "median_sum_us": 1079.155
+            },
+            "recurrent": {
+              "median_calls": 79.0,
+              "median_sum_us": 1466.1474999999998
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84.0,
+              "median_sum_us": 30268.2485
+            },
+            "routing_activation": {
+              "median_calls": 224.0,
+              "median_sum_us": 1421.0425000000007
+            },
+            "stable_expert_order": {
+              "median_calls": 42.0,
+              "median_sum_us": 129.04
+            }
+          }
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 5,
+          "median_gpu_range_us": 90589.246,
+          "median_kernel_union_all_streams_us": 85416.71850585938,
+          "median_uncovered_all_streams_us": 5069.167494140624,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 369.058
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 32768.75800000003
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 8997.079
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 3977.901999999999
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1501.413
+            },
+            "other": {
+              "median_calls": 695,
+              "median_sum_us": 1311.6220000000008
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 810.754
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 1609.604
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 35563.284000000014
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 994.8819999999998
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 111.424
+            }
+          }
+        },
+        {
+          "shape": [
+            256,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 381416.479,
+          "median_kernel_union_all_streams_us": 373112.99609375,
+          "median_uncovered_all_streams_us": 8303.482906249992,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 5895.883999999999
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 52602.262999999984
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 10072.753
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 10955.612000000003
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 10765.657999999998
+            },
+            "other": {
+              "median_calls": 807,
+              "median_sum_us": 5902.261000000009
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 234.46399999999997
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 2205.0630000000006
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 272041.94700000004
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 5798.035000000003
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 314.97599999999994
+            }
+          }
+        },
+        {
+          "shape": [
+            769,
+            3,
+            1
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 604381.541,
+          "median_kernel_union_all_streams_us": 595235.4528808594,
+          "median_uncovered_all_streams_us": 9146.088119140593,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 21255.569000000003
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 72044.61899999998
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 47095.53599999998
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 26435.038
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 38142.90700000004
+            },
+            "other": {
+              "median_calls": 787,
+              "median_sum_us": 10009.42900000002
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 587.649
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 6797.1990000000005
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 356467.0580000002
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 16306.345999999983
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 193.34500000000006
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 378,
+        "sum_us": 1286.5310000000013
+      },
+      "top_kernels": [
+        {
+          "name": "void marlin_moe_wna16::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 756,
+          "sum_us": 521632.76399999973
+        },
+        {
+          "name": "void marlin_moe_wna16::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 2, 8, 4, false, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 84,
+          "sum_us": 356467.0580000002
+        },
+        {
+          "name": "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8::Params)",
+          "group": "bf16_dense_linear",
+          "calls": 1150,
+          "sum_us": 200539.1530000001
+        },
+        {
+          "name": "kernel_cutlass_kernel_b12xcommroce_oneshot_cute_RoceOneshotLaunch_object_at__ptri32gmemalign16_ptri32gmemalign16_____________0",
+          "group": "communication",
+          "calls": 819,
+          "sum_us": 52437.64900000005
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 344,
+        "sum_us": 2746.215999999998,
+        "bytes": 294258292
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 4283,
+          "sum_us": 19686.383
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 2932,
+          "sum_us": 61984.832
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 8809,
+          "sum_us": 1658.962
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 45.312
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 680,
+          "sum_us": 60.736
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 8843,
+          "sum_us": 4967.065
+        },
+        "cuda_runtime/cudaEventRecord": {
+          "calls": 518,
+          "sum_us": 371.572
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 1524,
+          "sum_us": 973.554
+        },
+        "cuda_runtime/cudaFuncGetAttributes": {
+          "calls": 2268,
+          "sum_us": 3763.896
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 1869,
+          "sum_us": 2225.127
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 680,
+          "sum_us": 155.392
+        },
+        "cuda_runtime/cudaGetFuncBySymbol": {
+          "calls": 91,
+          "sum_us": 52.064
+        },
+        "cuda_runtime/cudaGraphLaunch": {
+          "calls": 1,
+          "sum_us": 1214.979
+        },
+        "cuda_runtime/cudaLaunchCooperativeKernel": {
+          "calls": 77,
+          "sum_us": 1163.153
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 8061,
+          "sum_us": 209032.809
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 1942,
+          "sum_us": 58924.309
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 344,
+          "sum_us": 556866.6849999999
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 2,
+          "sum_us": 12.8
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 1628,
+          "sum_us": 158.594
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 54,
+          "sum_us": 223.408
+        },
+        "cuda_runtime/cudaStreamGetCaptureInfo": {
+          "calls": 182,
+          "sum_us": 64.128
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 3333,
+          "sum_us": 729.522
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 10,
+          "sum_us": 23.008
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 864,
+          "sum_us": 568.002
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 7379,
+            "gpu_duration_sum_us": 29596.750999999927
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 920,
+            "gpu_duration_sum_us": 100900.96300000009
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 1988,
+            "gpu_duration_sum_us": 62389.89999999948
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 702,
+            "gpu_duration_sum_us": 154166.82700000008
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 2606,
+            "gpu_duration_sum_us": 282681.7130000002
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 836,
+            "gpu_duration_sum_us": 20797.740000000034
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 356,
+            "gpu_duration_sum_us": 30321.541999999994
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 990,
+            "gpu_duration_sum_us": 73180.53300000005
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 2229,
+            "gpu_duration_sum_us": 31958.318999999938
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 840,
+            "gpu_duration_sum_us": 878099.8220000006
+          }
+        ],
+        "attribution_evidence": {},
+        "cpu_custom_ops": {},
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 207815.394,
+          "custom_scopes": {},
+          "apis": {
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 7,
+              "sum_us": 1704.612
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1,
+              "sum_us": 1.568
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 12,
+              "sum_us": 8.128
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 3,
+              "sum_us": 6.976
+            },
+            "cuda_runtime/cudaGraphLaunch": {
+              "calls": 1,
+              "sum_us": 1214.979
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 10,
+              "sum_us": 2322.1969999999997
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 20,
+              "sum_us": 200399.696
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 24.208000000000002
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 11,
+              "sum_us": 1.8399999999999999
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.272
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            3,
+            0,
+            3
+          ],
+          "samples": 2,
+          "median_cpu_range_us": 90383.9695,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90.0,
+              "inclusive_us": 3525.2985,
+              "residual_us": 1503.0373916015624
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84.0,
+              "inclusive_us": 3873.1285,
+              "residual_us": 1417.5597744140623
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 511.0,
+              "sum_us": 2294.4445
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 218.0,
+              "sum_us": 975.4739999999999
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1016.0,
+              "sum_us": 188.736
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 450.5,
+              "sum_us": 324.76800000000003
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42.0,
+              "sum_us": 24.0405
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178.0,
+              "sum_us": 104.488
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252.0,
+              "sum_us": 402.48900000000003
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 185.0,
+              "sum_us": 187.0725
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11.0,
+              "sum_us": 428.77650000000006
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 860.0,
+              "sum_us": 3887.6485000000002
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 217.0,
+              "sum_us": 1065.268
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 23.0,
+              "sum_us": 351.77700000000004
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 180.0,
+              "sum_us": 17.92
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3.0,
+              "sum_us": 19.952
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 372.0,
+              "sum_us": 82.8565
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1.0,
+              "sum_us": 2.216
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84.0,
+              "sum_us": 53.896
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 5,
+          "median_cpu_range_us": 92788.92,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 3417.661,
+              "residual_us": 1467.955677734375
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 3845.259,
+              "residual_us": 1506.421841796875
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 511,
+              "sum_us": 2066.084
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 218,
+              "sum_us": 968.753
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1016,
+              "sum_us": 179.952
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 1193,
+              "sum_us": 619.424
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42,
+              "sum_us": 23.584
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178,
+              "sum_us": 103.456
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 415.248
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 185,
+              "sum_us": 184.833
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11,
+              "sum_us": 57.456
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 860,
+              "sum_us": 3911.946
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 239,
+              "sum_us": 1099.622
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 23,
+              "sum_us": 4196.524
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 180,
+              "sum_us": 16.242
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 22.607999999999997
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 372,
+              "sum_us": 81.568
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.16
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84,
+              "sum_us": 52.624
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            256,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 178270.109,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 3847.962,
+              "residual_us": 1573.664392578125
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 9559.351,
+              "residual_us": 2081.7777578125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 360,
+              "sum_us": 1772.035
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 601,
+              "sum_us": 3623.06
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 855,
+              "sum_us": 167.26500000000001
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 34.128
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 2202,
+              "sum_us": 1158.386
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42,
+              "sum_us": 69.696
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 192,
+              "sum_us": 128.976
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 462.337
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 242,
+              "sum_us": 419.968
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 81.184
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 897,
+              "sum_us": 17326.33
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 250,
+              "sum_us": 45607.098
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 572.418
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.56
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 184,
+              "sum_us": 20.688
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 20.752
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 476,
+              "sum_us": 104.864
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.4
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84,
+              "sum_us": 71.345
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            769,
+            3,
+            1
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 375446.887,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 74361.117,
+              "residual_us": 2418.83575
+            },
+            "_moe_C::moe_wna16_marlin_gemm": {
+              "calls": 84,
+              "inclusive_us": 4677.641,
+              "residual_us": 2023.0326015625
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 338,
+              "sum_us": 2949.689
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 748,
+              "sum_us": 45323.652
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 833,
+              "sum_us": 178.592
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 26.608
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 25,
+              "sum_us": 19.537
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 182,
+              "sum_us": 137.138
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 17,
+              "sum_us": 11.44
+            },
+            "cuda_runtime/cudaFuncGetAttributes": {
+              "calls": 252,
+              "sum_us": 433.584
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 332,
+              "sum_us": 503.505
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 74.208
+            },
+            "cuda_runtime/cudaGetFuncBySymbol": {
+              "calls": 91,
+              "sum_us": 52.064
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1062,
+              "sum_us": 157415.262
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 53,
+              "sum_us": 5624.638
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 79,
+              "sum_us": 59097.174999999996
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 10.24
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 184,
+              "sum_us": 18.24
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 34.976
+            },
+            "cuda_runtime/cudaStreamGetCaptureInfo": {
+              "calls": 182,
+              "sum_us": 64.128
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 126,
+              "sum_us": 30.992
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.208
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 182,
+              "sum_us": 109.424
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "candidate_rank1_b1": {
+      "path": "rank1/traces-candidate/dp0_pp0_tp1_dcp0_ep1_rank1.1792234255596801351.pt.trace.json.gz",
+      "sha256": "5173839c95815ab7a3d7ff235feb20dfb7e5c9e9d087826bba5c0c3458d8ba9a",
+      "complete_forward_count": 4,
+      "shape_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_gpu_range_us": 56466.078,
+          "median_kernel_union_all_streams_us": 54834.395751953125,
+          "median_uncovered_all_streams_us": 1631.6822480468763,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 170.97699999999998
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 20711.272000000008
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 9637.041000000001
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 8080.731999999998
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 8.128
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4890.793000000001
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1366.2429999999997
+            },
+            "other": {
+              "median_calls": 601,
+              "median_sum_us": 1699.1090000000015
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 233.28199999999998
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 611.9380000000001
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 10575.094
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 2191.5250000000005
+            }
+          }
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 405910.843,
+          "median_kernel_union_all_streams_us": 396768.7370605469,
+          "median_uncovered_all_streams_us": 9142.105939453118,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 5333.738
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 52699.445999999996
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 35977.71000000001
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 31824.742
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 20.352
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 11437.563999999998
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 9400.693000000005
+            },
+            "other": {
+              "median_calls": 722,
+              "median_sum_us": 3526.058000000007
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 215.48799999999997
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 1885.2479999999996
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 239116.873
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 5245.418999999996
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 180.95999999999998
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 42,
+        "sum_us": 180.95999999999998
+      },
+      "top_kernels": [
+        {
+          "name": "void mxwave_grouped_sparse::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 336,
+          "sum_us": 270876.20200000005
+        },
+        {
+          "name": "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)",
+          "group": "bf16_compressed_linear",
+          "calls": 208,
+          "sum_us": 72235.06500000003
+        },
+        {
+          "name": "kernel_cutlass_kernel_b12xcommroce_oneshot_cute_RoceOneshotLaunch_object_at__ptri32gmemalign16_ptri32gmemalign16_____________0",
+          "group": "communication",
+          "calls": 364,
+          "sum_us": 52536.702999999994
+        },
+        {
+          "name": "void BF16TripleBitmap_Decompress_Kernel<TilingConfigBF16TripleBitmap<4, 1, 4, 0> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16*, int, int)",
+          "group": "bf16_weight_decode",
+          "calls": 68,
+          "sum_us": 35977.71000000001
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 136,
+        "sum_us": 621.3149999999995,
+        "bytes": 74362780
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 394,
+          "sum_us": 36932.662
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 609,
+          "sum_us": 33854.203
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 892,
+          "sum_us": 149.472
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 45.296
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 340,
+          "sum_us": 9.248
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 49,
+          "sum_us": 47.889
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 145,
+          "sum_us": 130.352
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 404,
+          "sum_us": 560.257
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 340,
+          "sum_us": 48.624
+        },
+        "cuda_runtime/cudaGraphLaunch": {
+          "calls": 3,
+          "sum_us": 3276.584
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 1120,
+          "sum_us": 35682.768
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 170,
+          "sum_us": 984.418
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 136,
+          "sum_us": 307230.325
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 1,
+          "sum_us": 2.817
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 268,
+          "sum_us": 13.392
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 24,
+          "sum_us": 60.368
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 390,
+          "sum_us": 107.008
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 4,
+          "sum_us": 6.64
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 4,
+          "sum_us": 8.736
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 2615,
+            "gpu_duration_sum_us": 8991.47700000001
+          },
+          {
+            "component": "embedding",
+            "kernel_group": "embedding_lookup",
+            "calls": 4,
+            "gpu_duration_sum_us": 48.001000000000005
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 368,
+            "gpu_duration_sum_us": 52826.175999999985
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 813,
+            "gpu_duration_sum_us": 13670.396999999972
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_weight_decode",
+            "calls": 68,
+            "gpu_duration_sum_us": 35977.71000000001
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 34,
+            "gpu_duration_sum_us": 27287.169000000005
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 258,
+            "gpu_duration_sum_us": 10968.983000000004
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 339,
+            "gpu_duration_sum_us": 3773.6020000000003
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 156,
+            "gpu_duration_sum_us": 5847.179999999999
+          },
+          {
+            "component": "kda",
+            "kernel_group": "other_gemm",
+            "calls": 34,
+            "gpu_duration_sum_us": 10345.561999999998
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 450,
+            "gpu_duration_sum_us": 26123.86499999999
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 885,
+            "gpu_duration_sum_us": 11764.148000000007
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 782,
+            "gpu_duration_sum_us": 34036.67800000002
+          },
+          {
+            "component": "expert_scales",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 336,
+            "gpu_duration_sum_us": 270876.20200000005
+          },
+          {
+            "component": "head",
+            "kernel_group": "other",
+            "calls": 4,
+            "gpu_duration_sum_us": 14.529
+          },
+          {
+            "component": "head",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 4,
+            "gpu_duration_sum_us": 9966.645
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 204,
+            "gpu_duration_sum_us": 62268.42
+          }
+        ],
+        "attribution_evidence": {
+          "cpu_external_id_and_containment": 145,
+          "distinct_expert_kernel": 336,
+          "distinct_embedding_kernel": 3,
+          "model_only_graph_assumption": 204
+        },
+        "cpu_custom_ops": {
+          "mxwave_glm53::embedding_rows": {
+            "calls": 1,
+            "median_us": 92.433,
+            "maximum_us": 92.433,
+            "sum_us": 92.433
+          },
+          "mxwave_glm53::kda_linear": {
+            "calls": 68,
+            "median_us": 116.688,
+            "maximum_us": 555.601,
+            "sum_us": 10350.257
+          },
+          "mxwave_zipserv::linear": {
+            "calls": 4,
+            "median_us": 95.78399999999999,
+            "maximum_us": 191.856,
+            "sum_us": 469.568
+          }
+        },
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            1,
+            0,
+            1
+          ],
+          "samples": 3,
+          "median_cpu_range_us": 60502.668,
+          "custom_scopes": {},
+          "apis": {
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 7,
+              "sum_us": 36.896
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 1,
+              "sum_us": 0.56
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 2,
+              "sum_us": 1.968
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 3,
+              "sum_us": 1.472
+            },
+            "cuda_runtime/cudaGraphLaunch": {
+              "calls": 1,
+              "sum_us": 1069.747
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 10,
+              "sum_us": 53.744
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 20,
+              "sum_us": 58168.038
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 10.16
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 11,
+              "sum_us": 2.192
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.264
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            258,
+            1,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 214909.056,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 4522.374,
+              "residual_us": 2142.370826171875
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 92.433,
+              "residual_us": 78.65712109375
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 10350.257,
+              "residual_us": 6095.302166015625
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 20959.647,
+              "residual_us": 1159.8869902343754
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 394,
+              "sum_us": 36932.662
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 568,
+              "sum_us": 32079.768
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 889,
+              "sum_us": 147.76
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 9.248
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 19,
+              "sum_us": 19.537
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 108,
+              "sum_us": 81.888
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 400,
+              "sum_us": 547.649
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 48.624
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1054,
+              "sum_us": 33403.356
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 166,
+              "sum_us": 962.626
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 466.818
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.817
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 268,
+              "sum_us": 13.392
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 19.088
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 309,
+              "sum_us": 90.752
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.952
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    },
+    "candidate_rank1_c4": {
+      "path": "rank1/traces-candidate/dp0_pp0_tp1_dcp0_ep1_rank1.1792234351876418366.pt.trace.json.gz",
+      "sha256": "516972f902da2811b4a74181cb9825d6fdfa60918ac93dca197b69fc5d96eb10",
+      "complete_forward_count": 9,
+      "shape_summary": [
+        {
+          "shape": [
+            2,
+            0,
+            2
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 90418.075,
+          "median_kernel_union_all_streams_us": 78172.53637695312,
+          "median_uncovered_all_streams_us": 12245.538623046872,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22,
+              "median_sum_us": 272.864
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68,
+              "median_sum_us": 21325.158999999996
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240,
+              "median_sum_us": 9514.069000000003
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 20818.732999999993
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 8.672
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 4645.227999999998
+            },
+            "mhc": {
+              "median_calls": 181,
+              "median_sum_us": 1466.37
+            },
+            "other": {
+              "median_calls": 774,
+              "median_sum_us": 1150.7250000000008
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 467.45699999999994
+            },
+            "recurrent": {
+              "median_calls": 79,
+              "median_sum_us": 957.4750000000004
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 20260.872999999996
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 957.4109999999994
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 82.97600000000001
+            }
+          }
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 6,
+          "median_gpu_range_us": 97111.065,
+          "median_kernel_union_all_streams_us": 90830.22680664062,
+          "median_uncovered_all_streams_us": 5584.96513574219,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 22.0,
+              "median_sum_us": 378.6245
+            },
+            "bf16_compressed_linear": {
+              "median_calls": 68.0,
+              "median_sum_us": 21682.378000000004
+            },
+            "bf16_dense_linear": {
+              "median_calls": 240.0,
+              "median_sum_us": 9782.609499999999
+            },
+            "communication": {
+              "median_calls": 91.0,
+              "median_sum_us": 16542.756999999998
+            },
+            "embedding_lookup": {
+              "median_calls": 1.0,
+              "median_sum_us": 7.872
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90.0,
+              "median_sum_us": 3917.1450000000004
+            },
+            "mhc": {
+              "median_calls": 181.0,
+              "median_sum_us": 1606.8204999999994
+            },
+            "other": {
+              "median_calls": 796.0,
+              "median_sum_us": 1435.314000000003
+            },
+            "other_gemm": {
+              "median_calls": 23.0,
+              "median_sum_us": 845.6659999999999
+            },
+            "recurrent": {
+              "median_calls": 79.0,
+              "median_sum_us": 1639.8754999999996
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84.0,
+              "median_sum_us": 33851.21749999999
+            },
+            "routing_activation": {
+              "median_calls": 224.0,
+              "median_sum_us": 957.2820000000003
+            },
+            "stable_expert_order": {
+              "median_calls": 42.0,
+              "median_sum_us": 92.176
+            }
+          }
+        },
+        {
+          "shape": [
+            512,
+            2,
+            0
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 521819.339,
+          "median_kernel_union_all_streams_us": 512949.4638671875,
+          "median_uncovered_all_streams_us": 8869.875132812478,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 12696.925000000001
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 64652.377000000015
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 36547.344
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 28093.573000000004
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 31.872
+            },
+            "generic_marlin_linear": {
+              "median_calls": 90,
+              "median_sum_us": 17503.845
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 20285.29800000001
+            },
+            "other": {
+              "median_calls": 701,
+              "median_sum_us": 6219.790999999989
+            },
+            "other_gemm": {
+              "median_calls": 11,
+              "median_sum_us": 406.33799999999997
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 4831.950000000001
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 310877.278
+            },
+            "routing_activation": {
+              "median_calls": 213,
+              "median_sum_us": 10830.325
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 188.03300000000004
+            }
+          }
+        },
+        {
+          "shape": [
+            514,
+            2,
+            2
+          ],
+          "samples": 1,
+          "median_gpu_range_us": 546870.022,
+          "median_kernel_union_all_streams_us": 537737.3308105469,
+          "median_uncovered_all_streams_us": 9132.691189453122,
+          "kernel_groups": {
+            "attention": {
+              "median_calls": 90,
+              "median_sum_us": 15519.366000000005
+            },
+            "bf16_dense_linear": {
+              "median_calls": 308,
+              "median_sum_us": 64106.28500000004
+            },
+            "bf16_weight_decode": {
+              "median_calls": 68,
+              "median_sum_us": 36379.60300000001
+            },
+            "communication": {
+              "median_calls": 91,
+              "median_sum_us": 36833.206000000006
+            },
+            "embedding_lookup": {
+              "median_calls": 1,
+              "median_sum_us": 37.089
+            },
+            "generic_marlin_linear": {
+              "median_calls": 180,
+              "median_sum_us": 20261.133999999995
+            },
+            "mhc": {
+              "median_calls": 270,
+              "median_sum_us": 21329.332
+            },
+            "other": {
+              "median_calls": 796,
+              "median_sum_us": 8905.109000000015
+            },
+            "other_gemm": {
+              "median_calls": 23,
+              "median_sum_us": 441.24899999999985
+            },
+            "recurrent": {
+              "median_calls": 102,
+              "median_sum_us": 4970.614
+            },
+            "routed_expert_gemm": {
+              "median_calls": 84,
+              "median_sum_us": 318199.18200000003
+            },
+            "routing_activation": {
+              "median_calls": 224,
+              "median_sum_us": 10847.991000000007
+            },
+            "stable_expert_order": {
+              "median_calls": 42,
+              "median_sum_us": 199.616
+            }
+          }
+        }
+      ],
+      "canonicalization": {
+        "calls": 378,
+        "sum_us": 1101.4080000000006
+      },
+      "top_kernels": [
+        {
+          "name": "void mxwave_grouped_sparse::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, false, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 168,
+          "sum_us": 629076.4599999998
+        },
+        {
+          "name": "void mxwave_grouped_sparse::Marlin<1125899906909960l, 562949953487106l, 1125899906909960l, 2814749767106568l, 128, 1, 8, 4, true, 4, 2, false>(int4 const*, int4 const*, int4*, int4*, int4 const*, float const*, int4 const*, float const*, int4 const*, int const*, int const*, int const*, float const*, int, bool, int, int, int, int*, bool, bool, bool)",
+          "group": "routed_expert_gemm",
+          "calls": 588,
+          "sum_us": 224087.69499999986
+        },
+        {
+          "name": "void BF16TripleBitmap_MM_Kernel<TilingConfigBF16TripleBitmap<4, 1, 1, 1> >(unsigned char const*, __nv_bfloat16 const*, unsigned long const*, unsigned long const*, unsigned long const*, int const*, int const*, int, int, unsigned char, __nv_bfloat16 const*, __nv_bfloat16*, int, int, int, int)",
+          "group": "bf16_compressed_linear",
+          "calls": 485,
+          "sum_us": 173671.64500000002
+        },
+        {
+          "name": "kernel_cutlass_kernel_b12xcommroce_oneshot_cute_RoceOneshotLaunch_object_at__ptri32gmemalign16_ptri32gmemalign16_____________0",
+          "group": "communication",
+          "calls": 728,
+          "sum_us": 142790.5180000001
+        }
+      ],
+      "whole_trace_gpu_copies": {
+        "calls": 796,
+        "sum_us": 3030.7910000000293,
+        "bytes": 308576380
+      },
+      "whole_trace_apis": {
+        "cuda_driver/cuLaunchKernel": {
+          "calls": 3777,
+          "sum_us": 70322.943
+        },
+        "cuda_driver/cuLaunchKernelEx": {
+          "calls": 2951,
+          "sum_us": 88160.082
+        },
+        "cuda_runtime/cudaDeviceGetAttribute": {
+          "calls": 8302,
+          "sum_us": 1623.188
+        },
+        "cuda_runtime/cudaDeviceSynchronize": {
+          "calls": 1,
+          "sum_us": 48.992
+        },
+        "cuda_runtime/cudaDriverGetVersion": {
+          "calls": 680,
+          "sum_us": 77.12
+        },
+        "cuda_runtime/cudaEventQuery": {
+          "calls": 4827,
+          "sum_us": 3028.744
+        },
+        "cuda_runtime/cudaEventRecord": {
+          "calls": 476,
+          "sum_us": 316.72
+        },
+        "cuda_runtime/cudaEventRecordWithFlags": {
+          "calls": 1432,
+          "sum_us": 1004.05
+        },
+        "cuda_runtime/cudaFuncSetAttribute": {
+          "calls": 2490,
+          "sum_us": 3774.262
+        },
+        "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+          "calls": 680,
+          "sum_us": 191.794
+        },
+        "cuda_runtime/cudaGetFuncBySymbol": {
+          "calls": 91,
+          "sum_us": 65.633
+        },
+        "cuda_runtime/cudaLaunchCooperativeKernel": {
+          "calls": 77,
+          "sum_us": 411.584
+        },
+        "cuda_runtime/cudaLaunchKernel": {
+          "calls": 9388,
+          "sum_us": 221334.63
+        },
+        "cuda_runtime/cudaLaunchKernelExC": {
+          "calls": 1857,
+          "sum_us": 9584.662
+        },
+        "cuda_runtime/cudaMemcpyAsync": {
+          "calls": 796,
+          "sum_us": 510826.43
+        },
+        "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+          "calls": 2,
+          "sum_us": 5.231999999999999
+        },
+        "cuda_runtime/cudaPeekAtLastError": {
+          "calls": 2384,
+          "sum_us": 218.912
+        },
+        "cuda_runtime/cudaPointerGetAttributes": {
+          "calls": 51,
+          "sum_us": 216.049
+        },
+        "cuda_runtime/cudaStreamGetCaptureInfo": {
+          "calls": 182,
+          "sum_us": 67.84
+        },
+        "cuda_runtime/cudaStreamIsCapturing": {
+          "calls": 3153,
+          "sum_us": 865.86
+        },
+        "cuda_runtime/cudaStreamSynchronize": {
+          "calls": 9,
+          "sum_us": 19.856
+        },
+        "cuda_runtime/cudaStreamWaitEvent": {
+          "calls": 779,
+          "sum_us": 570.002
+        }
+      },
+      "adapter_attribution": {
+        "groups": [
+          {
+            "component": "unattributed",
+            "kernel_group": "other",
+            "calls": 6819,
+            "gpu_duration_sum_us": 25406.619999999155
+          },
+          {
+            "component": "embedding",
+            "kernel_group": "embedding_lookup",
+            "calls": 9,
+            "gpu_duration_sum_us": 126.658
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "communication",
+            "calls": 828,
+            "gpu_duration_sum_us": 180976.08000000013
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "mhc",
+            "calls": 1807,
+            "gpu_duration_sum_us": 52656.47999999974
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_weight_decode",
+            "calls": 136,
+            "gpu_duration_sum_us": 72926.947
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 136,
+            "gpu_duration_sum_us": 88651.631
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "other_gemm",
+            "calls": 2055,
+            "gpu_duration_sum_us": 85276.97399999994
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "recurrent",
+            "calls": 757,
+            "gpu_duration_sum_us": 20678.819000000014
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "attention",
+            "calls": 334,
+            "gpu_duration_sum_us": 30827.270999999968
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "generic_marlin_linear",
+            "calls": 900,
+            "gpu_duration_sum_us": 66681.719
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "routing_activation",
+            "calls": 2005,
+            "gpu_duration_sum_us": 28401.14800000007
+          },
+          {
+            "component": "unattributed",
+            "kernel_group": "bf16_dense_linear",
+            "calls": 300,
+            "gpu_duration_sum_us": 29597.056999999986
+          },
+          {
+            "component": "expert_scales",
+            "kernel_group": "routed_expert_gemm",
+            "calls": 756,
+            "gpu_duration_sum_us": 853164.1549999996
+          },
+          {
+            "component": "head",
+            "kernel_group": "other",
+            "calls": 9,
+            "gpu_duration_sum_us": 9.024000000000001
+          },
+          {
+            "component": "head",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 9,
+            "gpu_duration_sum_us": 22125.743
+          },
+          {
+            "component": "kda",
+            "kernel_group": "other",
+            "calls": 714,
+            "gpu_duration_sum_us": 999.5209999999992
+          },
+          {
+            "component": "kda",
+            "kernel_group": "bf16_compressed_linear",
+            "calls": 476,
+            "gpu_duration_sum_us": 151545.9019999999
+          }
+        ],
+        "attribution_evidence": {
+          "cpu_external_id_and_containment": 1489,
+          "distinct_expert_kernel": 756
+        },
+        "cpu_custom_ops": {
+          "mxwave_glm53::embedding_rows": {
+            "calls": 9,
+            "median_us": 66.72,
+            "maximum_us": 95.265,
+            "sum_us": 641.601
+          },
+          "mxwave_glm53::kda_linear": {
+            "calls": 612,
+            "median_us": 128.7605,
+            "maximum_us": 2567.174,
+            "sum_us": 89866.575
+          },
+          "mxwave_zipserv::linear": {
+            "calls": 485,
+            "median_us": 70.257,
+            "maximum_us": 666.049,
+            "sum_us": 35977.507
+          }
+        },
+        "model_only_graphs_assumed": true,
+        "limitations": [
+          "CPU scopes are instrumented, nested and must not be added together.",
+          "GPU duration sums can overlap and are not end-to-end request latency.",
+          "Unattributed work is retained, including ordinary stock head kernels.",
+          "Graph attribution assumes the pinned runner captures model forward only; the vocabulary head is computed separately by the sampler."
+        ]
+      },
+      "host_forward_summary": [
+        {
+          "shape": [
+            2,
+            0,
+            2
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 93814.761,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 4043.625,
+              "residual_us": 1932.483642578125
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 71.616,
+              "residual_us": 62.17605859375
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 8425.187,
+              "residual_us": 3353.220935546875
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 1498.945,
+              "residual_us": 1043.2135546875
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 68,
+              "inclusive_us": 4671.9,
+              "residual_us": 2341.3189453125
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 443,
+              "sum_us": 1464.386
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 219,
+              "sum_us": 766.225
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 948,
+              "sum_us": 186.032
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 269,
+              "sum_us": 234.928
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42,
+              "sum_us": 24.352
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178,
+              "sum_us": 116.049
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 253,
+              "sum_us": 324.048
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11,
+              "sum_us": 48.032000000000004
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1029,
+              "sum_us": 4007.735
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 217,
+              "sum_us": 892.883
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 91,
+              "sum_us": 3071.384
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 264,
+              "sum_us": 22.368
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3,
+              "sum_us": 20.880000000000003
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 373,
+              "sum_us": 100.288
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 1.984
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84,
+              "sum_us": 60.848
+            }
+          },
+          "kda_gpu_helpers": {
+            "gpu_memcpy/aten::copy_": {
+              "calls": 68,
+              "sum_us": 63.26399999999999,
+              "bytes": 1114112
+            },
+            "kernel/aten::copy_": {
+              "calls": 34,
+              "sum_us": 74.30399999999997,
+              "bytes": 0
+            },
+            "kernel/aten::fill_": {
+              "calls": 68,
+              "sum_us": 52.32099999999997,
+              "bytes": 0
+            }
+          }
+        },
+        {
+          "shape": [
+            4,
+            0,
+            4
+          ],
+          "samples": 6,
+          "median_cpu_range_us": 98387.555,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90.0,
+              "inclusive_us": 3656.5855,
+              "residual_us": 1635.157796875
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1.0,
+              "inclusive_us": 63.592,
+              "residual_us": 54.6719560546875
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68.0,
+              "inclusive_us": 9122.6365,
+              "residual_us": 3730.543443359375
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84.0,
+              "inclusive_us": 1549.7869999999998,
+              "residual_us": 1069.3047001953123
+            },
+            "mxwave_zipserv::linear": {
+              "calls": 68.0,
+              "inclusive_us": 4912.1285,
+              "residual_us": 2455.1505166015622
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 443.0,
+              "sum_us": 1706.3625
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 219.0,
+              "sum_us": 926.4815
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 948.0,
+              "sum_us": 181.848
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 526.0,
+              "sum_us": 346.632
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 42.0,
+              "sum_us": 23.728
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 178.0,
+              "sum_us": 115.208
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 253.0,
+              "sum_us": 332.905
+            },
+            "cuda_runtime/cudaLaunchCooperativeKernel": {
+              "calls": 11.0,
+              "sum_us": 60.576
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1029.0,
+              "sum_us": 4347.575
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 239.0,
+              "sum_us": 1055.4344999999998
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 91.0,
+              "sum_us": 2455.559
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 264.0,
+              "sum_us": 25.503999999999998
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 3.0,
+              "sum_us": 20.4725
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 373.0,
+              "sum_us": 97.264
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1.0,
+              "sum_us": 2.088
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 84.0,
+              "sum_us": 59.7845
+            }
+          },
+          "kda_gpu_helpers": {
+            "gpu_memcpy/aten::copy_": {
+              "calls": 68.0,
+              "sum_us": 75.952,
+              "bytes": 2228224.0
+            },
+            "kernel/aten::copy_": {
+              "calls": 34.0,
+              "sum_us": 74.768,
+              "bytes": 0.0
+            },
+            "kernel/aten::fill_": {
+              "calls": 68.0,
+              "sum_us": 62.76799999999997,
+              "bytes": 0.0
+            }
+          }
+        },
+        {
+          "shape": [
+            512,
+            2,
+            0
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 257771.762,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 25387.215,
+              "residual_us": 2099.501865234375
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 88.992,
+              "residual_us": 75.96807421875
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 15970.548,
+              "residual_us": 5866.585353515626
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 8077.108,
+              "residual_us": 1132.6228925781252
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 338,
+              "sum_us": 32232.524
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 624,
+              "sum_us": 65091.834
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 833,
+              "sum_us": 158.945
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 20.848
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 21,
+              "sum_us": 28.512
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 108,
+              "sum_us": 89.009
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 310,
+              "sum_us": 502.753
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 57.776
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 965,
+              "sum_us": 47985.102
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 144,
+              "sum_us": 1826.147
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 64,
+              "sum_us": 587.538
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.848
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 268,
+              "sum_us": 22.896
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 29.36
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 309,
+              "sum_us": 96.753
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.176
+            }
+          },
+          "kda_gpu_helpers": {}
+        },
+        {
+          "shape": [
+            514,
+            2,
+            2
+          ],
+          "samples": 1,
+          "median_cpu_range_us": 573816.428,
+          "custom_scopes": {
+            "_C::marlin_gemm": {
+              "calls": 90,
+              "inclusive_us": 5129.963,
+              "residual_us": 2499.50548046875
+            },
+            "mxwave_glm53::embedding_rows": {
+              "calls": 1,
+              "inclusive_us": 95.265,
+              "residual_us": 82.289169921875
+            },
+            "mxwave_glm53::kda_linear": {
+              "calls": 68,
+              "inclusive_us": 10322.28,
+              "residual_us": 6967.828583984375
+            },
+            "mxwave_glm53::moe_gemm_dispatch": {
+              "calls": 84,
+              "inclusive_us": 82350.445,
+              "residual_us": 1359.1495898437506
+            }
+          },
+          "apis": {
+            "cuda_driver/cuLaunchKernel": {
+              "calls": 338,
+              "sum_us": 26319.376
+            },
+            "cuda_driver/cuLaunchKernelEx": {
+              "calls": 749,
+              "sum_us": 16316.984
+            },
+            "cuda_runtime/cudaDeviceGetAttribute": {
+              "calls": 833,
+              "sum_us": 182.208
+            },
+            "cuda_runtime/cudaDriverGetVersion": {
+              "calls": 340,
+              "sum_us": 56.272
+            },
+            "cuda_runtime/cudaEventQuery": {
+              "calls": 34,
+              "sum_us": 32.128
+            },
+            "cuda_runtime/cudaEventRecord": {
+              "calls": 182,
+              "sum_us": 148.88
+            },
+            "cuda_runtime/cudaEventRecordWithFlags": {
+              "calls": 17,
+              "sum_us": 17.344
+            },
+            "cuda_runtime/cudaFuncSetAttribute": {
+              "calls": 400,
+              "sum_us": 941.344
+            },
+            "cuda_runtime/cudaGetDriverEntryPointByVersion": {
+              "calls": 340,
+              "sum_us": 134.018
+            },
+            "cuda_runtime/cudaGetFuncBySymbol": {
+              "calls": 91,
+              "sum_us": 65.633
+            },
+            "cuda_runtime/cudaLaunchKernel": {
+              "calls": 1139,
+              "sum_us": 141555.888
+            },
+            "cuda_runtime/cudaLaunchKernelExC": {
+              "calls": 53,
+              "sum_us": 504.721
+            },
+            "cuda_runtime/cudaMemcpyAsync": {
+              "calls": 68,
+              "sum_us": 259204.165
+            },
+            "cuda_runtime/cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": {
+              "calls": 1,
+              "sum_us": 2.384
+            },
+            "cuda_runtime/cudaPeekAtLastError": {
+              "calls": 268,
+              "sum_us": 21.44
+            },
+            "cuda_runtime/cudaPointerGetAttributes": {
+              "calls": 15,
+              "sum_us": 53.696
+            },
+            "cuda_runtime/cudaStreamGetCaptureInfo": {
+              "calls": 182,
+              "sum_us": 67.84
+            },
+            "cuda_runtime/cudaStreamIsCapturing": {
+              "calls": 127,
+              "sum_us": 54.448
+            },
+            "cuda_runtime/cudaStreamSynchronize": {
+              "calls": 1,
+              "sum_us": 2.816
+            },
+            "cuda_runtime/cudaStreamWaitEvent": {
+              "calls": 182,
+              "sum_us": 124.177
+            }
+          },
+          "kda_gpu_helpers": {}
+        }
+      ]
+    }
+  },
+  "manifest_sha256": "3bfa9c75d6a281e085698ef9ecc15b301b94fa1c970c9e20a373b201550733f1",
+  "analysis_code_sha256": {
+    "analyze_stable_profiles.py": "3acf085a6433e55aa4ad5a375c6e82513a7ff8a46229997fe5d8b9333a4b78ca",
+    "analyze_dispatch_profiles.py": "78814bd94ab8eb3272e5116b2b25019cf2fbf5ec2c4eaebd9b684909817f6efb",
+    "analyze_full_profiles.py": "490ec06d037499418f400d525ef042c466dd81b957a26b9723c3f05e4fb07cf1",
+    "compare_full_model.py": "06793a3177d81c1f9691305c5a21cd9eed94a5cb4c29d76cc5f6a844ed328fef",
+    "analyze_combined_profiles.py": "67343c6a1399196244661a9463d72b954f68fe02613e985950819ebdc3685eb7"
+  },
+  "limitations": [
+    "Profiled spans are not unprofiled request latency or throughput.",
+    "Kernel category sums can overlap; only interval unions estimate covered time.",
+    "Complete-forward anchors require 84 expert GEMMs on their annotated stream.",
+    "All contained device streams are included; unattributed concurrent work can remain.",
+    "Device-clock timestamps are never compared across the two nodes.",
+    "Shape matches do not prove identical activations or routing between model arms.",
+    "Uncovered time is not proof of a CPU bottleneck or a specific synchronization cause.",
+    "These launches capture batch-one graphs only; concurrent decode is eager."
+  ],
+  "experiment": "stablequalityv1",
+  "timing_jit_review": {
+    "status": "complete",
+    "matches": [],
+    "interpretation": "JIT warning timestamps fall inside the slow trials; warning lacks compilation duration. No trial removed.",
+    "limitations": [
+      "CPU UTC timestamps assume node clocks are synchronized; never align GPU clocks across nodes.",
+      "HTTP access approximates response start, not GPU start."
+    ]
+  },
+  "limits_extra": [
+    "The 258-token profile adds 68 KDA reconstruction kernels per rank (35.98\u201337.23 ms). This is a profiled cost, not a promised removable TTFT delta.",
+    "The concurrent candidate profile schedules different mixed-prefill steps (512/514 versus stock 256/769); compare only shared decode geometry.",
+    "Candidate concurrent forward wall ranges exceed reference under profiling despite unprofiled median throughput parity; profiler overhead and scheduling remain confounders.",
+    "Slow timed trials contain roughly 2.13\u20132.15 s arrival gaps. Available JIT warnings occur during warmup, not those trials; their cause remains unassigned."
+  ]
+}

@@ -1,0 +1,114 @@
+"""Record the launched experiment without claiming unmeasured quality, speed or TTFT gains."""
+from __future__ import annotations
+import datetime,hashlib,json,pathlib,re,shutil
+
+BASE=pathlib.Path(__file__).parent
+WORK=pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+DEST=WORK/'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+
+def main():
+    launch=json.loads((BASE/'launch.json').read_bytes())
+    prep=json.loads((BASE/'preparation.json').read_bytes())
+    store=json.loads((BASE/'storage-relocation-v3.json').read_bytes())
+    assert prep['status']=='passed' and store['status']=='complete'
+    now=datetime.datetime.now(datetime.timezone.utc)
+    stamp=now.strftime('%d October %Y, %H:%M UTC')
+    berlin=now.astimezone(datetime.timezone(datetime.timedelta(hours=2))).strftime('%d October %H:%M Berlin')
+    block=f'''**Input-only FP32 full-model comparison launched, {stamp} / {berlin}:**
+revision `fp32inputmodelv1`, controller **{launch['controller_pid']}**, collector
+**{launch['collector_pid']}**. Both actual CPU serving-CLI preflights pass with
+**229 source bindings**: all 227 verified adapter-parent files unchanged plus
+the model launcher and reviewer. The last direct process check confirms both
+controller and collector live in the idle guard, with GLM still running. The
+independent restoration watchdog must acknowledge before any service pause.
+
+The two fresh loads compare stock with compressed+input-FP32 split 2. Both keep
+native mHC, stable sparse/expert ordering, identical startup preparation, matched
+quality cohorts, graph sizes 1/2/4/8/16 and the existing KV/sequence limits. Input
+physical rows 1/4/8/16 use the new path only in the candidate; output exact16 and
+other input sizes keep their qualified routes. The protocol retains **20 quality
+groups / 46 comparisons, 72 ordinary timing groups, six profiling sessions and
+12 expected worker traces**. KL <=1e-5, absolute mean NLL <=1e-4, at least 5%
+throughput gain and no more than 5% TTFT regression remain unchanged. No new
+model result or promotion is claimed. This decode-oriented kernel is not assumed
+to solve prefill or admission latency; the prior TTFT failures remain failed.
+
+CPU checks pass **781 tests / one GPU skip, Ruff and strict core mypy**. The full
+workload simulation rejects injected grouping, numerical and compilation failures,
+and equal speed still fails. The new trace reviewer rejects the retained old
+68-original-kernel route and requires 34 FP32 inputs, 34 original outputs and
+34 FP32 reducers in each covered M8/M16 decode graph on both candidate ranks.
+The corrected parent verifier's health check remains HTTP 200.
+
+Storage recovery copied and independently hashed **10,457 selected files /
+7,409,394,725 logical bytes** across 14 completed result/extraction directories
+on the worker before removing the selected head copies. Head free space rose
+from **1,503,281,152 to 8,045,416,448 bytes**. Model inputs, native fixtures,
+source snapshots, run protocols and canonical archives remain in place. Restore
+paths/hashes are in `fp32-input-model-v1-storage-relocation-v3.json`; the worker
+backup root is `ROOT/retained-fp32-input-model-v1-v3`. Two initial storage
+preflights stopped before moving files on protected historical cache/trace
+paths; both failures are retained and those protected files remain untouched.
+An initial local freezer assertion also stopped before archive/upload; the
+redundant replacement was fixed and the original builder/plan retained.
+
+Frozen source archive SHA256:
+`{launch['source_archive_sha256']}`.
+Plan SHA256: `{launch['plan_sha256']}`.
+Prepared receipt SHA256: `{launch['prepared_sha256']}`.
+Local preparation and operational evidence: `/private/tmp/mxwave-fp32-input-model-v1`.
+Remote state: `ROOT/quality-model-controller-fp32inputmodelv1.json`;
+results: `ROOT/run-fp32inputmodelv1/results`. Owned three-hour awake lease
+**75605**, exact identity in `awake-lease.json`, stays owned until terminal
+restoration/retention or its timeout. Do not start duplicate model controllers.
+All prior failures remain; CPU-memory improvement, concurrent serving gains,
+TTFT, broader qualification and calibrated roofline remain open. MTP is deferred.
+
+'''
+    p=WORK/'docs/GLM53_HANDOFF.md';t=p.read_text()
+    t=re.sub(r'Snapshot: \*\*.*?\*\*\.',f'Snapshot: **{stamp} / {berlin}**.',t,count=1)
+    pos=t.index('**Completed input-only FP32 integration');t=t[:pos]+block+t[pos:]
+    t=t.replace('**Next:** prepare fresh stock versus compressed+input-FP32 full-model quality,',
+                '**Historical integration-checkpoint plan, now launched above:** prepare fresh\nstock versus compressed+input-FP32 full-model quality,',1)
+    t=t.replace('open. MTP stays deferred. No new model experiment has been launched.',
+                'open. MTP stays deferred. That model experiment is now launched above.',1)
+    p.write_text(t)
+    brief=f'''**{stamp}:** the fresh stock versus input-only FP32 model comparison
+is launched (`fp32inputmodelv1`, controller {launch['controller_pid']}). Both CPU
+serving preflights pass with 229 frozen sources; 781 tests / one GPU skip, Ruff,
+strict mypy and the full CPU protocol simulation pass. It measures C1/C8/C16
+quality, ordinary throughput/TTFT, CPU/CUDA memory and actual kernel traces with
+all original gates retained. No new model result is claimed. Verified relocation
+of completed evidence provides the required disk reserve; model inputs and
+canonical archives are unchanged. See the [handoff](GLM53_HANDOFF.md).
+
+'''
+    for name in ['GLM53_CURRENT_STATE.md','GLM53_SPEED_OPTIONS.md','GLM53_LOSSLESS_RUNTIME_HANDOFF.md',
+                 'GLM53_BF16_KERNEL_DIAGNOSTIC.md','GLM53_OUTPUT_ROW16.md']:
+        p=WORK/'docs'/name;t=p.read_text()
+        if name=='GLM53_CURRENT_STATE.md':
+            t=re.sub(r'Updated \*\*.*?\*\*\.',f'Updated **{stamp}**.',t,count=1)
+            pos=t.index('**18 October 2026, 22:50 UTC')
+        else:pos=t.index('\n\n')+2
+        p.write_text(t[:pos]+brief+t[pos:])
+    p=WORK/'README.md';t=p.read_text();pos=t.index('The input-only FP32 adapter now passes')
+    t=t[:pos]+'''A fresh stock-versus-input-FP32 full-model comparison is now running under the
+unchanged quality, throughput and TTFT gates. The 229-source preparation passes
+both serving-CLI preflights and 781 local tests (one GPU skip). No new model
+speed or quality result is claimed; see the [active handoff](docs/GLM53_HANDOFF.md).
+
+'''+t[pos:];p.write_text(t)
+    for p in sorted(BASE.iterdir()):
+        if p.is_file() and p.suffix in ('.json','.py','.log'):
+            target=DEST/('fp32-input-model-v1-'+p.name+('.txt' if p.suffix=='.py' else ''))
+            assert not target.exists(),target
+            shutil.copyfile(p,target)
+    files=[{'path':p.name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+           for p in sorted(DEST.glob('fp32-input-model-v1-*')) if p.is_file()]
+    (DEST/'fp32-input-model-v1-preparation-retention.json').write_text(json.dumps({
+        'status':'preparation_and_launch_retained','source_files':229,
+        'source_archive_sha256':launch['source_archive_sha256'],'controller_pid':launch['controller_pid'],
+        'model_result_claimed':False,'artifacts':files},indent=2)+'\n')
+    print(json.dumps({'documents_updated':7,'retained_artifacts':len(files),'snapshot':stamp}))
+
+if __name__=='__main__':main()

@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "scope": "Stock head-rank first split; candidate and final archive verification pending",
+  "source_report_sha256": "95a156ad6d4b3498a3f3746ff19cbec8165b89d624b20a7f867cb1d9ff96cccf",
+  "cache_audit_sha256": "a1c53c36a4feb4105331a77b4d3dd9dd8c101fd24c65c598c99d0360ac5dfecc",
+  "rows": [
+    {
+      "sequence": 0,
+      "rows": 1536,
+      "host_elapsed_seconds": 2.4630308960000002,
+      "host_thread_cpu_seconds": 2.222838096,
+      "kernel_union_seconds": 0.9420334018554688,
+      "gap_seconds": 1.989425798095703,
+      "gap_start_epoch_approx": 1792351135.5854514,
+      "gap_end_epoch_approx": 1792351137.5748773,
+      "matching_cache_creation": {
+        "metadata_sha256": "0158d6b956eae88d2b35ba101e5a2fe911c1b6c0580423d9009e855279a5179b",
+        "IR_sha256": "f6eb54171def4268053d37c1f010b8d64c8ae958948fb083c2bb2be379917c5c",
+        "cache_created_epoch": 1792351137.5737972,
+        "seconds_before_gap_end": 0.0010800361633300781,
+        "block": 48,
+        "compiled_sort_width": 2048
+      }
+    },
+    {
+      "sequence": 2,
+      "rows": 518,
+      "host_elapsed_seconds": 1.920406879,
+      "host_thread_cpu_seconds": 1.809887328,
+      "kernel_union_seconds": 0.5290646215820313,
+      "gap_seconds": 1.5390612329101563,
+      "gap_start_epoch_approx": 1792351138.5988746,
+      "gap_end_epoch_approx": 1792351140.1379359,
+      "matching_cache_creation": {
+        "metadata_sha256": "6154a6d56d6f3876ffd6c8126594ad572d542a964326c4d1d21a40522a7affc2",
+        "IR_sha256": "ab162f85fb8fa6e8906b2bd524569f5bce285eaab1b19c0ab78a377ffbdcade9",
+        "cache_created_epoch": 1792351140.136954,
+        "seconds_before_gap_end": 0.0009818077087402344,
+        "block": 16,
+        "compiled_sort_width": 1024
+      }
+    }
+  ],
+  "inference": "First-use compilation of the existing deterministic expert-order kernel explains the two profiled host/GPU gaps. The kernel is enabled in both test arms; this is not evidence about an unmodified upstream stock runtime.",
+  "limits": [
+    "Epoch alignment uses the host annotation anchor and can differ by annotation setup overhead.",
+    "Cache completion is observed; compiler start/end spans were not directly instrumented.",
+    "No startup-warmup intervention has run on GPU yet."
+  ]
+}

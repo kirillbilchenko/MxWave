@@ -1,0 +1,122 @@
+"""Check proposed TTFT options against retained measurements, without new GPU work."""
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import pathlib
+import statistics
+
+BASE = pathlib.Path(__file__).parent
+PARENT = pathlib.Path('/private/tmp/mxwave-warmed-model-v1')
+REPO = pathlib.Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    inventory = json.loads((PARENT / 'evidence/evidence-inventory.json').read_bytes())
+    entries = {e['path']: e for e in inventory['files']}
+    proof = json.loads((PARENT / 'cross-host-verification.json').read_bytes())
+    assert proof['all_decisions_identical'] and proof['measurement_complete']
+    bound = []
+    arms = {}
+    for arm in ['control', 'candidate']:
+        rel = f'results/{arm}-warmed-model.json'
+        path = PARENT / 'evidence' / rel
+        assert sha(path) == entries[rel]['sha256']
+        assert path.stat().st_size == entries[rel]['bytes']
+        bound.append(entries[rel])
+        arms[arm] = json.loads(path.read_bytes())
+        assert len(arms[arm]['timing']) == 36
+        assert all(t['admission']['window_ms'] == 3 for t in arms[arm]['timing'])
+    for rel in ['source/prefill_admission.py', 'source/measure_warmed_model.py']:
+        path = PARENT / 'evidence' / rel
+        assert sha(path) == entries[rel]['sha256']
+        bound.append(entries[rel])
+    c16 = {}
+    arrivals = {}
+    for arm, data in arms.items():
+        trials = [t for t in data['timing'] if t['case'] == 'c16-short']
+        assert sorted(t['repeat'] for t in trials) == list(range(6))
+        rows = []
+        for t in trials:
+            assert len(t['admission']['events']) == 1
+            event = t['admission']['events'][0]
+            assert t['concurrency'] == 16 and t['prompt_tokens'] == 256
+            assert all(r['usage']['prompt_tokens'] == 256 for r in t['measurement']['requests'])
+            rows.append({'repeat': t['repeat'], 'first_cohort_requests': event['final_requests'],
+                         'first_cohort_prompt_tokens': event['final_prompt_tokens'],
+                         'end_reason': event['end_reason'],
+                         'collection_seconds': event['elapsed_seconds'],
+                         'median_TTFT_seconds': t['measurement']['median_ttft_seconds'],
+                         'mean_request_TTFT_seconds': statistics.mean(
+                             r['ttft_seconds'] for r in t['measurement']['requests'])})
+        c16[arm] = {'trials': rows, 'eight_request_first_cohorts': sum(r['first_cohort_requests'] == 8 for r in rows),
+                    'median_trial_TTFT_seconds': statistics.median(r['median_TTFT_seconds'] for r in rows),
+                    'mean_request_TTFT_seconds': statistics.mean(r['mean_request_TTFT_seconds'] for r in rows)}
+        arrivals[arm] = {}
+        for case in ['c1-short', 'c1-long']:
+            trials = [t for t in data['timing'] if t['case'] == case]
+            assert len(trials) == 6
+            for t in trials:
+                request = t['measurement']['requests'][0]
+                assert len(t['measurement']['requests']) == 1 and len(request['arrivals']) == 64
+                assert all(a['tokens'] == 1 for a in request['arrivals'])
+            arrivals[arm][case] = [statistics.median(t['measurement']['requests'][0]['arrivals'][i]['seconds']
+                                                   for t in trials) for i in range(64)]
+    crossover = {}
+    for case in ['c1-short', 'c1-long']:
+        delta = [b-a for a, b in zip(arrivals['control'][case], arrivals['candidate'][case], strict=True)]
+        crossover[case] = {'candidate_minus_stock_median_arrival_seconds': delta,
+                           'first_token_ordinal_with_earlier_median': next((i+1 for i,x in enumerate(delta) if x<0), None),
+                           'first_ordinal_with_all_later_medians_earlier': next(
+                               (i+1 for i in range(64) if all(x<0 for x in delta[i:])), None)}
+    local = pathlib.Path('/private/tmp/mxwave-prefill-decode-v6/local-verification.json')
+    stored = REPO / 'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/prefill-routing-v6-review.json'
+    left, right = json.loads(local.read_bytes()), json.loads(stored.read_bytes())
+    assert left['measurements'] == right['measurements']
+    assert right['cross_host_review_bytes_equal']
+    matrix256 = [m for m in right['measurements'] if m['tokens'] == 256]
+    assert len(matrix256) == 2 and all(not m['component_eligible'] for m in matrix256)
+    cache_budget_per_rank = 2 * 1024**3
+    original_saving = 9.367162
+    report = {'status': 'complete', 'GPU_experiment_run': False,
+              'original_measurements_or_gates_changed': False,
+              'source_sha256': sha(pathlib.Path(__file__)),
+              'parent_archive_sha256': proof['archive_sha256'], 'verified_inputs': bound,
+              'all_72_timed_groups_already_use_3ms': True, 'short_C16': c16,
+              'short_C16_minimum_prefill_forwards': math.ceil(16*256/2048),
+              'short_C16_token_budget': 2048, 'C1_descriptive_crossover': crossover,
+              'row256_component': {'measurements': matrix256, 'review_sha256': sha(stored),
+                                   'independent_review_sha256': sha(local),
+                                   'archive_sha256': right['archive_sha256']},
+              'cache_arithmetic_only': {'per_rank_BF16_cache_budget_bytes': cache_budget_per_rank,
+                                       'ranks': 2, 'original_TP2_CUDA_saving_GiB_rounded': original_saving,
+                                       'remaining_TP2_saving_GiB_if_no_other_changes': original_saving-4,
+                                       'latency_saving_measured': False,
+                                       'newly_resident_cache_bytes_measured': False,
+                                       'assumes_compressed_weights_retained': True},
+              'next_action': 'After the active model review, compare 3 versus 10 ms in both arms with the same token budget; preserve C1 latency controls and all quality gates.',
+              'limits': ['All six trials per arm/case are retained; no admission-based filtering changes the original gate.',
+                         'First-cohort size is observed admission metadata, not a count of all actual model forwards.',
+                         'A longer window cannot place 4096 prompt tokens into a 2048-token forward.',
+                         'The C1 crossover compares medians across six trials, not a universal per-request guarantee.',
+                         'Row256 V6 is a layer-zero/rank-zero component, not a full-model result.',
+                         'A fused route can remove reconstruction while adding GEMM time; no 0-10ms TTFT prediction follows.',
+                         'Cache memory arithmetic is prospective and excludes bookkeeping/alignment changes; latency is unmeasured.',
+                         'The old median-TTFT failure remains failed despite a smaller descriptive mean difference.']}
+    with (BASE / 'ttft-options-review.json').open('x') as stream:
+        json.dump(report, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    print(json.dumps({'status': report['status'], 'all_72_timed_groups_already_use_3ms': True,
+                      'first_cohort_full_counts': {a:d['eight_request_first_cohorts'] for a,d in c16.items()},
+                      'C1_crossover_ordinals': {c:d['first_ordinal_with_all_later_medians_earlier'] for c,d in crossover.items()},
+                      'row256_qualified': False, 'minimum_C16_prefill_forwards': 2}))
+
+
+if __name__ == '__main__':
+    main()

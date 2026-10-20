@@ -1,0 +1,108 @@
+{
+  "status": "passed",
+  "archive_sha256": "706347d0e2d098f10388ff152d35b3a7547dda59229e36a4b8586a4a81c6ff69",
+  "source_bindings": 186,
+  "independent_Spark_Mac_decisions_identical": true,
+  "all_C1_prefill_and_decode_vocabulary_rows_bitwise_equal": true,
+  "all_C8_contexts_already_differ_at_first_prefill_output": true,
+  "stock_only_no_compression": true,
+  "C8_admission": [
+    {
+      "label": "stock-stable-c8-r0",
+      "new_idle_collection_events": [
+        {
+          "window_ms": 3.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 258,
+          "final_requests": 3,
+          "final_prompt_tokens": 774,
+          "additional_messages": 2,
+          "elapsed_seconds": 0.003066866018343717,
+          "end_reason": "deadline",
+          "deadline_extended": false
+        },
+        {
+          "window_ms": 3.0,
+          "initial_requests": 2,
+          "initial_prompt_tokens": 516,
+          "final_requests": 8,
+          "final_prompt_tokens": 2064,
+          "additional_messages": 6,
+          "elapsed_seconds": 0.0011615899857133627,
+          "end_reason": "token_budget_full",
+          "deadline_extended": false
+        }
+      ],
+      "first_collected_requests": 3,
+      "counts_are_admission_not_actual_forward_shapes": true
+    },
+    {
+      "label": "stock-stable-c8-r1",
+      "new_idle_collection_events": [
+        {
+          "window_ms": 3.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 258,
+          "final_requests": 1,
+          "final_prompt_tokens": 258,
+          "additional_messages": 0,
+          "elapsed_seconds": 0.0031894579879008234,
+          "end_reason": "deadline",
+          "deadline_extended": false
+        },
+        {
+          "window_ms": 3.0,
+          "initial_requests": 2,
+          "initial_prompt_tokens": 516,
+          "final_requests": 8,
+          "final_prompt_tokens": 2064,
+          "additional_messages": 6,
+          "elapsed_seconds": 0.0020669230143539608,
+          "end_reason": "token_budget_full",
+          "deadline_extended": false
+        }
+      ],
+      "first_collected_requests": 1,
+      "counts_are_admission_not_actual_forward_shapes": true
+    },
+    {
+      "label": "stock-stable-c8-r2",
+      "new_idle_collection_events": [
+        {
+          "window_ms": 3.0,
+          "initial_requests": 3,
+          "initial_prompt_tokens": 774,
+          "final_requests": 8,
+          "final_prompt_tokens": 2064,
+          "additional_messages": 5,
+          "elapsed_seconds": 0.0005817310302518308,
+          "end_reason": "token_budget_full",
+          "deadline_extended": false
+        },
+        {
+          "window_ms": 3.0,
+          "initial_requests": 1,
+          "initial_prompt_tokens": 258,
+          "final_requests": 8,
+          "final_prompt_tokens": 2064,
+          "additional_messages": 7,
+          "elapsed_seconds": 0.0017453369800932705,
+          "end_reason": "token_budget_full",
+          "deadline_extended": false
+        }
+      ],
+      "first_collected_requests": 8,
+      "counts_are_admission_not_actual_forward_shapes": true
+    }
+  ],
+  "C8_first_idle_collection_requests_by_run": [
+    3,
+    1,
+    8
+  ],
+  "actual_quality_forward_shapes_recorded": false,
+  "cause_of_remaining_C8_drift_proven": false,
+  "hypothesis": "Different prefill batching changes numerical kernel or reduction paths.",
+  "next_diagnostic": "Record actual prefill forward shapes and row membership, then repeat a fixed C8 cohort before locating the first differing operation.",
+  "C8_KL_gate_relaxed": false
+}

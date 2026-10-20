@@ -1,0 +1,448 @@
+{
+  "status": "complete",
+  "decision": "do_not_integrate_tested_native_configuration",
+  "cases": [
+    {
+      "tokens": 1,
+      "median_current_ms": 0.24606239795684814,
+      "median_native_ms": 1.035762405395508,
+      "control_half_ratio": 1.0148360436782904,
+      "control_stable": true,
+      "time_reduction_fraction": -3.2093485798555417,
+      "layer_time_gate_passed": false,
+      "native_extra_time_percent": 320.9348579855542,
+      "reference_reproducer_bitwise_exact": true,
+      "current_bitwise_repeats": 20,
+      "native_bitwise_repeats": 0,
+      "repeats_per_arm": 20,
+      "native_vs_current": {
+        "finite": true,
+        "changed_values": 3933,
+        "values": 4096,
+        "max_abs": 0.0057373046875,
+        "relative_l2": 0.0408428683630148,
+        "rms_error": 0.0014982686821738795,
+        "reference_rms": 0.03668372820579454
+      },
+      "native_repeat_relative_l2": {
+        "minimum": 0.0015536585908824646,
+        "median": 0.0020272191902713293,
+        "maximum": 0.0038915728401863127
+      },
+      "native_repeats_vs_current_relative_l2": {
+        "minimum": 0.0407958117261702,
+        "maximum": 0.040900337439495185
+      },
+      "boundary_telemetry": {
+        "current": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2418,
+            2457
+          ],
+          "temperature_C": [
+            48,
+            49
+          ],
+          "power_W": [
+            14.52,
+            22.92
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        },
+        "native": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2418,
+            2457
+          ],
+          "temperature_C": [
+            48,
+            49
+          ],
+          "power_W": [
+            14.89,
+            23.05
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        }
+      },
+      "profiles": {
+        "current": {
+          "scale_reconstruction_ms": 0.0,
+          "expert_kernel_sum_ms": 0.269505,
+          "all_kernel_sum_ms": 0.278753,
+          "kernel_sum_excluding_scale_reconstruction_ms": 0.278753,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        },
+        "native": {
+          "scale_reconstruction_ms": 0.7721310000000001,
+          "expert_kernel_sum_ms": 0.308064,
+          "all_kernel_sum_ms": 1.084291,
+          "kernel_sum_excluding_scale_reconstruction_ms": 0.3121599999999999,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        }
+      },
+      "graph_persistent_allocation_delta_bytes": {
+        "current": 12583936,
+        "native": 1024
+      },
+      "scratch_bytes": {
+        "native": 113333828,
+        "current_plugin": 25165824
+      },
+      "benchmark_cuda_allocated_bytes": 3913422848,
+      "benchmark_cuda_peak_allocated_bytes": 4039118336
+    },
+    {
+      "tokens": 8,
+      "median_current_ms": 1.5584832191467286,
+      "median_native_ms": 2.451117134094238,
+      "control_half_ratio": 0.9951634569811727,
+      "control_stable": true,
+      "time_reduction_fraction": -0.5727581176242804,
+      "layer_time_gate_passed": false,
+      "native_extra_time_percent": 57.27581176242804,
+      "reference_reproducer_bitwise_exact": true,
+      "current_bitwise_repeats": 20,
+      "native_bitwise_repeats": 0,
+      "repeats_per_arm": 20,
+      "native_vs_current": {
+        "finite": true,
+        "changed_values": 31363,
+        "values": 32768,
+        "max_abs": 0.00701904296875,
+        "relative_l2": 0.04174442665531809,
+        "rms_error": 0.0016650399632576146,
+        "reference_rms": 0.03988652130752152
+      },
+      "native_repeat_relative_l2": {
+        "minimum": 0.0013622554420505545,
+        "median": 0.001591579126289832,
+        "maximum": 0.0017937016831995971
+      },
+      "native_repeats_vs_current_relative_l2": {
+        "minimum": 0.041738014561409936,
+        "maximum": 0.04175382104668722
+      },
+      "boundary_telemetry": {
+        "current": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2457,
+            2470
+          ],
+          "temperature_C": [
+            48,
+            52
+          ],
+          "power_W": [
+            19.22,
+            30.9
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        },
+        "native": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2457,
+            2470
+          ],
+          "temperature_C": [
+            48,
+            52
+          ],
+          "power_W": [
+            20.31,
+            31.04
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        }
+      },
+      "profiles": {
+        "current": {
+          "scale_reconstruction_ms": 0.0,
+          "expert_kernel_sum_ms": 1.51838,
+          "all_kernel_sum_ms": 1.5317560000000001,
+          "kernel_sum_excluding_scale_reconstruction_ms": 1.5317560000000001,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        },
+        "native": {
+          "scale_reconstruction_ms": 0.706758,
+          "expert_kernel_sum_ms": 1.6896129999999998,
+          "all_kernel_sum_ms": 2.401459,
+          "kernel_sum_excluding_scale_reconstruction_ms": 1.6947009999999998,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        }
+      },
+      "graph_persistent_allocation_delta_bytes": {
+        "current": 12583936,
+        "native": 1024
+      },
+      "scratch_bytes": {
+        "native": 113681028,
+        "current_plugin": 37748736
+      },
+      "benchmark_cuda_allocated_bytes": 3926638592,
+      "benchmark_cuda_peak_allocated_bytes": 4039118336
+    },
+    {
+      "tokens": 16,
+      "median_current_ms": 2.249203586578369,
+      "median_native_ms": 3.1895544052124025,
+      "control_half_ratio": 1.0059992026429991,
+      "control_stable": true,
+      "time_reduction_fraction": -0.41808168199862905,
+      "layer_time_gate_passed": false,
+      "native_extra_time_percent": 41.808168199862905,
+      "reference_reproducer_bitwise_exact": true,
+      "current_bitwise_repeats": 20,
+      "native_bitwise_repeats": 0,
+      "repeats_per_arm": 20,
+      "native_vs_current": {
+        "finite": true,
+        "changed_values": 62696,
+        "values": 65536,
+        "max_abs": 0.008544921875,
+        "relative_l2": 0.04146029267822779,
+        "rms_error": 0.0017147716547635595,
+        "reference_rms": 0.04135937167814651
+      },
+      "native_repeat_relative_l2": {
+        "minimum": 0.0009190030526924302,
+        "median": 0.0011183527134055373,
+        "maximum": 0.0015895724691763564
+      },
+      "native_repeats_vs_current_relative_l2": {
+        "minimum": 0.04145427932578138,
+        "maximum": 0.04146323857535215
+      },
+      "boundary_telemetry": {
+        "current": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2418,
+            2463
+          ],
+          "temperature_C": [
+            51,
+            53
+          ],
+          "power_W": [
+            25.78,
+            35.21
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        },
+        "native": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2418,
+            2463
+          ],
+          "temperature_C": [
+            51,
+            53
+          ],
+          "power_W": [
+            26.11,
+            34.38
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        }
+      },
+      "profiles": {
+        "current": {
+          "scale_reconstruction_ms": 0.0,
+          "expert_kernel_sum_ms": 2.2916350000000003,
+          "all_kernel_sum_ms": 2.307891,
+          "kernel_sum_excluding_scale_reconstruction_ms": 2.307891,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        },
+        "native": {
+          "scale_reconstruction_ms": 0.7273890000000001,
+          "expert_kernel_sum_ms": 2.766415,
+          "all_kernel_sum_ms": 3.500652,
+          "kernel_sum_excluding_scale_reconstruction_ms": 2.773263,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        }
+      },
+      "graph_persistent_allocation_delta_bytes": {
+        "current": 12583936,
+        "native": 1024
+      },
+      "scratch_bytes": {
+        "native": 114077828,
+        "current_plugin": 50331648
+      },
+      "benchmark_cuda_allocated_bytes": 3939944960,
+      "benchmark_cuda_peak_allocated_bytes": 4039118336
+    },
+    {
+      "tokens": 256,
+      "median_current_ms": 6.001998710632325,
+      "median_native_ms": 7.0002082824707035,
+      "control_half_ratio": 0.9834649384419167,
+      "control_stable": true,
+      "time_reduction_fraction": -0.1663128600927697,
+      "layer_time_gate_passed": false,
+      "native_extra_time_percent": 16.63128600927697,
+      "reference_reproducer_bitwise_exact": true,
+      "current_bitwise_repeats": 20,
+      "native_bitwise_repeats": 0,
+      "repeats_per_arm": 20,
+      "native_vs_current": {
+        "finite": true,
+        "changed_values": 1003183,
+        "values": 1048576,
+        "max_abs": 0.01123046875,
+        "relative_l2": 0.04134083661872841,
+        "rms_error": 0.0017412888321567312,
+        "reference_rms": 0.042120309470657515
+      },
+      "native_repeat_relative_l2": {
+        "minimum": 0.0003071425496972877,
+        "median": 0.00032428087462555116,
+        "maximum": 0.0004001156007184703
+      },
+      "native_repeats_vs_current_relative_l2": {
+        "minimum": 0.041340492878488545,
+        "maximum": 0.04134144762477378
+      },
+      "boundary_telemetry": {
+        "current": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2418,
+            2509
+          ],
+          "temperature_C": [
+            51,
+            58
+          ],
+          "power_W": [
+            26.83,
+            50.03
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        },
+        "native": {
+          "samples": 32,
+          "sm_clock_MHz": [
+            2418,
+            2509
+          ],
+          "temperature_C": [
+            55,
+            58
+          ],
+          "power_W": [
+            38.86,
+            49.65
+          ],
+          "pstates": [
+            "P0"
+          ],
+          "memory_clock_available": false
+        }
+      },
+      "profiles": {
+        "current": {
+          "scale_reconstruction_ms": 0.0,
+          "expert_kernel_sum_ms": 6.147333000000001,
+          "all_kernel_sum_ms": 6.265477,
+          "kernel_sum_excluding_scale_reconstruction_ms": 6.265477,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        },
+        "native": {
+          "scale_reconstruction_ms": 0.763717,
+          "expert_kernel_sum_ms": 6.688231,
+          "all_kernel_sum_ms": 7.536397,
+          "kernel_sum_excluding_scale_reconstruction_ms": 6.77268,
+          "graph_launches": 1,
+          "unassigned_GPU_events": 0
+        }
+      },
+      "graph_persistent_allocation_delta_bytes": {
+        "current": 12583936,
+        "native": 1024
+      },
+      "scratch_bytes": {
+        "native": 125981828,
+        "current_plugin": 62914560
+      },
+      "benchmark_cuda_allocated_bytes": 3974277632,
+      "benchmark_cuda_peak_allocated_bytes": 4039118336
+    }
+  ],
+  "component_memory": {
+    "current_persistent_bytes": 1868562464,
+    "native_persistent_bytes": 1868562464,
+    "native_reusable_scale_scratch_bytes": 113246208,
+    "full_model_peak_measured": false,
+    "both_benchmark_weight_formats_resident": true
+  },
+  "native_scale_preparation": [
+    {
+      "projection": 0,
+      "raw_bytes": 75497472,
+      "minimum": 118,
+      "maximum": 122,
+      "compressed": true,
+      "retained_bytes": 37748752,
+      "gpu_decode_exact": true
+    },
+    {
+      "projection": 1,
+      "raw_bytes": 37748736,
+      "minimum": 119,
+      "maximum": 122,
+      "compressed": true,
+      "retained_bytes": 18874384,
+      "gpu_decode_exact": true
+    }
+  ],
+  "high_concurrency_layer_time_gate_passed": false,
+  "full_model_KL_qualified": false,
+  "full_model_memory_qualified": false,
+  "production_promotion": false,
+  "source_sha256": "20400bdaa1bc678530016616916320228b3b98f8bc313dd21ff436819f3e126e",
+  "evidence_archive_sha256": "b6fde7108cd6bc91ce7cb4f6240a5fac9e4e5be6de66ad6a59fd0e36b2779c84",
+  "limits": [
+    "One actual layer and TP rank; no full-model native quality, throughput or peak-memory result.",
+    "Native component relative L2 and repeat error are not full-model KL.",
+    "Default native heuristic with tune=False; this is not a bound on all native expert implementations.",
+    "Profile sums are single-replay diagnostics; headline timings use separate interleaved trials.",
+    "Subtracting scale reconstruction from a profile is not a measured alternate implementation.",
+    "Boundary telemetry cannot exclude transients; memory-clock telemetry was unavailable.",
+    "Benchmark CUDA peak includes both weight layouts and accumulated graph allocations."
+  ]
+}

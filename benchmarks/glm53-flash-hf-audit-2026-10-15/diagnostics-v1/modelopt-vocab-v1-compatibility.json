@@ -1,0 +1,45 @@
+{
+  "status": "read_only_source_review_complete",
+  "updated_utc": "2026-10-19 17:59",
+  "serving_changed": false,
+  "adapter_installed": false,
+  "GPU_experiment_started": false,
+  "original_production_image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+  "findings": {
+    "head_guard": "build_state requires UnquantizedEmbeddingMethod or UnquantizedLinearMethod and a contiguous BF16 lm_head.weight",
+    "dense_reference": "build_from_weight retains W in State; exact candidate refinement reads st.W directly",
+    "production_head_policy": "Certified target argmax uses an MXINT8 twin; draft head has a separate FP8 path",
+    "loader_only_port": "Current packed quant_method would fail the certificate guard; removing lm_head.weight alone would leave the dense State.W reference",
+    "estimate_correction": "Earlier 2-4 hour loader-port estimate does not cover preserving these specialized production paths",
+    "marlin_scale_ABI": "nvfp4_marlin_process_scales permutes/rescales source FP8 into S0E5M3 byte storage viewed as float8_e4m3fn; global scales compensate the power-of-two rescale",
+    "qualification_requirement": "Prototype must recover the exact post-Marlin scale bytes and preserve global scales, arithmetic, routing, and production head/draft paths"
+  },
+  "sources": {
+    "glm_cert_head.py": {
+      "local_read_only_snapshot": "/private/tmp/mxwave-modelopt-vocab-v1/production-sources/glm_cert_head.py",
+      "bytes": 57871,
+      "sha256": "9c2a7ad7fae4185312b654e7e0d4fba7c6312e7026c3ff68fb89216ebd41bee9"
+    },
+    "marlin_utils_fp4.py": {
+      "local_read_only_snapshot": "/private/tmp/mxwave-modelopt-vocab-v1/production-sources/marlin_utils_fp4.py",
+      "bytes": 28356,
+      "sha256": "a7c61d4f67b5d23c4236645ffc0f6f1fe6f8ef2577e83229c479b311c1cddd8b"
+    },
+    "marlin_moe.py": {
+      "local_read_only_snapshot": "/private/tmp/mxwave-modelopt-vocab-v1/production-sources/marlin_moe.py",
+      "bytes": 37283,
+      "sha256": "f00460310b033bcb84644677e16af83773464f026c0dad15bcfe25bd28b39745"
+    },
+    "glm_levers.py": {
+      "local_read_only_snapshot": "/private/tmp/mxwave-modelopt-vocab-v1/production-sources/glm_levers.py",
+      "bytes": 18061,
+      "sha256": "fbb1b9c9042b2aff6b91a6a7061f9a0253534e7e73f25f0349e3dcaab0e61268"
+    },
+    "sitecustomize.py": {
+      "local_read_only_snapshot": "/private/tmp/mxwave-modelopt-vocab-v1/production-sources/sitecustomize.py",
+      "bytes": 22381,
+      "sha256": "8a6cebe4db375b805858f1fc084abbd769e660e836200b5fc5b9c275f73ab673"
+    }
+  },
+  "license_scope": "Read-only inspection only; no upstream or production source adapted or added to repository in this audit"
+}

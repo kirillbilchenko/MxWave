@@ -1,0 +1,147 @@
+"""Wait for both independent verifications, then perform the requested drafter audit."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import shlex
+import subprocess
+import time
+from pathlib import Path
+
+import audit
+
+ROOT = Path(__file__).parent
+REPO = Path("/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4")
+
+
+def save(phase, **extra):
+    """Write the queue checkpoint atomically."""
+    value = {"phase": phase, "updated_epoch": time.time(), **extra}
+    path = ROOT / "status.json"
+    temporary = path.with_suffix(".incomplete")
+    temporary.write_text(json.dumps(value, indent=2) + "\n")
+    temporary.replace(path)
+
+
+def main():
+    """Start no audit work until both benchmark artifacts are complete and verified."""
+    assert not (ROOT / "status.json").exists()
+    save("waiting_for_speed_and_gsm8k")
+    deadline = time.time() + 8 * 3600
+    try:
+        for name, expected in json.loads((ROOT / "source-manifest.json").read_bytes()).items():
+            assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected
+        finals = {
+            name: Path(f"/private/tmp/mxwave-kda-mxfp8-{name}-{'v1' if name == 'speed' else 'v2'}-final")
+            for name in ("speed", "gsm8k")
+        }
+        while True:
+            available = {}
+            for name, path in finals.items():
+                if (path / "failed.json").exists():
+                    raise RuntimeError(f"{name} benchmark did not finish; keep audit pending")
+                if (path / "complete.json").exists():
+                    value = json.loads((path / "complete.json").read_bytes())
+                    assert value["status"] == "verified"
+                    assert value["controller_phase"] == "complete_restored"
+                    available[name] = value
+            if len(available) == 2:
+                break
+            assert time.time() < deadline, "Waiting deadline exceeded; inspect benchmark collectors"
+            time.sleep(20)
+        save("auditing_retained_evidence", parent_verifications=available)
+        evidence = finals["speed"] / "evidence"
+        report = audit.audit(evidence)
+        (ROOT / "retained-review.json").write_text(json.dumps(report, indent=2) + "\n")
+        prepared = json.loads((evidence / "prepared.json").read_bytes())
+        program = (ROOT / "node_inventory.py").read_text()
+        node_results = []
+        save("reading_draft_checkpoint_hashes")
+        for rank in (0, 1):
+            paths = sorted({
+                m[0] for entries in prepared["launches"].values()
+                for e in entries if e["rank"] == rank for m in e["mounts"] if m[1] == "/draft"
+            })
+            request = {
+                "rank": rank, "draft_paths": paths,
+                "original_id": prepared["originals"][rank]["id"],
+            }
+            remote = shlex.join(["python3", "-S", "-B", "-c", program])
+            if rank:
+                remote = shlex.join([
+                    "ssh", "-o", "BatchMode=yes", "-i", "/home/kirya/.ssh/id_glm_cluster",
+                    "kirya@192.168.192.2", remote,
+                ])
+            completed = subprocess.run(
+                ["ssh", "-o", "BatchMode=yes", "spark", remote],
+                input=json.dumps(request), text=True, capture_output=True, timeout=1200,
+                check=True,
+            )
+            node = json.loads(completed.stdout)
+            (ROOT / f"node-r{rank}.json").write_text(json.dumps(node, indent=2) + "\n")
+            node_results.append(node)
+        summary = {
+            "status": "read_only_audit_complete",
+            "speculative_configs_equal": report["all_matched_speculative_configs_equal"],
+            "drafts_share_target_head_and_embedding":
+                report["draft_contexts_share_target_head_and_embedding"],
+            "checkpoint_fingerprints": [
+                {"rank": node["rank"], "path": checkpoint["path"],
+                 "files": {f["name"]: f["sha256"] for f in checkpoint["files"]}}
+                for node in node_results for checkpoint in node["checkpoints"]
+            ],
+            "remaining": [
+                "Interpret config, shared-head and position-counter differences with final profiles.",
+                "Use matched-token replay if aggregate evidence cannot isolate the acceptance cause.",
+            ],
+            "no_new_GPU_experiment_started": True,
+            "parent_verifications": available,
+        }
+        weight_fingerprints = [
+            tuple(sorted(
+                (f["name"], f["sha256"]) for f in checkpoint["files"]
+                if f["name"].endswith(".safetensors")
+            ))
+            for node in node_results for checkpoint in node["checkpoints"]
+        ]
+        summary["all_audited_draft_weight_files_identical"] = bool(weight_fingerprints) and all(
+            f and f == weight_fingerprints[0] for f in weight_fingerprints
+        )
+        summary["head_methods_by_mode"] = {
+            mode: sorted({
+                s["head_method"] for block in report["loads"].values()
+                if block["mode"] == mode for s in block["startup_by_rank"]
+            })
+            for mode in ("ct_bf16", "ct_mxfp8", "modelopt")
+        }
+        (ROOT / "review.json").write_text(json.dumps(summary, indent=2) + "\n")
+        output = REPO / "benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1"
+        for name in ("retained-review.json", "node-r0.json", "node-r1.json", "review.json"):
+            (output / ("drafter-comparison-v2-" + name)).write_bytes((ROOT / name).read_bytes())
+        begin = "<!-- DRAFTER_FOLLOWUP_BEGIN -->"
+        end = "<!-- DRAFTER_FOLLOWUP_END -->"
+        text = (
+            "**Post-benchmark drafter audit: initial read-only collection complete.** "
+            f"Matched speculative configurations equal: "
+            f"`{summary['speculative_configs_equal']}`. Audited draft weight files identical: "
+            f"`{summary['all_audited_draft_weight_files_identical']}`. "
+            "Source hashes, shared-head methods and per-position acceptance are retained in "
+            "[the audit receipt](../benchmarks/glm53-flash-hf-audit-2026-10-15/"
+            "diagnostics-v1/drafter-comparison-v2-review.json). "
+            "Interpretation with final profiles remains; no new GPU experiment has started."
+        )
+        for name in ("GLM53_HANDOFF.md", "GLM53_CURRENT_STATE.md", "GLM53_DRAFTER_COMPARISON.md"):
+            path = REPO / "docs" / name
+            contents = path.read_text()
+            first = contents.index(begin)
+            last = contents.index(end, first) + len(end)
+            path.write_text(contents[:first] + begin + "\n" + text + "\n" + end + contents[last:])
+        save("read_only_audit_complete", review=str(ROOT / "review.json"))
+    except BaseException as exc:
+        save("failed", error=repr(exc))
+        raise
+
+
+if __name__ == "__main__":
+    main()

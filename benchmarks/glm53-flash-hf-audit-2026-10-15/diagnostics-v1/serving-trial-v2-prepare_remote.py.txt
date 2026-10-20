@@ -1,0 +1,93 @@
+"""Bind immutable sources and CPU-check both complete serving commands before a pause."""
+from __future__ import annotations
+import hashlib,json,pathlib,subprocess,sys,time
+
+ROOT=pathlib.Path(__file__).parent
+AUDIT=ROOT.parent
+CODE=AUDIT/'full-c16admissionv1-src'
+sys.path.insert(0,str(CODE))
+import full_model_control as c
+import run_warmed_model as warmed
+
+
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    assert not(ROOT/'prepared.json').exists()
+    plan=json.loads((ROOT/'plan.json').read_bytes())
+    frozen=json.loads((ROOT/'source-manifest.json').read_bytes())
+    for name,digest in frozen.items():assert sha(ROOT/name)==digest,name
+    previous=json.loads((AUDIT/'c16-admission-v1-prepared.json').read_bytes())
+    bindings=[c.preflight(rank,CODE)for rank in(0,1)]
+    assert bindings==previous['bindings']
+    originals=[c.inspect(rank,c.ORIGINAL_IDS[rank])for rank in(0,1)]
+    assert[c.identity(o)for o in originals]==plan['originals']
+    assert all(o['State']['Running']for o in originals)and c.health(8000)
+    result=dict(status='preparing',bindings=bindings,originals=plan['originals'],launches={},
+        plan_sha256=sha(ROOT/'plan.json'),source_manifest_sha256=sha(ROOT/'source-manifest.json'),
+        cpu_checks={},prepared_epoch=time.time())
+    source_path='/audit/full-model-v1/full-c16admissionv1-src'
+    for arm,label in [('current','control'),('candidate','candidate')]:
+        entries=[]
+        for rank,original in enumerate(originals):
+            _,meta=warmed.launch(rank,'servetrialv2',label,original,bindings[rank]['vocabulary'],plan['vocab_manifest_sha256'])
+            environment=meta['environment']
+            for key,value in list(environment.items()):
+                environment[key]=value.replace('full-servetrialv2-src','full-c16admissionv1-src')
+            environment.update(PYTHONPATH='/trial:'+environment['PYTHONPATH'],
+                MXWAVE_TRIAL_ARM=arm,MXWAVE_TRIAL_FROZEN_CODE=source_path,VLLM_SERVER_DEV_MODE='0',
+                GLM_LV_DRAFT_FP8_KV='1')
+            environment['MXWAVE_GLM53_ATTENTION_MAPPING']='1'if arm=='candidate'else'0'
+            if arm=='current':environment['QMIX_FP8_BLOCK']='1'
+            command=meta['command']
+            for flag,value in [('--port','8000'),('--served-model-name','glm-5.3-flash'),
+                ('--worker-extension-cls','trial_worker.TrialWorker'),('--max-logprobs','20')]:
+                command[command.index(flag)+1]=value
+            at=command.index('--profiler-config');del command[at:at+2]
+            command.extend(['--speculative-config',json.dumps(plan['speculative_config']),
+                            '--enable-prompt-tokens-details'])
+            original_mounts={m['Destination']:m for m in original['Mounts']}
+            mounts=[list(m)for m in meta['mounts']if m[1]not in('/model','/cache','/traces')]
+            model_source=str(AUDIT/'source')if arm=='candidate'else original_mounts['/model']['Source']
+            output=ROOT/f'{arm}-r{rank}'
+            c.run(rank,['mkdir','-p',str(output)])
+            mounts.extend([[model_source,'/model','ro'],
+                [original_mounts['/draft']['Source'],'/draft','ro'],
+                [original_mounts['/run/secrets/llm_api_key']['Source'],'/run/secrets/llm_api_key','ro'],
+                [original_mounts['/cache']['Source'],'/cache','rw'],
+                [str(ROOT),'/trial','ro'],[str(output),'/traces','rw']])
+            name=f'mxwave-serving-trial-v2-{arm}-r{rank}'
+            assert not c.run(rank,['docker','ps','-aq','--filter',f'name=^/{name}$']).strip()
+            argv=['docker','run','-d','--name',name,'--gpus','all','--network','host','--ipc','host',
+                '--memory','112g','--memory-swap','112g','--cap-add','IPC_LOCK','--security-opt','label=disable',
+                '--device','/dev/infiniband','--ulimit','memlock=-1','--ulimit','stack=67108864',
+                '--ulimit','nofile=1048576']
+            for source,target,access in mounts:argv+=['-v',f'{source}:{target}:{access}']
+            for key,value in environment.items():argv+=['-e',key+'='+value]
+            argv+=['--entrypoint','/usr/bin/python3',c.IMAGE,'-u','/trial/trial_boot.py',*command]
+            entries.append(dict(rank=rank,name=name,command=command,environment=environment,mounts=mounts,argv=argv))
+        result['launches'][arm]=entries
+        # Both ranks share CLI semantics; validate each arm on CPU with no GPU devices.
+        meta=entries[0]
+        check=['docker','run','--rm','--network','none','--cpus','2','--memory','3g','--memory-swap','3g',
+            '-e','CUDA_VISIBLE_DEVICES=','-e','NVIDIA_VISIBLE_DEVICES=void','-e','MXWAVE_VALIDATE_ONLY=1',
+            '-e','UV_CACHE_DIR=/tmp/mxwave-uv-cache']
+        for source,target,access in meta['mounts']:
+            if target=='/run/secrets/llm_api_key':continue
+            check+=['-v',f'{source}:{target}:{access}']
+        for key,value in meta['environment'].items():check+=['-e',key+'='+value]
+        check+=['--entrypoint','/usr/bin/python3',c.IMAGE,'-u','/trial/trial_boot.py',*meta['command']]
+        proc=subprocess.run(check,capture_output=True,text=True,timeout=240)
+        (ROOT/(arm+'-cpu-check.log')).write_text(proc.stdout+'\n'+proc.stderr)
+        assert proc.returncode==0,(arm,proc.returncode,proc.stderr[-1800:])
+        result['cpu_checks'][arm]=dict(passed=True,log_sha256=sha(ROOT/(arm+'-cpu-check.log')))
+    # Declared serving commands must be identical except the headless rank flag.
+    assert result['launches']['current'][0]['command']==result['launches']['candidate'][0]['command']
+    result.update(status='passed',finished_epoch=time.time())
+    c.write(ROOT/'prepared.json',result)
+    print(json.dumps(dict(status='passed',frozen_runtime_bindings=len(bindings[0]['code']),
+        commands_match=True,prepared_sha256=sha(ROOT/'prepared.json'))))
+
+
+if __name__=='__main__':main()

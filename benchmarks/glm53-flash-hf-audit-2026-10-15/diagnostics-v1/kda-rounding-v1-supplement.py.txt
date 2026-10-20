@@ -1,0 +1,112 @@
+"""Summarize verified evidence without replacing the frozen full quality gate."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from statistics import mean
+
+root = Path("/private/tmp/mxwave-kda-rounding-v1-final")
+evidence = root / "evidence"
+verification = json.loads((root / "complete.json").read_bytes())
+assert verification["status"] == "verified"
+review_path = root / "mac-review.json"
+review = json.loads(review_path.read_bytes())
+data_path = evidence / "measurement.json"
+data = json.loads(data_path.read_bytes())
+result = {
+    "status": "verified_evidence_supplement",
+    "archive_sha256": verification["archive_sha256"],
+    "review_sha256": hashlib.sha256(review_path.read_bytes()).hexdigest(),
+    "measurement_sha256": hashlib.sha256(data_path.read_bytes()).hexdigest(),
+    "scope": "Descriptive subgroup and task breakdown; the frozen full gate still fails.",
+    "subgroups": {},
+    "short_tasks": {},
+    "actual_MXFP8_speed_measured": False,
+}
+for pair, report in review["comparisons"].items():
+    groups = {}
+    for name, predicate in (
+        ("outside_long_context", lambda row: row["kind"] != "long_heldout"),
+        (
+            "short_prompt_first_prediction",
+            lambda row: row["kind"] == "short_task" and row["position"] == 0,
+        ),
+    ):
+        selected = [row for row in report["rows"] if predicate(row)]
+        groups[name] = {
+            "positions": len(selected),
+            "mean_KL": mean(row["kl"] for row in selected),
+            "maximum_KL": max(row["kl"] for row in selected),
+            "argmax_changes": sum(not row["argmax_equal"] for row in selected),
+            "nonidentical_distributions": sum(
+                not row["logprobs_bits_equal"] for row in selected
+            ),
+        }
+    result["subgroups"][pair] = groups
+
+baseline_batches = None
+for label, leg in data["legs"].items():
+    long_context = next(row for row in leg["contexts"] if row["name"] == "long_wiki_4096")
+    capture = next(row for row in long_context["captured_unmodified_logits"] if row["rank"] == 0)
+    if baseline_batches is None:
+        baseline_batches = capture["batches"]
+    assert baseline_batches == capture["batches"], label
+assert baseline_batches is not None
+result["long_context_batch_control"] = {
+    "all_five_passes_have_identical_recorded_batches": True,
+    "fields": list(baseline_batches[0]),
+    "token_counts": [row["num_tokens"] for row in baseline_batches],
+    "padded_token_counts": [row["num_tokens_after_padding"] for row in baseline_batches],
+    "repeat_failure_remains_unresolved": True,
+}
+
+for label, tasks in review["short_tasks"].items():
+    code_path = evidence / label / "real-work.json"
+    sandbox = json.loads(code_path.read_bytes())
+    assert sandbox["status"] == "complete"
+    code = {row["name"]: row for row in sandbox["cases"]}
+    rows = []
+    for task in tasks:
+        if task["needs_code_sandbox"]:
+            row = code[task["name"]]
+            assert not row["sandbox_pending"]
+            strict = bool(row["passed"] and row["format_passed"] and row["natural_stop"])
+            rows.append({
+                "name": task["name"], "strict_pass": strict,
+                "code_correctness_pass": row["passed"],
+                "format_pass": row["format_passed"], "natural_stop": row["natural_stop"],
+            })
+        else:
+            rows.append({
+                "name": task["name"], "strict_pass": task["passed"],
+                "semantic_correctness_inferred_from_failed_exact_match": False,
+            })
+    result["short_tasks"][label] = {
+        "strict_passes": sum(row["strict_pass"] for row in rows),
+        "task_count": len(rows),
+        "code_correctness_passes": sum(row["passed"] for row in code.values()),
+        "code_task_count": len(code),
+        "sandbox_report_sha256": hashlib.sha256(code_path.read_bytes()).hexdigest(),
+        "cases": rows,
+    }
+
+original = review["short_tasks"]["a1"]
+rounded = review["short_tasks"]["b1"]
+restored = review["short_tasks"]["a3"]
+assert all(a["text"] == b["text"] for a, b in zip(original, restored, strict=True))
+result["natural_text_comparison"] = {
+    "original_restored_identical": True,
+    "candidate_changed_names": [
+        a["name"] for a, b in zip(original, rounded, strict=True) if a["text"] != b["text"]
+    ],
+    "task_count": len(original),
+}
+destination = root / "supplemental-review.json"
+destination.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+print(json.dumps({
+    "status": result["status"],
+    "strict_task_passes": {key: value["strict_passes"] for key, value in result["short_tasks"].items()},
+    "long_batch_control": result["long_context_batch_control"],
+}))

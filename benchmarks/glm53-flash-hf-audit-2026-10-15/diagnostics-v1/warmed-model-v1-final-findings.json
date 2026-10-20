@@ -1,0 +1,226 @@
+{
+  "status": "complete",
+  "archive_sha256": "0fc867240d04e1770e2970143f48f630551feb35f53b739403c4fb6b8bde64e0",
+  "source_sha256": "c696413f0c521af0d6e9439d3df22396c07fd0de7df5f702319d8c3e652f586e",
+  "preliminary_bindings": [
+    {
+      "arm": "control",
+      "final_report_sha256": "ea50aade045b9dd336c6f94f8305fcc6b39f71f58cff48304ebb31068108476e",
+      "canonical_timing_sha256": "de6955593dc63fdbeefa621b4122c4e7960f8488b49487338b778a2e2a057014",
+      "timing_matches_preliminary": true,
+      "startup_matches_preliminary": true
+    },
+    {
+      "arm": "candidate",
+      "final_report_sha256": "3a9c41904281ac0d0d4a3e681efee4bf58b5f7a4102517c2eaa320f30669b1eb",
+      "canonical_timing_sha256": "371cb8c440d1d980914c181d74cd550bfb55a30c6a7bf55967321c853b8cf594",
+      "timing_matches_preliminary": true,
+      "startup_matches_preliminary": true
+    }
+  ],
+  "numerical_comparisons_passed": 46,
+  "timed_output_pairs_equal": 300,
+  "startup_unchanged_full_vocabulary_rows_per_arm": {
+    "control": 576,
+    "candidate": 576
+  },
+  "recognized_JIT_events_overlap_timing": false,
+  "dispatch_cache_unchanged": true,
+  "CUDA_allocation_saving_GiB_TP2": 9.367162227630615,
+  "candidate_extra_process_RSS_MiB_TP2": {
+    "before_startup": 163.109375,
+    "after_startup_before_quality": 158.77734375,
+    "after_unprofiled_timing": 166.828125,
+    "after_timing_and_profiles": 173.71875
+  },
+  "timing_table": [
+    {
+      "case": "c1-short",
+      "trials_per_arm": 6,
+      "control_tps": 14.78407094416971,
+      "candidate_tps": 16.74780031263409,
+      "TPS_change_percent": 13.282737724136817,
+      "control_TTFT_seconds": 0.3840773950214498,
+      "candidate_TTFT_seconds": 0.4217495580087416,
+      "TTFT_change_percent": 9.808482216243931,
+      "mean_request_components_seconds": {
+        "control": {
+          "ttft_seconds": 0.3858155915028571,
+          "after_first_to_last_seconds": 3.9319062943492704,
+          "stream_finish_seconds": 0.00011501081947547694,
+          "elapsed_seconds": 4.317836896671603
+        },
+        "candidate": {
+          "ttft_seconds": 0.42001494399543543,
+          "after_first_to_last_seconds": 3.399507593344121,
+          "stream_finish_seconds": 9.069866306769352e-05,
+          "elapsed_seconds": 3.819613236002624
+        }
+      },
+      "mean_request_TTFT_change_percent": 8.864170667484572,
+      "last32_mean_gap_ms": {
+        "control": 62.46550262494566,
+        "candidate": 53.32527721839142
+      }
+    },
+    {
+      "case": "c1-long",
+      "trials_per_arm": 6,
+      "control_tps": 12.518455474103092,
+      "candidate_tps": 13.998687767791612,
+      "TPS_change_percent": 11.824400356343268,
+      "control_TTFT_seconds": 1.1834020914975554,
+      "candidate_TTFT_seconds": 1.2054745869827457,
+      "TTFT_change_percent": 1.865172931818826,
+      "mean_request_components_seconds": {
+        "control": {
+          "ttft_seconds": 1.1818351430022933,
+          "after_first_to_last_seconds": 3.9153278039981765,
+          "stream_finish_seconds": 0.00011095767452691992,
+          "elapsed_seconds": 5.097273904674997
+        },
+        "candidate": {
+          "ttft_seconds": 1.203238723159302,
+          "after_first_to_last_seconds": 3.3729630216645696,
+          "stream_finish_seconds": 9.679733193479478e-05,
+          "elapsed_seconds": 4.576298542155807
+        }
+      },
+      "mean_request_TTFT_change_percent": 1.8110461754112128,
+      "last32_mean_gap_ms": {
+        "control": 62.09657875024277,
+        "candidate": 53.23689653232577
+      }
+    },
+    {
+      "case": "c8-short",
+      "trials_per_arm": 6,
+      "control_tps": 60.756885111877125,
+      "candidate_tps": 62.56409472075205,
+      "TPS_change_percent": 2.974493517149779,
+      "control_TTFT_seconds": 1.1692286152392626,
+      "candidate_TTFT_seconds": 1.1922982804680942,
+      "TTFT_change_percent": 1.9730671083610707,
+      "mean_request_components_seconds": {
+        "control": {
+          "ttft_seconds": 1.1610478279581002,
+          "after_first_to_last_seconds": 7.285350966793582,
+          "stream_finish_seconds": 0.00024583058135855634,
+          "elapsed_seconds": 8.446644625333041
+        },
+        "candidate": {
+          "ttft_seconds": 1.1890335053928236,
+          "after_first_to_last_seconds": 7.012533812064551,
+          "stream_finish_seconds": 0.0002701206431083847,
+          "elapsed_seconds": 8.201837438100483
+        }
+      },
+      "mean_request_TTFT_change_percent": 2.4103811023824084,
+      "last32_mean_gap_ms": {
+        "control": 113.89354869515955,
+        "candidate": 110.59073814021758
+      }
+    },
+    {
+      "case": "c8-long",
+      "trials_per_arm": 6,
+      "control_tps": 31.488279431019947,
+      "candidate_tps": 31.53019814401996,
+      "TPS_change_percent": 0.1331248126523965,
+      "control_TTFT_seconds": 6.585892813003738,
+      "candidate_TTFT_seconds": 6.6623886672605295,
+      "TTFT_change_percent": 1.161510768984142,
+      "mean_request_components_seconds": {
+        "control": {
+          "ttft_seconds": 6.294368438933209,
+          "after_first_to_last_seconds": 9.6600283392933,
+          "stream_finish_seconds": 0.00019357243945705704,
+          "elapsed_seconds": 15.954590350665967
+        },
+        "candidate": {
+          "ttft_seconds": 6.390052001441897,
+          "after_first_to_last_seconds": 9.572879394099195,
+          "stream_finish_seconds": 0.00017095208750106394,
+          "elapsed_seconds": 15.963102347628592
+        }
+      },
+      "mean_request_TTFT_change_percent": 1.5201455624498594,
+      "last32_mean_gap_ms": {
+        "control": 104.4043827346286,
+        "candidate": 101.14686970291586
+      }
+    },
+    {
+      "case": "c16-short",
+      "trials_per_arm": 6,
+      "control_tps": 80.87011506630091,
+      "candidate_tps": 81.1081403589059,
+      "TPS_change_percent": 0.2943303498577299,
+      "control_TTFT_seconds": 1.8382834925141651,
+      "candidate_TTFT_seconds": 2.2801759064750513,
+      "TTFT_change_percent": 24.038317036537336,
+      "mean_request_components_seconds": {
+        "control": {
+          "ttft_seconds": 1.8824458654999034,
+          "after_first_to_last_seconds": 10.666952220810344,
+          "stream_finish_seconds": 0.00038641164792352356,
+          "elapsed_seconds": 12.549784497958171
+        },
+        "candidate": {
+          "ttft_seconds": 1.997377695148316,
+          "after_first_to_last_seconds": 10.496968398176856,
+          "stream_finish_seconds": 0.00029216613559886656,
+          "elapsed_seconds": 12.494638259460771
+        }
+      },
+      "mean_request_TTFT_change_percent": 6.1054520480402275,
+      "last32_mean_gap_ms": {
+        "control": 159.04993549929713,
+        "candidate": 154.27963246111176
+      }
+    },
+    {
+      "case": "c16-long",
+      "trials_per_arm": 6,
+      "control_tps": 36.62770856669417,
+      "candidate_tps": 36.47675480078618,
+      "TPS_change_percent": -0.4121299743147122,
+      "control_TTFT_seconds": 11.394561831242754,
+      "candidate_TTFT_seconds": 11.594225444758194,
+      "TTFT_change_percent": 1.752271096269653,
+      "mean_request_components_seconds": {
+        "control": {
+          "ttft_seconds": 11.291470331438783,
+          "after_first_to_last_seconds": 15.928625268759182,
+          "stream_finish_seconds": 0.00026506080030230805,
+          "elapsed_seconds": 27.220360660998267
+        },
+        "candidate": {
+          "ttft_seconds": 11.477254875113431,
+          "after_first_to_last_seconds": 15.867429187865127,
+          "stream_finish_seconds": 0.00024120491373954186,
+          "elapsed_seconds": 27.344925267892297
+        }
+      },
+      "mean_request_TTFT_change_percent": 1.6453529808015288,
+      "last32_mean_gap_ms": {
+        "control": 137.12875660121426,
+        "candidate": 133.63391970278826
+      }
+    }
+  ],
+  "original_speed_gate_passed": false,
+  "automatic_promotion_allowed": false,
+  "GPU_experiment_run": false,
+  "original_measurements_or_gates_changed": false,
+  "limitations": [
+    "Finite matched-grouping numerical qualification; no universal zero-loss or batch-invariance claim.",
+    "Startup warmup leaves all retained before/after raw output rows unchanged in each arm.",
+    "No recognized timed JIT event is not proof against unlogged JIT or all future latency stalls.",
+    "C16-short mean TTFT is supplementary; the original median TTFT failure remains unchanged.",
+    "Fixed control-then-candidate load order and different admission remain confounders.",
+    "Process RSS and CUDA allocation overlap on Spark and must not be added.",
+    "Profiles are separate from ordinary timing; kernel sums are not API latency or a TP critical path.",
+    "Current PPL, task accuracy and SQNR were not measured by this finite experiment."
+  ]
+}

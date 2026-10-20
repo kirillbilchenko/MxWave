@@ -1,0 +1,83 @@
+"""Attribute the newly verified C16 traces to launches and retain per-forward stage costs."""
+from __future__ import annotations
+import collections,gzip,hashlib,json,pathlib,re,statistics,sys
+BASE=pathlib.Path("/private/tmp/mxwave-c16-admission-v1")
+ROOT=BASE/"evidence"
+sys.path.insert(0,str(ROOT/"source"))
+from analyze_full_profiles import kernel_group
+def sha(path):
+ with path.open("rb") as stream:return hashlib.file_digest(stream,"sha256").hexdigest()
+def group(name):
+ if "BF16TripleBitmap_MM_FP32_Kernel" in name:return "bf16_compressed_linear"
+ if "MxWaveReduceFP32" in name:return "bf16_compressed_reduction"
+ if "cutlass" in name.lower() and "bf16" in name.lower():return "bf16_dense_linear"
+ if name == "_canonicalize" or "_stable_expert" in name.lower() or "_canonicalize_expert" in name.lower():return "stable_expert_order"
+ return kernel_group(name)
+def union(intervals):
+ total=0.;last=-float("inf")
+ for start,end in sorted(intervals):
+  total+=max(0.,end-max(start,last));last=max(last,end)
+ return total
+def main():
+ inventory=json.loads((ROOT/"evidence-inventory.json").read_bytes())
+ hashes={x["path"]:x["sha256"] for x in inventory["files"]}
+ verified=json.loads((BASE/"mac-independent-review.json").read_bytes())
+ results=[]
+ pattern=re.compile(r"^mxwave_c8_(.+)_step_(\d+)$")
+ for meta in verified["profiles"]:
+  path=ROOT/meta["path"];digest=sha(path);assert digest==hashes[meta["path"]]
+  with gzip.open(path,"rt") as stream:events=json.load(stream)["traceEvents"]
+  ranges=[]
+  for e in events:
+   m=pattern.match(e.get("name",""))
+   if e.get("cat")=="user_annotation" and m:
+    ranges.append({"label":m[1],"sequence":int(m[2]),"pid":e["pid"],"tid":e["tid"],"start":e["ts"],"end":e["ts"]+e["dur"],"kernels":[],"graph_launches":0})
+  ranges.sort(key=lambda r:r["start"])
+  runtime={}
+  for e in events:
+   if e.get("cat") not in ("cuda_runtime","cuda_driver"):continue
+   corr=e.get("args",{}).get("correlation")
+   if corr is None:continue
+   assert corr not in runtime
+   owners=[i for i,r in enumerate(ranges) if (r["pid"],r["tid"])==(e["pid"],e["tid"]) and r["start"]<=e["ts"]<=r["end"]]
+   assert len(owners)<=1
+   owner=owners[0] if owners else None;runtime[corr]=owner
+   if owner is not None and e.get("name","").startswith("cudaGraphLaunch"):ranges[owner]["graph_launches"]+=1
+  unassigned=total=0
+  for e in events:
+   if e.get("cat")!="kernel":continue
+   total+=1;owner=runtime.get(e.get("args",{}).get("correlation"))
+   if owner is None:unassigned+=1
+   else:ranges[owner]["kernels"].append(e)
+  forwards=[]
+  known={(s["label"],s["sequence"]):s for s in meta["steps"]}
+  for r in ranges:
+   m=known[r["label"],r["sequence"]];assert m["kernel_events"]==len(r["kernels"]) and m["cuda_graph_launches"]==r["graph_launches"]
+   assert r["kernels"]
+   groups=collections.defaultdict(lambda:{"calls":0,"duration_sum_us":0.,"intervals":[]})
+   kd=collections.defaultdict(lambda:{"calls":0,"duration_sum_us":0.})
+   for e in r["kernels"]:
+    g=groups[group(e["name"])];g["calls"]+=1;g["duration_sum_us"]+=e["dur"];g["intervals"].append((e["ts"],e["ts"]+e["dur"]))
+    if any(key in e["name"] for key in ("BF16TripleBitmap_MM_Kernel", "BF16TripleBitmap_MM_FP32_Kernel", "MxWaveReduceFP32")):
+     key=json.dumps({"name":e["name"],"grid":e.get("args",{}).get("grid"),"block":e.get("args",{}).get("block")},sort_keys=True)
+     kd[key]["calls"]+=1;kd[key]["duration_sum_us"]+=e["dur"]
+   for g in groups.values():g["kernel_union_us"]=union(g.pop("intervals"))
+   intervals=[(e["ts"],e["ts"]+e["dur"]) for e in r["kernels"]]
+   forwards.append({"label":r["label"],"sequence":r["sequence"],"actual_rows":m["batch"]["num_tokens"],"physical_rows":m["batch"]["num_tokens_after_padding"],"requests":m["batch"]["num_reqs"],"has_prefill":m["batch"]["has_prefill"],"graph_launches":r["graph_launches"],"kernel_events":len(r["kernels"]),"host_annotation_us":r["end"]-r["start"],"groups":dict(groups),"all_kernel_union_us":union(intervals),"all_kernel_duration_sum_us":sum(e["dur"] for e in r["kernels"]),"first_to_last_kernel_span_us":max(y for x,y in intervals)-min(x for x,y in intervals),"KDA_grids":[{**json.loads(k),**v} for k,v in kd.items()]})
+   del r["kernels"]
+  assert sum(f["kernel_events"] for f in forwards)+unassigned==total
+  results.append({"arm":"candidate" if meta["labels"][0].startswith("candidate-") else "control","rank":meta["rank"],"kind":"ordinary" if "ordinary-profile" in meta["labels"][0] else "controlled","window_ms":int(re.search(r"-w(3|10)-",meta["labels"][0]).group(1)),"path":meta["path"],"sha256":digest,"forwards":forwards,"unassigned_kernel_events":unassigned,"all_kernel_events":total})
+  print(json.dumps({"analysed":len(results),"path":meta["path"]}),flush=True)
+  del events
+ summary=[]
+ for p in results:
+  selected=collections.defaultdict(list)
+  for f in p["forwards"]:selected[(f["physical_rows"],f["requests"],f["has_prefill"])].append(f)
+  for (rows,reqs,prefill),fs in sorted(selected.items()):
+   names=sorted({k for f in fs for k in f["groups"]})
+   summary.append({"arm":p["arm"],"rank":p["rank"],"kind":p["kind"],"window_ms":p["window_ms"],"physical_rows":rows,"requests":reqs,"has_prefill":prefill,"samples":len(fs),"median_host_annotation_us":statistics.median(f["host_annotation_us"] for f in fs),"median_kernel_span_us":statistics.median(f["first_to_last_kernel_span_us"] for f in fs),"median_kernel_duration_sum_us":statistics.median(f["all_kernel_duration_sum_us"] for f in fs),"median_group_sum_us":{k:statistics.median(f["groups"].get(k,{}).get("duration_sum_us",0.) for f in fs) for k in names},"median_group_calls":{k:statistics.median(f["groups"].get(k,{}).get("calls",0) for f in fs) for k in names}})
+ out={"status":"complete","source_sha256":sha(pathlib.Path(__file__)),"classifier_sha256":sha(ROOT/"source/analyze_full_profiles.py"),"parent_archive_sha256":json.loads((BASE/"cross-host-verification.json").read_bytes())["archive_sha256"],"GPU_experiment_run":False,"original_measurements_changed":False,"profiles":results,"summary":summary,"limits":["Device launch correlation attributes kernels to same-PID/TID host annotations; work outside them stays unassigned.","Kernel duration sums may overlap. They are neither API latency, measured DRAM bandwidth nor a TP critical path.","Mixed admission profiles may have different grouping; no equality or causal speed conclusion is inferred from row counts alone.","Generic BF16 GEMM families are not source-tensor-specific.","These short profiled windows are not the unprofiled slow timing trial."]}
+ (BASE/"fresh-profile-review.json").write_text(json.dumps(out,indent=2)+"\n")
+ compact=[x for x in summary if x["kind"]=="controlled" and x["physical_rows"]==16 and not x["has_prefill"]]
+ print(json.dumps({"M16_controlled_decode":compact,"total_profiles":len(results)}),flush=True)
+if __name__=="__main__":main()

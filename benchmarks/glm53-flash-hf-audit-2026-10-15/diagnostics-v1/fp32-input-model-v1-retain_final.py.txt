@@ -1,0 +1,86 @@
+from __future__ import annotations
+
+import gzip
+import hashlib
+import json
+import subprocess
+import time
+from pathlib import Path
+
+BASE = Path('/private/tmp/mxwave-fp32-input-model-v1')
+WORK = Path('/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4')
+DEST = WORK / 'benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1'
+PREFIX = 'fp32-input-model-v1-'
+PYTHON = '/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.venv/bin/python'
+
+def sha(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+checks = []
+for label, args in [
+    ('geometry-pytest', [PYTHON, '-B', '-m', 'pytest', '-q', 'tests/test_glm53_fp32_input_model.py']),
+    ('geometry-ruff', [PYTHON, '-B', '-m', 'ruff', 'check', 'integrations/glm53_mxfp4/analyze_fp32_input_model.py', 'tests/test_glm53_fp32_input_model.py']),
+]:
+    result = subprocess.run(args, cwd=WORK, text=True, capture_output=True, check=False)
+    raw = (result.stdout + result.stderr).encode()
+    with (BASE / f'{label}-final.log').open('xb') as stream:
+        stream.write(raw)
+    checks.append({'label': label, 'command': args, 'exit_code': result.returncode,
+                   'output_sha256': sha(raw)})
+    assert result.returncode == 0, result.stdout + result.stderr
+with (BASE / 'geometry-local-checks-final.json').open('x') as stream:
+    json.dump({'status': 'passed', 'checks': checks,
+               'scope': 'geometry reviewer and focused tests; paused admission drafts excluded'}, stream, indent=2)
+
+sources = [
+    'cross-host-verification.json', 'compact-review.json', 'final-findings.json',
+    'mac-independent-review.json', 'latency-review-v1.json', 'fresh-profile-review.json',
+    'resource-review.json', 'jit-window-review.json', 'parent-model-output-comparison.json',
+    'terminal-cleanup.json', 'controller-review.json', 'retainer-state.json',
+    'compare_parent_model.py', 'finalize_findings.py', 'retain_final.py',
+    'geometry-local-checks-final.json', 'geometry-pytest-final.log', 'geometry-ruff-final.log',
+    'evidence/restoration.json', 'evidence/post-restoration-check.json',
+]
+sources.extend(str(p.relative_to(BASE)) for p in sorted((BASE / 'recovery-v2').iterdir()) if p.is_file())
+records = []
+for relative in sources:
+    source = BASE / relative
+    raw = source.read_bytes()
+    name = relative.replace('/', '-')
+    if name.endswith('.py'):
+        name += '.txt'
+    compress = source.suffix == '.json' and len(raw) > 150_000
+    stored = gzip.compress(raw, mtime=0) if compress else raw
+    destination = DEST / (PREFIX + name + ('.gz' if compress else ''))
+    with destination.open('xb') as stream:
+        stream.write(stored)
+    retained = destination.read_bytes()
+    assert (gzip.decompress(retained) if compress else retained) == raw
+    records.append({'source': str(source), 'retained': destination.name,
+                    'source_bytes': len(raw), 'source_sha256': sha(raw),
+                    'retained_bytes': len(retained), 'retained_sha256': sha(retained),
+                    'gzip': compress})
+
+for filename in ['GLM53_HANDOFF.md', 'GLM53_CURRENT_STATE.md']:
+    source = WORK / 'docs' / filename
+    raw = source.read_bytes()
+    destination = DEST / (PREFIX + 'pre-final-' + filename + '.txt')
+    with destination.open('xb') as stream:
+        stream.write(raw)
+    assert destination.read_bytes() == raw
+    records.append({'source': str(source), 'retained': destination.name,
+                    'source_bytes': len(raw), 'source_sha256': sha(raw),
+                    'retained_bytes': len(raw), 'retained_sha256': sha(raw), 'gzip': False})
+
+proof = json.loads((BASE / 'cross-host-verification.json').read_text())
+assert proof['status'] == 'passed' and proof['quality_qualified'] is False
+manifest = {'status': 'complete', 'created_epoch': time.time(), 'artifacts': records,
+            'archive_local': str(BASE / 'evidence.tar.gz'),
+            'archive_remote': '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/evidence-fp32-input-model-v1-recovery-v2.tar.gz',
+            'archive_sha256': proof['archive_sha256'], 'archive_bytes': proof['archive_bytes'],
+            'source_files_unchanged': 229, 'GPU_rerun': False, 'quality_qualified': False,
+            'original_service_restored': True, 'all_previous_failures_preserved': True}
+with (DEST / (PREFIX + 'final-retention.json')).open('x') as stream:
+    json.dump(manifest, stream, indent=2)
+print(json.dumps({'status': 'complete', 'artifacts': len(records),
+                  'retained_bytes': sum(r['retained_bytes'] for r in records), 'checks': checks}, indent=2))

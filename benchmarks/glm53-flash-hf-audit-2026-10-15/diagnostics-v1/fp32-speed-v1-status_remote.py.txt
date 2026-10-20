@@ -1,0 +1,12 @@
+import json,pathlib,shutil,sys
+r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1');sys.path.insert(0,str(r/'fp32-speed-v1-src'));import full_model_control as c
+s=json.loads((r/'fp32-speed-v1-controller.json').read_bytes());out={k:s.get(k) for k in ('phase','pid','watchdog_pid','service_paused','error','updated_epoch')};out['head_free_bytes']=shutil.disk_usage(r).free
+script='''import json,pathlib,sys
+p=pathlib.Path(sys.argv[1])
+if not p.exists():print(json.dumps({'report':'not_started'}))
+else:
+ s=json.loads(p.read_bytes());print(json.dumps({'status':s['status'],'bytes':p.stat().st_size,'cases':len(s['cases']),'timing_conditions':sum(len(x.get('timing',[])) for c in s['cases'] for x in c.get('measurements',[])),'last_case':s['cases'][-1]['name'] if s['cases'] else None,'error':s.get('error'),'assessment':{k:v for k,v in s.get('assessment',{}).items() if k!='failed_conditions'},'failed_conditions':len(s.get('assessment',{}).get('failed_conditions',[])),'M8_s4_completed':[{ 'name':case['name'],'cache':t['cache'],'original':t['summary']['pairs']['candidate_vs_original']['combined'],'stable':t['summary']['repeat_controls_passed'],'rebuilt_equivalent':t['summary']['rebuilt_original_equivalence_passed'],'speed_passed':t['summary']['candidate_speed_passed']} for case in s['cases'] for row in case.get('measurements',[]) if row['tokens']==8 and row['split']==4 for t in row.get('timing',[])]}))
+'''
+out['ranks']=[json.loads(c.run(rank,['python3','-S','-c',script,str(r/'fp32-speed-v1'/f'rank{rank}'/'timing.json')])) for rank in (0,1)]
+p=r/'fp32-speed-v1-evidence-check.json';out['collector']=json.loads(p.read_bytes()) if p.exists() else None
+print(json.dumps(out))

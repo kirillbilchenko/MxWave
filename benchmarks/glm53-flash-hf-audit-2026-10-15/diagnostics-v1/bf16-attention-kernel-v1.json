@@ -1,0 +1,806 @@
+{
+  "status": "passed",
+  "passed": true,
+  "seconds": 12.397291528992355,
+  "cuda_peak_bytes": 1129478144,
+  "library_sha256": "6d51630cd075a8c0dcbb957594341fb21e42d4b4634bb1c92735275d81a70f62",
+  "runtime_sha256": "2a296929bf8363ec6bd9358c8eadbfcca47b77522bf030c8096ab22bd6441c35",
+  "code_sha256": "e2c9a0f7a660539c71c428ddfad22414c205aaa6eddb723ca4addad9d689d789",
+  "prepared_sha256": "9511784249f49a84633d74fb1104429970c6b954d686fa26af3111c91ef3afce",
+  "torch": "2.13.0+cu130",
+  "gpu": "NVIDIA GB10",
+  "gates": {
+    "gpu_weight_bytes_exact": true,
+    "relative_l2_maximum": 0.01
+  },
+  "limits": [
+    "Three real projection fixtures; not full-model throughput or quality.",
+    "Random BF16 activations, not captured GLM activations.",
+    "Graph replay and eager CUDA-event component timings, alternating arm order.",
+    "CUDA graphs are also measured at prefill sizes; full-model prefill is eager.",
+    "Paired benchmark deliberately retains both dense and packed weights."
+  ],
+  "report_sha256": "f9135b03701814c7f13eb017623a513d86ed7959a6d9f7fced97fa497443be35",
+  "raw_report_path": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/diagnostics-v1/bf16attnv1-attempt1/report.json",
+  "controller_sha256": "02950ffe9656e6f126bbdd2c59ddefa588b4e82158749394ee4a30d3127fa762",
+  "guard": {
+    "phase": "complete_idle",
+    "attempts": 1,
+    "production_stopped": false,
+    "interrupted_attempts": 0
+  },
+  "scope": "Component only; full GPU decode exact, GEMM arithmetic can differ; no whole-model speed or quality qualification",
+  "cases": [
+    {
+      "name": "kda-input-l0-r0",
+      "logical_shape": [
+        12576,
+        4096
+      ],
+      "native_shape": [
+        12608,
+        4096
+      ],
+      "raw_bytes": 103022592,
+      "retained_bytes": 73394904,
+      "saving_fraction": 0.28758437760913647,
+      "gpu_decode_bits_exact": true,
+      "measurements": [
+        {
+          "tokens": 1,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0002262561465613544,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.5808960199356079,
+            "zipserv_ms": 0.42214401066303253,
+            "speedup": 1.3699211125605175,
+            "latency_ratio": 0.7267118316800087
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.5881919860839844,
+            "zipserv_ms": 0.4588479995727539,
+            "speedup": 1.2875885747198106,
+            "latency_ratio": 0.7800990330174913
+          }
+        },
+        {
+          "tokens": 1,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0027529129292815924,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.5760959982872009,
+            "zipserv_ms": 0.3807840049266815,
+            "speedup": 1.5129206868815983,
+            "latency_ratio": 0.6609731816551335
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.5828160047531128,
+            "zipserv_ms": 0.40774399042129517,
+            "speedup": 1.4308292975415926,
+            "latency_ratio": 0.6996101464200867
+          }
+        },
+        {
+          "tokens": 8,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.43984000384807587,
+            "zipserv_ms": 0.43513599038124084,
+            "speedup": 1.0118032365617609,
+            "latency_ratio": 0.989305171367587
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.4450240135192871,
+            "zipserv_ms": 0.46329599618911743,
+            "speedup": 0.9631297859855737,
+            "latency_ratio": 1.0410584195790558
+          }
+        },
+        {
+          "tokens": 8,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0026647511404007673,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.44091199338436127,
+            "zipserv_ms": 0.3808480054140091,
+            "speedup": 1.1577111790438768,
+            "latency_ratio": 0.8637732951891106
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.44758400321006775,
+            "zipserv_ms": 0.4046719968318939,
+            "speedup": 1.1004953944682354,
+            "latency_ratio": 0.9041252456066138
+          }
+        },
+        {
+          "tokens": 32,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.4522560089826584,
+            "zipserv_ms": 0.430527999997139,
+            "speedup": 1.047978306981683,
+            "latency_ratio": 0.9519563951523913
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.4591040015220642,
+            "zipserv_ms": 0.45660799741744995,
+            "speedup": 1.0052561734305527,
+            "latency_ratio": 0.9945633144203944
+          }
+        },
+        {
+          "tokens": 32,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002659819321706891,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.454352006316185,
+            "zipserv_ms": 0.3993919938802719,
+            "speedup": 1.1385305974093771,
+            "latency_ratio": 0.8790364922529554
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.4628480076789856,
+            "zipserv_ms": 0.4211840033531189,
+            "speedup": 1.0960520994062555,
+            "latency_ratio": 0.9099833992268941
+          }
+        },
+        {
+          "tokens": 128,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.00010721456055762246,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.6694720089435577,
+            "zipserv_ms": 1.1691679954528809,
+            "speedup": 0.5767356055819576,
+            "latency_ratio": 1.746403105482864
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.6800959706306458,
+            "zipserv_ms": 1.1919039487838745,
+            "speedup": 0.5662935884013939,
+            "latency_ratio": 1.7525525811873797
+          }
+        },
+        {
+          "tokens": 128,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0026660982985049486,
+          "max_absolute_error": 0.0078125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.6977120041847229,
+            "zipserv_ms": 1.1711199879646301,
+            "speedup": 0.595942372743507,
+            "latency_ratio": 1.6785148900126563
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.7121279835700989,
+            "zipserv_ms": 1.181663990020752,
+            "speedup": 0.5793501748545239,
+            "latency_ratio": 1.659342165009071
+          }
+        },
+        {
+          "tokens": 512,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.8434879779815674,
+            "zipserv_ms": 2.9292960166931152,
+            "speedup": 0.26114771592131636,
+            "latency_ratio": 3.472836712744623
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.6881279945373535,
+            "zipserv_ms": 2.4832639694213867,
+            "speedup": 0.27664993984324737,
+            "latency_ratio": 3.6087239425434947
+          }
+        },
+        {
+          "tokens": 512,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0026672547683119774,
+          "max_absolute_error": 0.0078125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.6721599996089935,
+            "zipserv_ms": 2.7243679761886597,
+            "speedup": 0.2467214434627634,
+            "latency_ratio": 4.053153977882452
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.7188159823417664,
+            "zipserv_ms": 4.3114237785339355,
+            "speedup": 0.2545597541010359,
+            "latency_ratio": 5.997952027288171
+          }
+        },
+        {
+          "tokens": 2048,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 2.243600010871887,
+            "zipserv_ms": 9.672784328460693,
+            "speedup": 0.23258344773611417,
+            "latency_ratio": 4.311278428235408
+          },
+          "eager_cuda_events": {
+            "dense_ms": 4.544159889221191,
+            "zipserv_ms": 17.855104446411133,
+            "speedup": 0.25450200545505997,
+            "latency_ratio": 3.9292421221277185
+          }
+        },
+        {
+          "tokens": 2048,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002669015433639288,
+          "max_absolute_error": 0.0078125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 2.2236480712890625,
+            "zipserv_ms": 11.089951992034912,
+            "speedup": 0.20080605015420294,
+            "latency_ratio": 4.987278398602887
+          },
+          "eager_cuda_events": {
+            "dense_ms": 2.221440076828003,
+            "zipserv_ms": 11.059871673583984,
+            "speedup": 0.2005629729272072,
+            "latency_ratio": 4.978694581479051
+          }
+        }
+      ]
+    },
+    {
+      "name": "mla-input-l3-replicated",
+      "logical_shape": [
+        2048,
+        4096
+      ],
+      "native_shape": [
+        2048,
+        4096
+      ],
+      "raw_bytes": 16777216,
+      "retained_bytes": 11882136,
+      "saving_fraction": 0.29176950454711914,
+      "gpu_decode_bits_exact": true,
+      "measurements": [
+        {
+          "tokens": 1,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 1.5014429664006457e-06,
+          "max_absolute_error": 7.62939453125e-06,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.08795199915766716,
+            "zipserv_ms": 0.10531200096011162,
+            "speedup": 0.8811256666768214,
+            "latency_ratio": 1.1973804116871074
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.09247999638319016,
+            "zipserv_ms": 0.12601600587368011,
+            "speedup": 0.7345473211427369,
+            "latency_ratio": 1.3626298745896763
+          }
+        },
+        {
+          "tokens": 1,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002548562129959464,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.08745599910616875,
+            "zipserv_ms": 0.05076799914240837,
+            "speedup": 1.724290244777726,
+            "latency_ratio": 0.580497617788091
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.09247999638319016,
+            "zipserv_ms": 0.081216000020504,
+            "speedup": 1.1386918385520393,
+            "latency_ratio": 0.8782007266088779
+          }
+        },
+        {
+          "tokens": 8,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.06412799656391144,
+            "zipserv_ms": 0.11016000062227249,
+            "speedup": 0.5825581082510205,
+            "latency_ratio": 1.7178144730045402
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.06803199648857117,
+            "zipserv_ms": 0.14207999408245087,
+            "speedup": 0.4925675631031376,
+            "latency_ratio": 2.0884289954112867
+          }
+        },
+        {
+          "tokens": 8,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0026495084166526794,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.07083200104534626,
+            "zipserv_ms": 0.09326399862766266,
+            "speedup": 0.7688433811943598,
+            "latency_ratio": 1.3166929812974726
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.06918399780988693,
+            "zipserv_ms": 0.11843200027942657,
+            "speedup": 0.5766461045511384,
+            "latency_ratio": 1.711840946296135
+          }
+        },
+        {
+          "tokens": 32,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.00014221054152585566,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.06560000032186508,
+            "zipserv_ms": 0.1876479983329773,
+            "speedup": 0.3495907278768799,
+            "latency_ratio": 2.8604877654311918
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.07039999961853027,
+            "zipserv_ms": 0.20259200036525726,
+            "speedup": 0.32747841776361275,
+            "latency_ratio": 2.877727293508851
+          }
+        },
+        {
+          "tokens": 32,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0026668317150324583,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.06843200325965881,
+            "zipserv_ms": 0.05737599916756153,
+            "speedup": 1.1926938833746354,
+            "latency_ratio": 0.8384381054848516
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.06787200272083282,
+            "zipserv_ms": 0.0841279998421669,
+            "speedup": 0.8295930316949902,
+            "latency_ratio": 1.2395096132376895
+          }
+        },
+        {
+          "tokens": 128,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.07505600154399872,
+            "zipserv_ms": 0.13206399977207184,
+            "speedup": 0.5732977890961691,
+            "latency_ratio": 1.759539504574519
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.07849600166082382,
+            "zipserv_ms": 0.16220800578594208,
+            "speedup": 0.4977682958667115,
+            "latency_ratio": 2.0664492758093904
+          }
+        },
+        {
+          "tokens": 128,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002660296857357025,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.08135999739170074,
+            "zipserv_ms": 0.09396800026297569,
+            "speedup": 0.8757477460871838,
+            "latency_ratio": 1.1549656253130736
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.08396799862384796,
+            "zipserv_ms": 0.12649600207805634,
+            "speedup": 0.6597938397820654,
+            "latency_ratio": 1.5064787079744675
+          }
+        },
+        {
+          "tokens": 512,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.11931199952960014,
+            "zipserv_ms": 0.37828800082206726,
+            "speedup": 0.31750830759103654,
+            "latency_ratio": 3.170577999811475
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.1284479945898056,
+            "zipserv_ms": 0.4039359986782074,
+            "speedup": 0.31696110099548885,
+            "latency_ratio": 3.14474352027187
+          }
+        },
+        {
+          "tokens": 512,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002669671317562461,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.14097600430250168,
+            "zipserv_ms": 0.3547839969396591,
+            "speedup": 0.3913391219144071,
+            "latency_ratio": 2.5166268450790765
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.14457599818706512,
+            "zipserv_ms": 0.37913599610328674,
+            "speedup": 0.3822658268294807,
+            "latency_ratio": 2.6223992976533164
+          }
+        },
+        {
+          "tokens": 2048,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.35097599029541016,
+            "zipserv_ms": 1.3007360100746155,
+            "speedup": 0.27001475671640157,
+            "latency_ratio": 3.7060541063786427
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.3636159896850586,
+            "zipserv_ms": 1.3274879455566406,
+            "speedup": 0.273539440561585,
+            "latency_ratio": 3.6507963984378895
+          }
+        },
+        {
+          "tokens": 2048,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.0026701176539063454,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.36740800738334656,
+            "zipserv_ms": 1.449840009212494,
+            "speedup": 0.2528602790720875,
+            "latency_ratio": 3.946130677820961
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.38313600420951843,
+            "zipserv_ms": 1.4778239727020264,
+            "speedup": 0.25489374753350147,
+            "latency_ratio": 3.85717853833929
+          }
+        }
+      ]
+    },
+    {
+      "name": "kda-output-l0-r0",
+      "logical_shape": [
+        4096,
+        4096
+      ],
+      "native_shape": [
+        4096,
+        4096
+      ],
+      "raw_bytes": 33554432,
+      "retained_bytes": 23809768,
+      "saving_fraction": 0.29041361808776855,
+      "gpu_decode_bits_exact": true,
+      "measurements": [
+        {
+          "tokens": 1,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 1.613272434042301e-05,
+          "max_absolute_error": 0.0001220703125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.1982560008764267,
+            "zipserv_ms": 0.14212799817323685,
+            "speedup": 1.3942362043241163,
+            "latency_ratio": 0.7168912796835112
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.20563200116157532,
+            "zipserv_ms": 0.19139200448989868,
+            "speedup": 1.0844340202894713,
+            "latency_ratio": 0.9307500943859046
+          }
+        },
+        {
+          "tokens": 1,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002717165043577552,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.20027200132608414,
+            "zipserv_ms": 0.09940799698233604,
+            "speedup": 2.0146467830115395,
+            "latency_ratio": 0.49636492532213383
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.2038400024175644,
+            "zipserv_ms": 0.12758399546146393,
+            "speedup": 1.5761224253584174,
+            "latency_ratio": 0.62590263907135
+          }
+        },
+        {
+          "tokens": 8,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.1515519991517067,
+            "zipserv_ms": 0.16539199650287628,
+            "speedup": 0.9287027370901634,
+            "latency_ratio": 1.0913217735736727
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.1589439958333969,
+            "zipserv_ms": 0.18451200425624847,
+            "speedup": 0.8121748053344463,
+            "latency_ratio": 1.1608617443445401
+          }
+        },
+        {
+          "tokens": 8,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002675472991541028,
+          "max_absolute_error": 0.001953125,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.15374399721622467,
+            "zipserv_ms": 0.12321600317955017,
+            "speedup": 1.2543825129527726,
+            "latency_ratio": 0.8014361887980569
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.15919999778270721,
+            "zipserv_ms": 0.16803200542926788,
+            "speedup": 0.9233766023953305,
+            "latency_ratio": 1.0554774357385075
+          }
+        },
+        {
+          "tokens": 32,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.00381467049010098,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.15107199549674988,
+            "zipserv_ms": 0.1531360000371933,
+            "speedup": 0.9899696724159691,
+            "latency_ratio": 1.0136623901316497
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.1539520025253296,
+            "zipserv_ms": 0.18265600502490997,
+            "speedup": 0.8381482597145203,
+            "latency_ratio": 1.1864477371436448
+          }
+        },
+        {
+          "tokens": 32,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.00411961181089282,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.1571360006928444,
+            "zipserv_ms": 0.13923200219869614,
+            "speedup": 1.1222021367989286,
+            "latency_ratio": 0.8860604927247359
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.15807999670505524,
+            "zipserv_ms": 0.1610880047082901,
+            "speedup": 0.9937707262113653,
+            "latency_ratio": 1.0190283911053413
+          }
+        },
+        {
+          "tokens": 128,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.1685120016336441,
+            "zipserv_ms": 0.18911999464035034,
+            "speedup": 0.9050793148634118,
+            "latency_ratio": 1.1222939185750658
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.17263999581336975,
+            "zipserv_ms": 0.20931200683116913,
+            "speedup": 0.8253943517690457,
+            "latency_ratio": 1.212418975365611
+          }
+        },
+        {
+          "tokens": 128,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002679517725482583,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.19011199474334717,
+            "zipserv_ms": 0.16200000047683716,
+            "speedup": 1.160736933149078,
+            "latency_ratio": 0.8521292972362873
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.1924159973859787,
+            "zipserv_ms": 0.18540799617767334,
+            "speedup": 1.0154129282051563,
+            "latency_ratio": 0.9635789055821196
+          }
+        },
+        {
+          "tokens": 512,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.22787199914455414,
+            "zipserv_ms": 0.6874080002307892,
+            "speedup": 0.3302422535488604,
+            "latency_ratio": 3.016640933556392
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.23712000250816345,
+            "zipserv_ms": 0.7065920233726501,
+            "speedup": 0.3363595187594496,
+            "latency_ratio": 2.9798921048355
+          }
+        },
+        {
+          "tokens": 512,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002667156048119068,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.2653760015964508,
+            "zipserv_ms": 0.7056320011615753,
+            "speedup": 0.3581828615219764,
+            "latency_ratio": 2.658989497605772
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.27244800329208374,
+            "zipserv_ms": 0.7305279970169067,
+            "speedup": 0.37268549320267014,
+            "latency_ratio": 2.681348324045996
+          }
+        },
+        {
+          "tokens": 2048,
+          "split_k": 1,
+          "finite": true,
+          "relative_l2": 0.0,
+          "max_absolute_error": 0.0,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.7379679977893829,
+            "zipserv_ms": 2.65174400806427,
+            "speedup": 0.27979671953275786,
+            "latency_ratio": 3.5933048804388417
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.7465280294418335,
+            "zipserv_ms": 2.6628479957580566,
+            "speedup": 0.2798669754977432,
+            "latency_ratio": 3.5669765778908844
+          }
+        },
+        {
+          "tokens": 2048,
+          "split_k": 4,
+          "finite": true,
+          "relative_l2": 0.002665814710780978,
+          "max_absolute_error": 0.00390625,
+          "arithmetic_passed": true,
+          "graph_replay": {
+            "dense_ms": 0.7296639978885651,
+            "zipserv_ms": 3.0135040283203125,
+            "speedup": 0.2428261952402958,
+            "latency_ratio": 4.129988648255245
+          },
+          "eager_cuda_events": {
+            "dense_ms": 0.7364159822463989,
+            "zipserv_ms": 2.969791889190674,
+            "speedup": 0.24853845346493372,
+            "latency_ratio": 4.032764036613488
+          }
+        }
+      ]
+    }
+  ]
+}

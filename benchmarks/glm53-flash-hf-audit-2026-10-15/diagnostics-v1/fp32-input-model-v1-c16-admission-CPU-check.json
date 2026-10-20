@@ -1,0 +1,108 @@
+{
+  "status": "passed",
+  "GPU_experiment_run": false,
+  "model_modified": false,
+  "frozen_admission_source_sha256": "7b28d6085bed18592c4741439d57324579cf4794a5d043cac4c18f0041663114",
+  "C16_max_requests": 16,
+  "token_budget": 2048,
+  "prompt_tokens": 256,
+  "cases": [
+    {
+      "window_ms": 3,
+      "synthetic_arrival_spacing_ms": 0,
+      "event": {
+        "window_ms": 3.0,
+        "initial_requests": 1,
+        "initial_prompt_tokens": 256,
+        "final_requests": 8,
+        "final_prompt_tokens": 2048,
+        "additional_messages": 7,
+        "elapsed_seconds": 0.0,
+        "end_reason": "token_budget_full",
+        "deadline_extended": false
+      },
+      "messages_remaining": 8
+    },
+    {
+      "window_ms": 10,
+      "synthetic_arrival_spacing_ms": 0,
+      "event": {
+        "window_ms": 10.0,
+        "initial_requests": 1,
+        "initial_prompt_tokens": 256,
+        "final_requests": 8,
+        "final_prompt_tokens": 2048,
+        "additional_messages": 7,
+        "elapsed_seconds": 0.0,
+        "end_reason": "token_budget_full",
+        "deadline_extended": false
+      },
+      "messages_remaining": 8
+    },
+    {
+      "window_ms": 3,
+      "synthetic_arrival_spacing_ms": 0.5,
+      "event": {
+        "window_ms": 3.0,
+        "initial_requests": 1,
+        "initial_prompt_tokens": 256,
+        "final_requests": 7,
+        "final_prompt_tokens": 1792,
+        "additional_messages": 6,
+        "elapsed_seconds": 0.003,
+        "end_reason": "deadline",
+        "deadline_extended": false
+      },
+      "messages_remaining": 9
+    },
+    {
+      "window_ms": 10,
+      "synthetic_arrival_spacing_ms": 0.5,
+      "event": {
+        "window_ms": 10.0,
+        "initial_requests": 1,
+        "initial_prompt_tokens": 256,
+        "final_requests": 8,
+        "final_prompt_tokens": 2048,
+        "additional_messages": 7,
+        "elapsed_seconds": 0.0035,
+        "end_reason": "token_budget_full",
+        "deadline_extended": false
+      },
+      "messages_remaining": 8
+    },
+    {
+      "window_ms": 3,
+      "synthetic_arrival_spacing_ms": 2,
+      "event": {
+        "window_ms": 3.0,
+        "initial_requests": 1,
+        "initial_prompt_tokens": 256,
+        "final_requests": 2,
+        "final_prompt_tokens": 512,
+        "additional_messages": 1,
+        "elapsed_seconds": 0.003,
+        "end_reason": "deadline",
+        "deadline_extended": false
+      },
+      "messages_remaining": 14
+    },
+    {
+      "window_ms": 10,
+      "synthetic_arrival_spacing_ms": 2,
+      "event": {
+        "window_ms": 10.0,
+        "initial_requests": 1,
+        "initial_prompt_tokens": 256,
+        "final_requests": 6,
+        "final_prompt_tokens": 1536,
+        "additional_messages": 5,
+        "elapsed_seconds": 0.01,
+        "end_reason": "deadline",
+        "deadline_extended": false
+      },
+      "messages_remaining": 10
+    }
+  ],
+  "scope": "Real frozen admission policy with synthetic CPU arrivals; no serving performance or quality claim."
+}

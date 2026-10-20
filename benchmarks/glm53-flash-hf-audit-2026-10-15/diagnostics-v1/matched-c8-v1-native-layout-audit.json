@@ -1,0 +1,79 @@
+{
+  "status": "source_audit_complete",
+  "GPU_experiment_run": false,
+  "native_kernel_changed": false,
+  "download_sha256": "037e4149cb5b56d6a31c3cc75dfe9ade3fea4920c2b8facf0c1b8cfd42704809",
+  "checks": [
+    {
+      "file": "control/TilingConfig.h",
+      "sha256": "181fcb52c2e5c496b00f84eecec57ef0e322406ae6dcd92f825b97c7766461f6",
+      "matches_retained_control_build": true
+    },
+    {
+      "file": "control/L_Kernel.cuh",
+      "sha256": "0a08e93c88d0d2eeac3be0e8ed222b6384dbb608ca45d923be8cd761fa166239",
+      "matches_retained_control_build": true
+    },
+    {
+      "file": "control/L_API.cu",
+      "sha256": "51d24ec5f8fea750bd5cd683ebbb3bb4ec792d3a22d126f63fdd2e0351c43851",
+      "matches_retained_control_build": true
+    },
+    {
+      "file": "control/MMA_PTX.cuh",
+      "sha256": "73fa705c9c96ed5093494b1c66569fbb1cccbdcdb2d516abdbe5086b8acd7ff2",
+      "matches_retained_control_build": true
+    },
+    {
+      "file": "control/MatMulUtilities.cuh",
+      "sha256": "c324b1ab193ddef76f785804cfae6ff60185efedbd82f339d81def5e30015632",
+      "matches_retained_control_build": true
+    },
+    {
+      "file": "control/LICENSE",
+      "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6",
+      "matches_retained_control_build": true
+    }
+  ],
+  "references": [
+    {
+      "file": "control/TilingConfig.h",
+      "line": 47,
+      "anchor": "struct TilingConfigBF16TripleBitmap"
+    },
+    {
+      "file": "control/L_Kernel.cuh",
+      "line": 371,
+      "anchor": "const int WarpOffset = BlockOffset * 4 + Warp_i"
+    },
+    {
+      "file": "control/L_Kernel.cuh",
+      "line": 489,
+      "anchor": "median_offset_high_warp_ptr[tile_id_k * 8]"
+    },
+    {
+      "file": "control/L_API.cu",
+      "line": 481,
+      "anchor": "int high_freq_padding = (16 - (global_high_freq_count % 16)) % 16;"
+    },
+    {
+      "file": "control/MatMulUtilities.cuh",
+      "line": 170,
+      "anchor": "int HF_Batches = (HighFreqCount>>4);"
+    }
+  ],
+  "findings": [
+    "Native BF16 codec uses 64-row global tiles and four 16-row warp groups; offsets and kernel lookup strides explicitly encode four warp groups.",
+    "Changing only BLOCK_ROW_WARPS from four to two would break codec addressing.",
+    "Only the full 64-row tile is padded: common bytes to multiples of 16, rare BF16 counts to multiples of eight. Mid-tile warp offsets are not guaranteed aligned.",
+    "A 32-row candidate would require parent-tile indexing, half-tile metadata and aligned staging windows with adjusted local decoder offsets.",
+    "Full K accumulation could remain in original order, but byte and arithmetic equality require GPU qualification.",
+    "Reducing rows per block preserves total useful warp work; doubled block count alone does not establish higher achieved occupancy or speed.",
+    "The previous compact/narrow/tail-first failures remain relevant; do not repeat unchanged candidates."
+  ],
+  "decision": "Do not change the running kernel. If C16 fails the speed target, profile a new mechanism before integration; a half-row layout requires a CPU codec/addressing oracle before GPU execution.",
+  "limits": [
+    "The inspected L_API.cu is the retained diagnostic control build with an appended resource-query ABI, not a new claim about the qualified production library hash.",
+    "This is source analysis, not a measured 32-row candidate or a performance prediction."
+  ]
+}

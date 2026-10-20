@@ -1,0 +1,14 @@
+import collections,hashlib,json,pathlib,statistics,time
+r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/fp32-speed-v1');groups=collections.defaultdict(list);hashes={};failure_reasons=collections.Counter()
+for rank in (0,1):
+ p=r/f'rank{rank}-timing-report.json';report=json.loads(p.read_bytes());assert report['status']=='complete';hashes[str(rank)]=hashlib.sha256(p.read_bytes()).hexdigest()
+ for case in report['cases']:
+  for row in case['measurements']:
+   for t in row['timing']:
+    s=t['summary'];groups[(case['name'].split('-')[1],row['tokens'],row['split'],t['cache'])].append(s)
+    for k in ('repeat_controls_passed','rebuilt_original_equivalence_passed','candidate_speed_passed'):failure_reasons[k]+=not s[k]
+rows=[]
+for (kind,n,split,cache),values in sorted(groups.items()):
+ v=[x['pairs']['candidate_vs_original']['combined'] for x in values]
+ rows.append({'kind':kind,'tokens':n,'split':split,'cache':cache,'median_ratio':statistics.median(x['ratio'] for x in v),'ratio_range':[min(x['ratio'] for x in v),max(x['ratio'] for x in v)],'median_saved_us':-statistics.median(x['extra_us'] for x in v),'passes':sum(x['timing_screen_passed'] for x in values),'repeat_fails':sum(not x['repeat_controls_passed'] for x in values),'equivalence_fails':sum(not x['rebuilt_original_equivalence_passed'] for x in values),'speed_fails':sum(not x['candidate_speed_passed'] for x in values)})
+print(json.dumps({'independent_retention_pending':True,'report_sha256':hashes,'groups':rows,'failure_reasons_overlap':dict(failure_reasons),'epoch':time.time()}))

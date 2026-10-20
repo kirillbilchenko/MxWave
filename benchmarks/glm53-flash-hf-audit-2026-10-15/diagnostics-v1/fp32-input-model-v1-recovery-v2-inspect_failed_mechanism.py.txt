@@ -1,0 +1,54 @@
+"""Inspect retained traces and the bound native launch geometry; run no GPU work."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import shlex
+import subprocess
+
+REMOTE = '''import collections,gzip,hashlib,json,pathlib,time
+r=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1')
+b=r/'fp32-input-model-v1-evidence'
+inv=json.loads((b/'evidence-inventory.json').read_bytes())['files']
+summaries=[]
+for row in inv:
+ if not(row['path'].startswith('traces/') and '/aligned/' in row['path'] and row['path'].endswith('.pt.trace.json.gz')):continue
+ p=b/row['path'];raw=p.read_bytes();assert hashlib.sha256(raw).hexdigest()==row['sha256']
+ events=json.loads(gzip.decompress(raw))['traceEvents'];counts=collections.Counter()
+ for e in events:
+  n=e.get('name','')
+  if e.get('cat')=='kernel' and any(s in n for s in ('BF16TripleBitmap_MM_Kernel','BF16TripleBitmap_MM_FP32_Kernel','MxWaveReduceFP32')):
+   counts[json.dumps({'name':n,'grid':e['args'].get('grid'),'block':e['args'].get('block')},sort_keys=True)]+=1
+ summaries.append({'path':row['path'],'sha256':row['sha256'],'variants':[{**json.loads(k),'count':v} for k,v in sorted(counts.items())]})
+build=r/'fp32-split-v1-native/build';meta=json.loads((build/'native-build.json').read_bytes())
+arm=next(a for a in meta['arms'] if a['arm']=='fp32')
+api=build/'fp32/L_API.cu';raw=api.read_bytes();digest=hashlib.sha256(raw).hexdigest()
+assert digest==arm['source_sha256']['L_API.cu']
+library=build/arm['library'];assert hashlib.sha256(library.read_bytes()).hexdigest()==arm['library_sha256']
+lines=raw.decode().splitlines();selected=set()
+for i,line in enumerate(lines):
+ if 'GridDim' in line or 'gridDim' in line:
+  selected.update(range(max(0,i-2),min(len(lines),i+3)))
+restored=json.loads((b/'post-restoration-check.json').read_bytes())
+print(json.dumps({'checked_epoch':time.time(),'GPU_work_run':False,'restored_health':restored['health'],
+ 'traces':summaries,'native_API_sha256':digest,'native_library_sha256':arm['library_sha256'],
+ 'bound_native_grid_lines':[{'line':i+1,'text':lines[i]} for i in sorted(selected)]},indent=2))
+'''
+
+
+def main() -> None:
+    """Save the exact read-only inspection before changing any offline checker."""
+    raw = subprocess.check_output(
+        ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'spark',
+         shlex.join(['python3', '-c', REMOTE])], timeout=90,
+    )
+    result = json.loads(raw)
+    with (Path(__file__).parent / 'failed-mechanism-inspection.json').open('x') as stream:
+        json.dump(result, stream, indent=2)
+        stream.write('\n')
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == '__main__':
+    main()

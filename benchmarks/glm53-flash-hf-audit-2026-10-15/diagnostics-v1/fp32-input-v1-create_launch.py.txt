@@ -1,0 +1,14 @@
+import hashlib,json,pathlib
+b=pathlib.Path(__file__).parent;old=pathlib.Path('/private/tmp/mxwave-fp32-speed-v1')
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+s=(old/'launch.py').read_text().replace('fp32-speed-v1','fp32-input-v1').replace('fp32speedv1','fp32inputv1').replace('run_fp32_speed','run_fp32_input').replace("source_files']==220", "source_files']==227").replace("'source_files':220", "'source_files':227")
+for oldvalue,newvalue in [(sha(old/'source.tar.gz'),sha(b/'source.tar.gz')),(sha(old/'prepared.json'),sha(b/'prepared.json')),(sha(old/'collect.py'),sha(b/'collect.py')),(sha(old/'verify.py'),sha(b/'verify.py'))]:
+ assert oldvalue in s,oldvalue;s=s.replace(oldvalue,newvalue)
+s=s.replace('Bounded two-GPU FP32 split paired speed screen with original and rebuilt controls; previous exact-word failures retained, no model qualification or serving policy change.','Bounded two-GPU integrated FP32 input adapter validation: fixed shared scratch, native fallbacks, compiled graph ordering and two-stream ownership; no full-model quality or serving-speed claim.')
+needle=' bound=preflight();assert c.health(8000)'
+s=s.replace(needle," dependency=json.loads((ROOT/(DIR+'-frozen-dependency-check.json')).read_bytes());assert dependency['status']=='passed' and dependency['source_files']==227 and not dependency['GPU_initialized']\n"+needle)
+(b/'launch.py').write_text(s)
+s=(old/'upload_launch.py').read_text().replace('fp32-speed-v1','fp32-input-v1');(b/'upload_launch.py').write_text(s)
+s=(old/'retain_and_review.py').read_text().replace('mxwave-fp32-speed-v1','mxwave-fp32-input-v1').replace('/fp32-speed-v1-evidence-check.json','/fp32-input-v1-evidence-check.json').replace('==220','==227').replace(sha(old/'verify.py'),sha(b/'verify.py')).replace("'--parent-archive','/private/tmp/mxwave-fp32-split-v1/evidence.tar.gz'", "'--precision-archive','/private/tmp/mxwave-fp32-split-v1/evidence.tar.gz','--speed-archive','/private/tmp/mxwave-fp32-speed-v1/evidence.tar.gz'").replace('timing_screen_passed_on_both_GPUs','integration_invariants_passed_on_both_GPUs');(b/'retain_and_review.py').write_text(s)
+s=(old/'wait_retain.py').read_text().replace('fp32-speed-v1','fp32-input-v1');(b/'wait_retain.py').write_text(s)
+print(json.dumps({'launcher_sha256':sha(b/'launch.py'),'verifier_sha256':sha(b/'verify.py'),'collector_sha256':sha(b/'collect.py')}))

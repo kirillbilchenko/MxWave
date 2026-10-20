@@ -1,0 +1,75 @@
+"""Summarize independently attributed counters, retaining every failed timing control."""
+from __future__ import annotations
+import argparse,csv,hashlib,json,pathlib
+
+def sha(path):
+    with path.open('rb') as handle:
+        return hashlib.file_digest(handle,'sha256').hexdigest()
+
+def main():
+    parser=argparse.ArgumentParser()
+    for name in ['root','supplement','review','output']:
+        parser.add_argument('--'+name,type=pathlib.Path,required=True)
+    args=parser.parse_args()
+    review=json.loads(args.review.read_bytes())
+    assert review['offline_attribution_complete']
+    assert sha(args.root/'inventory.json')==review['original_inventory_sha256']
+    assert sha(args.supplement/'inventory.json')==review['supplement_inventory_sha256']
+    for root in [args.root,args.supplement]:
+        for row in json.loads((root/'inventory.json').read_bytes())['files']:
+            path=root/row['path']
+            assert path.stat().st_size==row['bytes'] and sha(path)==row['sha256']
+    kernels=[];telemetry=[];decoder_counters=[]
+    for rank in [0,1]:
+        report=json.loads((args.root/f'rank{rank}-timing-report.json').read_bytes())
+        operations={x['name']:x for x in report['operations']}
+        samples=[s for op in operations.values() for m in op['measurements'] for s in m['samples']]
+        boundaries=[s[side] for s in samples for side in ['before','after']]
+        telemetry.append({'rank':rank,'boundaries':len(boundaries),'event_samples':sum(len(l['us']) for s in samples for l in s['legs']),
+            'SM_MHz_observed':sorted({s['SM_MHz'] for s in boundaries}),
+            'temperature_C_range':[min(s['temperature_C'] for s in boundaries),max(s['temperature_C'] for s in boundaries)],
+            'throttle_reason_masks':sorted({s['throttle_reasons'] for s in boundaries}),
+            'memory_clock_numeric_samples':sum(isinstance(s['memory_MHz'],(int,float)) for s in boundaries),
+            'CUDA_peak_bytes':report['CUDA_peak_bytes'],'samples_exclude_transient_throttling':False})
+        rows=list(csv.reader((args.supplement/f'rank{rank}-ncu-nvtx.csv').read_text().splitlines()))
+        header=next(x for x in rows if x and x[0]=='ID');start=rows.index(header)
+        table={x[0]:dict(zip(header,x,strict=True)) for x in rows[start+2:] if len(x)==len(header) and x[0].isdigit()}
+        profile=next(x for x in review['profiles'] if x['rank']==rank)
+        for k in profile['kernels']:
+            op=operations[k['label'].removeprefix('kda_memory/')]
+            metric=k['metrics'];assert metric['gpu__time_duration.sum']['unit']=='ns' and metric['lts__t_bytes.sum']['unit']=='byte'
+            duration=metric['gpu__time_duration.sum']['value'];l2=metric['lts__t_bytes.sum']['value']
+            decoder='BF16TripleBitmap_Decompress_Kernel' in k['name']
+            flops=0 if decoder else op['useful_FLOPs']
+            if flops:
+                n,inner=op['metadata']['logical_shape'];assert flops==2*n*inner*op['metadata']['activation_rows']
+            kernels.append({'rank':rank,'kernel_id':k['id'],'operation':op['name'],'kernel_name':k['name'],'decoder':decoder,
+                'duration_ns_NCU_replay':duration,'measured_L2_request_bytes':l2,'useful_FLOPs':flops,'useful_FLOPs_per_L2_byte':flops/l2,
+                'useful_TFLOPs_per_second_NCU_replay':flops/duration/1000,'instructions':metric['smsp__inst_executed.sum']['value'],
+                'SM_throughput_pct':metric['sm__throughput.avg.pct_of_peak_sustained_elapsed']['value'],
+                'tensor_activity_pct':metric['sm__pipe_tensor_cycles_active.avg.pct_of_peak_sustained_elapsed']['value'],
+                'active_warps_pct':metric['smsp__warps_active.avg.pct_of_peak_sustained_active']['value']})
+            if decoder and op['name'].endswith('/decode'):
+                raw=table[k['id']]
+                stalls={name:float(value.replace(',','')) for name,value in raw.items() if name.startswith('smsp__average_warps_issue_stalled_') and name.endswith('_per_issue_active.ratio')}
+                decoder_counters.append({'rank':rank,'fixture':op['name'].removesuffix('/decode'),
+                    'logical_payload_bytes':op['logical_payload_bytes'],'measured_L2_request_bytes':l2,
+                    'L2_hit_rate_pct':metric['lts__t_sector_hit_rate.pct']['value'],'instructions':metric['smsp__inst_executed.sum']['value'],
+                    'top_stall_ratios_per_issue_active':sorted(stalls.items(),key=lambda x:x[1],reverse=True)[:6],
+                    'stall_ratios_are_elapsed_time_percentages':False})
+    assert len(kernels)==56 and sum(x['event_samples'] for x in telemetry)==22528
+    final={'status':'complete','source_sha256':sha(pathlib.Path(__file__)),'attributed_review_sha256':sha(args.review),
+        'kernel_records':kernels,'decoder_counters':decoder_counters,'telemetry':telemetry,
+        'graph_pressure_decoder_copy_comparisons':[x for x in review['decoder_comparisons'] if x['mode']=='graph' and x['cache']=='pressure'],
+        'failed_repeat_controls_by_rank':review['failed_repeat_controls_by_rank'],'no_failed_control_removed':True,
+        'measured_DRAM_traffic_available':False,'calibrated_compute_or_memory_roofline':False,'whole_model_coverage':False,
+        'model_quality_or_serving_speed_qualified':False,
+        'interpretation':['Decoder logical payload rates are about 90-93% of same-shape copy rates in graph+pressure timing; descriptive, not a measured hardware ceiling.',
+                          'Decoder L2 requests are about 204 MB input / 66 MB output, close to dense-copy request traffic; instructions are much higher.',
+                          'Long-scoreboard is the largest retained decoder stall ratio; this is consistent with load-dependency waits, not proof of an isolated address-dependency bottleneck.',
+                          'A decoder-only rewrite has no demonstrated large speed headroom. Avoiding full prefill reconstruction is the next hypothesis, not a qualified fix.',
+                          'Output dense/coupled timings show a possible small-memory tradeoff; API gains and impact on fused C1 decode remain unmeasured.',
+                          'Boundary telemetry includes clock ramping; every 2% repeat-control failure remains. No thermal throttle bit was observed, but samples cannot exclude transients.']}
+    args.output.write_text(json.dumps(final,indent=2,allow_nan=False)+'\n')
+    print(json.dumps({'status':final['status'],'kernel_records':len(kernels),'event_samples':sum(x['event_samples'] for x in telemetry),'failed_repeat_controls_by_rank':final['failed_repeat_controls_by_rank']}))
+if __name__=='__main__':main()

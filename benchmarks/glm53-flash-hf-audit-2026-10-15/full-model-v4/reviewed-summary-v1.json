@@ -1,0 +1,533 @@
+{
+  "execution_status": "complete",
+  "qualification_status": "unqualified",
+  "source_repository": "INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound",
+  "source_revision": "35d1b0d5cb4a0db075fd2749c897e970dc15bfa5",
+  "protocol_sha256": "ad73a6e5787f4d2b09d7b78491a92ccf515bebef81435b35e4614a6bafbecb1c",
+  "scope": "Lossless E8M0 expert scale storage only; FP4 codes unchanged; TP2 W4A16",
+  "saving": [
+    {
+      "rank": 0,
+      "cuda_allocated_saved_bytes": 2346670592,
+      "scale_payload_saved_bytes": 2359294672,
+      "raw_cuda_allocated_bytes": 92648246272,
+      "aligned_cuda_allocated_bytes": 90301575680,
+      "raw_scratch_bytes": 37748736,
+      "aligned_scratch_bytes": 37748736
+    },
+    {
+      "rank": 1,
+      "cuda_allocated_saved_bytes": 2346670592,
+      "scale_payload_saved_bytes": 2359294672,
+      "raw_cuda_allocated_bytes": 92648246272,
+      "aligned_cuda_allocated_bytes": 90301575680,
+      "raw_scratch_bytes": 37748736,
+      "aligned_scratch_bytes": 37748736
+    }
+  ],
+  "global_cuda_allocated_saved_bytes": 4693341184,
+  "raw_cuda_allocation_saving_percent": 2.532881826074248,
+  "compressed_scale_groups": 166,
+  "stock_fallback_scale_groups": 2,
+  "stock_fallback": "Layer 44 w2 on both TP2 ranks",
+  "timing_unfiltered_original_medians": [
+    {
+      "batch": 1,
+      "prompt_tokens": 256,
+      "tokens_per_second": {
+        "stock": 19.55506004008406,
+        "raw": 19.954372792759706,
+        "aligned": 19.655183224065922
+      },
+      "aligned_over_raw": 0.985006315567967,
+      "raw_over_stock": 1.020419919542928,
+      "aligned_over_stock": 1.005120065281141,
+      "ttft_seconds": {
+        "stock": 0.3197396250034217,
+        "raw": 0.3182489830069244,
+        "aligned": 0.3158885979792103
+      }
+    },
+    {
+      "batch": 4,
+      "prompt_tokens": 256,
+      "tokens_per_second": {
+        "stock": 54.40512017390219,
+        "raw": 58.3564435923006,
+        "aligned": 24.685425227490832
+      },
+      "aligned_over_raw": 0.4230111313834033,
+      "raw_over_stock": 1.0726277858732465,
+      "aligned_over_stock": 0.4537334932555168,
+      "ttft_seconds": {
+        "stock": 0.9894820500048809,
+        "raw": 0.8941599690006115,
+        "aligned": 1.476529297986417
+      }
+    },
+    {
+      "batch": 8,
+      "prompt_tokens": 256,
+      "tokens_per_second": {
+        "stock": 90.47162556419337,
+        "raw": 93.03096998121728,
+        "aligned": 96.65791560442119
+      },
+      "aligned_over_raw": 1.0389864324099403,
+      "raw_over_stock": 1.028288918222299,
+      "aligned_over_stock": 1.068378234630463,
+      "ttft_seconds": {
+        "stock": 1.539297825001995,
+        "raw": 1.662042370007839,
+        "aligned": 1.528546463989187
+      }
+    },
+    {
+      "batch": 1,
+      "prompt_tokens": 2048,
+      "tokens_per_second": {
+        "stock": 15.275119191961965,
+        "raw": 15.682802125914575,
+        "aligned": 15.345142734573242
+      },
+      "aligned_over_raw": 0.9784694477026284,
+      "raw_over_stock": 1.0266893455186354,
+      "aligned_over_stock": 1.0045841568717921,
+      "ttft_seconds": {
+        "stock": 1.2129401930142194,
+        "raw": 1.1867437039909419,
+        "aligned": 1.2150359480001498
+      }
+    },
+    {
+      "batch": 4,
+      "prompt_tokens": 2048,
+      "tokens_per_second": {
+        "stock": 30.207112697724682,
+        "raw": 30.043270027398595,
+        "aligned": 29.713793043944122
+      },
+      "aligned_over_raw": 0.9890332516016399,
+      "raw_over_stock": 0.9945760234695179,
+      "aligned_over_stock": 0.9836687584570862,
+      "ttft_seconds": {
+        "stock": 4.316493189995526,
+        "raw": 4.181819438003004,
+        "aligned": 4.309355655510444
+      }
+    },
+    {
+      "batch": 8,
+      "prompt_tokens": 2048,
+      "tokens_per_second": {
+        "stock": 35.602028304701044,
+        "raw": 35.885615316713455,
+        "aligned": 36.36910879607295
+      },
+      "aligned_over_raw": 1.0134731834773447,
+      "raw_over_stock": 1.007965473472054,
+      "aligned_over_stock": 1.0215459772349718,
+      "ttft_seconds": {
+        "stock": 6.85852461149625,
+        "raw": 6.825697685984778,
+        "aligned": 6.813191891502356
+      }
+    }
+  ],
+  "quality": {
+    "raw_repeat": {
+      "contexts": [
+        {
+          "index": 0,
+          "kl": 0.14138056452659808,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": false,
+          "nll_difference": 0.029702179104674542
+        },
+        {
+          "index": 1,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.016339707842060847
+        },
+        {
+          "index": 2,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.006113125296201005
+        },
+        {
+          "index": 3,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.00899181739956667
+        },
+        {
+          "index": 4,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.03199245415481755
+        },
+        {
+          "index": 5,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.01645723978678504
+        },
+        {
+          "index": 6,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.007663163951798779
+        },
+        {
+          "index": 7,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.00080716095718536
+        },
+        {
+          "index": 8,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.029127124711578745
+        },
+        {
+          "index": 9,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.016560887355430154
+        },
+        {
+          "index": 10,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.020382660510493977
+        },
+        {
+          "index": 11,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.002218556871600441
+        },
+        {
+          "index": 12,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.03843548157635901
+        },
+        {
+          "index": 13,
+          "kl": 0.7787593376554015,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": false,
+          "nll_difference": -0.016046112658933964
+        },
+        {
+          "index": 14,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.011677244597791514
+        },
+        {
+          "index": 15,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.02340108647065975
+        }
+      ],
+      "mean_kl": 0.057508743886374974,
+      "all_logprobs_bits_exact": false,
+      "all_greedy_tokens_exact": false,
+      "mean_nll_difference": -0.001981689006674614
+    },
+    "raw_to_aligned": {
+      "contexts": [
+        {
+          "index": 0,
+          "kl": 0.14138056452659808,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": false,
+          "nll_difference": 0.024284656375062497
+        },
+        {
+          "index": 1,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.013781786899940585
+        },
+        {
+          "index": 2,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.031226036595363382
+        },
+        {
+          "index": 3,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.0038039899339867844
+        },
+        {
+          "index": 4,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.038819774926876605
+        },
+        {
+          "index": 5,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.04625873191683816
+        },
+        {
+          "index": 6,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.03707479963115645
+        },
+        {
+          "index": 7,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.0162884356928803
+        },
+        {
+          "index": 8,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.052862575007418755
+        },
+        {
+          "index": 9,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.04567978428859476
+        },
+        {
+          "index": 10,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.021142501457063645
+        },
+        {
+          "index": 11,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.028814085792092214
+        },
+        {
+          "index": 12,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.004059574650783659
+        },
+        {
+          "index": 13,
+          "kl": 0.7787593376554015,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": false,
+          "nll_difference": -0.02908960230210411
+        },
+        {
+          "index": 14,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.023113688300638202
+        },
+        {
+          "index": 15,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.014936885646745779
+        }
+      ],
+      "mean_kl": 0.057508743886374974,
+      "all_logprobs_bits_exact": false,
+      "all_greedy_tokens_exact": false,
+      "mean_nll_difference": 0.0004862229613706859,
+      "gates": {
+        "status": "unqualified_unstable_control",
+        "raw_repeat_kl_limit": 1e-05,
+        "raw_repeat_absolute_nll_difference_limit": 0.0001,
+        "raw_repeat_stable": false,
+        "mean_kl_limit": null,
+        "absolute_mean_nll_difference_limit": null,
+        "passed": false
+      }
+    },
+    "stock_to_raw": {
+      "contexts": [
+        {
+          "index": 0,
+          "kl": 0.1406900790825741,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": false,
+          "nll_difference": -0.02520812352498325
+        },
+        {
+          "index": 1,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.020807821610395294
+        },
+        {
+          "index": 2,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.01626094556322144
+        },
+        {
+          "index": 3,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.005281351126876999
+        },
+        {
+          "index": 4,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.04529652128032602
+        },
+        {
+          "index": 5,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.15334226570877263
+        },
+        {
+          "index": 6,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.005885496326520467
+        },
+        {
+          "index": 7,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.015329013151280435
+        },
+        {
+          "index": 8,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.00753056208292513
+        },
+        {
+          "index": 9,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.019003193051208456
+        },
+        {
+          "index": 10,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.027002938588459813
+        },
+        {
+          "index": 11,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.005929030624090004
+        },
+        {
+          "index": 12,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.012870382795146185
+        },
+        {
+          "index": 13,
+          "kl": 0.8144739635298972,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": false,
+          "nll_difference": 0.05793038162530806
+        },
+        {
+          "index": 14,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.0023159438488526973
+        },
+        {
+          "index": 15,
+          "kl": 0,
+          "next_logprobs_bits_exact": true,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.016149123509725527
+        }
+      ],
+      "mean_kl": 0.05969775266327946,
+      "all_logprobs_bits_exact": false,
+      "all_greedy_tokens_exact": false,
+      "mean_nll_difference": -0.010126739565064824
+    }
+  },
+  "gates": {
+    "quality": false,
+    "all_cases_throughput_within_2_percent_of_raw": false,
+    "all_cases_total_throughput_within_2_percent_of_stock": false,
+    "all_cases_raw_adapter_throughput_within_2_percent_of_stock": true,
+    "both_ranks_profiled_in_both_arms": true
+  },
+  "raw_repeat_and_aligned_next_distribution_sha_matches": 16,
+  "quality_context_count": 16,
+  "review": [
+    "Supersedes the original automatic quality=true flag, which widened tolerance around an unstable repeat control.",
+    "The stable-control prerequisite was added retrospectively as an analysis correction. This run is not qualified under a prospective revised protocol.",
+    "Uncompressed stock and raw control generate degenerate output; correct chat template and gMASK/sop prefix did not repair the aligned engine.",
+    "The root cause of bad source/runtime output is not isolated; do not attribute it to compression or to source weights alone.",
+    "All original cold samples are retained; the B4/256 median is JIT-contaminated.",
+    "Full-model numerical equivalence and production throughput are not established."
+  ],
+  "limitations": [
+    "One imported AutoRound checkpoint; not BF16 or NVFP4 quality qualification.",
+    "An unstable repeat control invalidates the quality comparison.",
+    "Diagnostic authored contexts; not a standard perplexity benchmark.",
+    "TP2 W4A16 Marlin, no DFlash/MTP and fixed four-GiB KV per rank.",
+    "Only expert E8M0 scales are compressed; four-bit codes are unchanged.",
+    "Three sequential arms, five trials per case; not an interleaved thermal control."
+  ]
+}

@@ -1,0 +1,447 @@
+{
+  "source_report_sha256": "54683ab2909aadc3698c6e1e66b0b19e45aec629c3d05125a92c9871ce762272",
+  "source_status": "complete",
+  "error": null,
+  "loaded_weights": [
+    {
+      "rank": 0,
+      "status": "passed",
+      "expert_layers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "mxfp8_linears": [
+        "language_model.model.layers.0.mlp.gate_up_proj",
+        "language_model.model.layers.0.mlp.down_proj",
+        "language_model.model.layers.3.mlp.shared_experts.gate_up_proj",
+        "language_model.model.layers.3.mlp.shared_experts.down_proj",
+        "language_model.model.layers.44.mlp.shared_experts.gate_up_proj",
+        "language_model.model.layers.44.mlp.shared_experts.down_proj"
+      ],
+      "compared_tensors": 658,
+      "mismatches": [],
+      "limits": [
+        "One expert per layer; three experts at layers 3/23/44.",
+        "Head and embedding sampled at each rank's boundary rows.",
+        "This verifies selected loaded values, not model quality."
+      ],
+      "attention": {
+        "status": "passed",
+        "expected_fused_layers": 45,
+        "seen_fused_layers": 45,
+        "compared_tensors": 452,
+        "mismatches": [],
+        "bad_modules": [],
+        "error": null
+      }
+    },
+    {
+      "rank": 1,
+      "status": "passed",
+      "expert_layers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "mxfp8_linears": [
+        "language_model.model.layers.0.mlp.gate_up_proj",
+        "language_model.model.layers.0.mlp.down_proj",
+        "language_model.model.layers.3.mlp.shared_experts.gate_up_proj",
+        "language_model.model.layers.3.mlp.shared_experts.down_proj",
+        "language_model.model.layers.44.mlp.shared_experts.gate_up_proj",
+        "language_model.model.layers.44.mlp.shared_experts.down_proj"
+      ],
+      "compared_tensors": 658,
+      "mismatches": [],
+      "limits": [
+        "One expert per layer; three experts at layers 3/23/44.",
+        "Head and embedding sampled at each rank's boundary rows.",
+        "This verifies selected loaded values, not model quality."
+      ],
+      "attention": {
+        "status": "passed",
+        "expected_fused_layers": 45,
+        "seen_fused_layers": 45,
+        "compared_tensors": 452,
+        "mismatches": [],
+        "bad_modules": [],
+        "error": null
+      }
+    }
+  ],
+  "phases": [
+    {
+      "label": "graphs_before",
+      "dispatch": [
+        {
+          "status": "complete",
+          "eager": false,
+          "one_token_runtime_mode": "FULL",
+          "retained_graphs": 4,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        },
+        {
+          "status": "complete",
+          "eager": false,
+          "one_token_runtime_mode": "FULL",
+          "retained_graphs": 4,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        }
+      ],
+      "chat_checks": [
+        {
+          "prompt": "What is 2 + 2? Reply with only the number.",
+          "expected": "4",
+          "output": "The user is asking a simple math question: 2 + 2. They've explicitly requested I reply with only the number. This is a clear, simple",
+          "passed": false,
+          "finish_reason": "length"
+        },
+        {
+          "prompt": "What is the capital of France? Reply with only the city name.",
+          "expected": "Paris",
+          "output": "The user is asking a simple factual question: what is the capital of France? They've explicitly asked me to reply with only the city name.\n\nThe answer is",
+          "passed": false,
+          "finish_reason": "length"
+        },
+        {
+          "prompt": "Reply with exactly the word BLUE and nothing else.",
+          "expected": "BLUE",
+          "output": "The user is asking me to reply with exactly the word \"BLUE\" and nothing else. This is a simple instruction-following request. There's nothing harmful or",
+          "passed": false,
+          "finish_reason": "length"
+        }
+      ],
+      "sanity_passed": false,
+      "mean_nll": 0.747036227336829
+    },
+    {
+      "label": "eager",
+      "dispatch": [
+        {
+          "status": "complete",
+          "eager": true,
+          "one_token_runtime_mode": "NONE",
+          "retained_graphs": 4,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        },
+        {
+          "status": "complete",
+          "eager": true,
+          "one_token_runtime_mode": "NONE",
+          "retained_graphs": 4,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        }
+      ],
+      "chat_checks": [
+        {
+          "prompt": "What is 2 + 2? Reply with only the number.",
+          "expected": "4",
+          "output": "The user is asking a simple math question: 2 + 2. They've explicitly requested I reply with only the number. This is a clear, simple",
+          "passed": false,
+          "finish_reason": "length"
+        },
+        {
+          "prompt": "What is the capital of France? Reply with only the city name.",
+          "expected": "Paris",
+          "output": "The user is asking a simple factual question: what is the capital of France? They've explicitly asked me to reply with only the city name.\n\nThe answer is",
+          "passed": false,
+          "finish_reason": "length"
+        },
+        {
+          "prompt": "Reply with exactly the word BLUE and nothing else.",
+          "expected": "BLUE",
+          "output": "The user is asking me to reply with exactly the word \"BLUE\" and nothing else. This is a simple instruction-following request. There's nothing harmful or",
+          "passed": false,
+          "finish_reason": "length"
+        }
+      ],
+      "sanity_passed": false,
+      "mean_nll": 0.7427339044106419
+    },
+    {
+      "label": "graphs_after",
+      "dispatch": [
+        {
+          "status": "complete",
+          "eager": false,
+          "one_token_runtime_mode": "FULL",
+          "retained_graphs": 4,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        },
+        {
+          "status": "complete",
+          "eager": false,
+          "one_token_runtime_mode": "FULL",
+          "retained_graphs": 4,
+          "runner": "vllm.v1.worker.gpu.model_runner.GPUModelRunner"
+        }
+      ],
+      "chat_checks": [
+        {
+          "prompt": "What is 2 + 2? Reply with only the number.",
+          "expected": "4",
+          "output": "The user is asking a simple math question: 2 + 2. They've explicitly requested I reply with only the number. This is a clear, simple",
+          "passed": false,
+          "finish_reason": "length"
+        },
+        {
+          "prompt": "What is the capital of France? Reply with only the city name.",
+          "expected": "Paris",
+          "output": "The user is asking a simple factual question: what is the capital of France? They've explicitly asked me to reply with only the city name.\n\nThe answer is",
+          "passed": false,
+          "finish_reason": "length"
+        },
+        {
+          "prompt": "Reply with exactly the word BLUE and nothing else.",
+          "expected": "BLUE",
+          "output": "The user is asking me to reply with exactly the word \"BLUE\" and nothing else. This is a simple instruction-following request. There's nothing harmful or",
+          "passed": false,
+          "finish_reason": "length"
+        }
+      ],
+      "sanity_passed": false,
+      "mean_nll": 0.7445058458071139
+    }
+  ],
+  "comparisons": {
+    "graphs_before_to_graphs_after": {
+      "contexts": [
+        {
+          "index": 0,
+          "kl": 6.51615428661183e-05,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.001316055245647707
+        },
+        {
+          "index": 1,
+          "kl": 2.9870862714990494e-06,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.003744707813782444
+        }
+      ],
+      "mean_kl": 3.407431456880868e-05,
+      "all_logprobs_bits_exact": false,
+      "all_greedy_tokens_exact": true,
+      "mean_nll_difference": -0.0025303815297150756
+    },
+    "graphs_before_to_eager": {
+      "contexts": [
+        {
+          "index": 0,
+          "kl": 3.9588754325848476e-05,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.0032300046347102374
+        },
+        {
+          "index": 1,
+          "kl": 3.111956487734534e-06,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": true,
+          "nll_difference": -0.005374641217663845
+        }
+      ],
+      "mean_kl": 2.1350355406791505e-05,
+      "all_logprobs_bits_exact": false,
+      "all_greedy_tokens_exact": true,
+      "mean_nll_difference": -0.004302322926187041
+    },
+    "eager_to_graphs_after": {
+      "contexts": [
+        {
+          "index": 0,
+          "kl": 1.1682072569021407e-05,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.0019139493890625303
+        },
+        {
+          "index": 1,
+          "kl": 2.550530759964861e-06,
+          "next_logprobs_bits_exact": false,
+          "greedy_tokens_exact": true,
+          "nll_difference": 0.0016299334038814006
+        }
+      ],
+      "mean_kl": 7.116301664493134e-06,
+      "all_logprobs_bits_exact": false,
+      "all_greedy_tokens_exact": true,
+      "mean_nll_difference": 0.0017719413964719655
+    }
+  },
+  "compression_tested": false,
+  "throughput_measured": false,
+  "model_quality_qualified": false,
+  "limits": [
+    "Selected source values and two next-token distributions per dispatch mode.",
+    "Three simple chats are a sanity gate, not an evaluation benchmark.",
+    "This stock-only diagnostic cannot qualify a compression candidate."
+  ],
+  "mhc_warmup": [
+    {
+      "status": "complete",
+      "sizes": [
+        1,
+        2,
+        4,
+        7,
+        8,
+        16,
+        17,
+        32,
+        64,
+        65,
+        128,
+        129,
+        193,
+        256,
+        257,
+        321,
+        385,
+        512,
+        513,
+        577,
+        769,
+        1024,
+        1025,
+        1537,
+        2048
+      ],
+      "seconds": 48.35951278798166,
+      "layer_signatures": [
+        [
+          4096,
+          4,
+          1e-05,
+          1e-06,
+          2.0,
+          20
+        ]
+      ]
+    },
+    {
+      "status": "complete",
+      "sizes": [
+        1,
+        2,
+        4,
+        7,
+        8,
+        16,
+        17,
+        32,
+        64,
+        65,
+        128,
+        129,
+        193,
+        256,
+        257,
+        321,
+        385,
+        512,
+        513,
+        577,
+        769,
+        1024,
+        1025,
+        1537,
+        2048
+      ],
+      "seconds": 48.82753793502343,
+      "layer_signatures": [
+        [
+          4096,
+          4,
+          1e-05,
+          1e-06,
+          2.0,
+          20
+        ]
+      ]
+    }
+  ],
+  "decision": "stock_sanity_gate_failed",
+  "analysis_code_sha256": "717708bcf071f0d014f4fd7b30d6b610a04b8b74e123c293ac187a74f7abec37"
+}

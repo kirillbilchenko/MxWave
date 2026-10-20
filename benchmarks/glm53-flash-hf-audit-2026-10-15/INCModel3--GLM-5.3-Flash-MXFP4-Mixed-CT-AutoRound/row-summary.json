@@ -1,0 +1,42 @@
+{
+  "status": "complete",
+  "source": {
+    "bf16_repository": "zai-org/GLM-5.3-Flash-BF16",
+    "bf16_revision": "f9fed3bbc82291073373d67452e9f25317ef7577",
+    "upstream_repository": "INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound",
+    "upstream_revision": "35d1b0d5cb4a0db075fd2749c897e970dc15bfa5",
+    "bf16_index_sha256": "e6007bd58fb7e07f9fe69544257ee2713f252ef5855bbf685b48c991d524ef0f",
+    "upstream_index_sha256": "6d1364a27eef78675390422b1b5230601817fb7460ce816951b2cd515934c85d"
+  },
+  "expert_slices": 12,
+  "sampled_fp4_weights": 1310720,
+  "sampled_fp4_scale_bytes": 40960,
+  "sampled_fp4_packed_bytes": 655360,
+  "byte_agreement": {
+    "rtn": {
+      "scale_byte_agreement": 0.9275634765625,
+      "packed_byte_agreement": 0.9292465209960937
+    },
+    "mse": {
+      "scale_byte_agreement": 1.0,
+      "packed_byte_agreement": 1.0
+    }
+  },
+  "base_expert_pooled_sqnr_db": {
+    "rtn": 18.89323698634446,
+    "mse": 18.984963566791915,
+    "upstream": 18.984963566791915
+  },
+  "sampled_mxfp8_linears": 9,
+  "mxfp8_pooled_sqnr_db": 32.185367208056284,
+  "mxfp8_pooled_relative_l2": 0.024588477568679407,
+  "bf16_controls_exact": true,
+  "comparison_sha256": "f3430044955a25e4d527b6312045e64e62f507230000b9407fe002921c16bd19",
+  "core_sha256": "3531ce8234c4051507c0479d5c5b363249bedb8a5bc5ad007f45ac6116a9083a",
+  "limitations": [
+    "Only 32 selected rows per matrix, with a deterministic non-random selection.",
+    "Unweighted reconstruction is not activation replay or whole-model quality.",
+    "The upstream card does not pin its original BF16 source revision.",
+    "No inference, GPU memory or throughput test was performed."
+  ]
+}

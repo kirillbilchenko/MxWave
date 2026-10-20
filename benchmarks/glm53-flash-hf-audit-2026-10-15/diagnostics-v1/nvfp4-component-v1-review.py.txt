@@ -1,0 +1,70 @@
+"""Independent local review of retained NVFP4 component evidence."""
+from __future__ import annotations
+import hashlib,json,statistics
+from pathlib import Path
+import sys
+root=Path(sys.argv[1]);manifest=json.loads((root/'evidence-manifest-v2.json').read_text())
+for name,record in manifest.items():
+ b=(root/name).read_bytes();assert len(b)==record['bytes'];assert hashlib.sha256(b).hexdigest()==record['sha256']
+summary={'payloads_verified':len(manifest),'variants':{},'limitations':['Numerical equality is reported by GPU harness and cross-checked via retained output hashes where available; no independent GPU rerun','One layer with synthetic activations/routing; TP partitions run sequentially on one GPU, no model-wide all-reduce or serving measurement']}
+for attempt,label in [(4,'direct5_16experts'),(5,'async5_16experts'),(6,'delta5_16experts'),(8,'delta5_288experts'),(9,'delta5_288experts_repeat'),(10,'delta5_installed_C1_shape'),(11,'delta5_installed_shared_buffers')]:
+ r=json.loads((root/f'test{attempt}/report.json').read_text())
+ c=json.loads((root/f'controller{attempt}.json').read_text())
+ assert r['status']=='complete' and c['status']=='complete'
+ assert c['live_unchanged'] and c['health_200']
+ assert c['before']['counters']==c['after']['counters'] and not c['after']['busy']
+ rows=[];stable=0;total=0;hashchecks=0
+ for case in r['cases']:
+  assert all(all(x.values()) for x in case['exact_vs_installed'].values())
+  assert all(case['candidate_vs_raw'].values()) and case['graph_outputs_exact_after_timing']
+  if 'output_sha256' in case:
+   for arm, hashes in case['output_sha256'].items():
+    assert hashes==case['reference_sha256'];hashchecks+=len(hashes)
+  for timing in [case['whole_layer'],*case['gemms']]:
+   med={k:statistics.median(v) for k,v in timing['samples_us'].items()}
+   assert med==timing['median_us'];ratio=med['candidate']/med['raw']
+   assert abs(ratio-timing['candidate_time_ratio'])<1e-14
+   control=abs(med['repeat']/med['raw']-1)
+   assert abs(control-timing['control_relative_difference'])<1e-14
+   assert (control<=.02)==timing['control_stable_2pct'];stable+=control<=.02;total+=1
+  t=case['whole_layer'];rows.append({'rank':case['rank'],'rows':case['rows'],
+   'raw_us':t['median_us']['raw'],'candidate_us':t['median_us']['candidate'],
+   'time_change_pct':100*(t['candidate_time_ratio']-1),'control_stable':t['control_stable_2pct'],
+   'gemm_time_change_pct':[100*(x['candidate_time_ratio']-1) for x in case['gemms']]})
+ storage=[]
+ for f in r['fixtures']:
+  source=sum(s['source_bytes'] for s in f['scales']);retained=sum(s['retained_bytes'] for s in f['scales'])
+  storage.append({'rank':f['rank'],'source_bytes':source,'retained_bytes':retained,
+   'scale_byte_reduction_pct':100*(1-retained/source),'raw_fallback_parts':sum(p['raw_fallback'] for s in f['scales'] for p in s['records']),
+   'parts':sum(len(s['records']) for s in f['scales'])})
+ traces=[]
+ for t in sorted((root/f'test{attempt}').glob('*-trace.json')):
+  data=json.loads(t.read_text());events=[e for e in data['traceEvents'] if e.get('cat')=='kernel' and e.get('ph')=='X']
+  counts={}
+  for e in events:counts[e['name']]=counts.get(e['name'],0)+1
+  graph_events=[e for e in data['traceEvents'] if e.get('name')=='cudaGraphLaunch' and e.get('ph')=='X']
+  traces.append({'file':str(t.relative_to(root)),'kernel_count':len(events),'kernel_counts':counts,'cudaGraphLaunch_events':len(graph_events)})
+ summary['variants'][label]={'cases':rows,'storage':storage,'controls_stable':stable,'controls_total':total,'matching_output_hashes':hashchecks,'traces':traces,'max_cuda_allocated_bytes':r['maximum_allocated_bytes'],'elapsed_s':r['finished']-r['started'],'full_model_qualified':r['full_model_qualified']}
+final=json.loads((root/'final-check.json').read_text());assert final['all_experiments_terminal'] and final['health_200']
+summary['service_healthy']=True
+ranges=json.loads((root/'full-range-audit.json').read_text())
+for rank,expected in enumerate(ranges['ranks']):
+ parts=[x for x in ranges['parts'] if x['rank']==rank]
+ retained=sum(x['retained_bytes'] for x in parts)+42*2*24
+ assert retained==expected['retained'] and len(parts)==36288
+ assert sum(x['fallback'] for x in parts)==expected['fallbacks']
+ assert expected['source']==9512681472
+ assert all(x['fallback']==(x['max']-x['min']>=32) for x in parts)
+ assert all(x['retained_bytes']==(262144+32 if x['fallback'] else 262144*5//8+64) for x in parts)
+summary['full_range_storage']=ranges['ranks']
+
+installed=[]
+for case in json.loads((root/'test11/report.json').read_text())['cases']:
+ t=case['whole_layer'];med={k:statistics.median(v) for k,v in t['samples_us'].items()}
+ ratio=med['candidate']/med['installed'];assert abs(ratio-t['candidate_over_installed'])<1e-14
+ assert t['control_stable_2pct'] and len(t['samples_us']['installed'])==32
+ installed.append({'rank':case['rank'],'rows':case['rows'],'stock_us':med['installed'],'candidate_us':med['candidate'],'time_reduction_pct':100*(1-ratio),'raw_over_installed':med['raw']/med['installed'],'control_difference_pct':100*t['control_relative_difference'],'faster_trials':sum(a<b for a,b in zip(t['samples_us']['candidate'],t['samples_us']['installed'])),'trials':32})
+summary['installed_stock_verified']=installed
+summary['validation']={'ruff':'pass','mypy_mxwave':'35 source files pass','pytest':'832 passed, 1 skipped via python -m pytest','codec_tests':18,'bare_pytest_note':'Initial console-entry invocation imported the editable root checkout and failed collection; python -m pytest from this worktree resolves the worktree and passes'}
+(root.parent/'mac-review.json').write_text(json.dumps(summary,indent=2)+'\n')
+print(json.dumps({k:{'cases':len(v['cases']),'controls':[v['controls_stable'],v['controls_total']],'storage':v['storage']} for k,v in summary['variants'].items()},indent=2))

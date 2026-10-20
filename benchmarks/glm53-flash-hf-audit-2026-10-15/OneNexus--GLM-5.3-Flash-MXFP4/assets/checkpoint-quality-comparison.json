@@ -1,0 +1,95 @@
+{
+  "title": "OneNexus/GLM-5.3-Flash-MXFP4 versus amd/GLM-5.3-Flash-Quark-MXFP4",
+  "scope": "Matched fixed-sample text-reasoning comparison; every truncation is retained as incorrect",
+  "protocol": {
+    "temperature": 0,
+    "top_p": 0.95,
+    "repetition_penalty": 1.0,
+    "seed": 0,
+    "reasoning_effort": "max",
+    "kv_cache_dtype": "bf16",
+    "cuda_graph": false,
+    "speculative_decoding": false,
+    "attempts_per_question": 1
+  },
+  "checkpoints": {
+    "onenexus": {
+      "label": "OneNexus/GLM-5.3-Flash-MXFP4",
+      "repository": "OneNexus/GLM-5.3-Flash-MXFP4",
+      "weight_revision": "c3b0ebbf2cfecbff579d21eea6291bceda73495c"
+    },
+    "amd": {
+      "label": "amd/GLM-5.3-Flash-Quark-MXFP4",
+      "repository": "amd/GLM-5.3-Flash-Quark-MXFP4",
+      "revision": "b5688f25491202978c19c4d036eef579f61bbe07"
+    }
+  },
+  "benchmarks": [
+    {
+      "name": "GSM8K",
+      "n": 500,
+      "output_limit": 8192,
+      "onenexus": {
+        "correct": 490,
+        "accuracy_pct": 98.0,
+        "wilson_95_pct": [96.4, 98.9],
+        "truncated": 1
+      },
+      "amd": {
+        "correct": 491,
+        "accuracy_pct": 98.2,
+        "wilson_95_pct": [96.6, 99.1],
+        "truncated": 3
+      },
+      "paired": {
+        "onenexus_only_correct": 3,
+        "amd_only_correct": 4,
+        "exact_two_sided_p": 1.0
+      }
+    },
+    {
+      "name": "MMLU",
+      "n": 500,
+      "output_limit": 8192,
+      "onenexus": {
+        "correct": 428,
+        "accuracy_pct": 85.6,
+        "wilson_95_pct": [82.3, 88.4],
+        "truncated": 43
+      },
+      "amd": {
+        "correct": 423,
+        "accuracy_pct": 84.6,
+        "wilson_95_pct": [81.2, 87.5],
+        "truncated": 43
+      },
+      "paired": {
+        "onenexus_only_correct": 17,
+        "amd_only_correct": 12,
+        "exact_two_sided_p": 0.45825831964612007
+      }
+    },
+    {
+      "name": "GPQA Diamond",
+      "n": 198,
+      "output_limit": 16384,
+      "onenexus": {
+        "correct": 139,
+        "accuracy_pct": 70.2,
+        "wilson_95_pct": [63.5, 76.1],
+        "truncated": 55
+      },
+      "amd": {
+        "correct": 132,
+        "accuracy_pct": 66.7,
+        "wilson_95_pct": [59.8, 72.9],
+        "truncated": 61
+      },
+      "paired": {
+        "onenexus_only_correct": 18,
+        "amd_only_correct": 11,
+        "exact_two_sided_p": 0.26493089646101015
+      }
+    }
+  ]
+}

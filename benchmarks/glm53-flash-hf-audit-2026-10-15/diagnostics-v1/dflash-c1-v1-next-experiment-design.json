@@ -1,0 +1,46 @@
+{
+  "status": "prepared_design_not_launched",
+  "purpose": "Remove KDA prefill reconstruction while preserving expert-scale and vocabulary compression",
+  "baseline_archive_sha256": "fc2c40a3e395b03e5201ba51cb65010a54825d4ea6d5ca5439418bea3e492b24",
+  "runtime_changes": {
+    "MXWAVE_GLM53_KDA_MODE": "stock",
+    "MXWAVE_GLM53_KDA_INPUT_FUSED_16": "0",
+    "MXWAVE_GLM53_KDA_OUTPUT_FUSED_16": "0"
+  },
+  "retained_configuration": {
+    "DFlash": true,
+    "max_model_len": 8192,
+    "max_num_batched_tokens": 2048,
+    "max_num_seqs": 16,
+    "kv_bytes_per_rank": 4294967296,
+    "vocabulary_mode": "packed",
+    "expert_mode": "aligned",
+    "palette": "1"
+  },
+  "measurements": [
+    "Matched compression-on baseline and selective dense-KDA candidate",
+    "Short and long C1 timing; separate both-rank profiles after timing",
+    "Startup and peak allocated bytes",
+    "Exact source-weight ownership and finite greedy outputs; do not infer full KL",
+    "C8/C16 follow-up only after bounded C1 result"
+  ],
+  "required_checks": [
+    "CPU preflight and source binding before any outage",
+    "Replace startup assertion for 68 packed KDA modules with 68 verified resident BF16 modules; preserve expert and vocabulary checks",
+    "Zero KDA reconstruction kernels; no packed KDA buffers or reconstruction pool left resident",
+    "Preserve all measured cases and compare end-to-end time as well as TTFT",
+    "Restore exact live candidate on success or failure; no automatic promotion"
+  ],
+  "separate_capacity_option": {
+    "status": "design_only_not_launched",
+    "change": "KV budget 4 to 8 GiB per rank only",
+    "measurements": [
+      "running and queued requests",
+      "C1/C8/C16 TTFT and throughput",
+      "actual verify widths and graph/eager paths",
+      "allocated and peak memory",
+      "finite output checks"
+    ],
+    "limitation": "Does not remove rebuild; larger batches may expose unsupported fused shapes"
+  }
+}

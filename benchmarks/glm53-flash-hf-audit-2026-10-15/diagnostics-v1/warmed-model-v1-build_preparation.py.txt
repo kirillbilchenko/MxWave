@@ -1,0 +1,149 @@
+"""Freeze the full-model follow-up from retained, qualified parent sources."""
+from __future__ import annotations
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import tarfile
+import time
+
+BASE = Path('/private/tmp/mxwave-warmed-model-v1')
+PARENT = Path('/private/tmp/mxwave-matched-row16-v1/evidence')
+WARM = Path('/private/tmp/mxwave-stable-warmup-v1')
+
+def sha(p):
+    with p.open('rb') as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
+
+def write(p, value):
+    p.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
+
+def replace(s, a, b):
+    assert a in s, a
+    return s.replace(a, b)
+
+overlay = BASE / 'overlay'
+plan = json.loads((PARENT / 'results/matched-row16-plan.json').read_bytes())
+parent = json.loads((PARENT / 'prepared.json').read_bytes())
+cpu = json.loads((BASE / 'cpu-protocol-check.json').read_bytes())
+sources = {p.name: sha(p) for p in sorted((overlay / 'src').glob('*.py'))}
+assert sources == cpu['source_sha256'] and len(sources) == 7
+warm_prepared = json.loads((WARM / 'evidence/prepared.json').read_bytes())
+for name in ('stable_dispatch_warmup.py', 'benchmark_stable_warmup.py'):
+    assert sources[name] == warm_prepared['bindings'][0]['code'][name]
+shutil.copyfile(PARENT / 'component-cross-host-verification.json', overlay / 'component-proof.json')
+shutil.copyfile(WARM / 'cross-host-verification.json', overlay / 'warmup-component-proof.json')
+plan.update(
+    revision='warmedmodelv1',
+    purpose='Measure matched C1/C8/C16 quality, ordinary API latency/speed and model CPU/CUDA memory after identical qualified dispatch warmup and one-time heap trim in both arms.',
+    parent_revision='matchedrow16v1',
+    parent_evidence_archive_sha256='15feabeb92479432ba548f85137da090b6a7ab5c6f25dacf8f3472559ac4c0d2',
+    parent_source_sha256=parent['bindings'][0]['code'],
+    source_sha256=sources, expected_source_files=207,
+    timing_cases=[[f'c{c}-{name}', c, length] for c in (1, 8, 16)
+                  for name, length in (('short', 256), ('long', 2048))],
+    warmup_groups_per_arm=12, profile_sessions_per_arm=3, worker_traces_expected=12,
+    C1_C8_ordinary_API_speed_remeasured=True, CPU_protocol_check=cpu,
+    startup_warmup_both_arms=True, startup_warmup_specializations=34,
+    startup_malloc_trim_once_both_arms=True,
+    dispatch_cache_must_remain_unchanged_after_startup=True,
+    startup_changes_model_arithmetic=False,
+    model_CPU_saving_demonstrated=False, startup_serving_speed_qualified=False,
+    mixed_profile_concurrency=[8, 16], ordinary_timing_groups_total=72,
+    ordinary_timed_requests_total=600, ordinary_timed_output_tokens_total=38400,
+    warmup_component_proof_sha256=sha(overlay / 'warmup-component-proof.json'),
+    warmup_component_evidence_sha256='4b641179fcce13473c17f70e0ebd34f1ed4baa250c67955d6f8a99ae3b5fdddd',
+    qualified_warmup_sources={k:sources[k] for k in ('stable_dispatch_warmup.py', 'benchmark_stable_warmup.py')},
+    frozen_epoch=time.time(),
+)
+assert len(plan['parent_source_sha256']) == 200
+write(overlay / 'plan.json', plan)
+write(BASE / 'plan.json', plan)
+write(BASE / 'local-checks.json', {
+    'status':'passed', 'ruff_passed':(BASE/'ruff-final.log').read_text().strip()=='All checks passed!',
+    'mypy_passed':'Success: no issues found in 35 source files' in (BASE/'mypy-final.log').read_text(),
+    'pytest_passed':'728 passed, 1 skipped' in (BASE/'pytest-final.log').read_text(),
+    'tests_passed':728, 'tests_skipped':1, 'CPU_protocol_simulation_passed':cpu['status']=='passed',
+    'sources':sources, 'plan_sha256':sha(BASE/'plan.json'),
+    'check_log_sha256':{n:sha(BASE/n) for n in ('ruff-final.log','mypy-final.log','pytest-final.log','simulation-final.log')},
+    'GPU_initialized_for_local_checks':False,
+})
+
+for name in ('prepare.py', 'collect.py', 'verify.py', 'launch.py'):
+    s=(PARENT/name).read_text()
+    s=s.replace('matched-row16','warmed-model').replace('matchedrow16v1','warmedmodelv1')
+    s=s.replace('run_matched_row16','run_warmed_model').replace('analyze_matched_row16','analyze_warmed_model')
+    s=s.replace('==200','==207').replace('source_files=200','source_files=207').replace('"source_files":200','"source_files":207')
+    s=s.replace('matched-c8-v1-cross-host-verification.json','matched-row16-v1-cross-host-verification.json')
+    if name=='prepare.py':
+        s=s.replace('full-matchedc8v1-src','full-matchedrow16v1-src')
+        s=s.replace('matched-c8-v1-prepared.json','matched-row16-v1-prepared.json')
+        s=s.replace('eb244b63a6aeb58c337f89820de93cead3210ee0d7121a49677fcbb88ac8341b',plan['parent_evidence_archive_sha256'])
+        s=s.replace('run-matchedc8v1/results','run-matchedrow16v1/results')
+        s=s.replace('"parent_revision":"matchedc8v1"','"parent_revision":"matchedrow16v1"')
+        s=s.replace('matched_row16_worker.MatchedRow16Worker','warmed_model_worker.WarmedModelWorker')
+        s=replace(s, "code=r/'full-warmedmodelv1-src'", "warm=o/'warmup-component-proof.json'\nassert hashlib.sha256(warm.read_bytes()).hexdigest()==plan['warmup_component_proof_sha256']\nwarmproof=json.loads(warm.read_bytes());assert warmproof['status']=='passed'and warmproof['component_passed']\nassert warmproof['archive_sha256']==plan['warmup_component_evidence_sha256']\nassert all(plan['source_sha256'][n]==v for n,v in plan['qualified_warmup_sources'].items())\ncode=r/'full-warmedmodelv1-src'")
+        s=replace(s, '"protocol_files_sha256":', '"startup_warmup_both_arms":True,"startup_trim_once_both_arms":True,\n   "warmup_component_archive_sha256":plan["warmup_component_evidence_sha256"],\n   "protocol_files_sha256":')
+    elif name=='collect.py':
+        a=s.index('  names.update('); b=s.index('  for name,target in names.items():',a)
+        s=s[:a]+'''  names.update({"warmed-model-v1-mechanism-CPU-check.json":"mechanism-CPU-check.json",
+   "warmed-model-v1-cpu-protocol-check.json":"cpu-protocol-check.json",
+   "warmed-model-v1-overlay/component-proof.json":"component-cross-host-verification.json",
+   "warmed-model-v1-overlay/warmup-component-proof.json":"warmup-component-cross-host-verification.json",
+   "retained-extractions-warmed-model-v1.json":"storage-relocation.json"})
+''' + s[b:]
+        s=s.replace('latest_matched_C16=progress','latest_warmed_model=progress')
+    elif name=='verify.py':
+        a=s.index('def verify_row16_mechanism(');b=s.index('def main():',a)
+        s=s[:a]+'''def verify_decode_mechanism(profiles):
+ rows=[]
+ for profile in profiles:
+  arm="candidate"if profile["labels"][0].startswith("candidate-")else"control"
+  assert len(profile["labels"])==1
+  expected=8 if "-c8-" in profile["labels"][0] else 16
+  selected=[s for s in profile["steps"]if not s["batch"]["has_prefill"]and s["batch"]["num_tokens_after_padding"]==expected]
+  assert selected,("No expected decode shape observed",expected,profile["path"])
+  for step in selected:
+   variants=step["kernel_variants"]
+   rebuild=sum(v["count"]for v in variants if "bf16triplebitmap_decompress_kernel"in v["name"].lower())
+   fused=[v for v in variants if "BF16TripleBitmap_MM_Kernel"in v["name"]]
+   calls=sum(v["count"]for v in fused)
+   assert rebuild==0 and step["cuda_graph_launches"]>0
+   if arm=="candidate":
+    assert calls==68
+    assert sum(v["count"]for v in fused if v["grid"][1]==197)==34
+    assert sum(v["count"]for v in fused if v["grid"][1]==64)==34
+   else:assert calls==0
+   rows.append({"arm":arm,"rank":profile["rank"],"label":step["label"],"sequence":step["sequence"],
+    "actual_rows":step["batch"]["num_tokens"],"physical_rows":expected,"graph_launches":step["cuda_graph_launches"],
+    "reconstruction_calls":rebuild,"compressed_KDA_calls":calls})
+ assert {(r["arm"],r["rank"],r["physical_rows"])for r in rows}=={(a,r,m)for a in("control","candidate")for r in(0,1)for m in(8,16)}
+ return rows
+''' + s[b:]
+        s=replace(s, ' assert sources==prepared', ''' warm=root/"warmup-component-cross-host-verification.json"
+ assert sha(warm)==plan["warmup_component_proof_sha256"]
+ warmproof=json.loads(warm.read_bytes());assert warmproof["status"]=="passed"and warmproof["component_passed"]
+ assert warmproof["archive_sha256"]==plan["warmup_component_evidence_sha256"]
+ assert all(sources[k]==v for k,v in plan["qualified_warmup_sources"].items())
+ assert sources==prepared''')
+        s=replace(s, 'plan["worker_traces_expected"]==8','plan["worker_traces_expected"]==12')
+        s=replace(s, '  result["exact16_dispatch_mechanism"]=verify_row16_mechanism(result["profiles"])', '  result["decode_dispatch_mechanism"]=verify_decode_mechanism(result["profiles"])\n  result["M8_dispatch_mechanism_passed"]=True')
+    else:
+        s=replace(s, '"timing_groups":24,"profile_sessions":4,"worker_profiles_expected":8', '"timing_groups":72,"profile_sessions":6,"worker_profiles_expected":12')
+        s=replace(s, 'Fresh exact16 input/output integration with matched C1/C8/C16 native-mHC quality and focused ordinary C16 API timing launched.', 'Fresh C1/C8/C16 quality, ordinary short/long API speed and CPU/CUDA memory comparison with identical qualified startup warmup and one-time heap trimming launched.')
+        s=replace(s, ' assert checks["CPU_protocol_simulation_passed"]', ' assert checks["CPU_protocol_simulation_passed"]\n mechanism=json.loads((ROOT/"warmed-model-v1-mechanism-CPU-check.json").read_bytes());assert mechanism["status"]=="passed"')
+        s=replace(s, ' assert sha(ROOT/"warmed-model-v1-source-only.tar.gz")', ' assert sha(ROOT/"verify-warmed-model-v1.py")==mechanism["verifier_sha256"]\n assert sha(ROOT/"warmed-model-v1-source-only.tar.gz")')
+        s=replace(s, '"model_loads":2,', '"model_loads":2,"startup_warmup_both_arms":True,"startup_trim_once_both_arms":True,')
+    compile(s,name,'exec');(BASE/name).write_text(s)
+
+files=[p for p in sorted(overlay.rglob('*'))if p.is_file()and p.name!='inventory.json']
+write(overlay/'inventory.json',{'files':[{'path':str(p.relative_to(overlay)),'bytes':p.stat().st_size,'sha256':sha(p)}for p in files]})
+archive=BASE/'source-only.tar.gz'
+with tarfile.open(archive,'w:gz',compresslevel=1)as tf:
+    for p in [*files,overlay/'inventory.json']:
+        tf.add(p,arcname=str(p.relative_to(overlay)),recursive=False)
+write(BASE/'source-freeze.json',{'source_archive_sha256':sha(archive),'plan_sha256':sha(BASE/'plan.json'),
+    'new_sources':sources,'all_200_parent_sources_unchanged':True,
+    'operations_sha256':{n:sha(BASE/n)for n in ('prepare.py','collect.py','verify.py','launch.py')},
+    'source_files':207,'local_protocol_only':True,'GPU_model_run_started':False})
+print(json.dumps({'status':'frozen','source_files':207,'archive_sha256':sha(archive),'plan_sha256':sha(BASE/'plan.json')}))

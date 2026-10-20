@@ -1,0 +1,92 @@
+"""Add read-only startup evidence to the frozen warmed exact16 worker."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from warmed_model_worker import WarmedModelWorker
+
+
+class TrialWorker(WarmedModelWorker):
+    """Record the matched non-speculative model and storage policy before GSM8K."""
+
+    def mxwave_trial_convert_kda(self):
+        """Install native MXFP8 before profiling/capture, with the reviewed BF16 policy."""
+        import torch
+        from kda_mxfp8_runtime import install
+        from vllm.distributed import get_tensor_model_parallel_rank
+
+        assert os.environ["MXWAVE_TRIAL_ARM"] == "ct_mxfp8"
+        assert not hasattr(self, "_mxwave_native_kda_report")
+        assert self.vllm_config.weight_transfer_config is None
+        assert self.vllm_config.model_config.dtype == torch.bfloat16
+        before = torch.get_default_dtype()
+        try:
+            torch.set_default_dtype(torch.bfloat16)
+            report = install(
+                self.model_runner.model,
+                Path("/trial/rounding-reference.json"),
+                Path("/traces") / f"kda-native-r{get_tensor_model_parallel_rank()}.json",
+            )
+        finally:
+            torch.set_default_dtype(before)
+        delta = report["cuda_allocated_after"] - report["cuda_allocated_before"]
+        report["model_memory_usage_before"] = self.model_runner.model_memory_usage
+        self.model_runner.model_memory_usage += delta
+        report["model_memory_usage_after"] = self.model_runner.model_memory_usage
+        self._mxwave_native_kda_report = report
+
+    def mxwave_trial_snapshot(self):
+        import kda_runtime
+        import model_plugin
+        import torch
+        import vocab_runtime
+        from vllm.distributed import get_tensor_model_parallel_rank
+
+        r = self.model_runner
+        target = r.model
+        language = getattr(target, "language_model", target)
+        assert r.speculator is None and r.vllm_config.speculative_config is None
+        mode = os.environ["MXWAVE_TRIAL_ARM"]
+        candidate = mode in ("ct_bf16", "ct_mxfp8")
+        if candidate:
+            assert language.lm_head.weight is None
+            assert language.model.embed_tokens.weight is None
+            assert model_plugin.report()["layers_seen"] == 42
+            assert vocab_runtime.report()["resident_layers"] == 2
+            if mode == "ct_bf16":
+                assert len(kda_runtime.report()["layers"]) == 68
+            else:
+                assert not kda_runtime.report()["layers"]
+                native = self._mxwave_native_kda_report
+                assert native["status"] == "complete" and len(native["layers"]) == 68
+                assert native["all_68_rounding_hashes_match_quality_run"]
+                assert native["original_BF16_parameters_alive"] == 0
+                assert sum(
+                    type(getattr(m, "quant_method", None)).__name__ == "KdaMxfp8MarlinMethod"
+                    for m in target.modules()
+                ) == 68
+        return {
+            "arm": os.environ["MXWAVE_TRIAL_ARM"],
+            "rank": get_tensor_model_parallel_rank(),
+            "target_class": type(target).__name__,
+            "speculation": False,
+            "head_method": type(language.lm_head.quant_method).__name__,
+            "physical_graph_token_counts": sorted(
+                {d.num_tokens for d in r.cudagraph_manager.graphs}
+            ),
+            "max_model_len": r.vllm_config.model_config.max_model_len,
+            "max_num_seqs": r.vllm_config.scheduler_config.max_num_seqs,
+            "max_num_batched_tokens": r.vllm_config.scheduler_config.max_num_batched_tokens,
+            "kv_cache_memory_bytes": r.vllm_config.cache_config.kv_cache_memory_bytes,
+            "cuda_allocated_bytes": torch.cuda.memory_allocated(),
+            "cuda_reserved_bytes": torch.cuda.memory_reserved(),
+            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(),
+            "compressed_vocabulary": vocab_runtime.report(),
+            "compressed_kda": kda_runtime.report(),
+            "compressed_experts": model_plugin.report(),
+            "native_mxfp8_kda": getattr(self, "_mxwave_native_kda_report", None),
+            "native_mhc": self.mxwave_native_mhc_policy(),
+            "complete_stack_KL_qualified": False,
+        }

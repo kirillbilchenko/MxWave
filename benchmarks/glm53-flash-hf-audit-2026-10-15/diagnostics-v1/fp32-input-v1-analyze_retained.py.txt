@@ -1,0 +1,92 @@
+"""Summarize the independently verified integration fixture without promoting its math."""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+
+BASE = Path(__file__).parent
+
+
+def main():
+    proof = json.loads((BASE / 'cross-host-verification.json').read_bytes())
+    assert proof['status'] == 'passed' and proof['all_decisions_identical']
+    evidence = BASE / 'evidence'
+    mac = json.loads((BASE / 'mac-independent-review.json').read_bytes())
+    assert mac == json.loads((evidence / 'spark-independent-review.json').read_bytes())
+    ranks = []
+    for rank in (0, 1):
+        source = evidence / f'rank{rank}' / 'integration.json'
+        report = json.loads(source.read_bytes())
+        assert report['rank'] == rank and report['status'] == 'complete'
+        assert report['assessment']['integration_invariants_passed']
+        known = [x for c in report['cases'] for x in c['known']]
+        fallback = [x for c in report['cases'] for x in c['fallback']]
+        compiled = [x for c in report['cases'] for x in c['compiled']]
+        chains = [c['compiled_chain'] for c in report['cases'] if c['compiled_chain']]
+        stress = [c['stream_stress'] for c in report['cases'] if 'stream_stress' in c]
+        graphs = known + fallback + compiled + chains
+        assert (len(known), len(fallback), len(compiled), len(chains), len(stress)) == (60,33,2,1,3)
+        assert all(x['graph_matches_eager'] and x['graph_retained_bytes'] == 0 for x in graphs)
+        assert all(x['matches_parent'] for x in known + compiled)
+        assert all(x['matches_qualified'] for x in fallback)
+        assert all(x['owned_slots'] == [0,1] and x['captured_streams'] == 2
+                   and x['outputs_match_parent'] and x['third_stream_rejected']
+                   and x['workspace_suffix_guards_unchanged']
+                   and x['replay_retained_bytes'] == 0 for x in stress)
+        assert all(x['capture_extra_bytes'] <= 16*1024**2 for x in compiled + chains)
+        assert all(c['decoded_weight_bits_exact'] and c['packed_buffers_unchanged']
+                   and c['outer_pool_guards_unchanged'] for c in report['cases'])
+        ranks.append({
+            'rank': rank,
+            'report_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+            'known_parent_comparisons': len(known),
+            'fallback_raw_comparisons': len(fallback),
+            'graph_checks': len(graphs),
+            'compiled_shapes': [x['tokens'] for x in compiled],
+            'compiled_capture_extra_bytes': [x['capture_extra_bytes'] for x in compiled],
+            'compiled_chain_capture_extra_bytes': [x['capture_extra_bytes'] for x in chains],
+            'maximum_retained_replay_growth_bytes': max(x['graph_retained_bytes'] for x in graphs),
+            'two_stream_stress_fixtures': len(stress),
+            'stress_graph_replays': sum(2*x['replays_per_graph'] for x in stress),
+            'third_stream_rejected_in_all_fixtures': True,
+            'CUDA_peak_bytes': report['CUDA_peak_bytes'],
+            'retained_raw_payload_bytes': report['raw_payload_bytes'],
+            'telemetry': [report['initial_telemetry'], *[c['telemetry'] for c in report['cases']]],
+        })
+    result = {
+        'status': 'complete',
+        'archive_sha256': proof['archive_sha256'],
+        'archive_bytes': proof['archive_bytes'],
+        'payloads': proof['payloads'],
+        'source_files': proof['source_files'],
+        'integration_invariants_passed_on_both_GPUs': True,
+        'known_parent_comparisons': sum(r['known_parent_comparisons'] for r in ranks),
+        'fallback_raw_comparisons': sum(r['fallback_raw_comparisons'] for r in ranks),
+        'graph_checks': sum(r['graph_checks'] for r in ranks),
+        'stress_graph_replays': sum(r['stress_graph_replays'] for r in ranks),
+        'existing_two_slot_pool_bytes_per_rank': 206569472,
+        'additional_scratch_pool_bytes': 0,
+        'resident_BF16_weight_cache_bytes': 0,
+        'tested_input_rows': [1,4,8,16],
+        'all_output_projections_unchanged': True,
+        'parent_exact_word_screen_passed': False,
+        'parent_input_timing_screen_passed': False,
+        'model_quality_or_serving_speed_qualified': False,
+        'model_CPU_saving_demonstrated': False,
+        'automatic_promotion_allowed': False,
+        'ranks': ranks,
+        'next': 'Fresh matched stock versus input-only FP32 model quality, speed, memory and traces.',
+        'limits': [
+            'The GPU fixture loads no model and measures no API latency or throughput.',
+            'Equality to retained FP32 outputs does not mean equality to stock GEMM outputs.',
+            'The 216 prior exact-word failures and two input split-2 repeat failures remain failed.',
+            'Six rank-specific input matrices do not establish every model layer or input distribution.',
+        ],
+    }
+    (BASE / 'final-findings.json').write_text(json.dumps(result, indent=2)+'\n')
+    print(json.dumps({k:v for k,v in result.items() if k != 'ranks'}))
+
+
+if __name__ == '__main__':
+    main()

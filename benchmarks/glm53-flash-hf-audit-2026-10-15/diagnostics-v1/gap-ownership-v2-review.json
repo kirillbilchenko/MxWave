@@ -1,0 +1,356 @@
+{
+  "status": "offline_attribution_complete_causality_unresolved",
+  "new_full_model_run": false,
+  "production_paused": false,
+  "analysis_code_sha256": "4056d24fd1ad2bbeab6602bb3cbfa77d2bc3eec16b72baa0f35dd40cb785683c",
+  "dependency_sha256": {
+    "compare_full_model.py": "06793a3177d81c1f9691305c5a21cd9eed94a5cb4c29d76cc5f6a844ed328fef",
+    "analyze_full_profiles.py": "490ec06d037499418f400d525ef042c466dd81b957a26b9723c3f05e4fb07cf1"
+  },
+  "raw_analysis_sha256": "36a55a35f9a38c73a559e5c4f9b784a26123428995752654f749d9174b268285",
+  "profiles": {
+    "stock_rank0": {
+      "trace": "stock/traces/dp0_pp0_tp0_dcp0_ep0_rank0.1792103760205099876.pt.trace.json.gz",
+      "trace_sha256": "f11b3a3bff09e2ec4d1143be320333262bcbf53aa8c7faf2625b44762a5f468f",
+      "complete_m4_steps": 5,
+      "medians": {
+        "gpu_range_us": 92998.586,
+        "main_stream_gap_us": 6249.09130859375,
+        "gap_covered_by_other_gpu_streams_us": 1266.401123046875,
+        "late_api_gap_us": 519.673583984375,
+        "late_covered_by_other_gpu_streams_us": 0,
+        "late_inside_adapter_scopes_us": 0.0,
+        "late_outside_adapter_scopes_us": 519.673583984375
+      },
+      "pooled_adapter_fraction_of_late_time": 0.0,
+      "pooled_late_other_stream_overlap_us": 0,
+      "mean_exclusive_late_owners_us": {
+        "untraced/between_ops": 225.92080078125,
+        "cpu_op/vllm::mhc_pre_tilelang": 85.002197265625,
+        "cpu_op/vllm::all_reduce": 70.33076171875,
+        "cpu_op/Torch-Compiled Region: 0/2": 27.6501953125,
+        "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 21.514453125,
+        "cpu_op/aten::mm": 16.275341796875,
+        "cpu_op/TorchDynamo Cache Lookup": 11.430419921875,
+        "cpu_op/aten::empty": 11.196875,
+        "cpu_op/aten::index_select": 10.300830078125,
+        "cpu_op/triton_poi_fused_add_bitwise_and_bitwise_not_bitwise_or_ge_lt_mul_sub_0": 8.323193359375,
+        "cpu_op/aten::select": 6.0384765625,
+        "cpu_op/_C::marlin_gemm": 4.108837890625,
+        "cpu_op/aten::masked_fill_": 3.213525390625,
+        "cpu_op/aten::as_strided": 2.956787109375,
+        "cpu_op/aten::matmul": 2.82548828125
+      },
+      "median_forward_cpu_op_counts": {
+        "TorchDynamo Cache Lookup": 149,
+        "vllm::moe_forward_shared": 42,
+        "aten::empty": 2818,
+        "aten::contiguous": 137,
+        "aten::copy_": 306,
+        "mxwave_glm53::kda_linear": 0,
+        "mxwave_zipserv::linear": 0,
+        "mxwave_glm53::moe_gemm_dispatch": 0
+      },
+      "largest_late_examples": [
+        {
+          "duration_us": 201.465087890625,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "untraced/between_ops": 115.321044921875,
+            "cpu_op/Torch-Compiled Region: 0/2": 26.079833984375,
+            "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 21.488037109375,
+            "cpu_op/TorchDynamo Cache Lookup": 11.39208984375
+          }
+        },
+        {
+          "duration_us": 198.993896484375,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "untraced/between_ops": 115.4580078125,
+            "cpu_op/Torch-Compiled Region: 0/2": 23.552001953125,
+            "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 21.80810546875,
+            "cpu_op/TorchDynamo Cache Lookup": 11.840087890625
+          }
+        }
+      ]
+    },
+    "stock_rank1": {
+      "trace": "stock/traces-worker/dp0_pp0_tp1_dcp0_ep1_rank1.1792103760226592254.pt.trace.json.gz",
+      "trace_sha256": "c9f7ba40857c07391fb9ae7fcc4b1ebd29acf7e1a46330662d02d9069571acb9",
+      "complete_m4_steps": 5,
+      "medians": {
+        "gpu_range_us": 93027.23,
+        "main_stream_gap_us": 11407.42431640625,
+        "gap_covered_by_other_gpu_streams_us": 435.42236328125,
+        "late_api_gap_us": 6288.929443359375,
+        "late_covered_by_other_gpu_streams_us": 0,
+        "late_inside_adapter_scopes_us": 0.0,
+        "late_outside_adapter_scopes_us": 6288.929443359375
+      },
+      "pooled_adapter_fraction_of_late_time": 0.0,
+      "pooled_late_other_stream_overlap_us": 0,
+      "mean_exclusive_late_owners_us": {
+        "cpu_op/vllm::moe_forward_shared": 1374.391064453125,
+        "cpu_op/TorchDynamo Cache Lookup": 615.538330078125,
+        "cpu_op/aten::empty": 581.68544921875,
+        "untraced/between_ops": 519.63271484375,
+        "cpu_op/vllm::unified_mla_attention_with_output": 477.884521484375,
+        "cpu_op/_moe_C::moe_wna16_marlin_gemm": 426.14345703125,
+        "cpu_op/vllm::sparse_attn_indexer_kpool": 401.546533203125,
+        "cpu_op/triton_per_fused__to_copy_native_layer_norm_0": 180.001220703125,
+        "cpu_op/aten::new_empty": 177.2482421875,
+        "cpu_op/Torch-Compiled Region: 3/0": 158.66884765625,
+        "cuda_driver/cuLaunchKernel": 141.26103515625,
+        "cpu_op/aten::slice": 126.326416015625,
+        "cuda_runtime/cudaFuncGetAttributes": 125.494970703125,
+        "cpu_op/vllm::mhc_fused_post_pre_tilelang": 116.72451171875,
+        "cpu_op/Torch-Compiled Region: 5/0": 110.908251953125
+      },
+      "median_forward_cpu_op_counts": {
+        "TorchDynamo Cache Lookup": 149,
+        "vllm::moe_forward_shared": 42,
+        "aten::empty": 2818,
+        "aten::contiguous": 137,
+        "aten::copy_": 306,
+        "mxwave_glm53::kda_linear": 0,
+        "mxwave_zipserv::linear": 0,
+        "mxwave_glm53::moe_gemm_dispatch": 0
+      },
+      "largest_late_examples": [
+        {
+          "duration_us": 900.373046875,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "cpu_op/TorchDynamo Cache Lookup": 754.592041015625,
+            "cpu_op/vllm::moe_forward_shared": 41.093017578125,
+            "cpu_op/Torch-Compiled Region: 3/0": 33.9521484375,
+            "cpu_op/Torch-Compiled Region: 5/0": 19.31201171875
+          }
+        },
+        {
+          "duration_us": 900.006103515625,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "cpu_op/triton_per_fused__to_copy_native_layer_norm_0": 900.006103515625
+          }
+        }
+      ]
+    },
+    "kda_rank0": {
+      "trace": "kda/traces/dp0_pp0_tp0_dcp0_ep0_rank0.1792146190875084927.pt.trace.json.gz",
+      "trace_sha256": "637bc776de162f51fe3c710c5eab9a32a0e7c683e51cb88f106931ea96db1552",
+      "complete_m4_steps": 5,
+      "medians": {
+        "gpu_range_us": 100046.455,
+        "main_stream_gap_us": 16347.751953125,
+        "gap_covered_by_other_gpu_streams_us": 548.354248046875,
+        "late_api_gap_us": 10027.4169921875,
+        "late_covered_by_other_gpu_streams_us": 0,
+        "late_inside_adapter_scopes_us": 1065.05517578125,
+        "late_outside_adapter_scopes_us": 8962.36181640625
+      },
+      "pooled_adapter_fraction_of_late_time": 0.0956600381873951,
+      "pooled_late_other_stream_overlap_us": 0,
+      "mean_exclusive_late_owners_us": {
+        "cpu_op/vllm::moe_forward_shared": 2481.633154296875,
+        "untraced/between_ops": 951.159423828125,
+        "cpu_op/vllm::sparse_attn_indexer_kpool": 867.382861328125,
+        "cpu_op/TorchDynamo Cache Lookup": 701.271435546875,
+        "cpu_op/vllm::unified_mla_attention_with_output": 543.34521484375,
+        "cpu_op/aten::empty": 501.729296875,
+        "cpu_op/vllm::mhc_fused_post_pre_tilelang": 350.147412109375,
+        "cpu_op/mxwave_glm53::kda_linear": 323.063916015625,
+        "cpu_op/Torch-Compiled Region: 3/0": 305.254248046875,
+        "cpu_op/mxwave_glm53::moe_gemm_dispatch": 277.881787109375,
+        "cpu_op/Torch-Compiled Region: 5/0": 193.239013671875,
+        "cpu_op/Torch-Compiled Region: 4/0": 181.706396484375,
+        "cpu_op/aten::mm": 176.9611328125,
+        "cpu_op/aten::slice": 169.617041015625,
+        "cpu_op/mxwave_zipserv::linear": 160.37998046875
+      },
+      "median_forward_cpu_op_counts": {
+        "TorchDynamo Cache Lookup": 149,
+        "vllm::moe_forward_shared": 42,
+        "aten::empty": 2309,
+        "aten::contiguous": 171,
+        "aten::copy_": 408,
+        "mxwave_glm53::kda_linear": 68,
+        "mxwave_zipserv::linear": 68,
+        "mxwave_glm53::moe_gemm_dispatch": 83
+      },
+      "largest_late_examples": [
+        {
+          "duration_us": 494.441162109375,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "cpu_op/TorchDynamo Cache Lookup": 360.672119140625,
+            "cpu_op/vllm::moe_forward_shared": 39.608154296875,
+            "cpu_op/Torch-Compiled Region: 3/0": 30.464111328125,
+            "cpu_op/_moe_C::grouped_topk": 16.0
+          }
+        },
+        {
+          "duration_us": 352.71875,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "untraced/between_ops": 182.638671875,
+            "cpu_op/Torch-Compiled Region: 0/2": 58.927978515625,
+            "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 40.880126953125,
+            "cpu_op/TorchDynamo Cache Lookup": 28.01611328125
+          }
+        }
+      ]
+    },
+    "kda_rank1": {
+      "trace": "kda/traces-worker/dp0_pp0_tp1_dcp0_ep1_rank1.1792146190913496080.pt.trace.json.gz",
+      "trace_sha256": "9ea271ab5c8eb8a1b78b28f1a8150fae122b34aa5f55929dd6dc0ed215cd17e7",
+      "complete_m4_steps": 5,
+      "medians": {
+        "gpu_range_us": 100090.175,
+        "main_stream_gap_us": 6528.2841796875,
+        "gap_covered_by_other_gpu_streams_us": 1075.591552734375,
+        "late_api_gap_us": 404.212158203125,
+        "late_covered_by_other_gpu_streams_us": 0,
+        "late_inside_adapter_scopes_us": 47.3291015625,
+        "late_outside_adapter_scopes_us": 357.81201171875
+      },
+      "pooled_adapter_fraction_of_late_time": 0.1265449428292801,
+      "pooled_late_other_stream_overlap_us": 0,
+      "mean_exclusive_late_owners_us": {
+        "untraced/between_ops": 170.133056640625,
+        "cpu_op/vllm::all_reduce": 71.483203125,
+        "cpu_op/mxwave_glm53::embedding_rows": 45.308984375,
+        "cpu_op/vllm::moe_forward_shared": 37.397802734375,
+        "cpu_op/Torch-Compiled Region: 0/2": 26.519189453125,
+        "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 22.875,
+        "cpu_op/TorchDynamo Cache Lookup": 22.49619140625,
+        "cpu_op/triton_poi_fused_add_bitwise_and_bitwise_not_bitwise_or_ge_lt_mul_sub_0": 9.164794921875,
+        "cpu_op/aten::empty": 7.119970703125,
+        "cpu_op/aten::masked_fill_": 6.86796875,
+        "cpu_op/aten::select": 5.999853515625,
+        "cpu_op/Torch-Compiled Region: 3/0": 4.79677734375,
+        "cpu_op/mxwave_zipserv::linear": 4.22158203125,
+        "cpu_op/Pregraph bytecode": 3.491259765625,
+        "cpu_op/AOTDispatcher Runtime Wrapper Prologue": 3.203125
+      },
+      "median_forward_cpu_op_counts": {
+        "TorchDynamo Cache Lookup": 149,
+        "vllm::moe_forward_shared": 42,
+        "aten::empty": 2309,
+        "aten::contiguous": 171,
+        "aten::copy_": 408,
+        "mxwave_glm53::kda_linear": 68,
+        "mxwave_zipserv::linear": 68,
+        "mxwave_glm53::moe_gemm_dispatch": 83
+      },
+      "largest_late_examples": [
+        {
+          "duration_us": 212.359130859375,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "untraced/between_ops": 124.6142578125,
+            "cpu_op/Torch-Compiled Region: 0/2": 23.90380859375,
+            "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 21.7451171875,
+            "cpu_op/TorchDynamo Cache Lookup": 13.968017578125
+          }
+        },
+        {
+          "duration_us": 204.275146484375,
+          "gpu_other_stream_covered_us": 0,
+          "owners": {
+            "untraced/between_ops": 118.70703125,
+            "cpu_op/## Call CompiledFxGraph fblr4uxofge2s7s6gwf6bgvtdxqxzpb2sws6xmo3ds2ypth5jwmr ##": 23.2802734375,
+            "cpu_op/Torch-Compiled Region: 0/2": 22.783935546875,
+            "cpu_op/TorchDynamo Cache Lookup": 12.927978515625
+          }
+        }
+      ]
+    }
+  },
+  "profiling_capabilities": {
+    "nsys_version": "NVIDIA Nsight Systems version 2025.3.2.474-253236389321v0",
+    "perf_event_paranoid": "4",
+    "probes": [
+      {
+        "name": "nsys-cpu-smoke-v1",
+        "exit_code": 0,
+        "tables": {
+          "OSRT_API": 1310,
+          "OSRT_CALLCHAINS": 3630,
+          "ENUM_SAMPLING_THREAD_STATE": 11
+        },
+        "periodic_marker_events": 149,
+        "domains": [
+          "Python Periodic Sampling"
+        ],
+        "nsys_rep_sha256": "324be2978b2ad59928752b8f20f09f65cb75dfe7ce1dd531943d0a2d6f9c565d",
+        "python_frame_contents_verified": false
+      },
+      {
+        "name": "nsys-cpu-smoke-v2",
+        "exit_code": 0,
+        "tables": {
+          "OSRT_API": 2234,
+          "OSRT_CALLCHAINS": 5610,
+          "ENUM_SAMPLING_THREAD_STATE": 11
+        },
+        "periodic_marker_events": 298,
+        "domains": [
+          "Python Periodic Sampling"
+        ],
+        "nsys_rep_sha256": "54a3284c4b81a2ed55a27dd6c240d5e324db3b7c865454598639ef75f2db9229",
+        "python_frame_contents_verified": false
+      }
+    ],
+    "health": 200
+  },
+  "limitations": [
+    "Intervals are measured in instrumented PyTorch profiles; operator spans include descheduling and do not establish CPU execution cost.",
+    "Ownership means temporal containment, not proof that an adapter or operator caused the interval.",
+    "Absence of activity on other traced streams is not a hardware SM-utilization counter.",
+    "Five M4 count-matched forwards per arm/rank differ in detailed contexts/scheduling.",
+    "No Python/native call stacks or OS scheduler events were recorded.",
+    "Medians of separate categories need not add to the median total."
+  ],
+  "reference_equivalence": "Optimized interval sweep equals the exhaustive reference for all four profiles and all twenty M4 forwards.",
+  "next_capture": {
+    "purpose": "Distinguish adapter-local overhead, engine/native waits and profiler amplification.",
+    "configuration": "One candidate boot, graph sizes and transport settings held fixed; diagnosis only, not a stock-vs-compressed acceptance comparison.",
+    "sequence": [
+      "Warm and time the selected B4 workload with Nsight capture inactive.",
+      "Configure vLLM profiler=cuda and ignore_frontend=true; collect a short synchronized CUDA/NVTX/OSRT range on both ranks without PyTorch profiler.",
+      "Stop capture without stopping engines, repeat timing and check for drift; this quantifies active capture overhead within the Nsight-launched process.",
+      "Verify worker/child coverage, kernel/API correlations, OSRT native call chains and whether Python frames were actually captured before interpreting causes.",
+      "Use per-thread scheduler counters to supplement OSRT where tracefs/perf access is unavailable. These cannot replace precise scheduling events.",
+      "Restore original service identities with the existing watchdog on every exit."
+    ],
+    "nsys_verified_flags": [
+      "--sample=none",
+      "--cpuctxsw=none",
+      "--trace=osrt,nvtx",
+      "--python-sampling=true",
+      "--python-sampling-frequency=100"
+    ],
+    "additional_full_model_flags_to_validate": [
+      "--trace=cuda,nvtx,osrt",
+      "--capture-range=cudaProfilerApi",
+      "--capture-range-end=stop",
+      "--osrt-threshold=10000",
+      "--osrt-backtrace-threshold=80000"
+    ],
+    "harness_status": "Not launched or implemented; existing full-model controller hard-codes torch profiling. Do not run the old combined harness unchanged.",
+    "cupti_rule": "Use CUDA-profiler start/stop for Nsight; do not enable PyTorch/Kineto concurrently.",
+    "python_sampling_status": "Sampling domain/markers observed; Python frame contents not independently verified in exported SQLite.",
+    "vllm_source": {
+      "profiler_config_sha256": "78af917ec2ea2ba3bacda15f58fda9782b8ff82c0b810fd5c9563f4203aa5ba8",
+      "profiler_wrapper_sha256": "eb0db0fd1c0a95c320fbaf9bdd66b6222a2d26ba9c1ac97efbfe1b196b3fbf15",
+      "supported_profiler_kinds": [
+        "torch",
+        "cuda",
+        "proton"
+      ],
+      "torch_record_shapes_default": false,
+      "saved_run_with_stack": false
+    }
+  }
+}

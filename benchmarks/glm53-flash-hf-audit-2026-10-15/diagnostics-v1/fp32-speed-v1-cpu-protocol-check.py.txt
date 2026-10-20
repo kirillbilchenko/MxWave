@@ -1,0 +1,24 @@
+"""Reject changed output words or forged timing decisions before any GPU run."""
+import copy,hashlib,importlib.util,json,pathlib,sys
+b=pathlib.Path(__file__).parent
+sys.path.insert(0,str(b/'overlay/src'))
+spec=importlib.util.spec_from_file_location('review',b/'verify.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+from fp32_speed_probe import PAIRS,protocol,summarize
+p=protocol();samples=[]
+for trial in range(p['trials']):
+ pairs=list(PAIRS) if trial%2==0 else list(reversed(PAIRS));order=['a','b','b','a'] if trial%2==0 else ['b','a','a','b']
+ samples.append({'trial':trial,'pair_order':pairs,'pairs':{name:[{'arm':arm,'us':[80. if arm=='b' and name.startswith('candidate_vs') else 100.]*8} for arm in order] for name in pairs}})
+prior={'tokens':4,'split':4,'artifacts':{name:{'sha256':str(i)*64} for i,name in enumerate(('original','rebuilt','candidate'))}}
+expected={k:x['sha256'] for k,x in prior['artifacts'].items()}
+row={'tokens':4,'split':4,'activation':'787','outputs_match_parent_before':True,'outputs_match_parent_after':True,'graph_matches_eager':True,'guards_unchanged':True,'graph_retained_bytes':0,'output_sha256_before':expected,'output_sha256_after':expected,'graph_output_sha256':expected,'timing':[{'samples':samples,'summary':summarize(samples)}]}
+v.verify_row(row,prior)
+bad=copy.deepcopy(row);bad['output_sha256_after']['candidate']='f'*64
+try:v.verify_row(bad,prior)
+except AssertionError:corrupt=True
+else:raise AssertionError('changed output accepted')
+bad=copy.deepcopy(row);bad['timing'][0]['summary']['candidate_speed_passed']=False
+try:v.verify_row(bad,prior)
+except AssertionError:forged=True
+else:raise AssertionError('forged timing decision accepted')
+result={'status':'passed','raw_timing_recomputation_passed':True,'changed_output_rejected':corrupt,'forged_decision_rejected':forged,'verifier_sha256':hashlib.sha256((b/'verify.py').read_bytes()).hexdigest(),'script_sha256':hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()}
+(b/'cpu-protocol-check.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

@@ -1,0 +1,67 @@
+"""Describe output agreement, allocation and logged activity without extra GPU requests."""
+from __future__ import annotations
+
+import argparse
+import datetime
+import hashlib
+import json
+import pathlib
+import re
+
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--root',type=pathlib.Path,required=True)
+    parser.add_argument('--output',type=pathlib.Path,required=True)
+    args=parser.parse_args();root=args.root
+    state=json.loads((root/'controller.json').read_bytes())
+    assert state['phase']=='complete_live'
+    reports={arm:json.loads((root/f'{arm}-measurement.json').read_bytes())
+             for arm in ('production','current','candidate')}
+    startup={arm:json.loads((root/f'{arm}-startup.json').read_bytes())
+             for arm in ('current','candidate')}
+    result=dict(status='passed',source_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+                allocations={},output_agreement={},timing_log_review={})
+    for arm,entries in startup.items():
+        result['allocations'][arm]={field:sum(e['trial'][field]for e in entries)
+            for field in ('cuda_allocated_bytes','cuda_reserved_bytes','cuda_peak_allocated_bytes')}
+    result['post_startup_allocated_saving_GiB']=(result['allocations']['current']['cuda_allocated_bytes']-
+        result['allocations']['candidate']['cuda_allocated_bytes'])/1024**3
+    result['allocation_scope']='Different checkpoints; post-startup Torch allocation with equal KV budget. Not isolated compression or post-request allocation.'
+    for left,right in zip(startup['current'],startup['candidate'],strict=True):
+        a,b=left['trial'],right['trial']
+        for key in ('physical_graph_token_counts','max_model_len','max_num_seqs','max_num_batched_tokens','kv_cache_memory_bytes'):
+            assert a[key]==b[key],key
+        assert a['shared_head']and b['shared_head']and a['shared_embedding']and b['shared_embedding']
+    def outputs(report):
+        return {(r['trial'],r['prompt_tokens'],r['batch'],i):q['token_ids']
+                for r in report['trials']for i,q in enumerate(r['requests'])}
+    candidate=outputs(reports['candidate'])
+    for reference in ('production','current'):
+        baseline=outputs(reports[reference]);assert baseline.keys()==candidate.keys()
+        exact=sum(baseline[k]==candidate[k]for k in baseline)
+        result['output_agreement'][reference]=dict(exact_requests=exact,total_requests=len(baseline),
+            scope='Finite greedy output-token agreement on repeated diagnostic prose; not KL or broad quality qualification.')
+    for arm in ('current','candidate'):
+        report=reports[arm]
+        start=min(q['start_epoch_ns']for r in report['trials']for q in r['requests'])/1e9
+        finish=max(q['start_epoch_ns']/1e9+q['latency_seconds']for r in report['trials']for q in r['requests'])
+        rows=[]
+        for rank in (0,1):
+            warnings=[];activity=[]
+            for line in(root/f'{arm}-r{rank}.log').read_text().splitlines():
+                match=re.search(r'10-19 (\d\d:\d\d:\d\d)',line)
+                if not match:continue
+                epoch=datetime.datetime.fromisoformat('2026-10-19T'+match[1]+'+00:00').timestamp()
+                if not start<=epoch<=finish:continue
+                if 'JIT compilation during inference'in line:warnings.append(line)
+                counts=re.search(r'Running: (\d+) reqs, Waiting: (\d+) reqs, GPU KV cache usage: ([0-9.]+)%',line)
+                if counts:activity.append(dict(time=match[1],running=int(counts[1]),waiting=int(counts[2]),kv_usage_percent=float(counts[3])))
+            rows.append(dict(rank=rank,recognized_jit_warnings=warnings,sampled_activity=activity))
+        result['timing_log_review'][arm]=dict(start_epoch=start,finish_epoch=finish,ranks=rows,
+            scope='Sampled server logs and recognized JIT warnings, not a complete device trace.')
+    args.output.write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps({k:v for k,v in result.items()if k!='timing_log_review'}))
+
+
+if __name__=='__main__':main()

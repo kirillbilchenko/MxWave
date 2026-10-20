@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-repeatpolicyv1/stock/cache/b12x/compile/04/040e369c7764ac4f8715486c76d85ca10484983a268fb8f77fa07368a6a0eb66.json'
+Traceback (most recent call last):
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/relocate-evidence-fp32-input-model-v1.py", line 89, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/relocate-evidence-fp32-input-model-v1.py", line 51, in main
+    files=inventory(source)
+          ^^^^^^^^^^^^^^^^^
+  File "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/relocate-evidence-fp32-input-model-v1.py", line 26, in inventory
+    return json.loads(subprocess.check_output(['python3','-S','-c',INVENTORY,str(base)],timeout=300))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python3', '-S', '-c', "import hashlib,json,pathlib,sys\nb=pathlib.Path(sys.argv[1]);rows=[]\nassert b.is_dir() and not b.is_symlink()\nfor p in sorted(b.rglob('*')):\n assert not p.is_symlink() and (p.is_file() or p.is_dir()),p\n if p.is_file():\n  with p.open('rb') as f:h=hashlib.file_digest(f,'sha256').hexdigest()\n  rows.append({'path':str(p.relative_to(b)),'bytes':p.stat().st_size,'sha256':h})\nprint(json.dumps(rows))\n", '/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/run-repeatpolicyv1']' returned non-zero exit status 1.
