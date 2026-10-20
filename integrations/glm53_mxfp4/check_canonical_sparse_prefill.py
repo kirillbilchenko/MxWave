@@ -130,6 +130,7 @@ def qualify(fixture: Path, output: Path) -> dict[str, Any]:
         del graph, actual, expected, expanded, padded, values
     payload = output.with_suffix(".safetensors")
     save_file(retained, str(payload))
+    payload.chmod(0o644)
     result = {"status": "passed", "fixture_sha256": hashlib.sha256(fixture.read_bytes()).hexdigest(),
               "payload_sha256": hashlib.sha256(payload.read_bytes()).hexdigest(),
               "fixtures": reports, "serving_overhead_qualified": False,

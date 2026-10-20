@@ -1,10 +1,12 @@
 # MxWave
 
-**20 October 2026, 21:50 UTC:** the canonical sparse-prefill fix experiment is running
-after both CPU preflights passed. GPU component checks gate the full-model
-long-prompt repeat. Production is temporarily paused with automatic restoration;
-no numerical or speed pass is claimed. Full training remains gated and the
-sealed test remains closed. [Current run](docs/GLM53_HANDOFF.md).
+**20 October 2026, 22:07 UTC:** the canonical sparse-prefill correction now gives
+bit-identical prefill features, initial logits and first draft proposal in all
+12 comparisons across both GPUs. The remaining target drift starts in the first
+eight-row decode step, with identical inputs. Full repeatability still fails;
+training remains gated. Production is restored with 500,000 context and all
+413 evidence files verify on Mac/Spark2. The focused decode trace is now running after both CPU preflights passed;
+production is temporarily paused with automatic restoration. [Current evidence and run](docs/GLM53_HANDOFF.md).
 
 **20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
 GPUs show identical sparse-prefill scoring inputs, consumed scores and selected

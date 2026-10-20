@@ -1,29 +1,60 @@
 # GLM compression experiment handoff
 
 <!-- CANONICAL_PREFILL_BEGIN -->
-**20 October 2026, 21:50 UTC: canonical sparse-prefill experiment launched.**
-Both CPU preflights pass. `drafter-canonical-prefill-v1` uses private port 8033,
-controller/run launcher PID 2219842, and the existing restoration watchdog.
-Original production is temporarily paused; automatic restoration retains the
-original containers and 500,000 context. Frozen plan SHA
-`8f80040d8a94fc4b89bda62fbedc747a2e2b20d426b582ca9f3ae2d7fdd49521`.
+**20 October 2026, 22:07 UTC: prefill correction independently verified; remaining failure starts at first decode.**
+`drafter-canonical-prefill-v1` completes all six requests and restores original
+production (`complete_restored`, no error, health 200, original 500,000 context).
+All 413 evidence payloads independently verify on Mac/Spark2. The fixed native
+prefill top-k still selects the same pools, then sorts selected integer indices;
+all -1 padding and selected multiplicity are preserved. No weights change.
 
-The own wrapper calls native prefill top-k unchanged and sorts its selected
-int32 pool indices in ascending order. It preserves multiplicity and all -1
-padding; native expansion and existing stable compaction still handle masks.
-Scope is k512 and at most 4,096 prefill rows; decode selection is unchanged.
-Both GPUs must pass replay of retained scores at 8/16/64/128/3,973 rows, mixed
-heavy padding, exact token-set/causality checks, 32 repeats and 32 graph replays
-per fixture. Timing uses six interleaved trials at 16/128/3,973 rows with
-clock/thermal telemetry and the unchanged 2% repeat-control gate. These are
-component measurements, not serving-overhead qualification.
+All 12 comparisons across both TP ranks now have **bit-identical full prefill
+feature arrays at layers 5/14/24/33/42, initial target logits, drafter hidden
+state and first proposal**. Before the correction every pair differed already
+in prefill. Full-model repeatability still fails: all 12 pairs first differ at
+the next forward, **decode input position 3,973**, by layer 5 and in target logits,
+with identical complete eight-token input IDs/positions. One captured response
+diverges at output 80; speculative counters differ. Full training remains gated.
 
-Only after component checks pass: three short warmups and the same long
-native-before/four-captures/native-after requests, 128 output tokens each,
-original drafter and seven drafts. Full decision logits remain retained;
-there is no per-operation full-model observation. Full training remains gated,
-sealed test closed, old pilot speed-neutral. No fix outcome is claimed yet.
-Local ruff, strict mypy and full pytest pass (one existing skip).
+Both GPU component gates pass at 8/16/64/128/3,973 rows: ten fixtures, 320 exact
+canonical repeats and 320 exact graph replays, unchanged selected token sets,
+invalid masking and causality. Independent NumPy review verifies the retained
+integer payloads against the original scores/indices. Timing controls pass
+**8/36 overall**, including 7/12 at 3,973 rows; all failed 2% controls are retained.
+Stable full-size median added latency is 0.499/0.502 ms per indexer call
+(ranks 0/1). This is component timing, not end-to-end serving overhead or a speed
+qualification; the correction applies to prefill, not decode.
+
+Review: `out/drafter-canonical-prefill-v1/review.json` and `review-target.json`,
+also retained in benchmarks. Archive: **1,952,437,133 bytes**, SHA
+`2c2efaf058914d42fda1bb2c15c731c491851e8193752858b71cded1522a942e`.
+Plan SHA `8f80040d8a94fc4b89bda62fbedc747a2e2b20d426b582ca9f3ae2d7fdd49521`.
+Spark2: `full-model-v1/drafter-canonical-prefill-v1-retained-backup/`.
+The first finalizer attempt failed because new safetensors component payloads
+were root-readable only. The two files' modes were corrected to 0644 without
+content changes; retry succeeded. `finalize-first-failed.log` and original failed
+`run-prepared-status.json` remain retained; `archive-receipt.json` records the
+successful retry. The source writer now sets 0644 for future evidence.
+Source checkpoint `eac094f` and bundle
+`e7fc25212503d830d244f9e1300fbac414e5d27b6c0bd07aca22b4fd1ed67726`
+are verified in Spark2's Git backup.
+
+**20 October 2026, 22:07 UTC: focused first-decode trace launched after both CPU preflights passed.**
+Controller launcher PID 2352907; original production is temporarily paused.
+The existing watchdog and controller restore the original 500,000-context service.
+
+`drafter-long-decode-v1`, private port 8034, frozen plan SHA
+`6d51d9069e98925f378ad074b6444f97764886650181d2eef00d9a14d23aa578`.
+It keeps the prefill correction and existing expert/mHC policies. Bounded graph
+copies observe layers 0–4 and native decode top-k scores, sequence bounds and
+selected pools; only the first eight-row decode payload is retained. Copies
+are present in every control graph and can alter scheduling, so this is
+localization evidence, not native runtime or serving-speed qualification.
+No new arithmetic change. Prior component fixtures are inherited from verified
+evidence, without repeating startup timing trials. The GPU controller retains
+automatic restoration and its independent watchdog. No sealed-test access.
+Full 4,000/200 capture/training has not started; the 32-update pilot remains
+speed-neutral and unqualified. Local ruff, strict mypy and pytest checks pass.
 <!-- CANONICAL_PREFILL_END -->
 
 <!-- DRAFTER_SPARSE_PREFILL_BEGIN -->

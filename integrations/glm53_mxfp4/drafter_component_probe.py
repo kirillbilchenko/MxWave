@@ -79,13 +79,15 @@ class ComponentTrace(BoundaryCapture):
                              self.wrapper(name + ".mlp.routed_experts"))
 
 
-def patch_manager(manager_type: Any, ops: Any) -> None:
+def patch_manager(
+    manager_type: Any, ops: Any, trace_type: type[ComponentTrace] | None = None,
+) -> None:
     """Insert graph copies once, restoring all Python methods even if capture fails."""
     original = manager_type.capture
 
     @functools.wraps(original)
     def capture(manager: Any, model: Any, *args: Any, **kwargs: Any) -> Any:
-        trace = ComponentTrace()
+        trace = (trace_type or ComponentTrace)()
         try:
             trace.replace(manager, "_build_forward_fn_factory", trace.forward_factory)
             trace.install(model, ops)
