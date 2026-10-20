@@ -1,10 +1,17 @@
-# DeepInfer reference for CT drafter confidence and wider batch invariance
+# Archived DeepInfer reference audit — withdrawn
 
-Updated 20 October 2026. This adds a separate experimental workstream. The
-fixed-seven-draft development comparison has completed with its frozen sources,
-weights, prompts and gates: output identity and all eight timing controls pass,
-but the small pilot is effectively speed-neutral. Production is restored.
-The sealed test remains closed.
+**20 October 2026: withdrawn at the user's request.** The experimental confidence
+head, CPU scheduler and training observer have been removed from active code.
+They were never trained on real data or installed in serving, so no CT speed
+benefit was measured. The +0.111% development code result belongs to the separate
+fixed-width context-projection pilot, not this experiment.
+
+No DeepInfer/DeepGEMM implementation was copied or installed. Keep this audit,
+the reviewed source hashes and license records as provenance history. The
+following design notes describe the withdrawn experiment, not current code or
+an active qualification plan. Its former source is retained in Git through
+`4d8880e`. Our pre-existing Marlin padding and context-projection work continue;
+see [the current handoff](GLM53_HANDOFF.md).
 
 ## Pinned upstream evidence
 
@@ -12,7 +19,7 @@ The sealed test remains closed.
 is Apache-2.0. Its pinned
 [DeepGEMM submodule](https://github.com/deepseek-ai/DeepGEMM/tree/1fc9c66975ee322d628b3288534ca0e9ce12a64d)
 is MIT, not Apache-2.0. Both grants are retained in the external audit checkout;
-reviewed source hashes are in `integrations/glm53_mxfp4/deepinfer_reference.json`.
+reviewed source hashes are in `docs/GLM53_DEEPINFER_REFERENCE.json`.
 `CONTRIBUTING.md` records the references and independently authored changes.
 No upstream implementation is vendored into MxWave.
 
@@ -38,7 +45,7 @@ concurrency. Those results use a different model and hardware layout; they
 are not a speed prediction for CT.
 [Source](https://github.com/deepseek-ai/DeepInfer/blob/774ce244b87cc0eb8d4b94ab9f5de2ab22049f01/doc/inference_deployment_qa.md)
 
-## Confidence experiment implemented so far
+## Historical confidence experiment (removed)
 
 `drafter_confidence.py` contains a zero-initialized, bias-free FP32 linear head.
 For this DFlash2 checkpoint, hidden size 4,096 plus predecessor rank 256 gives
@@ -95,7 +102,7 @@ checkpoint reload identity, invalid inputs, historical-budget enforcement and
 prefix allocation against an exhaustive optimizer. They do not establish
 model calibration, GPU execution, graph replay or speed.
 
-## Frozen qualification plan before enabling serving
+## Withdrawn qualification plan
 
 1. **Complete:** the existing fixed-width development comparison and independent
    review. All 144 requests and eight timing controls pass; the pilot's measured
@@ -120,7 +127,7 @@ model calibration, GPU execution, graph replay or speed.
 6. Only after candidate, calibration, width set and runtime freeze: sealed
    evaluation. Greedy output identity must pass before a serving speed claim.
 
-## C8/C16 extension informed by the audit
+## Historical wider-invariance audit notes
 
 Keep the current runtime limit at 16 target rows until GPU evidence passes.
 The prepared 8/16/32/64/128-row fixtures cover both TP partitions and two routing

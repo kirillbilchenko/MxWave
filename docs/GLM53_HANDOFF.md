@@ -1,23 +1,38 @@
 # GLM compression experiment handoff
 
 <!-- DEEPINFER_TRANSFER_BEGIN -->
-**20 October 2026: DeepInfer reference pinned; confidence experiment added.**
-User-specified source: `deepseek-ai/DeepInfer` revision `774ce244…`, Apache-2.0;
-its DeepGEMM dependency `1fc9c669…` is separately MIT-licensed. Reviewed source
-hashes and licenses are retained. `CONTRIBUTING.md` records the design references;
-no upstream kernel is copied or installed. DeepInfer fixes mHC splits and uses
-full-K expert work plus an ordered combine; these inform the wider Marlin checks.
+**20 October 2026: DeepInfer workstream withdrawn at the user's request.**
+The confidence head, CPU scheduler and pilot observer hook have been removed
+from active code. They were never trained on real data or enabled in serving;
+there is no measured CT speed result for that experiment. The pilot's +0.111%
+code result below belongs to our independent fixed-width drafter adaptation,
+not confidence scheduling. No DeepInfer/DeepGEMM kernel was copied or installed.
+The source audit and provenance remain historical records, not an active port.
 
-New opt-in code provides a 4,352-parameter acceptance head with detached DFlash2
-hidden/predecessor features, prefix-censored greedy labels and a separate
-optimizer. Validation never updates it; the existing pilot observer is disabled
-by default. A CPU scheduling oracle allocates contiguous prefixes and chooses
-budgets only from older confidence plus measured step costs. Native scheduling,
-real-data head calibration/training, GPU overhead and speed remain unqualified.
-The completed fixed-seven-draft comparison used its frozen sources. The 4,000-prompt run and
-wider GPU fixture work remain pending; sealed evaluation is still closed.
-See [the reference audit and experiment contract](GLM53_DEEPINFER_TRANSFER.md).
+Continue our existing Marlin routing-padding fix and context-projection
+adaptation. Keep seven fixed draft tokens. Next: verify bounded feature loading
+against the retained 32-update pilot, validate our padding at C8/C16 widths,
+then capture fresh target features and run the full 4,000-prompt adaptation.
+The old-policy pilot replay is a loader regression check, not new-policy
+training or a speed claim. Preserve the existing quality/performance gates;
+the sealed test stays closed. Production remains restored.
+See [the archived audit](GLM53_DEEPINFER_TRANSFER.md).
 <!-- DEEPINFER_TRANSFER_END -->
+
+<!-- BOUNDED_LOADER_REPLAY_BEGIN -->
+**20 October 2026, 19:38 UTC: independent bounded-loader CPU replay running.**
+The DeepInfer confidence experiment is withdrawn. The existing context-only
+trainer is replaying all 32 updates with the same 40 retained train/validation
+feature samples, fixed seven-draft objective and seed 42. Only feature residency
+changes; the existing FP64 weight-distance correction remains in place.
+Frozen protocol SHA `119d6da0455407a28a9fa4e098730b4818d280319c86341474032dfb9135ada8`.
+Run: `out/drafter-bounded-loader-replay-v1/run`.
+Require exact original baseline, per-step losses/gradients/proposals, all four
+BF16 checkpoint payloads and selected step. Independently review saved weights
+and acceptance before declaring the loader ready. No production pause, new
+policy capture, full training or sealed-test access. Full pytest (one existing
+skip), ruff and strict mypy pass after removal of the confidence code/hook.
+<!-- BOUNDED_LOADER_REPLAY_END -->
 
 <!-- EXPERT_FIXED_DEVELOPMENT_BEGIN -->
 **20 October 2026, 19:23:01 UTC: development comparison complete; original production restored.**

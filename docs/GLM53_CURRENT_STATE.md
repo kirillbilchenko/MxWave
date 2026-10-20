@@ -11,12 +11,13 @@ Original production is restored and healthy with **500,000 context**.
 All 93 evidence payloads independently verify on Mac/Spark2; no experiment is running.
 See [the result and TTFT table](GLM53_HANDOFF.md).
 
-DeepInfer's confidence head/scheduling design is now added as a separate opt-in
-training observer and CPU scheduling oracle, with pinned Apache/MIT provenance.
-A bounded feature loader is ready for a new full-run protocol. Real-data head
-training/calibration, native scheduling, wider GPU checks and the 4,000-prompt
-training run remain outstanding. Sealed evaluation remains closed.
-See [the source audit and qualification plan](GLM53_DEEPINFER_TRANSFER.md).
+**20 October: direction updated at the user's request.** The DeepInfer-inspired
+confidence experiment and its trainer hook are removed. It was never enabled
+in serving and has no measured CT gain. The audit is retained as history.
+Continue our independently developed fixed-width drafter adaptation and Marlin
+padding. Bounded-loader pilot replay, wider GPU checks and fresh target-feature
+capture precede the full 4,000-prompt training run. Existing gates are unchanged;
+sealed evaluation remains closed. See [the current handoff](GLM53_HANDOFF.md).
 
 **Earlier, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
 production is restored with 500,000 context. On one development prompt, the

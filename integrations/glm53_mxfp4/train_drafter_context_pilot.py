@@ -20,7 +20,6 @@ from safetensors.torch import load_file, save_file
 from .audit_drafter_specforge import load_model
 from .cpu_drafter_linear import install as install_cpu_derivatives
 from .cpu_drafter_linear import linear as cpu_linear
-from .drafter_confidence import ConfidenceObserver
 from .drafter_feature_store import VerifiedFeatureStore
 from .drafter_forward_preflight import tensor_digest
 from .drafter_fp8_roundtrip import digest
@@ -88,9 +87,6 @@ class Pilot:
         protocol: dict[str, Any],
     ) -> None:
         self.protocol = protocol
-        # Explicitly opt in from a separately frozen confidence experiment.
-        # Existing fixed-width runs never instantiate or call this observer.
-        self.confidence_observer: ConfidenceObserver | None = None
         if protocol.get("execution_policy") != "single_block_forwards":
             raise ValueError("Expected the frozen single-block execution protocol")
         manifest = json.loads((dataset / "manifest.json").read_bytes())
@@ -256,15 +252,6 @@ class Pilot:
                 "per_position_agreement": correct.float().mean(0).tolist(),
                 "proposal": proposal.tolist(),
             }
-        if self.confidence_observer is not None:
-            with torch.no_grad():
-                proposed_predecessors = torch.cat((ids[anchors, None], proposal[:, :-1]), dim=-1)
-                predecessor_features = self.model.candidate_selector.predecessor_codebook[
-                    proposed_predecessors
-                ]
-            self.confidence_observer(
-                sample, hidden.detach(), predecessor_features.detach(), proposal, labels,
-            )
         return unary_ce + selector_ce, metrics
 
     @torch.no_grad()
