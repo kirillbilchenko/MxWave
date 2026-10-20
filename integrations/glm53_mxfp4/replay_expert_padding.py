@@ -18,11 +18,11 @@ from replay_drafter_expert import bits_equal, compare, digest, frame, load_weigh
 def telemetry() -> dict[str, Any]:
     """Retain GPU clock/thermal readings without treating host time as kernel time."""
     result = subprocess.run(
-        ["nvidia-smi", "--query-gpu=clocks.sm,temperature.gpu,pstate,power.draw",
+        ["nvidia-smi", "--query-gpu=clocks.sm,clocks.mem,temperature.gpu,pstate,power.draw",
          "--format=csv,noheader,nounits"], capture_output=True, text=True, check=False,
     )
     return {"epoch": time.time(), "returncode": result.returncode,
-            "csv_sm_MHz_temperature_C_pstate_power_W": result.stdout.strip(),
+            "csv_sm_MHz_mem_MHz_temperature_C_pstate_power_W": result.stdout.strip(),
             "error": result.stderr.strip()}
 
 
@@ -138,6 +138,12 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
     from safetensors.torch import save_file
 
     plan = json.loads((root / "plan.json").read_bytes())
+    policies = plan["scope"]["policies"]
+    assert policies[0] == "native" and set(policies) <= {"native", "pad_default", "pad_one"}
+    assert "pad_default" in policies
+    cycles = plan["scope"]["timing_interleaved_cycles"]
+    replays = plan["scope"]["replays_per_timing"]
+    assert cycles >= 8 and cycles % 2 == 0 and replays >= 50
     assert not (root / "report.json").exists()
     for name, expected in plan["frozen_bindings"].items():
         assert digest(frozen / name) == expected
@@ -165,7 +171,7 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
             for arm in ("a1", "b1"):
                 frames = [frame(evidence, arm, rank, position, i) for i in (0, 1)]
                 values, references, parameters = [list(x) for x in zip(*frames, strict=True)]
-                for policy in ("native", "pad_default", "pad_one"):
+                for policy in policies:
                     for implementation in ("stock", "packed"):
                         key = (arm, policy, implementation)
                         launch, owners, meta = bind_pipeline(
@@ -193,7 +199,7 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
                         save_file(outputs, root / "outputs.safetensors")
             shared = 8 if position == 46 else 7
             passing = []
-            for policy in ("native", "pad_default", "pad_one"):
+            for policy in policies:
                 equal = True
                 for implementation in ("stock", "packed"):
                     a, b = (retained[arm, policy, implementation] for arm in ("a1", "b1"))
@@ -211,7 +217,7 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
                 if equal:
                     passing.append(policy)
             (root / "numerical-progress.json").write_text(json.dumps(row, indent=2) + "\n")
-            assert {"pad_default", "pad_one"} <= set(passing), "Padding did not fix the shared rows"
+            assert set(policies[1:]) <= set(passing), "Padding did not fix the shared rows"
             # No performance test is reached unless the exact replay gate passes.
             for cycle in range(20):
                 keys = list(graphs) if cycle % 2 == 0 else list(reversed(graphs))
@@ -227,7 +233,14 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
                 for _ in range(100):
                     graph.replay()
             torch.cuda.synchronize()
-            for cycle in range(8):
+            warm_seconds = plan["scope"].get("timing_warm_seconds", 0)
+            deadline = time.monotonic() + warm_seconds
+            while time.monotonic() < deadline:
+                for graph, _, _ in graphs.values():
+                    for _ in range(50):
+                        graph.replay()
+                torch.cuda.synchronize()
+            for cycle in range(cycles):
                 report["telemetry"].append({"rank": rank, "position": position,
                                              "cycle": cycle, **telemetry()})
                 keys = list(graphs) if cycle % 2 == 0 else list(reversed(graphs))
@@ -237,17 +250,18 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
                         enable_timing=True,
                     )
                     begin.record()
-                    for _ in range(50):
+                    for _ in range(replays):
                         graph.replay()
                     end.record()
                     end.synchronize()
-                    timings[":".join(key)].append(begin.elapsed_time(end) * 1000 / 50)
+                    timings[":".join(key)].append(begin.elapsed_time(end) * 1000 / replays)
             summary = {}
             for key, samples in timings.items():
                 summary[key] = {
                     "samples_us": samples, "median_us": statistics.median(samples),
                     "first_last_half_drift": (
-                        statistics.median(samples[4:]) / statistics.median(samples[:4]) - 1
+                        statistics.median(samples[cycles // 2:]) /
+                        statistics.median(samples[:cycles // 2]) - 1
                     ),
                 }
             row["timings"].append({"position": position, "graphs": summary})

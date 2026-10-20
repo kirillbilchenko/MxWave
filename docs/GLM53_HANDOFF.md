@@ -1,29 +1,35 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_EXPERT_PADDING_BEGIN -->
-**20 October 2026, 17:48 UTC: corrected padding replay prepared; GPU result pending.**
-`drafter-expert-padding-v2` tests bounded routing padding on the retained
-440-versus-448 dispatch, with both real TP weight partitions and both expert
-projections. Native replay must first match the retained up/activation/down
-outputs; padded stock/packed results must match each other and be bit-identical
-on shared rows. Only then run graph-repeat and eight interleaved timing cycles,
-including SM clock, temperature and power telemetry. Two launch policies are
-retained: default occupancy and one block per SM. Timing controls retain the
-2% drift limit. No serving speed claim follows from component timings.
+**20 October 2026: V2 padding numerical gate passes; longer overhead check prepared.**
+`drafter-expert-padding-v2` completes the exact 440-versus-448 fixture for both
+real TP partitions. Both default-occupancy and one-block-per-SM padding make
+all seven shared rows bit-identical through up, activation, down and route
+summation. Stock and packed scales match under each policy. Native replay
+matches retained up/activation/down outputs; all 960 graph-repeat assertions
+pass. GPU fixture duration is 64.416 seconds, peak allocation 1.901 GiB.
+Independent archived NumPy review is pending original-service restoration.
 
-CPU preflight passes all **1,728 checkpoint tensor records**, four frozen
-runtime/library hashes and source compilation. Full pytest, ruff and strict
-mypy pass. Plan SHA:
-`6c44147cc75eed379af728c513b50024e33cf4a1f6624cfb875f0e51cf69f4cd`.
+The observed component overhead is a few percent, but **14/32** paired timing
+controls exceed the unchanged 2% first/last-half drift limit. Do not claim a
+settled overhead or serving speed. `drafter-expert-padding-v3` therefore retains
+native and default-occupancy padding, adds 30 seconds warm-up per fixture and
+16 interleaved cycles of 200 replays, plus SM/memory clocks and thermals.
+Default occupancy is chosen to preserve the native launch configuration,
+not by selecting the fastest noisy sample. V3 CPU preflight passes; plan SHA:
+`6a4e8d5040da614c1a739085d932d057dd0d01446d0ca0d4ed5c161936922e5d`.
+Both source commits `28b1a17` / `566f5cf` are verified in the Spark2 backup.
+
 V1 failed before its numerical gate because the replay called an activation
 symbol absent from `vllm._custom_ops`. Installed MoE source uses
 `torch.ops._C.silu_and_mul`; V2 corrects that call. V1 is preserved as a harness
-failure, with automatic original-service restoration in progress. A separate
+failure, with original service verified restored. A separate
 GPU-free API import could not load the CUDA extension and is also retained;
-it supplies no numerical evidence. V2 waits for original-service health before
-pausing verified idle production, with the same independent restoration watchdog.
-The V1 source commit `28b1a17` is verified in the Spark2 backup.
-This is not yet a tested fix. Full-model verification
+it supplies no numerical evidence. The installed original-container API check
+then passes with zero allocated CUDA bytes and no CUDA context initialized.
+V3 waits for V2 restoration and original-service health before pausing verified
+idle production, with the same independent restoration watchdog.
+The fix is component-proven only. Full-model verification
 and frozen drafter qualification wait for the component result and overhead
 review. The adapted drafter stays **unqualified**, the sealed test stays
 **unopened**, and the full 4,000-prompt training run remains outstanding.

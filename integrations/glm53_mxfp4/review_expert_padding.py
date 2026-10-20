@@ -37,10 +37,13 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
         assert digest(root / name) == sha
     assert report["output_sha256"] == digest(root / "result/outputs.safetensors")
     tensors = arrays(root / "result/outputs.safetensors")
-    assert len(tensors) == 192
+    policies = plan["scope"]["policies"]
+    graph_count = 4 * len(policies)
+    cycles = plan["scope"]["timing_interleaved_cycles"]
+    half = cycles // 2
+    assert len(tensors) == 64 * len(policies)
     comparisons, timings, native_matches, stock_matches, repeats = [], [], 0, 0, 0
     parts = ("up", "activation", "down", "sum")
-    policies = ("native", "pad_default", "pad_one")
     for family, count in (("w13", 1152), ("w2", 576)):
         proofs = [json.loads((root / f"result/weight-sources-r{r}-{family}.json").read_bytes())
                   for r in (0, 1)]
@@ -48,10 +51,10 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
         assert len({p["name"] for p in proofs[0]}) == count
     for rank in (0, 1):
         r = report["ranks"][rank]
-        assert r["rank"] == rank and len(r["cases"]) == 24
+        assert r["rank"] == rank and len(r["cases"]) == 2 * graph_count
         assert len(r["repeat_checks"]) == 2
         for check in r["repeat_checks"]:
-            assert check["all_bitwise_exact"] and check["comparisons"] == 240
+            assert check["all_bitwise_exact"] and check["comparisons"] == 20 * graph_count
             repeats += check["comparisons"]
         for case in r["cases"]:
             if case["policy"] == "native":
@@ -109,14 +112,15 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
                                         "implementation": implementation, "shared_rows": shared,
                                         "different_elements_per_row": counts})
             samples = next(x["graphs"] for x in r["timings"] if x["position"] == position)
-            assert len(samples) == 12 and all(len(x["samples_us"]) == 8 for x in samples.values())
+            assert len(samples) == graph_count
+            assert all(len(x["samples_us"]) == cycles for x in samples.values())
             for arm in ("a1", "b1"):
                 for implementation in ("stock", "packed"):
                     native = samples[f"{arm}:native:{implementation}"]
-                    for policy in ("pad_default", "pad_one"):
+                    for policy in policies[1:]:
                         padded = samples[f"{arm}:{policy}:{implementation}"]
-                        drifts = [statistics.median(x["samples_us"][4:]) /
-                                  statistics.median(x["samples_us"][:4]) - 1
+                        drifts = [statistics.median(x["samples_us"][half:]) /
+                                  statistics.median(x["samples_us"][:half]) - 1
                                   for x in (native, padded)]
                         timings.append({
                             "rank": rank, "position": position, "arm": arm,
@@ -130,7 +134,7 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
                             "native_padded_half_drifts": drifts,
                             "control_pass": all(abs(d) <= 0.02 for d in drifts),
                         })
-    assert len(report["telemetry"]) == 32
+    assert len(report["telemetry"]) == 4 * cycles
     telemetry_ok = all(t["returncode"] == 0 for t in report["telemetry"])
     result = {
         "status": "verified", "payloads_verified": len(manifest["files"]),
@@ -140,7 +144,7 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
         "comparisons": comparisons, "timings": timings, "telemetry_available": telemetry_ok,
         "timing_controls_passed": sum(t["control_pass"] for t in timings),
         "timing_controls_total": len(timings),
-        "conclusion": "Both padding policies remove shared-row differences in this retained fixture.",
+        "conclusion": "Every tested padding policy removes shared-row differences in this fixture.",
         "limits": [
             "Both TP partitions run separately on one GPU; no distributed or serving speed result.",
             "Timing ratios whose control_pass is false are descriptive only.",
