@@ -1,36 +1,81 @@
 # GLM compression experiment handoff
 
 <!-- LONG_DECODE_BEGIN -->
-**20 October 2026, 22:23 UTC: first-decode evidence independently verified; combined correction prepared.**
-The completed `drafter-long-decode-v1` archive verifies all **421 payloads** on
-Mac and Spark2. All six requests completed and original 500,000-context production
-was restored. In all 12 comparisons across both GPUs the first changed result is
-`layer3.native_decode_topk#0/output`: rows 8 / next_n 1 / k 512, with per-row pool
-bounds `[993,993,994,994,994,994,995,995]`. All **7,952 consumed scores** are
-bit-identical and finite. Unused columns differ and are excluded. Selected pool
-and expanded-token multisets match; only order differs, in all eight rows.
-The graph observers added copies, so this establishes the component defect,
-not full-model repeatability without observation.
+**20 October 2026, 22:37 UTC: combined sparse-prefill/decode ordering correction passes the long-prompt C1 repeat gate.**
+`drafter-canonical-decode-v1` completes all six requests and restores original
+production: `complete_restored`, control/finalizer exit 0, no error, original
+container identities/configurations, health 200 and **500,000 context**. No GPU
+experiment is currently running. All **430 archived payloads** independently
+verify on Mac and Spark2; the independent NumPy review passes.
 
-Archive: **2,048,667,852 bytes**, SHA
-`0e2530bdd1e6322c2b0af5dfe501b66f1cf88238e7ba4977af5462468e9fc193`.
-Spark2: `full-model-v1/drafter-long-decode-v1-retained-backup/`.
-Independent reviews are retained in `out/drafter-long-decode-v1/` and benchmarks.
-Source checkpoint `0656135` and bundle
-`3f4fb70c3b5804067b8aa5e444bca972c0fb90340c22795320b1c5b867f52593`
+Observed result, original drafter / fixed seven drafts / 3,973 input tokens /
+128 output tokens, with per-operation graph observers removed:
+
+- All six before/four-capture/after requests have identical output tokens and
+  speculative counters; the unchanged API repeat gate passes.
+- All **12 capture-pair comparisons** across both TP ranks have identical full
+  prefill features at layers 5/14/24/33/42 and identical accepted-history features.
+- Each comparison has 128 shared decision positions and **zero different target
+  logit rows**; all initial drafter fields are bit-identical.
+- A separate raw-field digest screen verifies all **176 frame payloads**
+  (22 × four captures × two ranks). Every numerical tensor field matches across
+  each rank's captures. Only `context_slot_mapping_0`, the physical cache-slot
+  addresses allocated to different requests, differs.
+
+The correction preserves native selected membership and all -1 masking, then
+sorts selected integer pool indices. Canonical prefill remains enabled; decode
+sorting applies only to **rows 8 / next_n 1 / k 512**. Other decode shapes retain
+native behavior. No model or drafter weights change; no external code is copied.
+
+Both GPUs pass retained-score and mixed-heavy-padding component fixtures:
+128 native membership checks, 128 exact canonical repeats and 128 exact canonical
+graph replay checks in total. Poisoning unused columns with large values and
+NaNs leaves selected membership unchanged. Independent NumPy checks validate
+pool counts, uniqueness, causal bounds, sentinel masking and pool-to-token
+expansion against retained native outputs.
+
+| Decode component fixture | Stable timing controls, rank 0 / rank 1 | Added ms per call, rank 0 / rank 1 |
+| --- | --- | --- |
+| Retained native scores | 5/6 / 4/6 | 0.01553 / 0.01559 |
+| Mixed heavy padding | 5/6 / 5/6 | 0.01547 / 0.01545 |
+
+These are CUDA-graph component costs: 100 calls per replay, 32 replays per timing
+sample, six interleaved trials per fixture with clock/thermal telemetry. **19/24**
+repeat controls pass; five failed 2% controls remain retained and excluded.
+This does not measure end-to-end serving overhead or demonstrate a drafter speed
+improvement. The prior prefill correction's component cost remains separately
+recorded below; no full-model C8/C16, cross-drafter or long-context pass is claimed.
+
+**Next:** repeat the eight-prompt fresh-capture smoke under these exact numerical
+policies, independently export/audit accepted features on both ranks, then start
+the frozen 4,000 training / 200 validation capture and context-projection run
+only if that smoke passes. Full capture/training has **not** started. The old
+32-update pilot remains speed-neutral and unqualified. The sealed test stays
+closed, all quality/performance thresholds unchanged.
+
+Current plan SHA
+`a5b4bb6335442edfd71e65148e9eab243f33e20214f69931cdcc3bbbd19e460f`;
+42 frozen files, private port 8035, controller launcher PID 2479761.
+Archive: **1,916,526,830 bytes**, SHA
+`51dc7f1d46e59be73cbc6e444432efd12cc20f72f39b3023c3c377eecbe9d638`.
+Spark2: `full-model-v1/drafter-canonical-decode-v1-retained-backup/`.
+Reviews, raw-field screen and backup receipt are retained in
+`out/drafter-canonical-decode-v1/` and `benchmarks/.../diagnostics-v1/`.
+Qualified source checkpoint `e2cbcab` and bundle
+`6fb158f2b4456777b3e9cc63a9c97397ceb00d03e75d1e6346d4681583714350`
 are verified in Spark2's Git backup.
 
-**Next prepared run: `drafter-canonical-decode-v1`, private port 8035.**
-Frozen plan SHA `a5b4bb6335442edfd71e65148e9eab243f33e20214f69931cdcc3bbbd19e460f`,
-42 source files, six long requests, original drafter/fixed seven drafts/128 tokens.
-It keeps verified canonical prefill and sorts native selected decode indices
-only at rows 8 / next_n 1 / k 512; other shapes keep native behavior. GPU gates
-cover retained scores, mixed heavy padding, unused-column large-value/NaN poisoning,
-32 repeats and graph replays, plus six interleaved graph timing trials per fixture
-with clocks/thermals and the unchanged 2% repeat limit. Full-model operation
-observers are removed; passive feature/logit capture remains. Local ruff,
-strict mypy and pytest pass. CPU preflight/GPU execution are pending.
-Training remains gated, sealed test closed; no serving-speed or C8/C16 claim.
+**Preserved diagnosis:** the prior `drafter-long-decode-v1` verifies all 421
+payloads on Mac/Spark2. Every one of 12 comparisons first differs at
+`layer3.native_decode_topk#0/output`, with identical **7,952 consumed scores**
+and selected membership; unused score columns differ and are excluded. The
+per-row bounds are `[993,993,994,994,994,994,995,995]`. Only selected order changes,
+in all eight rows. Its observed-graph failure remains recorded; the successful
+correction run removes those per-operation observers. Prior archive:
+2,048,667,852 bytes, SHA
+`0e2530bdd1e6322c2b0af5dfe501b66f1cf88238e7ba4977af5462468e9fc193`.
+Prior plan SHA
+`6d51d9069e98925f378ad074b6444f97764886650181d2eef00d9a14d23aa578`.
 <!-- LONG_DECODE_END -->
 
 <!-- CANONICAL_PREFILL_BEGIN -->

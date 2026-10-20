@@ -1,10 +1,13 @@
 # MxWave
 
-**20 October 2026, 22:23 UTC:** all 421 first-decode trace payloads verify on Mac/Spark2.
-All 12 comparisons isolate native top-k order drift with identical 7,952 consumed
-scores and selected membership. Combined prefill/decode ordering correction is
-prepared for component and full-model GPU repeat checks; production is restored.
-Full training remains gated; sealed test closed. See [handoff](docs/GLM53_HANDOFF.md).
+**20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**
+All six requests match in tokens/counters; all 12 capture comparisons have exact
+target features/logits and initial drafter fields. All 430 evidence payloads
+independently verify on Mac/Spark2. Decode sorting adds about 0.0155 ms per indexer
+call in stable component timings (19/24 controls pass); serving cost is unmeasured.
+Original 500,000-context production is restored. Next is the eight-prompt capture
+smoke before full 4,000/200 capture/training; sealed test remains closed.
+[Evidence, limits and next step](docs/GLM53_HANDOFF.md).
 
 **20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
 GPUs show identical sparse-prefill scoring inputs, consumed scores and selected
