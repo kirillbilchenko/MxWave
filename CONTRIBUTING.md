@@ -408,8 +408,8 @@ derivatives with FP32 accumulation while calling unchanged PyTorch BF16 forwards
 The native exporter copies original serialized payloads and replaces only the
 selected BF16 context projection. Neither utility includes upstream model code.
 
-The CT drafter first-divergence preparation, passive verification-state probe and
-its copy/bounds tests are independently authored. They inspect installed vLLM/GLM
+The CT drafter first-divergence preparation, passive verification-state probe,
+NumPy trace reviewer and their tests are independently authored. They inspect installed vLLM/GLM
 APIs and call the original runtime; they do not copy third-party kernel or model
 implementations. The raw runtime sources retained in ignored `out/` are read-only
 audit evidence, not redistributed implementation code.

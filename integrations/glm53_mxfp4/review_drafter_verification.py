@@ -68,6 +68,51 @@ def frames(root: Path, arm: str, case: str, policy: str, rank: int) -> list[dict
     return result
 
 
+def recurrent_inputs(frame: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Select the recurrent slot read by the audited native speculative kernel."""
+    result = {}
+    for layer, meta in frame["meta"]["state_layers"].items():
+        if not meta["num_spec_decodes"]:
+            continue
+        x = frame["x"]
+        prefix = f"before_layer_{layer}_"
+        accepted = int(x[prefix + "meta_num_accepted_tokens"].reshape(-1)[0])
+        slots = x[prefix + "meta_spec_state_indices_tensor"][0]
+        if not 1 <= accepted <= len(slots):
+            raise ValueError("Invalid accepted-state column")
+        physical = int(slots[accepted - 1])
+        if physical <= 0:
+            raise ValueError("Native recurrent kernel would skip an invalid state")
+        retained_row = meta["physical_state_slots"].index(physical)
+        name = prefix + "cache_1"
+        result[layer] = {
+            "accepted_column": accepted - 1, "physical_slot": physical,
+            "value": x[name][retained_row], "dtype": frame["meta"]["tensor_dtypes"][name],
+        }
+    return result
+
+
+def compare_recurrent_inputs(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
+    """Compare actual read states, ignoring unused speculative cache columns."""
+    aa, bb = recurrent_inputs(a), recurrent_inputs(b)
+    result = {}
+    for layer in sorted(aa.keys() & bb.keys()):
+        left, right = aa[layer], bb[layer]
+        result[layer] = {
+            **difference(left["value"], right["value"]),
+            "accepted_columns": [left["accepted_column"], right["accepted_column"]],
+            "physical_slots": [left["physical_slot"], right["physical_slot"]],
+        }
+        if left["value"].shape == right["value"].shape:
+            x = numeric(left["value"], left["dtype"]).astype(np.float64)
+            y = numeric(right["value"], right["dtype"]).astype(np.float64)
+            finite = bool(np.isfinite(x).all() and np.isfinite(y).all())
+            result[layer]["finite"] = finite
+            if finite:
+                result[layer]["max_abs"] = float(np.abs(x - y).max())
+    return result
+
+
 def compare_frames(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
     """Compare causally shared rows; future rejected tokens are explicitly excluded."""
     x, y = a["x"], b["x"]
@@ -83,13 +128,21 @@ def compare_frames(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
         "a_frame": a["path"], "b_frame": b["path"], "shared_input_rows": shared,
         "start_position": int(x["target_positions"][0]),
         "all_input_ids_equal": np.array_equal(x["target_input_ids"], y["target_input_ids"]),
+        "input_ids": [x["target_input_ids"].tolist(), y["target_input_ids"].tolist()],
+        "positions": [x["target_positions"].tolist(), y["target_positions"].tolist()],
         "shared_row_tensors": {
-            name: difference(x[name][:shared], y[name][:shared]) for name in names
+            name: {
+                **difference(x[name][:shared], y[name][:shared]),
+                "different_elements_per_row": [
+                    int(np.count_nonzero(x[name][i] != y[name][i])) for i in range(shared)
+                ],
+            } for name in names
         },
         "before_num_computed": [x["before_num_computed"].tolist(),
                                 y["before_num_computed"].tolist()],
         "before_num_accepted": [x["before_num_accepted"].tolist(),
                                y["before_num_accepted"].tolist()],
+        "selected_recurrent_inputs": compare_recurrent_inputs(a, b),
     }
     return result
 
@@ -186,11 +239,20 @@ def review(root: Path, output: Path) -> dict[str, Any]:
         "controls": controls, "capture_repeats": repeats,
         "first_different_output_index": first, "rank_results": rank_results,
         "production_restored": True, "sealed_test_opened": False,
+        "recurrent_read_rule": {
+            "column": "num_accepted_tokens - 1",
+            "installed_kernel": "vllm/third_party/flash_linear_attention/ops/fused_recurrent.py",
+            "audited_kernel_sha256":
+                "371e7d733e90a7147fbca8dbfe67e62503ba663bd1570424bc0efa22c54f3e2b",
+            "scope": "Audited installed V2 image source; selected layers 0 and 4 only.",
+        },
         "limits": [
             "One development prompt and one load per arm; no speed or quality qualification.",
             "Shared row comparison is conditional on shared prior accepted history.",
             "Only target layers 5/14/24/33/42 and final hidden are retained.",
-            "Selected raw KDA cache slots are retained for follow-up; unused columns are not evidence of divergence.",
+            "Recurrent states use the audited kernel's accepted-column minus one rule; unused columns are excluded.",
+            "Only layers 0 and 4 have retained recurrent state; convolution-history slices are not compared.",
+            "Post-sampler copies refer to the original logits storage, not an independently retained processed-logits tensor.",
             "No causal attribution to a particular kernel from boundary tensors alone.",
         ],
     }

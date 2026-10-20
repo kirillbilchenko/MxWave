@@ -1,19 +1,41 @@
 # CT drafter: verified features and context-projection pilot
 
 <!-- DRAFTER_VERIFICATION_BEGIN -->
-**20 October 2026, 15:35 UTC: V1 diagnostic failed before any request; original production restored.**
-The original arm loaded, but the measurement client's over-escaped request-metric
-regex matched no counters and failed its idle check. There were **zero warmups,
-zero measured requests and zero capture frames**. This is a test-script failure,
-not model evidence. Original container identities/configurations, health 200 and
-**500,000 context** are verified restored at **15:35:38 UTC**.
+**20 October 2026, 15:59 UTC: V2 trace complete and independently verified; original production restored.**
+Both original/adapted arms pass before/capture/repeat/after output and counter
+controls, reproducing their prior uninstrumented prefixes. All **80 frames**
+(10 per capture × two captures × two ranks × two arms) are retained. Inputs,
+logits and captured features repeat bitwise in all four arm/rank comparisons.
 
-V1 remains unchanged under `drafter-verification-v1`. V2 corrects the generated
-client parser, with explicit tests for labeled/unlabeled idle metrics, running
-and waiting requests, and missing counters. It keeps the same one-prompt,
-32-token, original/candidate before/capture/repeat/after protocol and numerical
-gates. The retry is being prepared; no experiment is currently running.
-The sealed test remains closed. Packaging work is deferred at the user's request.
+Both ranks show the same first difference at output index **21**. All earlier
+captured target inputs/features match. In that eight-row verification, inputs
+and positions match for the first seven rows; only the last draft token changes
+(**21613 → 369**, position 61). Selected pre-forward recurrent inputs at KDA
+layers **0 and 4 are bitwise equal**. Shared rows 1–6 already differ at feature
+boundary 5; row 0 is exact there but differs at boundary 14. Original logits tie
+419/1128 at **27.625**; adapted-arm token 1128 rises to **27.75**, changing the
+winner. Full-vocabulary KL for this one decision is **0.00202506**, not a corpus
+quality score. This is a reproducible target-verification sensitivity associated
+with changed future draft inputs; the first responsible operation is not yet
+identified. Do not claim an mHC, attention, expert or cache bug is proven.
+
+Original identities/configurations, health 200 and **500,000 context** are
+verified restored at **15:54:30 UTC**. No diagnostic or training is running.
+The candidate remains unqualified, and the sealed test remains closed.
+Next: capture attention/mHC/MoE boundaries in layers 0–4 on this exact eight-row
+case; isolate the first differing operation before more adaptation. If that is
+an expert operation, compare original/changed inputs under stock and packed
+expert scales to distinguish stock batch sensitivity from our adapter.
+
+All **229 payloads** independently verify on Mac and Spark2. Archive:
+`drafter-verification-v2/evidence-v1.tar.gz` (2,673,102,459 bytes), SHA-256
+`3bb1ed2e11499982c939001abe57ee2289f08c985cfb904f6576e5bb85a54f52`.
+V1's zero-request client-parser failure remains retained (55 verified payloads).
+Corrected source is backed up on Spark2 at `cb1bd06`. The independent reviewer,
+full findings and handoff are retained in this branch. `analysis-v1.tar.gz`
+(14 payloads) is also copied to both Sparks; SHA-256
+`32fff60fb8cb3b226c37c500cd96a7e870fdba2a62e2e1a937f23ce405e5d876`.
+Full pytest, ruff and strict mypy pass. Packaging is deferred at the user's request.
 <!-- DRAFTER_VERIFICATION_END -->
 
 <!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->
@@ -46,13 +68,81 @@ experiment or training is running. See
 [the complete result, telemetry and retained evidence](GLM53_DRAFTER_CONTEXT_PILOT.md).
 <!-- NATIVE_DRAFTER_DEVELOPMENT_END -->
 
-Updated **20 October 2026, after the 15:14 UTC production restoration**.
+Updated **20 October 2026, 15:59 UTC**, after the completed V2 trace and production restoration.
 
 The fixed target is **CT MXFP4 experts plus the previously tested native MXFP8
 KDA conversion**. That KDA conversion is lossy; original BF16-KDA CT remains the
 lossless reference. No further target quantization changes are made here.
 The failed cross-target KL gate and the failed selector-only pilot remain
 retained. This experiment does not waive either.
+
+## First-divergence trace: retained V2 result
+
+The corrected client runs one development prompt, `opencoder-evol-15654`, with
+32 output tokens, temperature zero, seed 42, seven drafts and native eight-row
+verification. Original/adapted loads each execute two warmups and four requests
+(before, capture, repeated capture, after). No weights, target arithmetic or
+sampled outputs are substituted by the probe. Both arms reproduce their earlier
+uninstrumented output prefix and counters in all four requests. All 80 frames
+are retained; both captures match inputs/logits/features exactly on both ranks.
+The probe can affect latency, so this is **not a speed measurement**.
+
+The first five recorded target forwards match across arms, including all eight
+input rows in each decode step. The sixth forward starts at output index 21:
+
+| Observation | Original drafter | Adapted drafter |
+| --- | --- | --- |
+| Input IDs at positions 54–60 | 911, 419, 15504, 382, 785, 6770, 3561 | Identical |
+| Last input, position 61 | 21613 | 369 |
+| Actual recurrent starting states, layers 0 and 4 | Reference | Bitwise equal |
+| Shared rows 1–6, feature boundary 5 | Reference | 800 / 982 / 333 / 287 / 338 / 461 differing BF16 elements |
+| Shared row 0, feature boundary 5 | Reference | Exact |
+| Shared row 0, feature boundary 14 | Reference | 1,762 of 4,096 differing elements |
+| Token 419 logit for first output | 27.625 | 27.625 |
+| Token 1128 logit for first output | 27.625 | 27.75 |
+| Selected output | 419 | 1128 |
+
+Both GPU ranks agree on every value above. Across the full 154,880-element
+logit row, 141,144 values differ, maximum absolute difference is 0.25, and
+forward KL is **0.0020250586**. This is one next-token distribution under
+matched accepted history, not a corpus-level KL estimate or task-accuracy
+measurement. The unchanged-output gate remains failed.
+
+The selected recurrent cache column is `num_accepted_tokens - 1`, verified
+against the **actual imported** installed FLA kernel, not the separate Kimi
+implementation. Audited source SHA-256:
+`371e7d733e90a7147fbca8dbfe67e62503ba663bd1570424bc0efa22c54f3e2b`.
+Only layers 0 and 4 have raw recurrent states. Unused speculative slots are
+excluded; convolution-history slices and other layers' caches are not compared.
+The second logit copy is the original logits storage after the sampler returns;
+processing can allocate another tensor, so this is not an independent capture
+of processed logits. The numerical difference already exists before sampling.
+
+The evidence points to target verification responding differently when later
+draft inputs change, despite matching accepted history and a fixed row count.
+It does not identify the first differing kernel or establish a causal attention
+mask defect. Attention, routing/expert arithmetic, mHC and state handling remain
+candidates until the first changed component is isolated. The next diagnostic
+should retain native graph-written component inputs/outputs for layers 0–4,
+check the same before/capture/repeat/after controls, and reuse this exact pair.
+If an expert call is first, a stock/packed × original/changed-input fixture will
+separate stock arithmetic from the lossless adapter. Do not train further or
+relax equality gates on the basis of this one reproducer.
+
+V2 plan SHA-256:
+`965dc634a26117c72eebec46571a9763a97967b7140c52796ff23f346245128d`.
+Local review: `out/drafter-verification-v2/review.json`; independent reviewer:
+`integrations/glm53_mxfp4/review_drafter_verification.py`. The 229-payload archive
+is retained on Spark, Mac and Spark2, and all hashes independently verify on
+Mac and Spark2. Original production's IDs/configurations, health and 500k
+context are restored at 15:54:30 UTC. No new diagnostic is running.
+
+The first attempt (V1) failed before any inference request because the generated
+client's metrics regex was over-escaped. Its 55-payload archive remains retained
+and verified, with original production restored at 15:35:38 UTC. V2 changes only
+the client parser and directory/port identity; regression tests execute the
+emitted parser on labeled/unlabeled, busy and missing metrics, and the corrected
+parser was also tested against actual production counters before the retry.
 
 ## Training result
 
@@ -130,12 +220,8 @@ The unchanged-output gate fails. Even disregarding it, this development result
 misses the code +8%, explanation −2% and TTFT +2% requirements. Do not promote,
 relax thresholds, open the sealed test or infer quality loss from changed text.
 
-Next: capture original and candidate target-verification logits on **identical
-accepted histories** at the first divergence. Start with `opencoder-evol-15654`
-output index 21: earlier stream boundaries match and original reference logits
-tie at 27.625. Check target input IDs, positions, recurrent/cache state, verifier
-shape and selected token before attributing this to mHC, KDA, MoE or rounding.
-No new GPU diagnosis is running yet.
+The first-divergence comparison requested here is now complete; see the V2
+result above. The next step is component-level localization on its frozen pair.
 
 ## Relationship to established drafter training
 

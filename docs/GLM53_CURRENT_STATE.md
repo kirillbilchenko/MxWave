@@ -1,19 +1,41 @@
 # GLM lossless experiment: current state and next steps
 
 <!-- DRAFTER_VERIFICATION_BEGIN -->
-**20 October 2026, 15:35 UTC: V1 diagnostic failed before any request; original production restored.**
-The original arm loaded, but the measurement client's over-escaped request-metric
-regex matched no counters and failed its idle check. There were **zero warmups,
-zero measured requests and zero capture frames**. This is a test-script failure,
-not model evidence. Original container identities/configurations, health 200 and
-**500,000 context** are verified restored at **15:35:38 UTC**.
+**20 October 2026, 15:59 UTC: V2 trace complete and independently verified; original production restored.**
+Both original/adapted arms pass before/capture/repeat/after output and counter
+controls, reproducing their prior uninstrumented prefixes. All **80 frames**
+(10 per capture × two captures × two ranks × two arms) are retained. Inputs,
+logits and captured features repeat bitwise in all four arm/rank comparisons.
 
-V1 remains unchanged under `drafter-verification-v1`. V2 corrects the generated
-client parser, with explicit tests for labeled/unlabeled idle metrics, running
-and waiting requests, and missing counters. It keeps the same one-prompt,
-32-token, original/candidate before/capture/repeat/after protocol and numerical
-gates. The retry is being prepared; no experiment is currently running.
-The sealed test remains closed. Packaging work is deferred at the user's request.
+Both ranks show the same first difference at output index **21**. All earlier
+captured target inputs/features match. In that eight-row verification, inputs
+and positions match for the first seven rows; only the last draft token changes
+(**21613 → 369**, position 61). Selected pre-forward recurrent inputs at KDA
+layers **0 and 4 are bitwise equal**. Shared rows 1–6 already differ at feature
+boundary 5; row 0 is exact there but differs at boundary 14. Original logits tie
+419/1128 at **27.625**; adapted-arm token 1128 rises to **27.75**, changing the
+winner. Full-vocabulary KL for this one decision is **0.00202506**, not a corpus
+quality score. This is a reproducible target-verification sensitivity associated
+with changed future draft inputs; the first responsible operation is not yet
+identified. Do not claim an mHC, attention, expert or cache bug is proven.
+
+Original identities/configurations, health 200 and **500,000 context** are
+verified restored at **15:54:30 UTC**. No diagnostic or training is running.
+The candidate remains unqualified, and the sealed test remains closed.
+Next: capture attention/mHC/MoE boundaries in layers 0–4 on this exact eight-row
+case; isolate the first differing operation before more adaptation. If that is
+an expert operation, compare original/changed inputs under stock and packed
+expert scales to distinguish stock batch sensitivity from our adapter.
+
+All **229 payloads** independently verify on Mac and Spark2. Archive:
+`drafter-verification-v2/evidence-v1.tar.gz` (2,673,102,459 bytes), SHA-256
+`3bb1ed2e11499982c939001abe57ee2289f08c985cfb904f6576e5bb85a54f52`.
+V1's zero-request client-parser failure remains retained (55 verified payloads).
+Corrected source is backed up on Spark2 at `cb1bd06`. The independent reviewer,
+full findings and handoff are retained in this branch. `analysis-v1.tar.gz`
+(14 payloads) is also copied to both Sparks; SHA-256
+`32fff60fb8cb3b226c37c500cd96a7e870fdba2a62e2e1a937f23ce405e5d876`.
+Full pytest, ruff and strict mypy pass. Packaging is deferred at the user's request.
 <!-- DRAFTER_VERIFICATION_END -->
 
 <!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->
