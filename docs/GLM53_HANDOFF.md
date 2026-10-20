@@ -1,6 +1,9 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_COMPONENTS_BEGIN -->
+**V2 retry launched at 16:56:47 UTC**, PID 4093625, source `0763f38`.
+The bounded controller is loading the original-drafter arm; restoration is automatic.
+
 **20 October 2026, 16:54 UTC: component V1 failed before requests; original production restored.**
 The new observer incorrectly selected by eight total tokens alone. The installed
 dynamic speculation policy captures two such graphs: one request × eight tokens
