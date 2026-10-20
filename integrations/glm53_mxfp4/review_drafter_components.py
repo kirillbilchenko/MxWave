@@ -18,12 +18,12 @@ def row_view(value: np.ndarray, event: dict[str, Any], leaf: dict[str, Any]) -> 
     """Select only known eight-row activations; do not reinterpret sorted expert indices."""
     if event["category"] == "workspace" or value.ndim == 0:
         return None
-    if ".moe_gemm" in event["name"]:
-        # Sorted token/expert IDs describe the complete dispatch, not a per-token row.
-        if event["name"].endswith("/input") and leaf["path"] != "/0":
-            return None
-        # Expanded expert outputs need a separately verified token/route mapping.
-        # Keep their full comparison, but do not guess that mapping here.
+    # Sorted token/expert IDs describe the complete dispatch, not a per-token row.
+    if (".moe_gemm" in event["name"] and event["name"].endswith("/input")
+            and leaf["path"] != "/0"):
+        return None
+    # Expanded expert outputs need a separately verified token/route mapping.
+    # Keep their full comparison, but do not guess that mapping here.
     if value.shape[0] != 8:
         return None
     return value

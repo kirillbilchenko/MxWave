@@ -1,8 +1,10 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_COMPONENTS_BEGIN -->
-**20 October 2026, 16:48 UTC: component trace and both-rank serving-image CPU preflight pass.**
-Production remains running at this checkpoint; paired GPU capture is next. The bounded observer
+**20 October 2026, 16:45 UTC: paired component capture launched after both-rank CPU preflight.**
+The controller has paused production and is loading the original-drafter arm.
+Launch PID 4002532 uses source checkpoint `76b625b` and the independent watchdog.
+The bounded observer
 covers attention projections/outputs, mHC, dense MLPs, expert routing and expert
 GEMMs in layers 0–4 of the native eight-row target graph. It retains graph-written
 copies only at start positions 46 and 54, with a 64 MiB graph-allocation limit.
