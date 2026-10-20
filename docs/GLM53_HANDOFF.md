@@ -1,5 +1,47 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_SPARSE_PREFILL_BEGIN -->
+**20 October 2026, 21:24 UTC: first long-prefill divergence localized to layer-3 sparse indexer.**
+The completed `drafter-prefill-boundary-v1` observes 159 operation boundaries
+and hashes 10,540,856,360 bytes per prefill/rank. Independent review of all
+12 capture pairs on both GPUs finds the first different observation at
+`language_model.model.layers.3.self_attn.indexer.indexer_op#0/output`.
+All preceding observed tensors and this operation's explicit inputs match.
+This is before the drafter; it does **not** prove matching hidden cache state,
+identify the internal kernel, or distinguish selected membership from order
+or unused slots. Do not describe it as a solved kernel cause.
+
+All six requests complete, the repeat gate fails, and original production is
+restored (`complete_restored`, no error, health 200, 500,000 context).
+All **414 evidence payloads** independently verify on Mac and Spark2.
+Archive: 1,849,717,826 bytes, SHA
+`9c7635b0157e332a2525f0cf0b7d12f91a67ebe32939f931b8b37ae3236c47b5`.
+Plan SHA `951680952a525be24449b4bb862609f907a7685cefc4444006d427604629b8be`.
+Review: `out/drafter-prefill-boundary-v1/review.json`, also retained in benchmarks.
+Spark2 evidence: `full-model-v1/drafter-prefill-boundary-v1-retained-backup/`.
+Source checkpoint `f9f8f4d` is committed and verified in Spark2's Git backup;
+bundle SHA `a2ee93ef3c42a4332aa0a1724af1d730fa496c6e563f8c4e375c18a743c2cbf4`.
+
+**Follow-up active: both CPU preflights passed; controller/watchdog launched.** `drafter-sparse-prefill-v1`,
+private port 8032, frozen plan SHA
+`c91a61c51d99b3c6e9640dac04257c75f5bf07a278515ed841bb2068b228c5f4`.
+Production is temporarily paused; the controller restores the original service
+on exit. Same target, original drafter, seven drafts, three short warmups, and long
+native-before / four-captures / native-after requests. Retain layer-3 native
+indexer operands/output, gathered MQA score inputs, raw score buffers and
+native in-place top-k selections. Stream-ordered GPU copies are bounded to
+512 MiB/rank and transferred after prefill, avoiding per-operation CPU
+synchronization. Observation may still affect scheduling; no timing claim.
+Review must exclude unused score columns using the actual per-row bounds,
+then separate index order, selected multiplicity, duplicates and causality.
+No arithmetic replacement or new kernel is enabled. Local ruff, strict mypy
+and full pytest pass (one existing skip).
+
+Full 4,000/200 capture and training remain gated by the target repeat failure.
+The 32-update pilot remains speed-neutral and unqualified. Sealed test closed;
+no DeepInfer code or confidence scheduler is introduced.
+<!-- DRAFTER_SPARSE_PREFILL_END -->
+
 <!-- DRAFTER_FRESH_CAPTURE_BEGIN -->
 **20 October 2026, 21:06 UTC: repeated long-prompt target prefill differs before the drafter.**
 Full 4,000/200 capture and training remain gated; the sealed test is closed.
@@ -21,13 +63,12 @@ Plan SHA `444b42c825545fc27bb7a27b90ddf2aa89db65034e1c1c466ecaac2b40c1ed75`.
 Archive: 1,855,265,597 bytes, SHA
 `d75c8ccc41df89630c33848e969405e0c9748943b24e4b61f285f467c5bf3ba6`.
 
-**Active diagnostic: both CPU preflights passed; controller/watchdog launched.**
+**Historical follow-up (now complete/restored; see the latest result above):**
 `full-model-v1/drafter-prefill-boundary-v1`, private port 8031, plan SHA
 `951680952a525be24449b4bb862609f907a7685cefc4444006d427604629b8be`.
 It hashes complete operands/results through layers 0–5 on the same 3,973-row
 prefill, retaining native before/after controls and four captures. It excludes
-scratch contents and unread routing tails. Production is temporarily paused; the existing watchdog/controller restores
-its original 500,000-context setup on exit. No target/drafter weights or kernel
+scratch contents and unread routing tails. The controller has restored the original 500,000-context setup. No target/drafter weights or kernel
 arithmetic changes. CPU copies synchronize execution and may alter overlap;
 a trace that becomes repeatable under observation cannot qualify the native
 runtime. Local ruff, strict mypy and full pytest pass (one existing skip).

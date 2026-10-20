@@ -1,13 +1,11 @@
 # CT drafter: verified features and context-projection pilot
 
-**20 October 2026, 21:06 UTC:** independent review confirms target-prefill
-variation before the drafter on the 3,973-token training prompt. All 12 capture
-pairs across both GPUs differ by sampled layer 5 and at the first decision
-logits. Four captured responses nevertheless have identical text; the native
-repeat control fails. A focused operation trace through
-layers 0–5 is now active after both CPU preflights pass. Production is temporarily
-paused; the controller restores its original 500,000-context setup on exit.
-Full 4,000/200 capture/training remain gated; the sealed test stays closed.
+**20 October 2026, 21:24 UTC:** all 12 independently reviewed capture pairs
+on both GPUs first diverge at layer 3's sparse-indexer output, with matching
+explicit inputs. Selected membership, ordering and hidden cache state are not
+yet separated. Production is restored with 500,000 context; all 414 trace
+payloads verify on Mac/Spark2. The focused score/index capture is now active;
+production is temporarily paused with automatic restoration. Full training remains gated; the sealed test is closed.
 [Current evidence and restoration status](GLM53_HANDOFF.md).
 
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
