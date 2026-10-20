@@ -1,5 +1,15 @@
 # CT drafter: verified features and context-projection pilot
 
+**20 October 2026, 20:37 UTC:** the corrected fresh-feature capture is active
+(`drafter-fresh-capture-smoke-v3`, private port 8028). It checks eight prompts,
+including the longest train/validation inputs, under the qualified C1 expert
+policy and existing 4,096-token dispatch extension. Production is temporarily
+paused with automatic restoration. V1 CPU-preflight and V2 startup failures are
+retained; V2 restored original production before V3 launched. Full-corpus
+capture/training have not started. Incremental export and the full-run schedule
+are prepared locally, gated on successful fresh capture/export review.
+See [live status and exact provenance](GLM53_HANDOFF.md).
+
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
 all 36 fixtures through 128 rows. Independent review finds 54/100 native
 shared-prefix comparisons differ, versus 0/100 after padding; all 2,880 graph

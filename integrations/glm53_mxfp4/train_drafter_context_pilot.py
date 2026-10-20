@@ -6,7 +6,6 @@ import argparse
 import hashlib
 import importlib
 import json
-import math
 import random
 import time
 from collections import defaultdict
@@ -23,6 +22,7 @@ from .cpu_drafter_linear import linear as cpu_linear
 from .drafter_feature_store import VerifiedFeatureStore
 from .drafter_forward_preflight import tensor_digest
 from .drafter_fp8_roundtrip import digest
+from .drafter_training_schedule import TrainingSchedule
 
 
 def anchors_for(
@@ -266,7 +266,7 @@ def train(
     dataset: Path, checkpoint: Path, checkout: Path, weights: Path,
     protocol_path: Path, output: Path,
 ) -> dict[str, Any]:
-    """Run at most one seeded pass over the pilot training prompts and preserve every result."""
+    """Run at most one seeded pass with the frozen protocol's budget and preserve every result."""
     output.mkdir(exist_ok=False)
     protocol = json.loads(protocol_path.read_bytes())
     report: dict[str, Any] = {
@@ -287,14 +287,23 @@ def train(
         }), flush=True)
 
     try:
+        schedule = TrainingSchedule.from_protocol(protocol)
         torch.set_num_threads(4)
         torch.manual_seed(42)
         pilot = Pilot(dataset, checkpoint, checkout, weights, protocol)
         report["inputs"] = pilot.inputs
+        manifest = json.loads((dataset / "manifest.json").read_bytes())
+        for split in ("train", "validation"):
+            if sum(row["split"] == split for row in manifest["rows"]) != protocol["data"][
+                f"{split}_prompts"
+            ]:
+                raise ValueError(f"Frozen {split} dataset count differs from the protocol")
         train_samples = [s for s in pilot.samples if s["split"] == "train"]
         random.Random(42).shuffle(train_samples)
         if not train_samples:
             raise ValueError("No eligible training prompts")
+        report["planned_updates"] = min(schedule.maximum_steps, len(train_samples))
+        report["eligible_training_prompts"] = len(train_samples)
         with torch.no_grad():
             sample = train_samples[0]
             isolated = pilot.forward(sample)
@@ -325,10 +334,9 @@ def train(
         if set(baseline["domains"]) != {"code", "chat", "explanation"}:
             raise ValueError("Validation lacks an eligible domain")
         write()
-        optimizer = torch.optim.AdamW([pilot.master], lr=1e-5, weight_decay=0)
-        for step, sample in enumerate(train_samples[:32], 1):
-            rate = (1e-5 * step / 4 if step <= 4 else
-                    1e-6 + 0.5 * (1e-5 - 1e-6) * (1 + math.cos(math.pi * (step - 4) / 28)))
+        optimizer = torch.optim.AdamW([pilot.master], lr=schedule.peak_rate, weight_decay=0)
+        for step, sample in enumerate(train_samples[:schedule.maximum_steps], 1):
+            rate = schedule.learning_rate(step)
             optimizer.param_groups[0]["lr"] = rate
             optimizer.zero_grad(set_to_none=True)
             step_start = time.monotonic()
@@ -349,7 +357,7 @@ def train(
                 "seconds": time.monotonic() - step_start,
             })
             report["status"] = "training"
-            if step in (8, 16, 24, 32) or step == len(train_samples):
+            if schedule.evaluate_after(step, len(train_samples)):
                 rounded = pilot.master.detach().to(torch.bfloat16)
                 relative = float(
                     (rounded.float() - pilot.model.fc.weight.float()).norm(dtype=torch.float64)

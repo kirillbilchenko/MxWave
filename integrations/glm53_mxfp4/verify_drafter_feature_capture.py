@@ -38,11 +38,48 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
     prepared = json.loads((evidence / "prepared.json").read_bytes())
     if digest(evidence / "plan.json") != prepared["plan_sha256"]:
         raise ValueError("Prepared plan changed")
-    if len(plan["calibration_cases"]) != 40 or plan["requests"] != 44:
+    case_ids = [row["id"] for row in plan["calibration_cases"]]
+    control_ids = plan["control_cases"]
+    if (not case_ids or len(set(case_ids)) != len(case_ids)
+            or len(set(control_ids)) != len(control_ids)
+            or not set(control_ids) <= set(case_ids)
+            or plan["requests"] != len(case_ids) + 2 * len(control_ids)
+            or plan["output_tokens"] != 128):
         raise ValueError("Unexpected bounded capture plan")
     measurement = json.loads((evidence / "ct-measurement.json").read_bytes())
-    if measurement["status"] != "complete" or len(measurement["cases"]) != 44:
+    expected_requests = Counter((case, policy) for case in case_ids
+                                for policy in (("before", "capture", "after")
+                                               if case in control_ids else ("capture",)))
+    observed_requests = Counter((row["case"], row["policy"]) for row in measurement["cases"])
+    if measurement["status"] != "complete" or observed_requests != expected_requests:
         raise ValueError("Capture requests are incomplete")
+    policy = plan.get("expert_reduction_policy")
+    if policy is not None:
+        if policy != {"mode": "bounded_padding_default_occupancy", "target_rows_max": 16,
+                      "prefill_above_limit": "native", "same_in_both_arms": True}:
+            raise ValueError("Capture target policy differs from the qualified C1 policy")
+        startup = json.loads((evidence / "ct-startup.json").read_bytes())
+        if len(startup) != 2 or {row["rank"] for row in startup} != {0, 1}:
+            raise ValueError("Missing target policy evidence on one rank")
+        for row in startup:
+            observed = row["expert_reduction"]
+            shapes = {tuple(x["geometry"][:3]) for x in observed["dispatches"]}
+            if (not observed["installed"] or observed["target_rows_max"] != 16
+                    or observed["policy"] != policy["mode"]
+                    or not {(8, 2048, 4096), (64, 4096, 1024)} <= shapes):
+                raise ValueError("Qualified expert policy was not captured on both ranks")
+        for name, sha in plan["expert_reduction_source_sha256"].items():
+            if digest(evidence / name) != sha:
+                raise ValueError("Qualified expert source changed")
+        if plan.get("prefill_budget") == 4096:
+            for name, sha in plan["prefill_dispatch_source_sha256"].items():
+                if digest(evidence / name) != sha:
+                    raise ValueError("Qualified 4096-token dispatch source changed")
+            for row in startup:
+                if (not all(row["checks"].values())
+                        or not row["checks"]["all_39_specializations"]
+                        or row["trial"]["max_num_batched_tokens"] != 4096):
+                    raise ValueError("Missing 4096-token startup qualification")
     controls = []
     for case in plan["control_cases"]:
         rows = [r for r in measurement["cases"] if r["case"] == case]
@@ -116,6 +153,7 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
         "sequence_builder_sha256": digest(Path(__file__).with_name("drafter_feature_sequence.py")),
         "evidence_manifest_sha256": digest(evidence / "evidence-manifest.json"),
         "plan_sha256": digest(evidence / "plan.json"),
+        "expert_reduction_policy": policy,
         "verified_evidence_payloads": len(manifest["files"]),
         "frozen_dataset_hashes": plan["frozen_dataset_hashes"],
         "controls": controls, "rows": rows,
@@ -132,7 +170,7 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
             "rejected_and_post_cap_work": "Excluded before export.",
         },
         "limits": [
-            "Bounded short-prompt public-proxy subset, not the full corpus or long-context screen.",
+            "Bounded public-proxy subset, not the full corpus or long-context serving qualification.",
             "Fixed-length ignore-EOS outputs may include post-EOS tokens; trainer must apply its explicit mask policy.",
             "No training benefit, quality or speed claim from instrumented feature capture.",
         ],

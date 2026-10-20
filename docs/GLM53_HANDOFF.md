@@ -1,5 +1,44 @@
 # GLM compression experiment handoff
 
+<!-- DRAFTER_FRESH_CAPTURE_BEGIN -->
+**20 October 2026, 20:37 UTC: corrected fresh-policy capture is running.**
+The user authorized full drafter adaptation. The eight-prompt capture/export
+check covers code/chat/explanation in train and validation and the longest
+prompt in each split (3,973 / 2,248 tokens). Full 4,000/200 capture and training
+have **not** started. The sealed test remains closed.
+
+Active run: `full-model-v1/drafter-fresh-capture-smoke-v3` on both Sparks,
+private port 8028. Plan SHA:
+`7fc8b9b7296fcf10996f2ae37ced4e0bc6452e20cb9b4598155a48cac4cc41e7`.
+Both CPU launch/tokenizer checks pass. It uses the qualified <=16-row expert
+padding policy, original drafter, seven drafts, 128 outputs, 6 GiB KV per rank
+and 4,096 prefill tokens. Twelve requests include before/capture/after output
+and counter checks on both longest prompts. Production is temporarily paused;
+controller and independent restoration watchdog are active.
+
+Retained attempts:
+- V1 failed CPU preflight because the boot assertion still required 2,048
+  prefill tokens; no production pause.
+- V2 passed CPU checks but failed GPU startup at the inherited stable-dispatch
+  2,048-row guard; no prompt was captured. Controller restores original
+  containers/configurations and 500,000 context (`failed_restored`).
+- V3 installs the **existing qualified** 4,096-row integer dispatch extension
+  and its 39-variant startup checks. All five helper payloads match historical
+  hashes exactly; the startup validator's removed trailing blank line is
+  restored only after matching its historical SHA. No new GPU kernel math.
+
+New local work: protocol-driven training schedule (legacy 32-step rates remain
+bit-exact), bounded per-rank export with an independent NumPy bit audit,
+paired export verification, and raw-staging release only after matching exports
+exist on both nodes. The full-capture preparer refuses to run without a verified
+fresh smoke manifest and independent audit. It freezes one seed-42 pass over
+4,000 training prompts, 200 validation prompts, 200 warmup updates, maximum
+4,000 updates, and validation at 0/250/500/1000/2000/3000/4000 (or last eligible
+step). Existing selection, 1% weight-distance and serving gates remain fixed.
+Full capture uses 64-prompt chunks; accepted features require 41.53 GiB per copy.
+The previous 32-update pilot is still speed-neutral and unqualified.
+<!-- DRAFTER_FRESH_CAPTURE_END -->
+
 <!-- EXPERT_WIDE_V1_BEGIN -->
 **20 October 2026, 20:07:19 UTC: wider expert component check passes; production restored.**
 Our existing Marlin routing-padding fix passes all **36 fixtures** at
