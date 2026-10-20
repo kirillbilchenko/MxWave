@@ -1,18 +1,19 @@
 # GLM lossless experiment: current state and next steps
 
 <!-- DRAFTER_VERIFICATION_BEGIN -->
-**20 October 2026, 15:26 UTC: first-divergence diagnostic prepared; production remains running.**
-The next bounded run uses one development code prompt (`opencoder-evol-15654`),
-32 output tokens, original and adapted drafters, and before/capture/repeated-
-capture/after controls: eight requests plus warmups. Both arms must reproduce
-their prior uninstrumented output prefixes and exact speculative counters.
-The passive probe retains full pre/post-sampler logits, the five target feature
-boundaries, inputs/positions and selected KDA pre-forward cache slots (layers 0
-and 4). It changes no model weights or sampled outputs. CPU image preflight is
-running; no GPU experiment has started yet. Private port 8021; 25-minute
-experiment cutoff and independent original 500k-production restoration.
-Plan SHA-256: `f4c11f2ac24e96d416b3e9d5c6b25858b8cd96b3f169e472cb715cb5a3b3ac04`.
-No timing claim, training step, promotion or sealed-test access is part of this run.
+**20 October 2026, 15:35 UTC: V1 diagnostic failed before any request; original production restored.**
+The original arm loaded, but the measurement client's over-escaped request-metric
+regex matched no counters and failed its idle check. There were **zero warmups,
+zero measured requests and zero capture frames**. This is a test-script failure,
+not model evidence. Original container identities/configurations, health 200 and
+**500,000 context** are verified restored at **15:35:38 UTC**.
+
+V1 remains unchanged under `drafter-verification-v1`. V2 corrects the generated
+client parser, with explicit tests for labeled/unlabeled idle metrics, running
+and waiting requests, and missing counters. It keeps the same one-prompt,
+32-token, original/candidate before/capture/repeat/after protocol and numerical
+gates. The retry is being prepared; no experiment is currently running.
+The sealed test remains closed. Packaging work is deferred at the user's request.
 <!-- DRAFTER_VERIFICATION_END -->
 
 <!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->

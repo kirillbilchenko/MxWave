@@ -16,13 +16,16 @@ import measure_serving as m
 ROOT=pathlib.Path(__file__).parent
 sys.path.insert(0,str(ROOT.parent/"full-c16admissionv1-src"))
 import full_model_control as c
-m.BASE="http://127.0.0.1:8021"
+m.BASE="http://127.0.0.1:8022"
+
+def request_counts(text):
+    return [float(line.rsplit(" ",1)[1]) for line in text.splitlines()
+            if re.match(r"vllm:num_requests_(running|waiting)([{ ])",line)]
 
 def idle():
-    text=m.request("/metrics").decode()
-    values=[float(line.rsplit(" ",1)[1]) for line in text.splitlines()
-            if re.match(r"vllm:num_requests_(running|waiting)(\\\\{| )",line)]
-    assert values and not any(values)
+    values=request_counts(m.request("/metrics").decode())
+    assert values, "Request-count metrics missing"
+    assert not any(values), ("Service has active requests", values)
 
 def marker(arm,active,case):
     idle()
@@ -104,16 +107,18 @@ def prepare(template: Path, audit: Path, output: Path) -> dict[str, Any]:
     assert expected["a1"][:21] == expected["b1"][:21]
     assert expected["a1"][21] != expected["b1"][21]
     plan.update(
-        revision="drafter-verification-v1", arms=["a1", "b1"],
+        revision="drafter-verification-v2", arms=["a1", "b1"],
         modes={"a1": "ct_mxfp8", "b1": "ct_mxfp8"},
         variants={"a1": "original", "b1": "candidate"},
         purpose="First-divergence target/logit/state trace; no timing or training claim.",
         calibration_cases=[case], requests=4, output_tokens=32,
-        private_port=8021, client_deadline_seconds=300, outage_seconds=1500,
+        private_port=8022, client_deadline_seconds=300, outage_seconds=1500,
         max_frames_per_case=40, full_logits_frames=40, state_capture_layers=[0, 4],
         max_state_bytes_per_frame=128 * 1024**2, expected_outputs=expected,
         source_sha256=digest(Path(__file__)),
         notes=[
+            "V1 stopped before any request: an over-escaped metrics regex rejected idle service.",
+            "V2 fixes only the client metrics parser; V1 remains retained unchanged.",
             "One previously observed development prompt; 32 output tokens; sealed test closed.",
             "Before / passive capture / repeated capture / after; outputs and counters must match.",
             "Each arm must reproduce its prior uninstrumented 32-token output prefix.",
@@ -136,8 +141,8 @@ def prepare(template: Path, audit: Path, output: Path) -> dict[str, Any]:
     (output / "plan.json").write_text(json.dumps(plan, indent=2) + "\n")
     for name in ("prepare.py", "control.py"):
         p = output / name
-        text = p.read_text().replace("8020", "8021").replace("29693", "29694")
-        text = text.replace("mxwave-drafter-context-native-v1", "mxwave-drafter-verification-v1")
+        text = p.read_text().replace("8020", "8022").replace("29693", "29695")
+        text = text.replace("mxwave-drafter-context-native-v1", "mxwave-drafter-verification-v2")
         p.write_text(text)
     p = output / "trial_plugin.py"
     p.write_text(p.read_text().replace(

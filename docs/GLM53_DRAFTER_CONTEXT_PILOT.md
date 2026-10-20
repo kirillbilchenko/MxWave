@@ -1,18 +1,19 @@
 # CT drafter: verified features and context-projection pilot
 
 <!-- DRAFTER_VERIFICATION_BEGIN -->
-**20 October 2026, 15:26 UTC: first-divergence diagnostic prepared; production remains running.**
-The next bounded run uses one development code prompt (`opencoder-evol-15654`),
-32 output tokens, original and adapted drafters, and before/capture/repeated-
-capture/after controls: eight requests plus warmups. Both arms must reproduce
-their prior uninstrumented output prefixes and exact speculative counters.
-The passive probe retains full pre/post-sampler logits, the five target feature
-boundaries, inputs/positions and selected KDA pre-forward cache slots (layers 0
-and 4). It changes no model weights or sampled outputs. CPU image preflight is
-running; no GPU experiment has started yet. Private port 8021; 25-minute
-experiment cutoff and independent original 500k-production restoration.
-Plan SHA-256: `f4c11f2ac24e96d416b3e9d5c6b25858b8cd96b3f169e472cb715cb5a3b3ac04`.
-No timing claim, training step, promotion or sealed-test access is part of this run.
+**20 October 2026, 15:35 UTC: V1 diagnostic failed before any request; original production restored.**
+The original arm loaded, but the measurement client's over-escaped request-metric
+regex matched no counters and failed its idle check. There were **zero warmups,
+zero measured requests and zero capture frames**. This is a test-script failure,
+not model evidence. Original container identities/configurations, health 200 and
+**500,000 context** are verified restored at **15:35:38 UTC**.
+
+V1 remains unchanged under `drafter-verification-v1`. V2 corrects the generated
+client parser, with explicit tests for labeled/unlabeled idle metrics, running
+and waiting requests, and missing counters. It keeps the same one-prompt,
+32-token, original/candidate before/capture/repeat/after protocol and numerical
+gates. The retry is being prepared; no experiment is currently running.
+The sealed test remains closed. Packaging work is deferred at the user's request.
 <!-- DRAFTER_VERIFICATION_END -->
 
 <!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->
@@ -152,6 +153,44 @@ the distinction between standard rejection sampling's lossless objective and
 finite-precision/batch-dependent output differences. That makes numerical
 sensitivity a plausible hypothesis here, not an established explanation or
 permission to waive our frozen equality gate. Sources checked 20 October 2026.
+
+## Packaging and stock-vLLM compatibility
+
+The current complete setup has **not** been qualified on an unmodified stock
+vLLM release. Measured serving uses `0.1.dev20051+g487ecf187`, overlay-mounted GLM
+and sampler/cache modules, custom startup hooks, and MxWave CUDA libraries.
+A standard checkpoint format alone does not establish whole-stack portability.
+
+| Component | Packaging route | Present limitation |
+| --- | --- | --- |
+| Adapted FP8 DFlash2 | Existing safetensors/config layout; only FC payload changes | Stock version must support this exact architecture/FP8 path; native validation currently uses the custom image |
+| Source CT MXFP4 experts | Existing standard compressed-tensors MXFP4 checkpoint | Model/hardware support and the complete serving configuration still need a stock smoke test |
+| Later MXFP8 KDA target | Export the already-tested rounded values and a fully covered native quantization config | Conversion is currently installed at runtime; the unchanged source checkpoint still contains BF16 KDA |
+| Extra lossless expert-scale/vocabulary storage | Installable extension containing loader/dispatch adapters and CUDA kernels | Stock vLLM does not recognize the custom coding automatically |
+| Current verification probe | Omit from distribution | Temporary development instrumentation, no serving requirement |
+
+The practical distribution target is **stock vLLM plus a versioned MxWave
+extension**, model/config files, and the separate adapted drafter checkpoint.
+vLLM supports [out-of-tree quantization registration](https://docs.vllm.ai/en/stable/features/quantization/#out-of-tree-quantization-plugins)
+and a [plugin entry-point system](https://docs.vllm.ai/en/latest/design/plugin_system/).
+This is a supported integration mechanism, not proof that this whole GLM stack
+already works without patches. A thin registration package already exists at
+`integrations/glm53_mxfp4/engine_plugin/pyproject.toml`; its module payload is
+empty and runtime modules are supplied through PYTHONPATH, so it is not a
+self-contained distribution wheel yet.
+
+Before advertising a normal `vllm serve` workflow: choose a stock release, audit
+which overlay fixes it already contains, port required MxWave behavior into the
+extension, emit/verify the MXFP8 KDA checkpoint, package architecture-compatible
+kernels, and run loading/numerics/speculation/graphs plus throughput and context
+checks in a clean stock environment. This is not just archiving the current
+experiment directory. Using only stock-supported stored tensors could remove
+the lossless runtime requirement, but would also give up its resident-memory
+savings. Completely installation-free support for the custom lossless coding
+would require upstream support.
+
+Packaging is a recorded follow-up. The active first-divergence diagnostic and
+its frozen numerical gates remain unchanged. Sources checked 20 October 2026.
 
 ## Final native evidence
 
