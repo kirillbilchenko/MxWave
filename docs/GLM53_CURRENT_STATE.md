@@ -1,5 +1,10 @@
 # GLM lossless experiment: current state and next steps
 
+**Next experiment, 20 October 2026:** the frozen eight-prompt, 144-request
+original/adapted/original development comparison is prepared with identical
+expert padding in every arm. CPU preflight comes before any production pause.
+See [the live handoff](GLM53_HANDOFF.md). No GPU comparison has started.
+
 **Latest, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
 production is restored with 500,000 context. On one development prompt, the
 original/adapted drafter arms have 32 identical output tokens and bit-identical

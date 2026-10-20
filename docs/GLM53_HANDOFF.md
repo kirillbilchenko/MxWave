@@ -1,5 +1,31 @@
 # GLM compression experiment handoff
 
+<!-- EXPERT_FIXED_DEVELOPMENT_BEGIN -->
+**20 October 2026: frozen multi-prompt development comparison prepared; CPU preflight next.**
+`expert-fixed-development-v1` reuses all eight development prompts (four code,
+two chat, two explanation), six seed-42 shuffled cycles and 256 generated tokens.
+Loads remain original → adapted step-24 pilot → original, 48 requests per load,
+144 measured requests total, with two excluded warmups per load. Both drafters
+use the exact expert padding hook verified below on the same CT MXFP8 target.
+No target or drafter weights change. The sealed test remains closed.
+
+The timed requests use lightweight draft-graph descriptor counts without
+feature/logit copies. Strict within-load token/counter repeats, cross-drafter
+output identity and the unchanged 2% baseline reload timing control are retained.
+One candidate load remains a development screen, not final speed qualification.
+This measures the drafter under a common padding policy; measuring padding
+overhead against native execution is separate. C8/C16 policy extension and the
+4,000-prompt capture/training run remain outstanding.
+
+Plan SHA `62e8595165e064749d5afe196a73c8ffdb323f78063fdd88c7d4ae3a59e67b3c`;
+26 frozen source/plan payloads. Private port 8027; 40-minute experiment cutoff
+and independent original-production restoration watchdog. The preparation
+verifies all 250 preceding numerical-check evidence payloads and requires
+exact decision logits on both ranks. Local full pytest (one existing skip),
+ruff and strict mypy pass. Production remains running during CPU preparation.
+No GPU comparison has started.
+<!-- EXPERT_FIXED_DEVELOPMENT_END -->
+
 <!-- EXPERT_FIXED_VERIFICATION_BEGIN -->
 **20 October 2026, 18:18:32 UTC: full-model numerical check passes; original production restored.**
 `expert-fixed-verification-v1` applies default-occupancy expert padding in both

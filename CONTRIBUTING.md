@@ -434,3 +434,8 @@ The equal-policy full-model expert wrapper, verification preparer and independen
 NumPy reviewer are also independently authored. They compose the tested metadata
 padding with unchanged installed and previously licensed MxWave dispatch paths;
 no external kernel/model implementation is copied.
+
+The equal-policy development preparer and reviewer independently compose the
+existing MxWave A/B/A protocol, evidence verification and target padding hook.
+They reuse this repository's original experiment scaffolding, with no new
+third-party implementation copied or adapted.
