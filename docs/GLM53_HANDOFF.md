@@ -1,5 +1,24 @@
 # GLM compression experiment handoff
 
+<!-- DEEPINFER_TRANSFER_BEGIN -->
+**20 October 2026, 19:08 UTC: DeepInfer reference pinned; confidence experiment added.**
+User-specified source: `deepseek-ai/DeepInfer` revision `774ce244…`, Apache-2.0;
+its DeepGEMM dependency `1fc9c669…` is separately MIT-licensed. Reviewed source
+hashes and licenses are retained. `CONTRIBUTING.md` records the design references;
+no upstream kernel is copied or installed. DeepInfer fixes mHC splits and uses
+full-K expert work plus an ordered combine; these inform the wider Marlin checks.
+
+New opt-in code provides a 4,352-parameter acceptance head with detached DFlash2
+hidden/predecessor features, prefix-censored greedy labels and a separate
+optimizer. Validation never updates it; the existing pilot observer is disabled
+by default. A CPU scheduling oracle allocates contiguous prefixes and chooses
+budgets only from older confidence plus measured step costs. Native scheduling,
+real-data head calibration/training, GPU overhead and speed remain unqualified.
+The running fixed-seven-draft comparison is unchanged. The 4,000-prompt run and
+wider GPU fixture work remain pending; sealed evaluation is still closed.
+See [the reference audit and experiment contract](GLM53_DEEPINFER_TRANSFER.md).
+<!-- DEEPINFER_TRANSFER_END -->
+
 <!-- EXPERT_FIXED_DEVELOPMENT_BEGIN -->
 **20 October 2026, 18:43:35 UTC: frozen multi-prompt development comparison launched.**
 `expert-fixed-development-v1` reuses all eight development prompts (four code,
@@ -25,9 +44,12 @@ exact decision logits on both ranks. All six serving-image CPU preflights pass,
 each verifying 211 runtime bindings. Local full pytest (one existing skip),
 ruff and strict mypy pass. Launch source `42718f5` is committed and verified in
 the Spark2 backup. The bounded controller now owns the temporary production pause,
-three diagnostic loads and restoration. Launcher PID 724962. At **18:54 UTC**,
-the first original arm has completed 33/48 measured requests with all within-arm
-repeat checks passing. No cross-drafter or final speed result yet.
+three diagnostic loads and restoration. Launcher PID 724962. At **19:08:25 UTC**,
+the original and adapted arms have completed all 48 requests each, with within-arm
+repeat checks passing. All **48 paired output-token sequences are identical**.
+Of the eight prompts, draft rounds decrease by one on three, increase by one on
+one, and are unchanged on four. This small pilot has no established speed gain.
+The final original reload/control is pending; no final speed qualification yet.
 
 **Parallel CPU audits (no serving change):** installed Marlin source
 `f0046031…` selects routing blocks of eight through 259 target rows for this

@@ -24,6 +24,33 @@ Primary references:
 - [GPTQ](https://arxiv.org/abs/2210.17323)
 - [QuaRot](https://arxiv.org/abs/2404.00456)
 
+DeepInfer confidence scheduling and batch-invariance reference:
+
+- Reviewed `deepseek-ai/DeepInfer` at
+  `774ce244b87cc0eb8d4b94ab9f5de2ab22049f01`, under its written Apache-2.0
+  license: `models/mtp/dflash.py`, `models/v4_modules/heads.py` and
+  `mhc_ops.py` under `deepinfer/model_executor/`, plus
+  `csrc/engine/mtp_varlen.hpp`, `layers/tilelang_ops/schedule_mtp_varlen.py`
+  under `deepinfer/model_executor/`, and `deepinfer/worker/runtime_config.py`.
+  Its pinned DeepGEMM submodule is
+  `1fc9c66975ee322d628b3288534ca0e9ce12a64d`, separately MIT-licensed.
+  Reviewed DeepGEMM's fixed mHC split policy, unsplit gate policy, full-K
+  expert traversal and ordered expert-combine implementation.
+- `integrations/glm53_mxfp4/drafter_confidence.py` and
+  `confidence_verification.py` independently implement an experimental
+  acceptance predictor and a CPU scheduling oracle using those public design
+  ideas. No upstream code is copied or vendored. The GLM-specific changes are
+  detached DFlash2 hidden/predecessor features, prefix-censored greedy labels,
+  a separate training optimizer, explicit historical-budget validation and
+  measured-cost-only width selection. The existing pilot exposes an opt-in
+  observer; old protocols leave it disabled.
+- No DeepInfer or DeepGEMM MoE/mHC kernel is installed or adapted into the
+  Marlin runtime by this audit. Their SM100 implementation is an architectural
+  reference for the existing SM121 padding work. Future source adaptations must
+  identify their exact files and retain the applicable Apache/MIT notices.
+  Source hashes and limits: `integrations/glm53_mxfp4/deepinfer_reference.json`
+  and `docs/GLM53_DEEPINFER_TRANSFER.md`.
+
 GGUF compatibility reference:
 
 - `ggml-org/llama.cpp`, MIT license, commit

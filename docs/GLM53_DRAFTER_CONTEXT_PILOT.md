@@ -1,5 +1,11 @@
 # CT drafter: verified features and context-projection pilot
 
+**19:08 UTC:** original and adapted development arms both complete 48 requests;
+all 48 paired token sequences match. The final baseline reload control remains
+pending. DeepInfer's confidence head/scheduling design is now added as a separate
+opt-in CPU experiment; no serving change or measured gain follows.
+See [the pinned source audit and next gates](GLM53_DEEPINFER_TRANSFER.md).
+
 **Running, 20 October 2026, 18:43:35 UTC:** the frozen eight-prompt, 144-request
 original/adapted/original development comparison launched with identical expert
 padding in every arm after six successful CPU preflights. The bounded controller
