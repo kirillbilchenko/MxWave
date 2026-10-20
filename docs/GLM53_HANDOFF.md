@@ -1,5 +1,25 @@
 # GLM compression experiment handoff
 
+<!-- EXPERT_WIDE_V1_BEGIN -->
+**20 October 2026, 19:54 UTC: wider GPU component experiment prepared.**
+`drafter-expert-wide-v1` freezes 36 real-operand extensions at 8/16/32/64/128
+rows, both TP partitions and repeat/spread routing. Our existing padding is
+reused; no confidence scheduling or DeepInfer implementation is included.
+The installed stock fused MoE supplies actual routing-block choices and
+reference outputs. Require exact native eight-row reproduction, stock/packed
+identity, masked padding and shared-row equality through up/activation/down/sum.
+Twenty graph repeats per case precede twelve interleaved timing cycles at
+64/128 rows; retain all failures at the unchanged 2% drift limit.
+Plan SHA `4aa286a8ff69f409cc2353a00da13b1507726a76e3b1c8783e4c56ba468aadda`.
+Seven frozen executable sources plus the 36 fixtures. The component controller
+now reserves separate time for restoration: 900-second replay limit plus the
+existing 1,200-second restoration allowance, 2,100-second total watchdog bound.
+CPU preflight and source backup precede any pause. Production remains unchanged
+while preparation runs. Runtime support stays at 16 rows pending wider evidence;
+this synthetic layer-four check does not qualify full-model C8/C16 serving.
+Sealed test remains closed. Local work: `out/drafter-expert-wide-v1/`.
+<!-- EXPERT_WIDE_V1_END -->
+
 <!-- DEEPINFER_TRANSFER_BEGIN -->
 **20 October 2026: DeepInfer workstream withdrawn at the user's request.**
 The confidence head, CPU scheduler and pilot observer hook have been removed

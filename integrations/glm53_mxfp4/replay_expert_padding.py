@@ -53,7 +53,11 @@ def bind_pipeline(
 
     sms = torch.cuda.get_device_properties(0).multi_processor_count
     x = values[0]["/0"]
-    activation = torch.empty((64, 1024), dtype=x.dtype, device=x.device)
+    rows = x.shape[0]
+    assert x.shape == (rows, 4096) and rows > 0
+    assert (parameters[0]["size_m"], parameters[0]["top_k"],
+            parameters[1]["size_m"], parameters[1]["top_k"]) == (rows, 8, rows * 8, 1)
+    activation = torch.empty((rows * 8, 1024), dtype=x.dtype, device=x.device)
     output = torch.empty_like(x)
     calls, buffers, padding, owners, metadata = [], [], [], [], []
     for i, (w, s, p, args) in enumerate(zip(weights, scales, compressed, parameters, strict=True)):
@@ -104,7 +108,7 @@ def bind_pipeline(
         torch.ops._C.silu_and_mul(activation, buffers[0].output)
         padding[1]()
         calls[1]()
-        torch.sum(buffers[1].output.view(8, 8, 4096), dim=1, out=output)
+        torch.sum(buffers[1].output.view(rows, 8, 4096), dim=1, out=output)
         return output
 
     return launch, (activation, output, buffers, owners, calls, padding), {

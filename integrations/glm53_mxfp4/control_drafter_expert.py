@@ -33,6 +33,9 @@ def run(root: Path, h: Any) -> None:
     prepared = json.loads((root / "prepared.json").read_bytes())
     plan = json.loads((root / "plan.json").read_bytes())
     assert prepared["status"] == "passed"
+    outage_seconds = plan.get("outage_seconds", 900)
+    replay_seconds = plan.get("replay_seconds", outage_seconds)
+    assert 0 < replay_seconds <= outage_seconds <= 2100
     assert hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() == prepared["plan_sha256"]
     for name, sha in plan["source_sha256"].items():
         assert hashlib.sha256((root / name).read_bytes()).hexdigest() == sha
@@ -67,12 +70,13 @@ def run(root: Path, h: Any) -> None:
         )
         assert h.c.health(8000)
         h.quiet()
-        state.update(service_paused=True, outage_deadline_epoch=time.time() + 900)
+        state.update(service_paused=True, outage_deadline_epoch=time.time() + outage_seconds)
         h.save(state, "stopping_original_production")
         for rank in (0, 1):
             h.c.run(rank, ["docker", "stop", "--timeout", "30", prepared["live"][rank]["id"]],
                     timeout=90)
         h.save(state, "replaying_expert")
+        replay_deadline = time.time() + replay_seconds
         h.c.run(0, entry["argv"], timeout=120)
         while True:
             status = h.c.inspect(0, entry["name"])["State"]
@@ -81,7 +85,7 @@ def run(root: Path, h: Any) -> None:
             if not status["Running"]:
                 assert status["ExitCode"] == 0 and not status["OOMKilled"], status
                 break
-            assert time.time() < state["outage_deadline_epoch"]
+            assert time.time() < min(replay_deadline, state["outage_deadline_epoch"])
             time.sleep(3)
         report = json.loads((root / "result/report.json").read_bytes())
         assert report["status"] == "complete" and len(report["ranks"]) == 2
