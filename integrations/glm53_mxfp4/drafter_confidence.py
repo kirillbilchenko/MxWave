@@ -60,7 +60,7 @@ def conditional_labels(
 def confidence_loss(
     logits: torch.Tensor, proposals: torch.Tensor, target_tokens: torch.Tensor,
 ) -> torch.Tensor:
-    """Compute conditional BCE with equal weight per independently proposed block."""
+    """Compute censored conditional BCE with an outcome-independent normalization."""
     labels, observed = conditional_labels(proposals, target_tokens)
     if logits.shape != labels.shape:
         raise ValueError("Confidence logits must match the proposal block")
@@ -68,7 +68,9 @@ def confidence_loss(
     if not torch.isfinite(logits).all():
         raise ValueError("Non-finite confidence logits")
     element_loss = torch.where(observed, element_loss, 0.0)
-    return (element_loss.sum(-1) / observed.sum(-1)).mean()
+    # A per-block divisor based on the accepted prefix would overweight early
+    # failures and bias confidence downward. Use the fixed number of offered slots.
+    return element_loss.mean()
 
 
 def acceptance_metrics(

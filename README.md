@@ -1,9 +1,20 @@
 # MxWave
 
-The frozen eight-prompt drafter development rerun has **48/48 identical paired
-responses** between the original and adapted arms at **20 October, 19:08 UTC**;
-the final original reload control remains pending in the
-[handoff](docs/GLM53_HANDOFF.md). The separately added
+The frozen eight-prompt drafter development rerun completes **20 October,
+19:23 UTC**: all **144 requests** have matching output tokens across
+original/adapted/original loads, and **8/8 reload timing controls pass**.
+The small step-24 pilot is effectively speed-neutral on the same CT target:
+
+| Development domain | Original drafter tok/s | Step-24 pilot tok/s | Difference |
+| --- | ---: | ---: | ---: |
+| Code, four prompts | 38.770 | 38.813 | +0.111% |
+| Chat, two prompts | 29.932 | 29.914 | −0.060% |
+| Explanation, two prompts | 31.523 | 31.419 | −0.329% |
+
+Rates are geometric means of per-prompt medians; one candidate load is not final
+speed qualification. Original production is restored with 500,000 context.
+See the [full result and TTFT table](docs/GLM53_HANDOFF.md).
+The separately added
 [DeepInfer confidence experiment](docs/GLM53_DEEPINFER_TRANSFER.md) has an opt-in
 training head and CPU scheduling reference; serving calibration and speed
 remain unqualified.

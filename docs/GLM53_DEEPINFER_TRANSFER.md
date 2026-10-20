@@ -1,8 +1,10 @@
 # DeepInfer reference for CT drafter confidence and wider batch invariance
 
-Updated 20 October 2026. This adds a separate experimental workstream; the
-running fixed-seven-draft development benchmark keeps its frozen sources,
-weights, prompts and gates. The sealed test remains closed.
+Updated 20 October 2026. This adds a separate experimental workstream. The
+fixed-seven-draft development comparison has completed with its frozen sources,
+weights, prompts and gates: output identity and all eight timing controls pass,
+but the small pilot is effectively speed-neutral. Production is restored.
+The sealed test remains closed.
 
 ## Pinned upstream evidence
 
@@ -56,6 +58,9 @@ a valid label while all earlier draft tokens match. Include the first rejected
 token, then censor later positions; otherwise the head would learn from target
 continuations conditioned on a different history. Stochastic acceptance needs
 actual verifier acceptance probabilities and a separate validation protocol.
+The masked loss uses the fixed number of offered slots as its denominator.
+Dividing each block by its observed prefix length would overweight early
+failures and bias the probability estimate.
 
 The full-run data path also has an opt-in `bounded_feature_loading` policy.
 `drafter_feature_store.py` verifies file hashes and loads one feature sample
@@ -92,8 +97,9 @@ model calibration, GPU execution, graph replay or speed.
 
 ## Frozen qualification plan before enabling serving
 
-1. Finish the existing fixed-width development comparison and independent
-   review. Preserve every failed output/timing control.
+1. **Complete:** the existing fixed-width development comparison and independent
+   review. All 144 requests and eight timing controls pass; the pilot's measured
+   code gain is only 0.111%. Earlier failed attempts remain retained.
 2. Train the head alongside adaptation using training data only. Keep the
    serving target/padding policy recorded with each feature dataset. Old pilot
    features under native reduction are not a substitute for new-policy capture.

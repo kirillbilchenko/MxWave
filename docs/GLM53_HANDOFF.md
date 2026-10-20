@@ -1,7 +1,7 @@
 # GLM compression experiment handoff
 
 <!-- DEEPINFER_TRANSFER_BEGIN -->
-**20 October 2026, 19:08 UTC: DeepInfer reference pinned; confidence experiment added.**
+**20 October 2026: DeepInfer reference pinned; confidence experiment added.**
 User-specified source: `deepseek-ai/DeepInfer` revision `774ce244…`, Apache-2.0;
 its DeepGEMM dependency `1fc9c669…` is separately MIT-licensed. Reviewed source
 hashes and licenses are retained. `CONTRIBUTING.md` records the design references;
@@ -14,19 +14,68 @@ optimizer. Validation never updates it; the existing pilot observer is disabled
 by default. A CPU scheduling oracle allocates contiguous prefixes and chooses
 budgets only from older confidence plus measured step costs. Native scheduling,
 real-data head calibration/training, GPU overhead and speed remain unqualified.
-The running fixed-seven-draft comparison is unchanged. The 4,000-prompt run and
+The completed fixed-seven-draft comparison used its frozen sources. The 4,000-prompt run and
 wider GPU fixture work remain pending; sealed evaluation is still closed.
 See [the reference audit and experiment contract](GLM53_DEEPINFER_TRANSFER.md).
 <!-- DEEPINFER_TRANSFER_END -->
 
 <!-- EXPERT_FIXED_DEVELOPMENT_BEGIN -->
-**20 October 2026, 18:43:35 UTC: frozen multi-prompt development comparison launched.**
+**20 October 2026, 19:23:01 UTC: development comparison complete; original production restored.**
+All **144 measured requests** complete and all output token sequences match
+across original/adapted/original loads on the eight development prompts.
+Within-load tokens/counters and original-reload tokens/counters repeat exactly.
+**8/8 baseline reload timing controls pass** the unchanged 2% limit; the largest
+absolute reload throughput difference is 0.6974%. Both arms use the same CT
+MXFP8 target and common expert padding policy.
+
+| Domain | Original drafter tok/s | Step-24 pilot tok/s | Difference | TTFT, original → pilot |
+| --- | ---: | ---: | ---: | ---: |
+| Code, four prompts | 38.770 | 38.813 | +0.111% | 250.76 → 251.45 ms |
+| Chat, two prompts | 29.932 | 29.914 | −0.060% | 174.24 → 182.75 ms |
+| Explanation, two prompts | 31.523 | 31.419 | −0.329% | 192.94 → 197.19 ms |
+
+Values are geometric means of per-prompt median end-to-end rates/TTFT;
+the original baseline combines both original loads geometrically. TTFT relative
+changes are +0.273%, +4.887%, +2.200%, respectively. These are descriptive
+development results from one candidate load, not confidence intervals or final
+qualification. The small pilot is effectively speed-neutral and does **not**
+deliver the ≥8% code target. Keep it unqualified; full training is still required.
+This comparison measures drafters on CT; it does not measure the cost of padding
+against native execution or make a new CT-versus-production speed claim.
+
+The lightweight runtime counters record at least **3,968 native draft graph
+replays per arm/rank**, all six arm/rank groups using descriptor `[1, 8]`.
+Startup records verify expert capture coverage on both ranks in all loads.
+There are 106 during-measurement resource samples per arm/rank: SM clocks
+2405–2515 MHz, temperatures 48–76 C, recorded power states all P0.
+This run records output tokens, not full-vocabulary logits; the earlier single
+prompt's measured KL 0 remains a separate result.
+
+Original container/configuration identities, health 200 and **500,000 context**
+are independently verified restored at 19:23:01 UTC. No experiment/training
+remains running. Controller and finalizer return 0. All **93 evidence payloads**
+verify independently on Mac and Spark2. Archive `evidence-v1.tar.gz`:
+14,307,985 bytes, SHA
+`5cf8286390a98047306cedc7eff6120573e34599d077a864bb5f3aba7ce8153f`.
+Independent review: `out/expert-fixed-development-v1/review.json`.
+The seven-payload independent analysis archive verifies on both Sparks:
+`analysis-v1.tar.gz`, 16,028 bytes, SHA
+`1026a68eee7f0ab69bb336ac1d09d83a830a009fd199c00b4891b930d70ff0c2`.
+Full pytest (one existing skip), ruff and strict mypy pass after the bounded
+loader addition. The subsequent confidence-loss normalization correction passes
+all 21 relevant confidence/loader/pilot tests and full ruff; no real-data
+confidence model has been trained. Work through `983dd43` is verified in the
+Spark2 Git backup; the final result checkpoint follows.
+Sealed test remains closed. Earlier failed timing/numerical attempts are retained.
+
+**Frozen protocol and preparation:** the run launched at 18:43:35 UTC.
 `expert-fixed-development-v1` reuses all eight development prompts (four code,
 two chat, two explanation), six seed-42 shuffled cycles and 256 generated tokens.
 Loads remain original → adapted step-24 pilot → original, 48 requests per load,
 144 measured requests total, with two excluded warmups per load. Both drafters
 use the exact expert padding hook verified below on the same CT MXFP8 target.
-No target or drafter weights change. The sealed test remains closed.
+Target weights and each arm's preselected drafter checkpoint stay unchanged.
+The sealed test remains closed.
 
 The timed requests use lightweight draft-graph descriptor counts without
 feature/logit copies. Strict within-load token/counter repeats, cross-drafter
@@ -43,13 +92,13 @@ verifies all 250 preceding numerical-check evidence payloads and requires
 exact decision logits on both ranks. All six serving-image CPU preflights pass,
 each verifying 211 runtime bindings. Local full pytest (one existing skip),
 ruff and strict mypy pass. Launch source `42718f5` is committed and verified in
-the Spark2 backup. The bounded controller now owns the temporary production pause,
+the Spark2 backup. The bounded controller completed the temporary production pause,
 three diagnostic loads and restoration. Launcher PID 724962. At **19:08:25 UTC**,
 the original and adapted arms have completed all 48 requests each, with within-arm
 repeat checks passing. All **48 paired output-token sequences are identical**.
 Of the eight prompts, draft rounds decrease by one on three, increase by one on
 one, and are unchanged on four. This small pilot has no established speed gain.
-The final original reload/control is pending; no final speed qualification yet.
+The final original reload/control subsequently passed, as recorded above.
 
 **Parallel CPU audits (no serving change):** installed Marlin source
 `f0046031…` selects routing blocks of eight through 259 target rows for this

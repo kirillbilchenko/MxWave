@@ -31,6 +31,9 @@ def test_labels_censor_after_first_rejection() -> None:
     logits = torch.zeros(3, 4, requires_grad=True)
     confidence_loss(logits, proposals, target).backward()
     assert torch.equal(logits.grad[~observed], torch.zeros(5))
+    # Two of three first positions succeed: a shared zero logit must move upward.
+    # Dividing each block by its observed prefix length would reverse this sign.
+    assert float(logits.grad[:, 0].sum()) < 0
     report = acceptance_metrics(logits, proposals, target)
     assert report["observed_positions"] == 7
     assert report["conditional_brier"] == 0.25

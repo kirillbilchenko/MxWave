@@ -1,18 +1,24 @@
 # CT drafter: verified features and context-projection pilot
 
-**19:08 UTC:** original and adapted development arms both complete 48 requests;
-all 48 paired token sequences match. The final baseline reload control remains
-pending. DeepInfer's confidence head/scheduling design is now added as a separate
-opt-in CPU experiment; no serving change or measured gain follows.
-See [the pinned source audit and next gates](GLM53_DEEPINFER_TRANSFER.md).
+**20 October 2026, 19:23:01 UTC:** the eight-prompt, 144-request development
+comparison completes with identical output tokens across original/adapted/original
+loads. All within-load and original-reload token/counter controls pass, as do
+all eight 2% reload timing controls. The step-24 pilot is effectively speed-neutral:
+code **+0.111%**, chat **−0.060%**, explanation **−0.329%** end-to-end throughput.
+Both arms use the same CT MXFP8 target and expert padding. This does not establish
+the ≥8% code goal or padding overhead; the pilot remains unqualified.
+Original production is restored and healthy with **500,000 context**.
+All 93 evidence payloads independently verify on Mac/Spark2; no experiment is running.
+See [the result and TTFT table](GLM53_HANDOFF.md).
 
-**Running, 20 October 2026, 18:43:35 UTC:** the frozen eight-prompt, 144-request
-original/adapted/original development comparison launched with identical expert
-padding in every arm after six successful CPU preflights. The bounded controller
-owns the temporary production pause and restoration. No result yet.
-See [the live handoff](GLM53_HANDOFF.md).
+DeepInfer's confidence head/scheduling design is now added as a separate opt-in
+training observer and CPU scheduling oracle, with pinned Apache/MIT provenance.
+A bounded feature loader is ready for a new full-run protocol. Real-data head
+training/calibration, native scheduling, wider GPU checks and the 4,000-prompt
+training run remain outstanding. Sealed evaluation remains closed.
+See [the source audit and qualification plan](GLM53_DEEPINFER_TRANSFER.md).
 
-**Latest, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
+**Earlier, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
 production is restored with 500,000 context. On one development prompt, the
 original/adapted drafter arms have 32 identical output tokens and bit-identical
 full-vocabulary decision logits on both ranks: measured KL 0. All request and
