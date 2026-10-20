@@ -1,8 +1,8 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_EXPERT_PADDING_BEGIN -->
-**20 October 2026, 17:43 UTC: padding replay prepared; GPU result pending.**
-`drafter-expert-padding-v1` tests bounded routing padding on the retained
+**20 October 2026, 17:48 UTC: corrected padding replay prepared; GPU result pending.**
+`drafter-expert-padding-v2` tests bounded routing padding on the retained
 440-versus-448 dispatch, with both real TP weight partitions and both expert
 projections. Native replay must first match the retained up/activation/down
 outputs; padded stock/packed results must match each other and be bit-identical
@@ -14,10 +14,16 @@ retained: default occupancy and one block per SM. Timing controls retain the
 CPU preflight passes all **1,728 checkpoint tensor records**, four frozen
 runtime/library hashes and source compilation. Full pytest, ruff and strict
 mypy pass. Plan SHA:
-`314ea9bc87e04430d8c88067dd824edb891ac02e3eb538534abf112cc5d587d3`.
-Production is still original/running at preparation; the bounded controller
-will pause only verified idle production and restore it after the replay, with
-an independent watchdog. This is not yet a tested fix. Full-model verification
+`6c44147cc75eed379af728c513b50024e33cf4a1f6624cfb875f0e51cf69f4cd`.
+V1 failed before its numerical gate because the replay called an activation
+symbol absent from `vllm._custom_ops`. Installed MoE source uses
+`torch.ops._C.silu_and_mul`; V2 corrects that call. V1 is preserved as a harness
+failure, with automatic original-service restoration in progress. A separate
+GPU-free API import could not load the CUDA extension and is also retained;
+it supplies no numerical evidence. V2 waits for original-service health before
+pausing verified idle production, with the same independent restoration watchdog.
+The V1 source commit `28b1a17` is verified in the Spark2 backup.
+This is not yet a tested fix. Full-model verification
 and frozen drafter qualification wait for the component result and overhead
 review. The adapted drafter stays **unqualified**, the sealed test stays
 **unopened**, and the full 4,000-prompt training run remains outstanding.

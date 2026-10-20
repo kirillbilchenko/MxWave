@@ -101,7 +101,7 @@ def bind_pipeline(
     def launch() -> Any:
         padding[0]()
         calls[0]()
-        ops.silu_and_mul(activation, buffers[0].output)
+        torch.ops._C.silu_and_mul(activation, buffers[0].output)
         padding[1]()
         calls[1]()
         torch.sum(buffers[1].output.view(8, 8, 4096), dim=1, out=output)
@@ -158,7 +158,8 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
             weights.append(w)
             scales.append(s)
             compressed.append(p)
-        row: dict[str, Any] = {"rank": rank, "cases": [], "comparisons": [], "timings": []}
+        row: dict[str, Any] = {"rank": rank, "cases": [], "comparisons": [], "timings": [],
+                              "repeat_checks": []}
         for position in (46, 54):
             graphs, retained = {}, {}
             for arm in ("a1", "b1"):
@@ -219,6 +220,8 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
                     graph.replay()
                     torch.cuda.synchronize()
                     assert bits_equal(output.cpu(), retained[key][3]), "Replay drift"
+            row["repeat_checks"].append({"position": position, "all_bitwise_exact": True,
+                                          "comparisons": 20 * len(graphs)})
             timings: dict[str, list[float]] = {":".join(k): [] for k in graphs}
             for graph, _, _ in graphs.values():
                 for _ in range(100):
