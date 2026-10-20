@@ -1,14 +1,13 @@
 # CT drafter: verified features and context-projection pilot
 
-**20 October 2026, 20:37 UTC:** the corrected fresh-feature capture is active
-(`drafter-fresh-capture-smoke-v3`, private port 8028). It checks eight prompts,
-including the longest train/validation inputs, under the qualified C1 expert
-policy and existing 4,096-token dispatch extension. Production is temporarily
-paused with automatic restoration. V1 CPU-preflight and V2 startup failures are
-retained; V2 restored original production before V3 launched. Full-corpus
-capture/training have not started. Incremental export and the full-run schedule
-are prepared locally, gated on successful fresh capture/export review.
-See [live status and exact provenance](GLM53_HANDOFF.md).
+**20 October 2026, 20:49 UTC:** full drafter training is gated by a new
+longer-prompt self-repeat failure. On the 3,973-token training prompt, native
+before/after outputs diverge at output index 44; captured versus first native
+text agrees, but speculative counters differ. V3 restored original production.
+A focused same-prompt feature/logit repeat trace is now active on private port
+8030 with automatic restoration; no model/drafter weights or thresholds change.
+Full 4,000/200 capture and training have not started; the sealed test is closed.
+See [current evidence and active controller](GLM53_HANDOFF.md).
 
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
 all 36 fixtures through 128 rows. Independent review finds 54/100 native

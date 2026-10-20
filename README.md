@@ -1,5 +1,12 @@
 # MxWave
 
+**20 October 2026, 20:49 UTC:** fresh drafter capture finds a longer-prompt
+self-repeat failure before full training starts. The 3,973-token prompt differs
+at output index 44 between two native controls. A focused repeat trace is active;
+no new speed or quality pass is claimed. The full-data trainer/export pipeline
+is prepared and tested, and the sealed test stays closed.
+[Current evidence and restoration status](docs/GLM53_HANDOFF.md).
+
 **20 October 2026, 20:07 UTC:** our wider Marlin padding check passes all
 36 component fixtures through 128 rows: shared-prefix differences fall from
 54/100 native comparisons to 0/100 padded comparisons, with 2,880 exact graph

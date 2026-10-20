@@ -1,20 +1,35 @@
 # GLM compression experiment handoff
 
 <!-- DRAFTER_FRESH_CAPTURE_BEGIN -->
-**20 October 2026, 20:37 UTC: corrected fresh-policy capture is running.**
-The user authorized full drafter adaptation. The eight-prompt capture/export
-check covers code/chat/explanation in train and validation and the longest
-prompt in each split (3,973 / 2,248 tokens). Full 4,000/200 capture and training
-have **not** started. The sealed test remains closed.
-
-Active run: `full-model-v1/drafter-fresh-capture-smoke-v3` on both Sparks,
-private port 8028. Plan SHA:
+**20 October 2026, 20:49 UTC: full training is gated by a newly observed long-prompt repeat failure.**
+Fresh capture V3 passes all 39 startup checks on both ranks, then completes six
+API requests/four captured prompts before the longest training prompt fails the
+unchanged repeat gate. The 3,973-token prefill is one forward, and decode uses
+8-row verification. Before versus captured text is identical, but counters differ;
+**the two uninstrumented controls diverge at zero-based output index 44** (84/128
+positions differ). This does not identify a kernel or establish training/quality
+regression. No training has occurred; the sealed test remains closed.
+The failed run restores original production at epoch 1792529167.916315
+(`failed_restored`, 500,000 context). Small review:
+`out/drafter-fresh-capture-smoke-v3/failure-review.json`.
+The frozen plan SHA is
 `7fc8b9b7296fcf10996f2ae37ced4e0bc6452e20cb9b4598155a48cac4cc41e7`.
-Both CPU launch/tokenizer checks pass. It uses the qualified <=16-row expert
-padding policy, original drafter, seven drafts, 128 outputs, 6 GiB KV per rank
-and 4,096 prefill tokens. Twelve requests include before/capture/after output
-and counter checks on both longest prompts. Production is temporarily paused;
-controller and independent restoration watchdog are active.
+
+**Active follow-up:** `full-model-v1/drafter-long-repeat-v1`, private port 8030,
+plan SHA `444b42c825545fc27bb7a27b90ddf2aa89db65034e1c1c466ecaac2b40c1ed75`.
+Both CPU checks pass and the controller/watchdog are running. The same original
+drafter, target policy, 4,096 prefill budget and 6 GiB KV remain fixed. Replay
+three preceding short prompts, then native before / four full feature-logit
+captures / native after on that one long prompt. Differences are retained rather
+than aborting the diagnostic. Completion is **not** a repeat pass or a training
+qualification. Production is temporarily paused for this follow-up and will
+restore on every exit. The first task after restoration is to finish retaining
+both runs before starting any further GPU experiment.
+
+V3's per-file finalizer copied rank-one payloads but failed its final live-health
+assertion because the follow-up had already paused production. This is an
+archive-finalization failure, not a failed restoration; retain the failed log
+and rerun finalization after the active diagnostic restores production.
 
 Retained attempts:
 - V1 failed CPU preflight because the boot assertion still required 2,048
@@ -37,6 +52,19 @@ fresh smoke manifest and independent audit. It freezes one seed-42 pass over
 step). Existing selection, 1% weight-distance and serving gates remain fixed.
 Full capture uses 64-prompt chunks; accepted features require 41.53 GiB per copy.
 The previous 32-update pilot is still speed-neutral and unqualified.
+Source checkpoint `03b7bde` is committed and independently verified in Spark2's
+bare Git backup. Bundle `glm53-drafter-full-preparation-v1.bundle`, SHA
+`3ad88caebb0fce6ff8671ed6192b27e9ea756ecf867d13e236c5b3262a22164c`.
+The real retained-data incremental-export replay passes on both ranks: eight
+outputs match the old verified exports byte-for-byte, 90,644,480 BF16 elements
+are checked independently, and 1,022 rejected rows are excluded. This replay
+uses historical features and is a pipeline test only.
+Full CPU training vocabulary is ready at `out/drafter-full-training-v1/weights`:
+154,880 exact BF16 embedding rows; SHA
+`4f7aecd51589ce7879d0ae48a5a1ed25750e4e94d2abe2d14c9526e5ce5641d6`.
+All 2,062 old pilot embedding rows independently match their prior bytes;
+the unchanged head SHA remains
+`aa21c427970f64edd82669db3a8fb46613084e8bc271a3728784a52eb3f25ab4`.
 <!-- DRAFTER_FRESH_CAPTURE_END -->
 
 <!-- EXPERT_WIDE_V1_BEGIN -->

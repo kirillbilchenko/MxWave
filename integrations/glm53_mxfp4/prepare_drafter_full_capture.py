@@ -203,10 +203,13 @@ def prepare(
     protocol_path = Path("benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/"
                          "drafter-context-pilot-v3-protocol.json")
     protocol = json.loads(protocol_path.read_bytes())
+    thresholds = protocol_path.with_name("drafter-adaptation-v2-thresholds.json")
+    shutil.copyfile(thresholds, output / "serving-thresholds.json")
     protocol.pop("baseline_reference")
     protocol.pop("supersedes")
     protocol.update(schema="mxwave-drafter-context-full-v1", bounded_feature_loading=True,
                     capture_plan_sha256=digest(output / "plan.json"),
+                    serving_thresholds_sha256=digest(thresholds),
                     purpose="One seeded full-data context-projection adaptation; serving gates unchanged.")
     protocol["optimizer"].update(maximum_steps=4000, warmup_steps=200)
     protocol["data"].update(train_prompts=4000, validation_prompts=200,
