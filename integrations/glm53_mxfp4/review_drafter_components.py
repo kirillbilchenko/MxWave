@@ -14,6 +14,21 @@ from .review_drafter_verification import difference, frames, numeric
 from .review_drafter_verification import review as review_native
 
 
+def active_value(frame: dict[str, Any], event: dict[str, Any], leaf: dict[str, Any]) -> Any:
+    """Trim dispatch capacity using the actual padded-token count, retaining all raw evidence."""
+    value = frame["x"][leaf["payload_key"]]
+    if (".moe_gemm" not in event["name"] or not event["name"].endswith("/input")
+            or leaf["path"] not in ("/11", "/12")):
+        return value
+    count_leaf = next(x for x in event["tensors"] if x["path"] == "/13")
+    count = int(frame["x"][count_leaf["payload_key"]].reshape(-1)[0])
+    block = int(event["parameters"]["moe_block_size"])
+    assert count >= 0 and block > 0 and count % block == 0
+    length = count if leaf["path"] == "/11" else count // block
+    assert value.ndim == 1 and length <= len(value)
+    return value[:length]
+
+
 def row_view(value: np.ndarray, event: dict[str, Any], leaf: dict[str, Any]) -> Any:
     """Select only known eight-row activations; do not reinterpret sorted expert indices."""
     if event["category"] == "workspace" or value.ndim == 0:
@@ -22,8 +37,11 @@ def row_view(value: np.ndarray, event: dict[str, Any], leaf: dict[str, Any]) -> 
     if (".moe_gemm" in event["name"] and event["name"].endswith("/input")
             and leaf["path"] != "/0"):
         return None
-    # Expanded expert outputs need a separately verified token/route mapping.
-    # Keep their full comparison, but do not guess that mapping here.
+    # Installed marlin_moe.py returns flat token × top-k results and reduces
+    # output.view(-1, topk, K) over routes (source hash retained in the report).
+    if (".moe_gemm" in event["name"] and value.ndim == 2 and value.shape[0] == 64
+            and event["parameters"].get("size_m") in (8, 64)):
+        return value.reshape(8, 8, value.shape[-1])
     if value.shape[0] != 8:
         return None
     return value
@@ -40,8 +58,9 @@ def compare(a: dict[str, Any], b: dict[str, Any], shared: int) -> dict[str, Any]
         leaves = []
         for leaf in event["tensors"]:
             key = leaf["payload_key"]
-            x, y = a["x"][key], b["x"][key]
-            row = {"path": leaf["path"], "shape": list(x.shape), **difference(x, y)}
+            x, y = active_value(a, event, leaf), active_value(b, event, leaf)
+            row = {"path": leaf["path"], "stored_shape": list(a["x"][key].shape),
+                   **difference(x, y)}
             xx, yy = row_view(x, event, leaf), row_view(y, event, leaf)
             if xx is not None and yy is not None:
                 metrics = difference(xx[:shared], yy[:shared])
@@ -102,8 +121,8 @@ def review(root: Path, output: Path) -> dict[str, Any]:
                     if event["category"] == "workspace":
                         continue
                     for leaf in event["tensors"]:
-                        key = leaf["payload_key"]
-                        if a["x"][key].tobytes() != b["x"][key].tobytes():
+                        x, y = active_value(a, event, leaf), active_value(b, event, leaf)
+                        if x.shape != y.shape or x.tobytes() != y.tobytes():
                             changed.append({"event": event["name"], "path": leaf["path"]})
                 repeats.append({"arm": arm, "rank": rank, "start_position": position,
                                 "changed_nonworkspace_tensors": changed})
@@ -123,11 +142,22 @@ def review(root: Path, output: Path) -> dict[str, Any]:
         source_sha256=digest(Path(__file__)),
         component_repeats=repeats, component_comparisons=comparisons,
         recurrent_read_rule=None,
+        expanded_expert_row_mapping={
+            "source": "vllm/model_executor/layers/fused_moe/experts/marlin_moe.py",
+            "source_sha256": "f00460310b033bcb84644677e16af83773464f026c0dad15bcfe25bd28b39745",
+            "rule": "flat token × eight routes, then output.view(-1, topk, K).sum(dim=1)",
+        },
+        feature_labels={
+            "source": "vllm/v1/worker/gpu/spec_decode/eagle/eagle3_utils.py",
+            "source_sha256": "43e5ba8d3997712878ead63e9d5d5bc7c3e656650b8aa6a41b3e19f84d2f6487",
+            "rule": "DFlash zero-based target_layer_ids become id+1 boundaries; aux_layer_5 follows decoder 5.",
+        },
         limits=[
             "One development prompt, one load per arm; no speed or quality qualification.",
             "Shared rows require identical accepted history; this is not proof of causal leakage.",
             "Only early layers 0–4 are instrumented; later propagation is not localized.",
-            "Sorted dispatch indices and expanded expert outputs have full, not inferred per-row, comparisons.",
+            "Sorted dispatch indices are not treated as per-token activations.",
+            "Dispatch buffers use their recorded padded-token count; unused allocation tails are excluded.",
             "Uninitialized output workspace is excluded from repeat and first-difference conclusions.",
             "No recurrent cache is retained in this run; selected starting states were checked in V2.",
             "First changed observed result still needs a direct component control before root-cause attribution.",

@@ -418,3 +418,9 @@ The subsequent eight-row component observer reuses MxWave's bounded graph-copy
 helper and wraps the installed attention, mHC and MoE interfaces. It and its
 experiment preparer/tests are independently authored; only source hashes and
 interface observations are used from vLLM, with no upstream implementation copied.
+
+The direct expert replay and its bounded controller are independently authored.
+The replay calls installed vLLM repacking/GEMM APIs and MxWave's already licensed
+raw/packed bridge libraries on captured operands and the original checkpoint.
+Installed source is used only to verify token/route ordering and feature-layer
+index semantics; no additional third-party implementation is redistributed.

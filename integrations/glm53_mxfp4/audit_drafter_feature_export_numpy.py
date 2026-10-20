@@ -14,15 +14,18 @@ from .drafter_fp8_roundtrip import digest
 
 
 def arrays(path: Path) -> dict[str, np.ndarray]:
-    """Read supported safetensors fields directly, treating BF16 exclusively as raw bits."""
+    """Read supported safetensors fields, retaining BF16 and FP8 exclusively as raw bits."""
     with path.open("rb") as stream:
         size = struct.unpack("<Q", stream.read(8))[0]
         header = json.loads(stream.read(size))
     types = {"I64": "<i8", "I32": "<i4", "I16": "<u2", "BF16": "<u2",
-             "F32": "<f4", "BOOL": "?"}
+             "F32": "<f4", "BOOL": "?", "F8_E4M3": "u1"}
+    # One mapping per file: component traces can contain hundreds of fields.
+    # Each view retains the backing mapping without opening another descriptor.
+    backing = np.memmap(path, mode="r", dtype=np.uint8)
     return {
-        name: np.memmap(path, mode="r", dtype=types[row["dtype"]],
-                        offset=8 + size + row["data_offsets"][0], shape=tuple(row["shape"]))
+        name: np.ndarray(tuple(row["shape"]), dtype=types[row["dtype"]], buffer=backing,
+                         offset=8 + size + row["data_offsets"][0])
         for name, row in header.items() if name != "__metadata__"
     }
 

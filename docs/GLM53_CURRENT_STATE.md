@@ -1,38 +1,44 @@
 # GLM lossless experiment: current state and next steps
 
 <!-- DRAFTER_COMPONENTS_BEGIN -->
-**V2 retry launched at 16:56:47 UTC**, PID 4093625, source `0763f38`.
-The bounded controller is loading the original-drafter arm; restoration is automatic.
+**20 October 2026, 17:11:44 UTC: component V2 complete; original production restored.**
+Both drafter arms pass all before/capture/repeat/after output and counter controls.
+All 230 archived payloads verify on Mac and Spark2; all eight arm/rank/position repeat
+comparisons are bitwise exact for consumed nonworkspace data. Each graph retains
+169 component events / 22,405,968 bytes. Unused dispatch-buffer capacity and output
+scratch remain in the raw evidence and are excluded from numerical conclusions.
 
-**20 October 2026, 16:54 UTC: component V1 failed before requests; original production restored.**
-The new observer incorrectly selected by eight total tokens alone. The installed
-dynamic speculation policy captures two such graphs: one request × eight tokens
-and two requests × four tokens. Its strict post-capture guard rejected this
-ambiguity. All seven native graphs had captured; no requests or evidence frames
-ran. This is an instrumentation failure, not a new model-quality result.
-The controller restored original identities/configurations, health 200 and
-500,000 context; the finalizer independently verified service health and identity.
+Both ranks identify the first changed shared-row result in **layer 4 gate/up
+expert GEMM**. At position 54, seven input rows match and only the eighth draft
+token differs. Rank 0 changes one BF16 element in shared row 1 (max 0.0009765625);
+rank 1 changes two in row 4 (max 0.000244140625). Earlier observed component
+results, including layer 3 expert results, match on shared rows. The position-46
+negative control matches on all eight rows. Layer-4 padded dispatch changes
+**440 → 448** tokens; arithmetic partition sensitivity is a hypothesis until the
+direct stock-versus-packed replay confirms it.
 
-V1 is retained unchanged: 46 payloads, 141,897-byte archive, SHA-256
-`e581e07ce1492880cf0cc390a5987acbfe785973d2dcd16b22c1564f563c3f7e`.
-Mac and Spark2 independently verify every payload. Source before the failed load is
-`76b625b`; reviewer and active-status checkpoint `843c8be` are backed up on Spark2.
+Source audit also corrects feature naming: `aux_layer_5` means the output after
+zero-based decoder **5**, not after decoder 4. DFlash layer IDs are translated to
+id+1 boundary indices by installed `eagle3_utils.py`. This explains why the first
+auxiliary feature contains more propagated changes than the layer-4 endpoint.
 
-V2 selects the complete native descriptor (FULL, one request, eight uniform
-verification tokens, no LoRA) and verifies that same descriptor on actual replay.
-Its CPU preflight invokes the installed graph-candidate builder and requires seven
-graphs, two eight-token layouts, and exactly one matching descriptor. Local tests
-cover rejecting the other layout, excluding warmups and restoring wrappers on
-failure. Serving-image preflight now passes on both arms and both ranks,
-including the actual seven-descriptor check and all 211 frozen runtime bindings.
+Original identities/configurations, health 200 and 500,000 context are verified
+restored. Archive: `drafter-components-v2/evidence-v1.tar.gz`, 598,498,100 bytes,
+SHA-256 `816c1667bee815a08b969053ea012f57260307547cd75c6486667b4f0273010f`.
+V2 source before launch: `0763f38`; launched 16:56:47 UTC. Independent review:
+`out/drafter-components-v2/review.json`. Next: isolated layer-4 expert replay using
+actual captured operands and checkpoint weights, comparing installed stock,
+raw bridge and the same sparse packed-scale library. No drafter qualification,
+training, serving speed claim, promotion or sealed-test access.
 
-The observer covers attention, mHC, dense MLPs, expert routing and GEMMs in layers
-0–4, with a 64 MiB graph-copy bound and retained positions 46/54. Before/capture/
-repeat/after tokens AND counters must match the frozen prior result. V2 plan SHA:
-`6f7dd0a40a968002c9f07972a96507d8b6533635b6ffcebdec7d0575fd8ce159`;
-private port 8024. The 25-minute experiment cutoff and restoration watchdog remain.
-No training, timing claim, promotion or sealed-test access. Next: paired trace,
-independent comparison, then a direct control of the first differing operation.
+V1 remains retained unchanged: the observer selected by eight total tokens and
+incorrectly conflated one request × eight tokens with two requests × four tokens.
+Its strict guard failed before requests; original production was restored.
+V2 selects the complete native descriptor and verifies actual graph replay;
+all four serving-image CPU preflights passed seven-graph descriptor checks and
+211 frozen runtime bindings. V1: 46 payloads, 141,897 bytes, SHA-256
+`e581e07ce1492880cf0cc390a5987acbfe785973d2dcd16b22c1564f563c3f7e`,
+independently verified on Mac/Spark2. Failure retained as instrumentation evidence.
 <!-- DRAFTER_COMPONENTS_END -->
 
 <!-- DRAFTER_VERIFICATION_BEGIN -->
