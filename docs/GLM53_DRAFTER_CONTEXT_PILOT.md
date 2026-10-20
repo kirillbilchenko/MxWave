@@ -1,18 +1,36 @@
 # CT drafter: verified features and context-projection pilot
 
-**Native comparison live, 20 October 2026, 14:35 UTC:** CPU preflight passes for all three
-loads on both Sparks; all 211 bindings per rank match. Controller phase
-`starting_a1`: original production is temporarily paused and the original-drafter
-CT baseline is loading on private port 8020. Wrapper PID **2969601** and independent
-restoration watchdog PID **2969609** are live. The 40-minute experiment deadline
-is followed by automatic restoration of the original 500k-context production.
-No native candidate measurement exists yet. CPU work is committed as `f4e0b2f`
-and verified on Spark2, including all 47 pilot archive payloads/checkpoints.
+<!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->
+**20 October 2026, 15:14 UTC: all 144 native requests complete; original production restored.**
+The original/candidate/original comparison completes 48 requests per load, with
+six exact output/counter repeats for each of eight development prompts. Original
+outputs and counters reproduce after reload; per-prompt throughput drift is
+**+0.14% to +0.90%**, passing the 2% control. All 88 effective drafter tensors per
+rank match the expected checkpoint, with only the selected FC changed.
 
-Updated **20 October 2026**. Feature capture is complete. Original production was
-restored at **14:03:27 UTC**, with its original container identities, configuration
-and **500,000-token context limit**. The bounded CPU pilot is complete. Step 24 is selected and exported for native
-development testing; its native serving comparison is now loading the first baseline.
+The candidate **fails unchanged-output equivalence on seven of eight prompts**.
+Descriptive paired throughput changes are **code +5.91%, chat +1.61%, explanation
+−4.57%**; corresponding TTFT changes are **+5.03%, +7.62%, +12.09%**. These changed
+responses do not establish a quality-preserving speed gain or task-accuracy loss.
+The candidate is not promoted. The sealed test remains unopened.
+
+Before the first different token, the four code cases share 547 output tokens:
+original/candidate delivery uses **151/150 stream chunks**, repeated in all six
+cycles. This post-hoc observation is only a small improvement on identical text;
+it is not an internal trace comparison or a replacement qualification gate.
+At five covered divergences, candidate tokens are among the reference's top two,
+with reference logit margins **0–0.25**. Three cases have identical prior stream
+boundaries. Candidate logits and the numerical cause remain unmeasured.
+
+Production is verified healthy at **15:14:02 UTC**, with both original container
+identities/configurations and **500,000 context**. All **83 native evidence
+payloads** verify on Mac and Spark2. The next investigation is matched-history
+verification at the first divergence, before further training. No additional GPU
+experiment or training is running. See
+[the complete result, telemetry and retained evidence](GLM53_DRAFTER_CONTEXT_PILOT.md).
+<!-- NATIVE_DRAFTER_DEVELOPMENT_END -->
+
+Updated **20 October 2026, after the 15:14 UTC production restoration**.
 
 The fixed target is **CT MXFP4 experts plus the previously tested native MXFP8
 KDA conversion**. That KDA conversion is lossy; original BF16-KDA CT remains the
@@ -20,7 +38,7 @@ lossless reference. No further target quantization changes are made here.
 The failed cross-target KL gate and the failed selector-only pilot remain
 retained. This experiment does not waive either.
 
-## Training result and next native check
+## Training result
 
 The run completes all 32 updates in **177.386 seconds**. Step 24 passes the frozen
 offline selection; step 32 fails its chat no-regression requirement.
@@ -51,15 +69,91 @@ payloads**, including FP8 codes and scales, plus the exact config bytes. Only
 `fc.weight` changes. Export SHA-256:
 `bf67cb8c2a02e3999269294b7d2b6fc63ce52ebd694fecbd8dac56f5971bdf47`.
 
-A bounded original/candidate/original development run is now live on private port
-8020: the same eight validation prompts, six shuffled repeat cycles per load,
-two excluded warmups, C1, 256 fixed outputs, seed 42, temperature zero and seven
-drafts. Both ranks must match all 88 retained effective drafter tensors except
-FC. Runtime graph descriptors are counted; no feature tensor copying is enabled.
-The original production restoration watchdog is retained, with a 40-minute
-experiment deadline plus restoration warm-up. Repeated baseline loads diagnose
-load drift; the single candidate load cannot satisfy final speed qualification.
+## Completed native development comparison
+
+All 144 timed requests complete: eight validation prompts, six shuffled cycles
+per load, original/candidate/original, plus two excluded warmups per load.
+C1, 256 output tokens, seed 42, temperature zero, seven drafts, prefix caching
+off and the identical CT MXFP8 target are fixed. This is one candidate load;
+it cannot meet the final three-load/held-out serving requirement.
 Plan SHA-256: `5dd97e009313b9ec390ad07933c99fe16ce17a2ae9ceae5ad582bba487dbd9ba`.
+
+Ratios below use per-prompt six-trial medians, the geometric mean of the two
+original load medians as control, then a geometric mean across prompts. They
+are **descriptive results on changed answers**, not qualified acceleration.
+
+| Domain | Prompts | End-to-end tokens/s change | Verification-round change | TTFT change |
+| --- | ---: | ---: | ---: | ---: |
+| Code | 4 | +5.91% | −8.89% | +5.03% |
+| Chat | 2 | +1.61% | −2.24% | +7.62% |
+| Explanation | 2 | −4.57% | +3.97% | +12.09% |
+
+All eight prompts repeat tokens and speculative counters exactly after the original reload.
+The original reload speed differences stay between +0.14% and +0.90% per prompt.
+All three loads repeat their own outputs/counters in all six cycles.
+Only `dolly-1769` preserves all 256 tokens across original/candidate: 91 versus
+90 draft calls, about +0.65% paired end-to-end throughput. The other seven change
+at token indices 21–254. No task-accuracy conclusion is available.
+
+The post-hoc common-prefix comparison finds 547 identical code tokens before
+divergence, delivered in 151/150/151 chunks for original/candidate/original.
+Those chunk counts repeat across all six cycles. Delivery chunks include the
+enclosing final event; they do not prove identical internal verification work.
+The much larger full-answer gains cannot be attributed solely to better drafting
+on the same output trajectory.
+
+Both ranks retain native `[1, 8]` graph replays: last logged counts are
+**4,032 / 3,904 / 4,032** per arm. Counts include warmups and are lower bounds
+because the final fewer-than-64 calls may not be logged. No feature copies are
+enabled in timed serving. Clock/thermal sampling retains 107/105/106 pairs of
+samples across the loads. All observations report P0; median clocks are
+2,470–2,489 MHz and temperatures span 49–76 °C. Sampling does not prove an absence
+of throttling; no clocks were locked and throttle-reason counters were not read.
+
+The unchanged-output gate fails. Even disregarding it, this development result
+misses the code +8%, explanation −2% and TTFT +2% requirements. Do not promote,
+relax thresholds, open the sealed test or infer quality loss from changed text.
+
+Next: capture original and candidate target-verification logits on **identical
+accepted histories** at the first divergence. Start with `opencoder-evol-15654`
+output index 21: earlier stream boundaries match and original reference logits
+tie at 27.625. Check target input IDs, positions, recurrent/cache state, verifier
+shape and selected token before attributing this to mHC, KDA, MoE or rounding.
+No new GPU diagnosis is running yet.
+
+## Relationship to established drafter training
+
+The overall capture/train/export/serve workflow follows published feature-based
+speculation: [DFlash](https://proceedings.mlr.press/v306/chen26bv.html) conditions
+parallel drafts on target features, and [SpecForge's offline preparation](https://sgl-project.github.io/SpecForge/basic_usage/data_preparation.html)
+explicitly supports target-generated responses and captured DFlash2 features.
+Our **FC-only, 32-training-prompt CPU pilot** is a deliberately restricted local
+experiment; it is not a published guarantee that this small adaptation closes
+the CT gap. [NVIDIA's DFlash recipe](https://docs.nvidia.com/nemo/automodel/recipes-e2e-examples/dflash-speculative-decoding)
+trains the draft stack, feature projection and norms while freezing the target.
+
+[vLLM documents](https://docs.vllm.ai/en/latest/features/speculative_decoding/#lossless-guarantees-of-speculative-decoding)
+the distinction between standard rejection sampling's lossless objective and
+finite-precision/batch-dependent output differences. That makes numerical
+sensitivity a plausible hypothesis here, not an established explanation or
+permission to waive our frozen equality gate. Sources checked 20 October 2026.
+
+## Final native evidence
+
+- Controller: `complete_restored`, no error; production restored **15:14:02 UTC**.
+- Original container/configuration identities match, health returns 200, and
+  `/v1/models` reports `glm-5.3-flash` with **500,000 context**.
+- Archive: **1,408,463 bytes / 83 verified payloads**, SHA-256
+  `68079c34ef60623f696e97c24588c19d9393d17fa87db98875f9c9dbc8cac6bb`.
+- Mac: `out/drafter-context-native-v1/evidence-v1.tar.gz`; original archive remains
+  on Spark at the experiment root. Spark2 backup:
+  `git-backups/glm53-drafter-context-native-v1-evidence.tar.gz` under the audit root.
+  All 83 payload hashes are independently verified on Spark2.
+- Committed summaries live under
+  `benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/` with prefix
+  `drafter-context-native-v1-`: review, diagnostics/source, archive receipt and
+  first-divergence review/source. Earlier partial measurements are retained in
+  local `out/`; final analysis reads the frozen archive.
 
 ## Capture result
 

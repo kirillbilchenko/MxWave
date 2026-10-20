@@ -1,39 +1,46 @@
 # GLM lossless experiment: current state and next steps
 
-**Native comparison live, 20 October 2026, 14:35 UTC:** CPU preflight passes for all three
-loads on both Sparks; all 211 bindings per rank match. Controller phase
-`starting_a1`: original production is temporarily paused and the original-drafter
-CT baseline is loading on private port 8020. Wrapper PID **2969601** and independent
-restoration watchdog PID **2969609** are live. The 40-minute experiment deadline
-is followed by automatic restoration of the original 500k-context production.
-No native candidate measurement exists yet. CPU work is committed as `f4e0b2f`
-and verified on Spark2, including all 47 pilot archive payloads/checkpoints.
+<!-- NATIVE_DRAFTER_DEVELOPMENT_BEGIN -->
+**20 October 2026, 15:14 UTC: all 144 native requests complete; original production restored.**
+The original/candidate/original comparison completes 48 requests per load, with
+six exact output/counter repeats for each of eight development prompts. Original
+outputs and counters reproduce after reload; per-prompt throughput drift is
+**+0.14% to +0.90%**, passing the 2% control. All 88 effective drafter tensors per
+rank match the expected checkpoint, with only the selected FC changed.
 
-**20 October 2026, 14:31 UTC: context pilot complete; step 24 selected for native development testing.**
-The 32-update CPU run completes in **177.386 seconds**. On eight validation
-prompts, mean accepted draft prefix changes **code 4.25 → 4.375**,
-**chat 2.75 → 2.875**, **explanation 4.25 → 4.25** at step 24.
-Step 32 regresses on chat and is rejected. This is a small offline development
-improvement, **not a serving-speed gain or completed drafter qualification**.
+The candidate **fails unchanged-output equivalence on seven of eight prompts**.
+Descriptive paired throughput changes are **code +5.91%, chat +1.61%, explanation
+−4.57%**; corresponding TTFT changes are **+5.03%, +7.62%, +12.09%**. These changed
+responses do not establish a quality-preserving speed gain or task-accuracy loss.
+The candidate is not promoted. The sealed test remains unopened.
 
-An independent review reproduces **1,120 token comparisons and 135 acceptance
-fields** and the same checkpoint selection. FP64 corrects the reported weight
-relative L2 to **0.000117160**; the unchanged 0.01 limit still passes. The native
-FP8 export changes only `fc.weight`; all other **115 tensor payloads** and the
-config remain byte-identical. The sealed test is unopened.
+Before the first different token, the four code cases share 547 output tokens:
+original/candidate delivery uses **151/150 stream chunks**, repeated in all six
+cycles. This post-hoc observation is only a small improvement on identical text;
+it is not an internal trace comparison or a replacement qualification gate.
+At five covered divergences, candidate tokens are among the reference's top two,
+with reference logit margins **0–0.25**. Three cases have identical prior stream
+boundaries. Candidate logits and the numerical cause remain unmeasured.
 
-The earlier capture restored production at **14:03:27 UTC**. The new bounded
-original/candidate/original native comparison is now running:
-eight development prompts, six repeats per load, fixed C1/256-token/seed-42 policy,
-clock/thermal telemetry and automatic original-production restoration. Native
-candidate loading has not started at this checkpoint.
+Production is verified healthy at **15:14:02 UTC**, with both original container
+identities/configurations and **500,000 context**. All **83 native evidence
+payloads** verify on Mac and Spark2. The next investigation is matched-history
+verification at the first divergence, before further training. No additional GPU
+experiment or training is running. See
+[the complete result, telemetry and retained evidence](GLM53_DRAFTER_CONTEXT_PILOT.md).
+<!-- NATIVE_DRAFTER_DEVELOPMENT_END -->
 
-All **44 prior capture/control requests** and **5,456 payload hashes** verify;
-336,281,600 BF16 feature elements match in the independent two-rank NumPy audit.
-Capture evidence is backed up on Spark2. The stopped packed-block preflight,
-slow CPU run, derivative correction and prior failures remain retained.
-See [complete evidence and current continuation](GLM53_DRAFTER_CONTEXT_PILOT.md).
-Earlier live-state claims below are historical and superseded by this block.
+**Completed CPU pilot, 20 October 2026:** 32 updates in **177.386 seconds**;
+step 24 improves offline mean accepted prefix from **4.25 to 4.375** on code,
+**2.75 to 2.875** on chat, with explanation unchanged. Step 32 fails chat and is
+rejected. Independent review reproduces 1,120 token comparisons, 135 acceptance
+fields and selection. Export changes only FC; 115 other tensor payloads and the
+config are byte-identical. This small offline result is superseded for serving
+claims by the failed native equivalence check above. Prior failures are retained.
+All 44 feature-capture/control requests and 5,456 payload hashes verify; the
+independent audit finds zero differences across 336,281,600 BF16 feature elements.
+
+Earlier dated checkpoints below are historical and superseded by the result above.
 
 **Earlier 20 October 2026 CPU preparation complete:** frozen thresholds; exact full-file
 FP8/BF16/FP8 round trip; actual SpecForge class strictly loads all 81 dense
@@ -50,20 +57,13 @@ token sequences and measured speculation counters. Later CT-versus-ModelOpt
 feature differences do not isolate a compression effect. See the
 [handoff variant table](GLM53_HANDOFF.md) before interpreting drafter adaptation.
 
-Recommended next milestone: validate training/export/native reload for the
-existing drafter against the fixed, already-tested CT MXFP8 performance candidate.
-Keep original CT as the lossless reference. In the retained code case, BF16 KDA
-needed 56 rounds, CT MXFP8 54 and ModelOpt 47, so the additional KDA quantization
-did not introduce the whole acceptance gap. No new run or production switch is
-implied by this recommendation; the failed KL gate remains unchanged.
-
-**Active user direction, 20 October 2026:** make CT work with a properly adapted
-drafter. Continue the training/export compatibility audit and prepare a bounded
-adaptation run with representative data, a fresh held-out test and native serving
-validation. The failed selector-only pilot does not end this objective, and
-adaptation is not conditional on a prior concurrency win. No new run has launched
-at this update. See the [current handoff objective](GLM53_HANDOFF.md) for the
-work sequence and unchanged production replacement gates.
+**Current continuation:** preserve the fixed CT MXFP8 target and trace the first
+candidate/original verification divergence on identical histories. Training,
+export and native checkpoint loading now work; broader training and the sealed
+serving test wait for this numerical diagnosis. The user goal remains a CT setup
+with a properly adapted drafter. Original CT remains the lossless reference;
+the previous MXFP8 cross-target KL failure and production replacement gates stay
+unchanged. No new target quantization or production switch is part of this check.
 
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
 **20 October 2026: selector-only calibration pilot complete; held-out gate failed.**

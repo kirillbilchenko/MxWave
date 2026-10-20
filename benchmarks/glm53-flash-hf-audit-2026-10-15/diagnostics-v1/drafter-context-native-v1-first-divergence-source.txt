@@ -1,0 +1,50 @@
+from pathlib import Path
+import json,hashlib
+import numpy as np
+from integrations.glm53_mxfp4.audit_drafter_feature_export_numpy import arrays
+r=Path('out/drafter-context-native-v1'); old=Path('out/drafter-feature-capture-v1/evidence')
+a=json.loads((r/'a1-measurement.json').read_bytes());b=json.loads((r/'b1-partial-measurement.json').read_bytes())
+plan=json.loads((old/'plan.json').read_bytes());cases={x['id']:x for x in plan['calibration_cases']}
+rows=[]
+def bounds(result,index):
+ n=0
+ for k,x in enumerate(result['arrivals']):
+  end=n+x['tokens']
+  if n<=index<end:return {'chunk':k,'start':n,'end_exclusive':end,'tokens':end-n}
+  n=end
+ return None
+for rb in b['cases']:
+ if rb['trial']!=0:continue
+ ra=next(x for x in a['cases'] if x['case']==rb['case'] and x['trial']==0)
+ aa,bb=ra['result']['token_ids'],rb['result']['token_ids']
+ i=next((i for i,(x,y) in enumerate(zip(aa,bb)) if x!=y),None)
+ row={'case':rb['case'],'domain':rb['domain'],'first_different_output_index':i}
+ if i is None:rows.append(row);continue
+ row.update(original_token=aa[i],candidate_token=bb[i],original_stream_group=bounds(ra['result'],i),candidate_stream_group=bounds(rb['result'],i))
+ if i>=128:row['reference_logits']='Beyond retained 128-token capture';rows.append(row);continue
+ emitted=[]
+ for path in sorted((old/'ct-r0').glob(f"context-{rb['case']}-*-r0.safetensors")):
+  x=arrays(path);count=int(x['target_num_sampled'].reshape(-1)[0]);new=x['target_sampled_tokens'].reshape(-1)[:count].tolist();offset=i-len(emitted)
+  emitted.extend(new)
+  assert emitted[:min(len(emitted),128)]==aa[:min(len(emitted),128)]
+  if not 0<=offset<count:continue
+  assert new[offset]==aa[i]
+  ids=x['target_top_ids'][offset].tolist();values=(x['target_top_values'][offset].astype(np.uint32)<<16).view(np.float32)
+  orig=ids.index(aa[i]);alt=ids.index(bb[i]) if bb[i] in ids else None
+  meta=json.loads(path.with_suffix('.json').read_bytes())
+  row.update(reference_frame=path.name,reference_frame_sha256=meta['payload_sha256'],target_rows=meta['target_tokens'],target_padded_rows=meta['target_padded_tokens'],original_rank=orig+1,candidate_rank=None if alt is None else alt+1,original_logit=float(values[orig]),candidate_logit=None if alt is None else float(values[alt]),original_minus_candidate_logit=None if alt is None else float(values[orig]-values[alt]))
+  break
+ rows.append(row)
+import itertools
+for row in rows:
+ i=row['first_different_output_index']
+ if i is None:continue
+ aa=next(x for x in a['cases'] if x['case']==row['case'] and x['trial']==0)
+ bb=next(x for x in b['cases'] if x['case']==row['case'] and x['trial']==0)
+ ca=list(itertools.accumulate(x['tokens'] for x in aa['result']['arrivals']))
+ cb=list(itertools.accumulate(x['tokens'] for x in bb['result']['arrivals']))
+ row['original_prior_stream_boundaries']=[n for n in ca if n<=i]
+ row['candidate_prior_stream_boundaries']=[n for n in cb if n<=i]
+ row['all_prior_stream_boundaries_equal']=row['original_prior_stream_boundaries']==row['candidate_prior_stream_boundaries']
+report={'status':'diagnostic','rows':rows,'source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'limits':['Reference logits only, before sampler masks, at actual verified original histories.','No candidate logits or direct root-cause proof.','Stream chunks show returned output grouping; they are not full internal target traces.']}
+(r/'first-divergence-review.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

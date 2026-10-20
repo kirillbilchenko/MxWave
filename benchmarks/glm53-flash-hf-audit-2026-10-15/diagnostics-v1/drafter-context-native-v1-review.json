@@ -1,0 +1,726 @@
+{
+  "status": "verified",
+  "source_sha256": "a06ac66e07a3c4205ea0058554a43c5f4bc47093aea2749b43d9727fd8d23d20",
+  "plan_sha256": "5dd97e009313b9ec390ad07933c99fe16ce17a2ae9ceae5ad582bba487dbd9ba",
+  "payloads_verified": 83,
+  "native_reload_verified": true,
+  "domains": {
+    "code": {
+      "prompts": 4,
+      "candidate_tps_ratio": 1.059110694739282,
+      "candidate_ttft_ratio": 1.0502531121534544,
+      "candidate_rounds_ratio": 0.9110695712459496,
+      "baseline_load_tps_ratio": 1.0059263983045224
+    },
+    "chat": {
+      "prompts": 2,
+      "candidate_tps_ratio": 1.0161160584650761,
+      "candidate_ttft_ratio": 1.076167631158016,
+      "candidate_rounds_ratio": 0.9775855665583463,
+      "baseline_load_tps_ratio": 1.0038224725411813
+    },
+    "explanation": {
+      "prompts": 2,
+      "candidate_tps_ratio": 0.9543401037165579,
+      "candidate_ttft_ratio": 1.1208914767431615,
+      "candidate_rounds_ratio": 1.0397280811628686,
+      "baseline_load_tps_ratio": 1.0069276890960768
+    }
+  },
+  "cases": [
+    {
+      "id": "opencoder-evol-92378",
+      "domain": "code",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 48.35181565153171,
+          "median_ttft_seconds": 0.2996042705,
+          "latency_relative_range": 0.024997229575885904,
+          "draft_rounds": 51.0,
+          "draft_tokens": 357.0,
+          "accepted_tokens": 211.0,
+          "accepted_per_draft_call": 4.137254901960785,
+          "acceptance_fraction": 0.5910364145658263,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 48.42668878841364,
+          "median_ttft_seconds": 0.2990386185,
+          "latency_relative_range": 0.016953626888481097,
+          "draft_rounds": 51.0,
+          "draft_tokens": 357.0,
+          "accepted_tokens": 211.0,
+          "accepted_per_draft_call": 4.137254901960785,
+          "acceptance_fraction": 0.5910364145658263,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 48.73239247635473,
+          "median_ttft_seconds": 0.28588542299999997,
+          "latency_relative_range": 0.012646879762177507,
+          "draft_rounds": 51.0,
+          "draft_tokens": 357.0,
+          "accepted_tokens": 211.0,
+          "accepted_per_draft_call": 4.137254901960785,
+          "acceptance_fraction": 0.5910364145658263,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 254,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            51,
+            51,
+            51,
+            51,
+            51,
+            51
+          ],
+          "median_delivery_seconds": 5.195032055
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            51,
+            51,
+            51,
+            51,
+            51,
+            51
+          ],
+          "median_delivery_seconds": 5.184243053
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            51,
+            51,
+            51,
+            51,
+            51,
+            51
+          ],
+          "median_delivery_seconds": 5.1521129135
+        }
+      },
+      "candidate_tps_ratio": 0.9976300329710307,
+      "candidate_ttft_ratio": 1.0217797045872044,
+      "candidate_rounds_ratio": 1.0,
+      "baseline_load_tps_ratio": 1.0078709934610484
+    },
+    {
+      "id": "opencoder-evol-20845",
+      "domain": "code",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 26.0468350978922,
+          "median_ttft_seconds": 0.232171086,
+          "latency_relative_range": 0.013329857714388976,
+          "draft_rounds": 104.0,
+          "draft_tokens": 728.0,
+          "accepted_tokens": 151.0,
+          "accepted_per_draft_call": 1.4519230769230769,
+          "acceptance_fraction": 0.20741758241758243,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 28.115085818613906,
+          "median_ttft_seconds": 0.243983793,
+          "latency_relative_range": 0.010626238628143549,
+          "draft_rounds": 96.0,
+          "draft_tokens": 672.0,
+          "accepted_tokens": 159.0,
+          "accepted_per_draft_call": 1.65625,
+          "acceptance_fraction": 0.23660714285714285,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 26.08317754068287,
+          "median_ttft_seconds": 0.2337894905,
+          "latency_relative_range": 0.009603428890577975,
+          "draft_rounds": 104.0,
+          "draft_tokens": 728.0,
+          "accepted_tokens": 151.0,
+          "accepted_per_draft_call": 1.4519230769230769,
+          "acceptance_fraction": 0.20741758241758243,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 202,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            80,
+            80,
+            80,
+            80,
+            80,
+            80
+          ],
+          "median_delivery_seconds": 7.5269485750000005
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            78,
+            78,
+            78,
+            78,
+            78,
+            78
+          ],
+          "median_delivery_seconds": 7.3506615150000005
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            80,
+            80,
+            80,
+            80,
+            80,
+            80
+          ],
+          "median_delivery_seconds": 7.5128176825
+        }
+      },
+      "candidate_tps_ratio": 1.0786528231161079,
+      "candidate_ttft_ratio": 1.0472356545852826,
+      "candidate_rounds_ratio": 0.9230769230769231,
+      "baseline_load_tps_ratio": 1.0013952728864786
+    },
+    {
+      "id": "opencoder-evol-15654",
+      "domain": "code",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 41.50346563867624,
+          "median_ttft_seconds": 0.2482820995,
+          "latency_relative_range": 0.026344591465394706,
+          "draft_rounds": 64.0,
+          "draft_tokens": 448.0,
+          "accepted_tokens": 195.0,
+          "accepted_per_draft_call": 3.046875,
+          "acceptance_fraction": 0.43526785714285715,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 47.68601111607918,
+          "median_ttft_seconds": 0.2416541965,
+          "latency_relative_range": 0.016411076497762273,
+          "draft_rounds": 54.0,
+          "draft_tokens": 378.0,
+          "accepted_tokens": 202.0,
+          "accepted_per_draft_call": 3.740740740740741,
+          "acceptance_fraction": 0.5343915343915344,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 41.77790416933368,
+          "median_ttft_seconds": 0.2372798815,
+          "latency_relative_range": 0.00749853033027158,
+          "draft_rounds": 64.0,
+          "draft_tokens": 448.0,
+          "accepted_tokens": 195.0,
+          "accepted_per_draft_call": 3.046875,
+          "acceptance_fraction": 0.43526785714285715,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 21,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            5,
+            5,
+            5,
+            5,
+            5,
+            5
+          ],
+          "median_delivery_seconds": 0.6283831375
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            5,
+            5,
+            5,
+            5,
+            5,
+            5
+          ],
+          "median_delivery_seconds": 0.611193128
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            5,
+            5,
+            5,
+            5,
+            5,
+            5
+          ],
+          "median_delivery_seconds": 0.6278706405
+        }
+      },
+      "candidate_tps_ratio": 1.145184574703093,
+      "candidate_ttft_ratio": 0.9956144206938135,
+      "candidate_rounds_ratio": 0.84375,
+      "baseline_load_tps_ratio": 1.006612424442977
+    },
+    {
+      "id": "opencoder-evol-69100",
+      "domain": "code",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 36.172412492691706,
+          "median_ttft_seconds": 0.3107359415,
+          "latency_relative_range": 0.00927582911669232,
+          "draft_rounds": 78.0,
+          "draft_tokens": 546.0,
+          "accepted_tokens": 177.0,
+          "accepted_per_draft_call": 2.269230769230769,
+          "acceptance_fraction": 0.3241758241758242,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 37.0776521461203,
+          "median_ttft_seconds": 0.355377388,
+          "latency_relative_range": 0.009915110803836844,
+          "draft_rounds": 69.0,
+          "draft_tokens": 483.0,
+          "accepted_tokens": 187.0,
+          "accepted_per_draft_call": 2.710144927536232,
+          "acceptance_fraction": 0.38716356107660455,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 36.45604287895783,
+          "median_ttft_seconds": 0.3116176275,
+          "latency_relative_range": 0.010159915827085707,
+          "draft_rounds": 78.0,
+          "draft_tokens": 546.0,
+          "accepted_tokens": 177.0,
+          "accepted_per_draft_call": 2.269230769230769,
+          "acceptance_fraction": 0.3241758241758242,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 70,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            15,
+            15,
+            15,
+            15,
+            15,
+            15
+          ],
+          "median_delivery_seconds": 1.666528692
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            16,
+            16,
+            16,
+            16,
+            16,
+            16
+          ],
+          "median_delivery_seconds": 1.812545016
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            15,
+            15,
+            15,
+            15,
+            15,
+            15
+          ],
+          "median_delivery_seconds": 1.663678714
+        }
+      },
+      "candidate_tps_ratio": 1.02103052284606,
+      "candidate_ttft_ratio": 1.1420445300822062,
+      "candidate_rounds_ratio": 0.8846153846153846,
+      "baseline_load_tps_ratio": 1.0078410691109814
+    },
+    {
+      "id": "dolly-12645",
+      "domain": "explanation",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 31.830516537792793,
+          "median_ttft_seconds": 0.2220481735,
+          "latency_relative_range": 0.012479003466961706,
+          "draft_rounds": 87.0,
+          "draft_tokens": 609.0,
+          "accepted_tokens": 168.0,
+          "accepted_per_draft_call": 1.9310344827586208,
+          "acceptance_fraction": 0.27586206896551724,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 35.792769902245574,
+          "median_ttft_seconds": 0.218198957,
+          "latency_relative_range": 0.017052888717657352,
+          "draft_rounds": 76.0,
+          "draft_tokens": 532.0,
+          "accepted_tokens": 179.0,
+          "accepted_per_draft_call": 2.3552631578947367,
+          "acceptance_fraction": 0.33646616541353386,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 32.116348417751354,
+          "median_ttft_seconds": 0.21802352,
+          "latency_relative_range": 0.010351229828211742,
+          "draft_rounds": 87.0,
+          "draft_tokens": 609.0,
+          "accepted_tokens": 168.0,
+          "accepted_per_draft_call": 1.9310344827586208,
+          "acceptance_fraction": 0.27586206896551724,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 97,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            23,
+            23,
+            23,
+            23,
+            23,
+            23
+          ],
+          "median_delivery_seconds": 2.207789982
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            23,
+            23,
+            23,
+            23,
+            23,
+            23
+          ],
+          "median_delivery_seconds": 2.218542951
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            23,
+            23,
+            23,
+            23,
+            23,
+            23
+          ],
+          "median_delivery_seconds": 2.1971043205000003
+        }
+      },
+      "candidate_tps_ratio": 1.1194646521554577,
+      "candidate_ttft_ratio": 0.9916933344900876,
+      "candidate_rounds_ratio": 0.8735632183908046,
+      "baseline_load_tps_ratio": 1.0089798065205504
+    },
+    {
+      "id": "dolly-4017",
+      "domain": "explanation",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 33.454363411750734,
+          "median_ttft_seconds": 0.1895936775,
+          "latency_relative_range": 0.007686086402669189,
+          "draft_rounds": 80.0,
+          "draft_tokens": 560.0,
+          "accepted_tokens": 175.0,
+          "accepted_per_draft_call": 2.1875,
+          "acceptance_fraction": 0.3125,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 27.283857980302507,
+          "median_ttft_seconds": 0.24401390299999998,
+          "latency_relative_range": 0.017845892698312108,
+          "draft_rounds": 99.0,
+          "draft_tokens": 693.0,
+          "accepted_tokens": 156.0,
+          "accepted_per_draft_call": 1.5757575757575757,
+          "acceptance_fraction": 0.22510822510822512,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 33.617612186998116,
+          "median_ttft_seconds": 0.195661696,
+          "latency_relative_range": 0.017959566551047745,
+          "draft_rounds": 80.0,
+          "draft_tokens": 560.0,
+          "accepted_tokens": 175.0,
+          "accepted_per_draft_call": 2.1875,
+          "acceptance_fraction": 0.3125,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 94,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            29,
+            29,
+            29,
+            29,
+            29,
+            29
+          ],
+          "median_delivery_seconds": 2.791715635
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            30,
+            30,
+            30,
+            30,
+            30,
+            30
+          ],
+          "median_delivery_seconds": 2.9108083455
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            29,
+            29,
+            29,
+            29,
+            29,
+            29
+          ],
+          "median_delivery_seconds": 2.7756147
+        }
+      },
+      "candidate_tps_ratio": 0.8135719442396958,
+      "candidate_ttft_ratio": 1.2669215965654186,
+      "candidate_rounds_ratio": 1.2375,
+      "baseline_load_tps_ratio": 1.004879745378447
+    },
+    {
+      "id": "dolly-7475",
+      "domain": "chat",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 31.53665944745339,
+          "median_ttft_seconds": 0.172481835,
+          "latency_relative_range": 0.0129990131062837,
+          "draft_rounds": 89.0,
+          "draft_tokens": 623.0,
+          "accepted_tokens": 166.0,
+          "accepted_per_draft_call": 1.8651685393258426,
+          "acceptance_fraction": 0.2664526484751204,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 32.40629105612024,
+          "median_ttft_seconds": 0.1993073115,
+          "latency_relative_range": 0.01602366907972086,
+          "draft_rounds": 86.0,
+          "draft_tokens": 602.0,
+          "accepted_tokens": 173.0,
+          "accepted_per_draft_call": 2.011627906976744,
+          "acceptance_fraction": 0.287375415282392,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 31.643477503961442,
+          "median_ttft_seconds": 0.178261594,
+          "latency_relative_range": 0.0037764342203037244,
+          "draft_rounds": 89.0,
+          "draft_tokens": 623.0,
+          "accepted_tokens": 166.0,
+          "accepted_per_draft_call": 1.8651685393258426,
+          "acceptance_fraction": 0.2664526484751204,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": false,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 94,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            30,
+            30,
+            30,
+            30,
+            30,
+            30
+          ],
+          "median_delivery_seconds": 2.8512123799999998
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            29,
+            29,
+            29,
+            29,
+            29,
+            29
+          ],
+          "median_delivery_seconds": 2.7836689545
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            30,
+            30,
+            30,
+            30,
+            30,
+            30
+          ],
+          "median_delivery_seconds": 2.8416372045
+        }
+      },
+      "candidate_tps_ratio": 1.0258394152189678,
+      "candidate_ttft_ratio": 1.1366392690121245,
+      "candidate_rounds_ratio": 0.9662921348314607,
+      "baseline_load_tps_ratio": 1.0033871075243728
+    },
+    {
+      "id": "dolly-1769",
+      "domain": "chat",
+      "arms": {
+        "a1": {
+          "trials": 6,
+          "median_end_to_end_tps": 29.710187041208727,
+          "median_ttft_seconds": 0.2015136185,
+          "latency_relative_range": 0.011534590649591997,
+          "draft_rounds": 91.0,
+          "draft_tokens": 637.0,
+          "accepted_tokens": 168.0,
+          "accepted_per_draft_call": 1.8461538461538463,
+          "acceptance_fraction": 0.26373626373626374,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "b1": {
+          "trials": 6,
+          "median_end_to_end_tps": 29.966449506842505,
+          "median_ttft_seconds": 0.210488665,
+          "latency_relative_range": 0.010645251169900853,
+          "draft_rounds": 90.0,
+          "draft_tokens": 630.0,
+          "accepted_tokens": 169.0,
+          "accepted_per_draft_call": 1.8777777777777778,
+          "acceptance_fraction": 0.26825396825396824,
+          "repeat_tokens_and_counters_exact": true
+        },
+        "a2": {
+          "trials": 6,
+          "median_end_to_end_tps": 29.836693803787092,
+          "median_ttft_seconds": 0.21177692450000002,
+          "latency_relative_range": 0.01468998433712711,
+          "draft_rounds": 91.0,
+          "draft_tokens": 637.0,
+          "accepted_tokens": 168.0,
+          "accepted_per_draft_call": 1.8461538461538463,
+          "acceptance_fraction": 0.26373626373626374,
+          "repeat_tokens_and_counters_exact": true
+        }
+      },
+      "cross_arm_tokens_identical": true,
+      "baseline_repeat_counters_equal": true,
+      "baseline_repeat_tokens_equal": true,
+      "common_prefix_tokens": 256,
+      "common_prefix_delivery": {
+        "a1": {
+          "stream_chunk_counts": [
+            92,
+            92,
+            92,
+            92,
+            92,
+            92
+          ],
+          "median_delivery_seconds": 8.616437194
+        },
+        "b1": {
+          "stream_chunk_counts": [
+            91,
+            91,
+            91,
+            91,
+            91,
+            91
+          ],
+          "median_delivery_seconds": 8.542763197500001
+        },
+        "a2": {
+          "stream_chunk_counts": [
+            92,
+            92,
+            92,
+            92,
+            92,
+            92
+          ],
+          "median_delivery_seconds": 8.5799038135
+        }
+      },
+      "candidate_tps_ratio": 1.0064848639591553,
+      "candidate_ttft_ratio": 1.0189132136520453,
+      "candidate_rounds_ratio": 0.989010989010989,
+      "baseline_load_tps_ratio": 1.0042580264608532
+    }
+  ],
+  "all_cross_arm_tokens_identical": false,
+  "baseline_repeat_counters_equal": true,
+  "baseline_repeat_tokens_equal": true,
+  "all_prompt_baseline_load_controls_within_two_percent": true,
+  "production_restored": true,
+  "sealed_test_opened": false,
+  "final_serving_qualification_pass": false,
+  "limits": [
+    "Eight reused validation prompts, one candidate load, and two baseline loads.",
+    "Six trials within a load are not six independent model loads or new prompts.",
+    "Per-call counters may include post-cap work from the final verification.",
+    "Common-prefix delivery is post-hoc and includes its enclosing stream event; not a new qualification gate or proof of internal trace identity.",
+    "No final 8% speed claim, confidence interval, C8/C16 or long-context qualification."
+  ]
+}

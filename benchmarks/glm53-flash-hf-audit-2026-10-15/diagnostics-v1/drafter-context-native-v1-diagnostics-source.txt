@@ -1,0 +1,24 @@
+"""Independent descriptive review of retained telemetry, graph counts and common prefixes."""
+from pathlib import Path
+import datetime,hashlib,json,re,statistics
+root=Path(__file__).parent
+state=json.loads((root/'evidence/controller.json').read_bytes())
+review=json.loads((root/'review.json').read_bytes())
+resources={}; graphs={}
+for arm, snapshots in state['resources'].items():
+ resources[arm]={}
+ for rank in (0,1):
+  rows=[next(x for x in pair if x['rank']==rank) for pair in snapshots['during']]
+  assert all(r['telemetry_returncode']==0 for r in rows)
+  values=[r['GPU_boundary_telemetry'].split(', ') for r in rows]
+  resources[arm][str(rank)]={'samples':len(rows),'clock_mhz':{'min':min(float(x[0]) for x in values),'median':statistics.median(float(x[0]) for x in values),'max':max(float(x[0]) for x in values)},'temperature_c':{'min':min(float(x[1]) for x in values),'max':max(float(x[1]) for x in values)},'power_w':{'min':min(float(x[2]) for x in values),'max':max(float(x[2]) for x in values)},'pstates':sorted(set(x[3].strip() for x in values))}
+  records=[json.loads(x) for x in re.findall(r'(\{"native_draft_replay"[^\n]+\})',(root/f'evidence/{arm}-r{rank}.log').read_text())]
+  graphs[f'{arm}-r{rank}']={}
+  for row in records: graphs[f'{arm}-r{rank}'][str(row['native_draft_replay'])]=row['count']
+code=[r for r in review['cases'] if r['domain']=='code']
+for c in review['cases']:
+ for arm in ('a1','b1','a2'):
+  assert len(set(c['common_prefix_delivery'][arm]['stream_chunk_counts']))==1
+result={'status':'verified','source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'archive_sha256':json.loads((root/'archive-receipt.json').read_bytes())['sha256'],'restored_utc':datetime.datetime.fromtimestamp(state['restoration']['epoch'],datetime.UTC).isoformat(),'telemetry_during_measurement':resources,'last_logged_graph_replays':graphs,'code_common_prefix':{'tokens':sum(c['common_prefix_tokens'] for c in code),'stream_chunks_per_cycle':{a:sum(c['common_prefix_delivery'][a]['stream_chunk_counts'][0] for c in code) for a in ('a1','b1','a2')},'same_counts_all_six_cycles':True},'original_reload_tps_relative_change_range':[min(c['baseline_load_tps_ratio']-1 for c in review['cases']),max(c['baseline_load_tps_ratio']-1 for c in review['cases'])],'limits':['Telemetry is sampled, not continuous; no clock locking or throttle-reason counters.','Graph counts include warmups and omit the final unlogged tail; a lower bound only.','Common-prefix chunks are a post-hoc stream observation, not an internal kernel trace or a qualification metric.','No task-accuracy grading and no sealed-test access.']}
+(root/'final-diagnostics.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps(result,indent=2))

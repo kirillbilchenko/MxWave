@@ -5,7 +5,12 @@
 selects step 24: validation draft prefix **code 4.25 → 4.375**, **chat 2.75 → 2.875**,
 explanation unchanged. The independent review reproduces the result; native
 export changes only FC and preserves the other 115 tensors/config exactly.
-Native serving benefit is unproved; a matched development run is prepared.
+Native reload passes, but seven of eight development responses differ between
+arms. All 144 requests finish; original reload outputs/counters repeat exactly
+and timing controls pass. Descriptive throughput is code +5.91%, chat +1.61%,
+explanation −4.57%, on changed responses. The unchanged-output gate fails; the
+candidate is not promoted. Original production is restored at 15:14 UTC with
+500,000 context; all 83 native evidence payloads verify on Mac and Spark2.
 [Evidence, limits and current status](docs/GLM53_DRAFTER_CONTEXT_PILOT.md).
 
 [![Hugging Face model](https://img.shields.io/badge/🤗%20Hugging%20Face-Qwen3.8--27B--MXFP4--MxWave-FFD21E)](https://huggingface.co/kirillbilchenko/Qwen3.8-27B-MXFP4-MxWave)

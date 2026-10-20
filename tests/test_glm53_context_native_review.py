@@ -9,6 +9,7 @@ import pytest
 from integrations.glm53_mxfp4.review_context_native import (
     geometric_mean,
     metric,
+    prefix_delivery,
     summarize_requests,
 )
 
@@ -59,3 +60,14 @@ def test_reject_wrong_draft_width_and_ambiguous_counter() -> None:
             'vllm:spec_decode_num_drafts_total{engine="0"}': 5,
             'vllm:spec_decode_num_drafts_total{engine="1"}': 5,
         }, "num_drafts")
+
+
+def test_common_prefix_delivery_includes_the_enclosing_event() -> None:
+    result = {"arrivals": [{"tokens": 1, "seconds": 0.2}, {"tokens": 4, "seconds": 0.5},
+                           {"tokens": 2, "seconds": 0.7}]}
+    assert prefix_delivery(result, 5) == (2, 0.5)
+    assert prefix_delivery(result, 6) == (3, 0.7)
+    with pytest.raises(ValueError, match="never delivered"):
+        prefix_delivery(result, 8)
+    with pytest.raises(ValueError, match="at least one"):
+        prefix_delivery(result, 0)

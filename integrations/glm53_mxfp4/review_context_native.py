@@ -26,6 +26,18 @@ def metric(counters: dict[str, float], name: str) -> float:
     return matches[0]
 
 
+def prefix_delivery(result: dict[str, Any], tokens: int) -> tuple[int, float]:
+    """Locate delivery of a shared output prefix, retaining the enclosing stream event."""
+    if tokens <= 0:
+        raise ValueError("A common prefix must contain at least one token")
+    delivered = 0
+    for index, event in enumerate(result["arrivals"], 1):
+        delivered += event["tokens"]
+        if delivered >= tokens:
+            return index, event["seconds"]
+    raise ValueError("Stream never delivered the requested common prefix")
+
+
 def summarize_requests(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Require fixed outputs/counters and summarize ordinary end-to-end streams."""
     if len(rows) != 6 or sorted(row["trial"] for row in rows) != list(range(6)):
@@ -96,16 +108,33 @@ def review(root: Path, output: Path) -> dict[str, Any]:
         same_tokens = all(value[0]["result"]["token_ids"] == rows["a1"][0]["result"]["token_ids"]
                           for value in rows.values())
         baseline_counters_equal = rows["a1"][0]["counter_delta"] == rows["a2"][0]["counter_delta"]
+        baseline_tokens_equal = (
+            rows["a1"][0]["result"]["token_ids"] == rows["a2"][0]["result"]["token_ids"]
+        )
         baseline_tps = math.sqrt(
             arms["a1"]["median_end_to_end_tps"] * arms["a2"]["median_end_to_end_tps"],
         )
         baseline_ttft = math.sqrt(
             arms["a1"]["median_ttft_seconds"] * arms["a2"]["median_ttft_seconds"],
         )
+        common = next((i for i, (a, b) in enumerate(zip(
+            rows["a1"][0]["result"]["token_ids"], rows["b1"][0]["result"]["token_ids"],
+            strict=True,
+        )) if a != b), 256)
+        prefix = {}
+        if common:
+            for arm, requests in rows.items():
+                values = [prefix_delivery(row["result"], common) for row in requests]
+                prefix[arm] = {
+                    "stream_chunk_counts": [value[0] for value in values],
+                    "median_delivery_seconds": statistics.median(value[1] for value in values),
+                }
         cases.append({
             "id": case["id"], "domain": case["domain"], "arms": arms,
             "cross_arm_tokens_identical": same_tokens,
             "baseline_repeat_counters_equal": baseline_counters_equal,
+            "baseline_repeat_tokens_equal": baseline_tokens_equal,
+            "common_prefix_tokens": common, "common_prefix_delivery": prefix,
             "candidate_tps_ratio": arms["b1"]["median_end_to_end_tps"] / baseline_tps,
             "candidate_ttft_ratio": arms["b1"]["median_ttft_seconds"] / baseline_ttft,
             "candidate_rounds_ratio": arms["b1"]["draft_rounds"] / arms["a1"]["draft_rounds"],
@@ -129,6 +158,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
         "native_reload_verified": True, "domains": domains, "cases": cases,
         "all_cross_arm_tokens_identical": all(r["cross_arm_tokens_identical"] for r in cases),
         "baseline_repeat_counters_equal": all(r["baseline_repeat_counters_equal"] for r in cases),
+        "baseline_repeat_tokens_equal": all(r["baseline_repeat_tokens_equal"] for r in cases),
         "all_prompt_baseline_load_controls_within_two_percent": stable,
         "production_restored": True, "sealed_test_opened": False,
         "final_serving_qualification_pass": False,
@@ -136,6 +166,7 @@ def review(root: Path, output: Path) -> dict[str, Any]:
             "Eight reused validation prompts, one candidate load, and two baseline loads.",
             "Six trials within a load are not six independent model loads or new prompts.",
             "Per-call counters may include post-cap work from the final verification.",
+            "Common-prefix delivery is post-hoc and includes its enclosing stream event; not a new qualification gate or proof of internal trace identity.",
             "No final 8% speed claim, confidence interval, C8/C16 or long-context qualification.",
         ],
     }
