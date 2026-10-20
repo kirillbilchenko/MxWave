@@ -10,9 +10,9 @@ not confidence scheduling. No DeepInfer/DeepGEMM kernel was copied or installed.
 The source audit and provenance remain historical records, not an active port.
 
 Continue our existing Marlin routing-padding fix and context-projection
-adaptation. Keep seven fixed draft tokens. Next: verify bounded feature loading
-against the retained 32-update pilot, validate our padding at C8/C16 widths,
-then capture fresh target features and run the full 4,000-prompt adaptation.
+adaptation. Keep seven fixed draft tokens. The bounded feature loader now reproduces the retained 32-update pilot exactly.
+Next: validate our padding at C8/C16 widths, then capture fresh target features
+and run the full 4,000-prompt adaptation.
 The old-policy pilot replay is a loader regression check, not new-policy
 training or a speed claim. Preserve the existing quality/performance gates;
 the sealed test stays closed. Production remains restored.
@@ -20,18 +20,32 @@ See [the archived audit](GLM53_DEEPINFER_TRANSFER.md).
 <!-- DEEPINFER_TRANSFER_END -->
 
 <!-- BOUNDED_LOADER_REPLAY_BEGIN -->
-**20 October 2026, 19:38 UTC: independent bounded-loader CPU replay running.**
-The DeepInfer confidence experiment is withdrawn. The existing context-only
-trainer is replaying all 32 updates with the same 40 retained train/validation
-feature samples, fixed seven-draft objective and seed 42. Only feature residency
-changes; the existing FP64 weight-distance correction remains in place.
+**20 October 2026, 19:42 UTC: independent bounded-loader replay passes.**
+All **32 updates** reproduce the retained original pilot's losses, gradient
+norms and proposal metrics exactly. The baseline and every validation proposal
+match. All **four BF16 checkpoint files are byte-identical** to the originals;
+step 24 is selected again. Independent NumPy review verifies acceptance and
+the already corrected FP64 weight distances. Elapsed CPU run: 183.64 seconds.
+This removes the loader-regression prerequisite for full training. It is not
+new-policy feature capture, a new adapted candidate or a serving-speed result.
+
 Frozen protocol SHA `119d6da0455407a28a9fa4e098730b4818d280319c86341474032dfb9135ada8`.
-Run: `out/drafter-bounded-loader-replay-v1/run`.
-Require exact original baseline, per-step losses/gradients/proposals, all four
-BF16 checkpoint payloads and selected step. Independently review saved weights
-and acceptance before declaring the loader ready. No production pause, new
-policy capture, full training or sealed-test access. Full pytest (one existing
-skip), ruff and strict mypy pass after removal of the confidence code/hook.
+Local run/review: `out/drafter-bounded-loader-replay-v1/`.
+All **14 evidence payloads** independently verify on Mac and Spark2. Archive
+`evidence-v1.tar.gz`, 54,597 bytes, SHA
+`7ad60a6548b517bb8c85f9a8c19a7f557ae14550489aa7109795f0f7306a91b7`.
+Identical checkpoint payloads are referenced rather than duplicated: all four
+original files plus their report were independently rehashed in Spark2's
+retained `glm53-drafter-context-pilot-v1-evidence.tar.gz` backup.
+
+Production was never paused; its original service was verified healthy during
+the CPU replay. No training remains running and the sealed test stays closed.
+Full pytest (one existing skip), ruff and strict mypy pass after the confidence
+code/hook removal. Withdrawal/protocol checkpoint `6e4cdd2` is committed and
+independently verified in the Spark2 Git backup; the result checkpoint follows.
+Next: our C8/C16 padding GPU fixture, then fresh qualified-policy feature
+capture and the full 4,000-prompt fixed-width drafter adaptation. Do not restore
+the withdrawn confidence experiment or loosen the existing performance gates.
 <!-- BOUNDED_LOADER_REPLAY_END -->
 
 <!-- EXPERT_FIXED_DEVELOPMENT_BEGIN -->

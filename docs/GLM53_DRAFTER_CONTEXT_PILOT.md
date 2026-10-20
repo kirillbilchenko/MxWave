@@ -15,9 +15,11 @@ See [the result and TTFT table](GLM53_HANDOFF.md).
 confidence experiment and its trainer hook are removed. It was never enabled
 in serving and has no measured CT gain. The audit is retained as history.
 Continue our independently developed fixed-width drafter adaptation and Marlin
-padding. Bounded-loader pilot replay, wider GPU checks and fresh target-feature
-capture precede the full 4,000-prompt training run. Existing gates are unchanged;
-sealed evaluation remains closed. See [the current handoff](GLM53_HANDOFF.md).
+padding. The bounded-loader replay now passes: all 32 update metrics and all
+four saved checkpoints match the original exactly. Wider GPU checks and fresh
+target-feature capture precede the full 4,000-prompt training run. Existing
+gates are unchanged; sealed evaluation remains closed.
+See [the current handoff](GLM53_HANDOFF.md).
 
 **Earlier, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
 production is restored with 500,000 context. On one development prompt, the

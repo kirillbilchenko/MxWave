@@ -16,8 +16,9 @@ speed qualification. Original production is restored with 500,000 context.
 See the [full result and TTFT table](docs/GLM53_HANDOFF.md).
 The separate confidence experiment was withdrawn at the user's request before
 any real-data training or serving integration. Work continues on our existing
-fixed-width drafter adaptation and Marlin padding; the full 4,000-prompt run
-and C8/C16 padding qualification remain outstanding.
+fixed-width drafter adaptation and Marlin padding. The bounded feature-loader
+replay reproduces all 32 pilot updates and four checkpoint files exactly;
+the full 4,000-prompt run and C8/C16 padding qualification remain outstanding.
 
 **Expert reduction fix, 20 October 2026:** bounded routing padding makes shared
 rows bit-identical in the retained 440-versus-448 dispatch, through both expert
