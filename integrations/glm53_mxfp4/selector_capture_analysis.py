@@ -12,6 +12,12 @@ from typing import Any
 import numpy as np
 from safetensors.numpy import load_file
 
+_SOURCE_SELECTOR_DIGESTS = {
+    "projection": "0d974ed37ad1faed0fab43a128459c2a87c2bc80c18e7465c90f6ac99508c1a7",
+    "predecessor": "55e5599845ac0380451322097e842efb771bda20031b4ea0284a1485ae4fcc2e",
+    "successor": "dd0a45392b5678ae6f3366872800d9606c028b5bc18a16370f7596b39cca1451",
+}
+
 
 def sha256(path: Path) -> str:
     """Hash a payload incrementally."""
@@ -49,6 +55,8 @@ def analyze(root: Path) -> dict[str, Any]:
         for rank in (0, 1)
     ]
     assert inventories[0] == inventories[1]
+    assert {name: info["sha256"] for name, info in inventories[0].items()} \
+        == _SOURCE_SELECTOR_DIGESTS
     raw = (root / "ct-r0/selector-original.safetensors").read_bytes()
     header_size = int.from_bytes(raw[:8], "little")
     header = json.loads(raw[8:8 + header_size])

@@ -1475,5 +1475,17 @@ the public OCP MX specification and published quantization research. See
 `CONTRIBUTING.md` for the provenance policy.
 
 The [bounded CT drafter-calibration pilot](docs/GLM53_SELECTOR_CALIBRATION.md)
-is prepared after the paired diagnostic. No calibration speed or quality result
-is available yet. Completed GLM work is committed and backed up on spark2.
+completes but **fails its held-out gate**. This is an offline projection-only fit
+with fixed captured states; it is not serving speed or target-model task accuracy.
+
+| Mean consecutive matching draft tokens / 7, averaged by prompt | Original projection | Selected projection |
+| --- | ---: | ---: |
+| Validation, eight prompts | 2.904 | 2.931 |
+| Separate test, eight prompts | 2.394 | 2.383 |
+| Test code prompts | 2.409 | 2.404 |
+| Test explanation prompts | 2.348 | 2.320 |
+
+All 3,682 capture payloads verify; NumPy independently reproduces 108 result fields.
+Original production is restored with 500,000 context. The patch is not applied;
+drafter recovery, production tuning/capacity, stable C8/C16 results and long-context
+qualification remain open deployment gates. Work is committed and backed up on spark2.

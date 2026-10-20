@@ -145,13 +145,22 @@ def evaluate(
         )
         lengths = prefix_lengths(predicted, data["gold"]).tolist()
         native_lengths = prefix_lengths(data["native_proposal"], data["gold"]).tolist()
+        covered = (data["ids"] == data["gold"][..., None]).any(-1)
+        oracle_lengths = covered.long().cumprod(-1).sum(-1).tolist()
         for index, row in enumerate(chunk):
             info = prompts.setdefault(row["id"], {
                 "domain": row["domain"], "prefix_sum": 0, "native_prefix_sum": 0,
                 "blocks": 0, "proposal_tokens_different_from_native": 0,
+                "topk_oracle_prefix_sum": 0, "native_first_ranking_errors": 0,
+                "native_first_coverage_errors": 0,
             })
             info["prefix_sum"] += lengths[index]
             info["native_prefix_sum"] += native_lengths[index]
+            info["topk_oracle_prefix_sum"] += oracle_lengths[index]
+            first_error = native_lengths[index]
+            if first_error < data["gold"].shape[1]:
+                kind = "ranking" if covered[index, first_error] else "coverage"
+                info[f"native_first_{kind}_errors"] += 1
             info["blocks"] += 1
             info["proposal_tokens_different_from_native"] += int(
                 (predicted[index] != data["native_proposal"][index]).sum()
@@ -161,6 +170,7 @@ def evaluate(
     for info in prompts.values():
         info["mean_prefix"] = info["prefix_sum"] / info["blocks"]
         info["native_mean_prefix"] = info["native_prefix_sum"] / info["blocks"]
+        info["topk_oracle_mean_prefix"] = info["topk_oracle_prefix_sum"] / info["blocks"]
     result: dict[str, Any] = {"prompts": prompts, "scope": "fixed-state FP32 surrogate"}
     for domain in ("all", "code", "explanation"):
         selected = [p for p in prompts.values() if domain == "all" or p["domain"] == domain]
@@ -202,6 +212,8 @@ def train(root: Path, output: Path, steps: int = 100) -> dict[str, Any]:
             data["ids"], data["unary"], data["gold"], data["anchor"],
         )
         loss = covered_loss(scores, data["ids"], data["gold"])
+        if not torch.isfinite(loss):
+            raise ValueError(f"Nonfinite training loss at step {step}")
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_([projection], 1.0)
@@ -241,11 +253,19 @@ def train(root: Path, output: Path, steps: int = 100) -> dict[str, Any]:
             (root / "evidence-manifest.json").read_bytes()
         ).hexdigest(),
         "trainer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "capture_analyzer_sha256": hashlib.sha256(
+            Path(__file__).with_name("selector_capture_analysis.py").read_bytes()
+        ).hexdigest(),
         "capture_review_sha256": hashlib.sha256(
             (output / "capture-review.json").read_bytes()
         ).hexdigest(),
         "trainable_parameters": original.numel(), "steps": steps,
+        "torch_version": torch.__version__, "device": "cpu", "cpu_threads": 4,
         "learning_rate": 1e-5, "relative_update_norm_limit": 0.01,
+        "relative_selected_update_norm": float((selected - original).norm() / original.norm()),
+        "changed_bf16_elements": int(
+            (selected.to(torch.bfloat16) != original.to(torch.bfloat16)).sum()
+        ),
         "source_projection_sha256": hashlib.sha256(
             original.to(torch.bfloat16).view(torch.uint8).numpy().tobytes()
         ).hexdigest(),

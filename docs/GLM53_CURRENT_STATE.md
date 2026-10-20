@@ -1,23 +1,28 @@
 # GLM lossless experiment: current state and next steps
 
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
-**20 October 2026, 12:19 UTC: authorized transfer complete; CT capture is starting.**
-The source archive and all 17 source/configuration hashes verify on both Sparks.
-CPU preflight passes with all 211 frozen runtime bindings per rank. Queue
-`1950880`, controller `1953173`, experiment `selector-calibration-capture-v1`.
-The controller is loading CT on private port **8018** after pausing original
-production; its watchdog and restoration path are active. No weights are trained
-or promoted. Production will be restored before CPU training on the Mac.
+**20 October 2026: selector-only calibration pilot complete; held-out gate failed.**
+All 52 API requests complete, and both before/capture/after controls repeat output
+tokens and speculative counters exactly. All **3,682 archived payloads**, **1,819
+native graph frames** and **1,735 verified draft rounds** pass the independent
+capture review. Original production was restored at **12:30:49 UTC**, healthy
+with its original identities and **500,000 context**. No experiment or training
+remains running; no weights or candidate have been promoted.
 
-The [selector pilot](GLM53_SELECTOR_CALIBRATION.md) uses 32 new training prompts,
-eight validation and eight sealed test prompts; only the 1,048,576-weight BF16
-selector projection may train. Completed work is committed as `edc4c08` and
-backed up with verified Git restoration on **spark2**; pilot source is committed
-as `d945612`. **This is not a deployment switch.** The four user-specified
+The bounded 100-step CPU fit selected step 75 using validation only. Mean matching
+prefix length improves **2.904 → 2.931** on validation, but declines **2.394 → 2.383**
+on the eight separate test prompts (code **2.409 → 2.404**, explanation
+**2.348 → 2.320**). These are fixed-state FP32-surrogate draft metrics, not task
+accuracy or serving speed. NumPy independently reproduces **108 numerical fields**.
+The frozen no-regression test gate remains failed; **the patch is not applied**.
+
+See the [complete calibration result](GLM53_SELECTOR_CALIBRATION.md). This small
+32-prompt, projection-only pilot does not rule out broader drafter adaptation;
+it demonstrates no code-speed recovery. All four user-specified
 [production replacement gates](GLM53_SELECTOR_CALIBRATION.md#production-replacement-gates)
-remain open: drafter recovery, production-equivalent tuning/capacity, stable
-C8/C16 comparisons, and long-context qualification beyond the 8k trials.
-This block supersedes historical live-work statements below.
+remain open: drafter recovery, production tuning/capacity, stable C8/C16 results,
+and long-context qualification. Completed work and pilot source are committed
+and backed up on **spark2**. This block supersedes earlier live-work statements.
 <!-- SELECTOR_CALIBRATION_LIVE_END -->
 
 <!-- DRAFTER_CONTEXT_LIVE_BEGIN -->
