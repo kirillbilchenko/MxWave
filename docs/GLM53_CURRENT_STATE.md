@@ -1,30 +1,26 @@
 # GLM lossless experiment: current state and next steps
 
-**21 October, 16:24 UTC: native cache configuration remedy passes CPU planning.**
-The V5 capacity failure is reproduced exactly. Selecting stock vLLM's
-`TRITON_ATTN` drafter backend reduces shared-pool waste and the 500k requirement
-from 13.9561 to 4.6632 GiB per rank, within the unchanged 6 GiB budget.
-This is an allocation calculation; GPU startup, prefix reuse and final memory
-remain unqualified. A bounded startup retry is being prepared. Production is
-running. Earlier V5 failure and restoration evidence below remains retained.
+**GLM stock-vLLM checkpoint, 21 October 2026.** The official vLLM 0.32.0 image
+plus the installed MxWave plugin now reaches API readiness and generates responses
+at 500k context / 32 slots / 6 GiB KV per GPU / prefix caching on. Selecting native
+Triton draft attention resolves the cache-capacity blocker without changing vLLM
+source. Actual capacity: 640,287 tokens; allocated startup memory: 87.157 GiB per
+rank including the drafter, KV and graphs. A fresh matched memory-saving delta has
+not been measured.
 
-**Packaging checkpoint, 21 October 2026, 15:26 UTC.** The official vLLM 0.32.0
-image plus the MxWave plugin is the default deployment target. Both-node CPU
-and all synthetic GPU component checks pass, including the corrected packed
-embedding forward. Both full models/drafters load and the first profiling forward
-completes. Native streaming reduces logged rank-0 model loading to 123–126 seconds
-in the latest trials (not a controlled cold-start comparison).
-**The requested 500k-context / 6-GiB-KV configuration fails the stock cache planner:**
-13.96 GiB required per rank versus 5.97 GiB usable. Exact production restored at
-15:26:07 UTC; no further GPU retry is queued and no capacity/prefix setting is
-silently changed.
-Full-model stock serving, prefix-cache correctness and long context are still
-unqualified. The isolated full-K comparison is independently verified: all 64
-outputs match our padding bit for bit, but only 11/16 direct timing pairs pass
-the 2% drift gate. Keep the existing package kernel default. Local checks pass:
-1,083 tests / 1 skipped, Ruff and strict core
-mypy; focused package checks also cover the follower fix. Training remains stopped.
-[Current packaging handoff, artifacts and exact next steps](GLM53_HANDOFF.md).
+Current lossless scale/embedding storage saves **6.941 GiB across TP2**, after
+the reported expert workspace, according to both-rank byte receipts. This excludes
+the separate lossy MXFP8 KDA conversion and is not a matched production allocation
+delta. Exact original 500k production is restored at **16:44:58 UTC**; V6/V7
+evidence is independently verified on Mac and backed up with hashes on Spark2.
+
+**Serving qualification remains incomplete.** The corrected 12,449-token V7
+check observes 9,216 prefix-hit tokens, confirming actual reuse, but repeated greedy
+messages differ both cold-to-warm and warm-to-warm. V6 also differs without a
+reusable prefix. The identity gate therefore fails; no KL, stock speed or long-context
+pass is claimed. The capacity fix is complete; fixed-input numerical tracing is next.
+The [handoff](GLM53_HANDOFF.md) retains failures and restoration status.
+Local checks pass: 1,085 tests / 1 skipped, Ruff and strict core mypy.
 
 **21 October 2026: consolidated outcome and stock-vLLM deployment target.**
 The compression mechanism works: it preserves the encoded weight values, reduces

@@ -1,5 +1,55 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 16:48 UTC: V7 closed, exact production restored; memory benefit retained.**
+Original container identities/configuration hashes and the authenticated 500k endpoint
+are verified restored at **16:44:58 UTC** (`failed_restored`, service not paused).
+No further GPU experiment is queued. V6/V7 preserve the repeatability failures;
+stock deployment is functional but full serving correctness remains unqualified.
+
+Independent Mac review verifies both-rank startup receipts. Each GPU allocates
+**87.157 GiB** after drafter, KV and graphs (87.568 GiB reserved). Expert-scale
+storage falls from 4.4297 GiB to 1.1104 GiB per GPU; embedding packing saves
+0.1746 / 0.1748 GiB. Subtracting the reported 0.02344 GiB expert workspace gives
+**3.47044 / 3.47069 GiB**, or **6.94113 GiB across TP2**, of resident tensor
+storage saved by the current lossless packing. This is byte accounting, not a
+matched total-allocator or production delta. The target head stays dense.
+The separate, lossy KDA conversion lowers allocation by 2.10890 GiB per rank
+during loading; do not add these observations to historical production gains.
+The earlier 14.877 GiB production difference is not a fresh result for this recipe.
+
+V6/V7 archive: **46 payloads, 213,780 bytes**, independently SHA-verified on Mac
+and Spark2; SHA256
+`79ab686e11884feb2aa4ab65ec93cd62038f78ad4807c0733227a9ef4c4a5bb8`.
+Local archive and review: `out/glm53-package-v1/stock-trials-v6-v7-evidence.tar.gz`
+and `stock-trials-v6-v7-independent-review.json`. Both restoration identities,
+all packed-scale byte checks, dense-head policy and the 9,216 prefix-hit delta
+are independently checked. No speed, KL or 32k/128k result is claimed.
+
+**21 October 2026, 16:43 UTC: V7 confirms real prefix reuse; identity gate fails.**
+The corrected 12,449-token fixture completes three 64-token greedy requests.
+Prefix-hit counter delta is **9,216 tokens**; API `prompt_tokens_details` remains
+null and is now handled correctly. The prompt coverage and observed-reuse checks
+pass. Both cold-versus-warm and warm-versus-warm message identity fail, so the
+combined smoke result is **failed**, not a qualified prefix-correctness result.
+V6 also differed without any reusable prefix. This does not isolate compression,
+prefix caching, sparse-MLA ordering, mHC or Stream-K as the cause on this stock image.
+No KL was measured in these serving smokes, and output differences alone do not
+establish quality degradation.
+
+Stock v0.32 plus the plugin now demonstrably starts, captures graphs and serves
+at the requested 500k / 32 slots / 6 GiB / prefix-on settings. Keep the native
+Triton drafter-backend setting explicit in the recipe. The capacity blocker is
+resolved; stop allocator retries. Numerical repeatability is the remaining startup
+qualification blocker. Next diagnostic: fixed-token replay with speculation off,
+matched batches and compressed/uncompressed consumers under the same CT MXFP8
+weights, then trace the first differing activation. Keep the existing quality
+gates and retain both control failures before any timing/GSM8K comparison.
+
+V7 is restoring exact production under its watchdog. No further GPU experiment
+is queued. Check its controller until `failed_restored` and authenticated 500k
+production health are verified. All V6/V7 evidence will be retained and copied
+with both-rank startup memory receipts; 32k/128k probes and benchmark remain undone.
+
 **21 October 2026, 16:37 UTC: corrected V7 prefix check launched.**
 V6's exact production restoration is verified at 16:34:17 UTC. V7 uses the same
 v8 images and all serving settings, changing only the test client and frozen

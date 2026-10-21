@@ -6,6 +6,16 @@ vLLM the candidate's default runtime. Consequently this is a comparison of two
 complete deployments, not a compression-only experiment or an identical-runtime
 comparison. Earlier gains must not be added to its results.
 
+**Startup evidence, 21 October:** V6/V7 reach API readiness with the requested
+capacity and native Triton draft attention. V7 observes real prefix reuse, but
+cold/warm and warm/warm greedy output identity both fail. V6 also differs without
+a reusable prefix. This blocks the frozen correctness gate; timing, long-context
+probes and GSM8K have not started. Diagnose with matched fixed-input replays;
+do not reinterpret prefix hits as a numerical correctness pass.
+Exact original production was verified restored at 16:44:58 UTC. The candidate's
+87.157 GiB/rank startup allocation has no fresh matched production counterpart;
+6.941 GiB of TP2 packed-tensor savings is a separate byte-accounting observation.
+
 ## Two arms
 
 | Setting | A: unchanged production | B: upstream CT recipe |

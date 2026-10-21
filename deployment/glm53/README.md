@@ -1,25 +1,20 @@
 # GLM CT on upstream vLLM 0.32.0
 
-**21 October, 16:24 UTC: native cache configuration remedy passes CPU planning.**
-The V5 capacity failure is reproduced exactly. Selecting stock vLLM's
-`TRITON_ATTN` drafter backend reduces shared-pool waste and the 500k requirement
-from 13.9561 to 4.6632 GiB per rank, within the unchanged 6 GiB budget.
-This is an allocation calculation; GPU startup, prefix reuse and final memory
-remain unqualified. A bounded startup retry is being prepared. Production is
-running. Earlier V5 failure and restoration evidence below remains retained.
-
 This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
-The extension still wraps version-pinned internal APIs; it is not an unmodified
-`vllm serve` invocation without a plugin.
+The extension wraps version-pinned internal APIs and requires the verified bundle.
 
-**Status: experimental; the requested 500k/6-GiB capacity profile is blocked.**
-Installation, asset integrity, CLI and synthetic GPU checks pass on both Sparks.
-The full model clears its initial profiling forward, but the stock cache planner
-requires 13.96 GiB per rank versus 5.97 GiB usable from the configured 6 GiB.
-Serving, prefix-cache correctness and final memory are still unqualified. Follow the
-[current handoff](../../docs/GLM53_HANDOFF.md) for retained GPU results. Successful
-`doctor` output alone does not qualify model output, speed or long context.
+**Status, 21 October 2026: GPU startup and generation work; qualification is incomplete.**
+V6 starts at 500k context with 32 slots, 6 GiB KV per rank, a 6,919-token prefill
+budget, prefix caching enabled and a dense target head. It uses native
+`TRITON_ATTN` draft attention to avoid the default backend's small-page cache waste.
+Actual capacity is 640,287 tokens; startup allocation is 87.157 GiB per rank after
+model, drafter, KV and graphs. This is not a new saving versus production measurement.
+The corrected 12,449-token V7 smoke confirms real prefix reuse (9,216 hit tokens),
+but greedy messages differ cold-to-warm and warm-to-warm. The combined correctness
+gate fails; V6 also differs without a reusable prefix. Fixed-input numerical tracing
+is required before timing or quality claims. No 32k/128k probe has run.
+[Current handoff and restoration status](../../docs/GLM53_HANDOFF.md).
 
 ## Supported profile
 
@@ -78,10 +73,9 @@ docker run --rm --gpus all --network none \
 
 ## Launch on both nodes
 
-The following retains the explicit **500k capacity qualification profile** and
-reproduces the current cache-planner rejection; it is not a working serving recipe
-yet. Do not silently lower context or disable prefix caching to label it qualified.
-The planned 32k/128k probes remain required before replacing production.
+The following reproduces the **500k profile that reaches API readiness in V6**.
+Prefix correctness, output repeatability, the 32k/128k probes and the matched
+performance/quality comparison remain required before replacing production.
 
 Run on node 1 and then node 0, setting `GLM_NODE_RANK` to 1 and 0 respectively.
 Use node 0's reachable private address for `GLM_MASTER_ADDR`, and each node's own
@@ -117,6 +111,8 @@ docker run --rm --gpus all --network host --ipc host \
   --max-model-len 500000 --max-num-seqs 32 \
   --max-num-batched-tokens 6919 --kv-cache-gib 6 \
   --gpu-memory-utilization 0.85 --block-size 2304 \
+  --draft-attention-backend TRITON_ATTN \
+  --load-format runai_streamer --loader-memory-mib 3072 --loader-concurrency 8 \
   --prefix-caching --vocab-mode embedding \
   --graph-sizes 1 2 4 6 8 12 16 18 24 32
 ```
@@ -130,7 +126,7 @@ Target and drafter KV use native `fp8_e4m3` settings. The 0.85 reservation fract
 matches production; the explicit 6 GiB KV budget remains independent of that
 fraction. FlashInfer autotuning is disabled, matching the baseline configuration.
 
-An optional native streaming loader is under full-model qualification:
+The example explicitly uses the tested native streaming loader:
 `--load-format runai_streamer --loader-memory-mib 3072 --loader-concurrency 8`.
 This exact 3 GiB buffer passes CPU byte checks on three complete representative
 shards and loads the full target/drafter in the latest trials. Rank-0 logged model
@@ -149,6 +145,13 @@ selected vocabulary consumers. They record actual allocated/reserved memory
 following drafter, cache and graph initialization. Use those measurements for the
 new recipe; the earlier 14.877 GiB saving against ModelOpt is not a measurement of
 this dense-head, upstream-vLLM deployment.
+
+V6/V7 receipts account for **3.47044 / 3.47069 GiB per rank** of lossless
+scale/embedding storage savings after the reported expert workspace, **6.94113 GiB
+across TP2**. These are resident tensor bytes, not a matched total CUDA allocation
+comparison. The lossy KDA conversion separately reduces allocation by 2.10890 GiB
+per rank during loading. Neither observation is a new saving-versus-production
+measurement. Original 500k production was verified restored at 16:44:58 UTC.
 
 ## Qualification and release
 

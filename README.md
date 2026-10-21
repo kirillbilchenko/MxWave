@@ -1,24 +1,26 @@
 # MxWave
 
-**21 October, 16:24 UTC: native cache configuration remedy passes CPU planning.**
-The V5 capacity failure is reproduced exactly. Selecting stock vLLM's
-`TRITON_ATTN` drafter backend reduces shared-pool waste and the 500k requirement
-from 13.9561 to 4.6632 GiB per rank, within the unchanged 6 GiB budget.
-This is an allocation calculation; GPU startup, prefix reuse and final memory
-remain unqualified. A bounded startup retry is being prepared. Production is
-running. Earlier V5 failure and restoration evidence below remains retained.
+**GLM stock-vLLM checkpoint, 21 October 2026.** The official vLLM 0.32.0 image
+plus the installed MxWave plugin now reaches API readiness and generates responses
+at 500k context / 32 slots / 6 GiB KV per GPU / prefix caching on. Selecting native
+Triton draft attention resolves the cache-capacity blocker without changing vLLM
+source. Actual capacity: 640,287 tokens; allocated startup memory: 87.157 GiB per
+rank including the drafter, KV and graphs. A fresh matched memory-saving delta has
+not been measured.
 
-**GLM packaging checkpoint, 21 October 2026, 15:26 UTC.** The default deployment
-target is the official vLLM 0.32.0 image plus an installed MxWave plugin. Both-node
-CPU and all synthetic GPU checks pass; both full models/drafters load and the
-initial profiling forward completes. **The requested 500k/6-GiB-KV profile fails
-the stock cache planner: 13.96 GiB required per rank, 5.97 GiB usable.** No settings
-were silently reduced. Exact production restored at 15:26:07 UTC; serving,
-prefix reuse and final memory remain unqualified. Our bounded padding and the
-upstream full-K specialization give identical bits in all 64 retained component
-comparisons, without a consistent measured speed advantage for full-K.
-Local checks pass (1,083 tests / 1 skipped, Ruff, strict core mypy).
-[Full handoff, memory scope, artifacts and remaining checks](docs/GLM53_HANDOFF.md).
+Current lossless scale/embedding storage saves **6.941 GiB across TP2**, after
+the reported expert workspace, according to both-rank byte receipts. This excludes
+the separate lossy MXFP8 KDA conversion and is not a matched production allocation
+delta. Exact original 500k production is restored at **16:44:58 UTC**; V6/V7
+evidence is independently verified on Mac and backed up with hashes on Spark2.
+
+**Serving qualification remains incomplete.** The corrected 12,449-token V7
+check observes 9,216 prefix-hit tokens, confirming actual reuse, but repeated greedy
+messages differ both cold-to-warm and warm-to-warm. V6 also differs without a
+reusable prefix. The identity gate therefore fails; no KL, stock speed or long-context
+pass is claimed. The capacity fix is complete; fixed-input numerical tracing is next.
+The [handoff](docs/GLM53_HANDOFF.md) retains failures and restoration status.
+Local checks pass: 1,085 tests / 1 skipped, Ruff and strict core mypy.
 
 **21 October 2026: consolidated GLM outcome and deployment target.**
 Lossless compression is verified to save **9.367 GiB across TP2 (5.33%)** on
