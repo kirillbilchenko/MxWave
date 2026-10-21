@@ -213,6 +213,16 @@ def prepare(
     for module in ("drafter_capture_pairing", "drafter_incremental_export", "drafter_feature_sequence",
                    "audit_drafter_feature_export_numpy", "drafter_fp8_roundtrip"):
         shutil.copyfile(Path(__file__).with_name(module + ".py"), package / (module + ".py"))
+    path = output / "trial_boot.py"
+    text = path.read_text()
+    anchor = '        import verify_capture_tokenizer\n'
+    if text.count(anchor) != 1:
+        raise ValueError("Missing CPU preflight insertion point")
+    path.write_text(text.replace(anchor, (
+        '        sys.path.insert(0, "/trial/export_lib")\n'
+        '        from integrations.glm53_mxfp4.drafter_incremental_export import export_chunk\n'
+        '        assert callable(export_chunk)\n'
+    ) + anchor))
     protocol_path = Path("benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/"
                          "drafter-context-pilot-v3-protocol.json")
     protocol = json.loads(protocol_path.read_bytes())

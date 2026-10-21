@@ -24,6 +24,28 @@ now derives source ports/revision from the passing smoke instead of assuming v3.
 Incremental exports explicitly use 0644 for host readers; accepted directories
 are created by the host before root-owned container writes. A new verifier binds
 both installed ordering policies and source hashes to the prior qualification.
+
+**21 October 2026, 03:31 UTC: smoke GPU run launched after both CPU preflights pass.**
+Controller launcher PID 3565172; original production is temporarily paused under
+its restoration watchdog. Source checkpoint `d943a89`, bundle SHA
+`ed6ede6741409d7276659ead5253840ad9ecec308e47d38fbdd05144067d38bc`,
+verified in Spark2's Git backup. Captured results are pending.
+
+**21 October 2026, 03:39 UTC: all 12 smoke requests complete; both repeat controls pass.**
+The 3,973-token train and 2,248-token validation prompts have identical
+before/capture/after output tokens and speculative counters. All eight prompts
+are captured. Original production restoration is in progress; archive retention,
+paired feature export and independent NumPy audit remain pending.
+
+The full continuation is now implemented and locally tested. It waits for the
+frozen full-capture plan to finish, restore original production and publish
+identical verified manifests on both Sparks. Only then does it transfer accepted
+features to Mac, verify every payload against the frozen 4,000/200 corpus, and
+run the frozen CPU trainer. It conditionally exports only an offline-selected
+`fc.weight` into a copy of the original native checkpoint and backs up results
+to Spark2. It never switches serving or opens the sealed test. Tests reject
+failed captures/finalization, changed plans and missing restoration before any
+transfer or training subprocess. Full capture/training has not started.
 <!-- CORRECTED_CAPTURE_END -->
 
 <!-- LONG_DECODE_BEGIN -->

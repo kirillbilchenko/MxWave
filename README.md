@@ -1,10 +1,10 @@
 # MxWave
 
-**21 October 2026, 03:30 UTC: continuing with the corrected eight-prompt capture smoke.**
-The frozen v4 plan retains both verified ordering fixes and the original prompts;
-CPU preflight precedes the GPU run. Passing rank exports and independent NumPy
-checks are required before full 4,000/200 capture/training. Production is running;
-sealed test stays closed. [Current handoff](docs/GLM53_HANDOFF.md).
+**21 October 2026, 03:39 UTC: the eight-prompt smoke completes all 12 requests.**
+Both longest-prompt controls pass exact output/counter repeats under the verified
+ordering fixes. Production is restoring; evidence retention and independent
+accepted-feature checks remain pending. Full capture/training has not started.
+[Current handoff](docs/GLM53_HANDOFF.md).
 
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**
 All six requests match in tokens/counters; all 12 capture comparisons have exact
