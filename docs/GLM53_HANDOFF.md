@@ -1,5 +1,35 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 16:56:51 UTC: stock numerical diagnostic launched.**
+Both CPU preflights pass; detached controller PID 1675071 owns `stock-numerical-v1`.
+Plan SHA256 `9b0b7aef0d5f0ee59fb4f9e4d9481c8a694b74d326b9bd22a749244da2727419`.
+Production is temporarily paused under the independent 1,500-second watchdog.
+Both ranks use isolated copies of V7 compilation caches; this is not a cold-boot
+timing trial. Check its `controller.json` for actual availability and restoration.
+No promotion or final benchmark is authorized by a diagnostic pass alone.
+
+**21 October 2026, 16:56 UTC: user authorizes continued stock qualification.**
+Preparing `stock-numerical-v1`: the same v8 stock image, same verified MXFP8 KDA
+weights, packed scales/embedding, dense head and 500k / 32 slots / 6 GiB / 6,919 /
+prefix-on settings, with speculation explicitly disabled for diagnosis. Frozen
+4,435- and 12,449-token inputs get full-vocabulary next-token distributions under
+cold/cold, warm/warm and cold/warm controls. Temporary read-only module hooks hash
+complete activations in layers 0–5 and last rows in later layers; traced/untraced
+controls expose observation effects. This is not a speed or final quality run.
+Local checks: 1,087 tests / 1 skipped, Ruff and strict core mypy pass. Production
+remains running during CPU preparation; GPU launch must have the independent
+1,500-second watchdog and exact-container restoration.
+
+Memory clarification requested by the user: earlier matched ModelOpt allocated
+185.720 GiB across TP2 and CT MXFP8 170.844 GiB, a 14.877 GiB total difference.
+Current stock CT allocates 174.314 GiB, about 3.47 GiB more than that earlier CT
+run, but the runtime, drafter, head policy and capacity settings differ together.
+No attribution to vLLM alone is established. The current 6.941 GiB figure counts
+only packed-scale/embedding resident bytes, not that total deployment advantage.
+Unchanged production has no configured development RPC/worker memory reporter;
+a comparable fresh Torch-allocation baseline remains missing. Do not subtract
+RSS, driver usage or model-load-only bytes from the candidate startup allocation.
+
 **21 October 2026, 16:48 UTC: V7 closed, exact production restored; memory benefit retained.**
 Original container identities/configuration hashes and the authenticated 500k endpoint
 are verified restored at **16:44:58 UTC** (`failed_restored`, service not paused).
