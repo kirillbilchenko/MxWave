@@ -40,7 +40,8 @@ def prepare(root: Path) -> None:
     prepared = {
         "status": "passed", "live": original["live"], "originals": original["originals"],
         "launches": {"replay": [{"rank": 0, "name": name, "argv": argv}]},
-        "cpu_checks": {"checkpoint_tensors": records, "frozen_bindings": 4,
+        "cpu_checks": {"checkpoint_tensors": records,
+                       "frozen_bindings": len(plan["frozen_bindings"]),
                        "source_compiled": True},
         "plan_sha256": digest(root / "plan.json"),
     }

@@ -13,7 +13,7 @@ from pathlib import Path
 def stage(
     source: Path, output: Path, variants: tuple[str, ...] = ("raw", "async"), *,
     affine_only: bool = False, shared_stage: bool = False, nibble_stage: bool = False,
-    static_nibble_stage: bool = False,
+    static_nibble_stage: bool = False, full_k: bool = False,
 ) -> dict[str, object]:
     """Hash-check Apache-licensed sources and adapt only scale loading/host plumbing."""
     if (not variants or len(set(variants)) != len(variants)
@@ -48,6 +48,15 @@ def stage(
         if template.count(old) != count:
             raise ValueError(f"Unexpected grouped kernel patch site: {old}")
         template = template.replace(old, new)
+
+    if full_k:
+        # Adapt PR #46639's full-K tail policy, at a pinned revision recorded
+        # below. This isolated build deliberately leaves the serving default alone.
+        # Callers must pin row-block and thread configuration independently.
+        replace("    if (part2_mn_tiles * 3 <= gridDim.x) part2_mn_tiles += gridDim.x;",
+                "    // Full-K policy: do not grow the tail into a split-K wave.")
+        replace("  int iters = div_ceil(k_tiles * part2_mn_tiles, gridDim.x);",
+                "  int iters = k_tiles;  // Full K per tail block (vLLM PR #46639).")
 
     replace('#include "core/scalar_type.hpp"', '#include "core/scalar_type.hpp"\n'
             '#include "moe_scale_decode.cuh"')
@@ -248,6 +257,15 @@ namespace MARLIN_NAMESPACE_NAME {
 __global__ void MarlinDefault(MARLIN_KERNEL_PARAMS) {}
 using MarlinFuncPtr = void (*)(MARLIN_KERNEL_PARAMS);
 """ + original[start:end] + "\n}\n" + (package / "moe_bridge.cu").read_text()
+    if full_k:
+        site = '    int sms = 0;\n    cudaDeviceGetAttribute(&sms, cudaDevAttrMultiProcessorCount, device);'
+        if host.count(site) != 1:
+            raise ValueError("Full-K explicit launch guard patch site changed")
+        host = host.replace(site, '    if (tile_k <= 0 || tile_n <= 0 || blocks_per_sm <= 0)\n'
+                            '      throw std::runtime_error("Full-K experiment requires explicit launch configuration");\n'
+                            + site)
+    host += ('\nMXWAVE_EXPORT int mxwave_moe_full_k() { return '
+             + str(int(full_k)) + '; }\n')
     (staged / "host.cu").write_text(host)
     (output / "CMakeLists.txt").write_text("""cmake_minimum_required(VERSION 3.26)
 project(mxwave_marlin_moe_scales LANGUAGES CXX CUDA)
@@ -327,6 +345,13 @@ endforeach()
         "sparse_shared_stage": shared_stage,
         "sparse_nibble_stage": nibble_stage,
         "sparse_static_nibble_stage": static_nibble_stage,
+        "full_k": full_k,
+        "full_k_reference": ({
+            "url": "https://github.com/vllm-project/vllm/pull/46639",
+            "revision": "21abea6c75c6b36c278c1ae87d50a2f4a57a0e40",
+            "license": "Apache-2.0",
+            "scope": "Full-K tail partition only; fixed row blocks/threads are caller-owned.",
+        } if full_k else None),
         "staged_files_sha256": {
             str(p.relative_to(output)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(staged.rglob("*")) if p.is_file()
@@ -343,6 +368,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--torch-include", type=Path)
     parser.add_argument("--stage-only", action="store_true")
+    parser.add_argument("--full-k", action="store_true",
+                        help="Isolated PR #46639 tail policy; requires explicit launch tiles")
     parser.add_argument("--affine-only", action="store_true")
     parser.add_argument("--shared-stage", action="store_true",
                         help="Expand palette records once into the existing U8 shared-memory slots")
@@ -357,7 +384,8 @@ def main() -> None:
     args = parser.parse_args()
     manifest = stage(args.source, args.output, tuple(args.variants),
                      affine_only=args.affine_only, shared_stage=args.shared_stage,
-                     nibble_stage=args.nibble_stage, static_nibble_stage=args.static_nibble_stage)
+                     nibble_stage=args.nibble_stage, static_nibble_stage=args.static_nibble_stage,
+                     full_k=args.full_k)
     if not args.stage_only:
         if args.torch_include is None:
             parser.error("Build requires --torch-include")

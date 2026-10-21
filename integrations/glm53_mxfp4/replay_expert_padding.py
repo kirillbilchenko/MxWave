@@ -44,6 +44,7 @@ def bind_pipeline(
     values: list[dict[str, Any]], parameters: list[dict[str, Any]],
     weights: list[Any], scales: list[Any], compressed: list[Any],
     raw: Any, packed: Any, implementation: str, policy: str,
+    full_k_raw: Any = None, full_k_packed: Any = None,
 ) -> tuple[Any, Any, dict[str, Any]]:
     """Bind native/padded up, activation, down and reduction with owned persistent buffers."""
     import torch
@@ -72,7 +73,7 @@ def bind_pipeline(
         def pad() -> None:
             pass
         row = {"tile": list(tile), "projection": i}
-        if policy != "native":
+        if policy in ("pad_default", "pad_one"):
             quantum = block_quantum(n, tile[1], sms, tile[2])
             updated, pad = bind_padding(routing, m * topk, block, quantum)
             pad()
@@ -80,7 +81,14 @@ def bind_pipeline(
             row["padding"] = verify_padding(routing, updated, block, quantum, m * topk)
             routing = updated
         buf = allocate_buffers(m, n, topk, block, len(routing[0]), x.device)
-        if implementation == "stock":
+        if policy == "full_k":
+            selected = full_k_raw if implementation == "stock" else full_k_packed
+            assert selected is not None and selected.library.mxwave_moe_full_k() == 1
+            operation = selected.bind(inp, w, s if implementation == "stock" else p,
+                                      buf, routing, weights_for_routes, topk, block,
+                                      args["mul_topk_weights"], tile)
+            row["consumer"] = "raw_full_k" if implementation == "stock" else "packed_full_k"
+        elif implementation == "stock":
             kwargs = args | {"b_q_type": scalar_types.float4_e2m1f}
             if policy != "native":
                 kwargs |= {"thread_k": tile[0], "thread_n": tile[1], "blocks_per_sm": tile[2]}
@@ -143,7 +151,9 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
 
     plan = json.loads((root / "plan.json").read_bytes())
     policies = plan["scope"]["policies"]
-    assert policies[0] == "native" and set(policies) <= {"native", "pad_default", "pad_one"}
+    assert policies[0] == "native" and set(policies) <= {
+        "native", "pad_default", "pad_one", "full_k",
+    }
     assert "pad_default" in policies
     cycles = plan["scope"]["timing_interleaved_cycles"]
     replays = plan["scope"]["replays_per_timing"]
@@ -153,6 +163,15 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
         assert digest(frozen / name) == expected
     raw, packed = (NativeMoe(frozen / plan[key]) for key in ("raw_library", "packed_library"))
     assert not raw.compressed and packed.encoding == "sparse_palette" and packed.shared_stage
+    full_k_raw, full_k_packed = None, None
+    if "full_k" in policies:
+        full_k_raw, full_k_packed = (
+            NativeMoe(frozen / plan[key]) for key in ("full_k_raw_library", "full_k_packed_library")
+        )
+        assert not full_k_raw.compressed and full_k_packed.encoding == "sparse_palette"
+        assert full_k_packed.shared_stage
+        assert all(library.library.mxwave_moe_full_k() == 1
+                   for library in (full_k_raw, full_k_packed))
     report: dict[str, Any] = {"status": "running", "started_epoch": time.time(), "ranks": [],
                               "source_sha256": digest(Path(__file__)),
                               "plan_sha256": digest(root / "plan.json"), "telemetry": [],
@@ -181,6 +200,7 @@ def run(root: Path, source: Path, evidence: Path, frozen: Path) -> dict[str, Any
                         launch, owners, meta = bind_pipeline(
                             values, parameters, weights, scales, compressed, raw, packed,
                             implementation, policy,
+                            full_k_raw, full_k_packed,
                         )
                         graph, output, lifetime = capture(launch, owners)
                         activation, _, buffers, *_ = owners

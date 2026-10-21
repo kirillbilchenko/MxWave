@@ -87,6 +87,15 @@ Kolibri GGUF compatibility and external runtime:
 
 Grouped Marlin MoE scale experiment:
 
+- The optional `build_moe.py --full-k` component experiment adapts the two
+  full-K tail-partition changes from vLLM PR
+  [#46639](https://github.com/vllm-project/vllm/pull/46639), revision
+  `21abea6c75c6b36c278c1ae87d50a2f4a57a0e40`, under its Apache-2.0 grant.
+  It specializes the policy at build time and requires explicit launch tiles;
+  it does not incorporate the whole PR or change the packaged serving default.
+  The existing staged upstream license accompanies the build. Our captured
+  GLM/DFlash 440/448 fixture demonstrates an end-to-end consequence of the
+  previously reported Stream-K issue, not discovery of that general mechanism.
 - `integrations/glm53_mxfp4/build_moe.py` stages and adapts the Apache-2.0
   vLLM grouped Marlin kernel and host dispatch at revision
   `db9527a46873454610df6dbedf79a36d6bf1a7f6`. Exact source hashes and the
