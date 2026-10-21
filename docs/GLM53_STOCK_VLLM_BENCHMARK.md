@@ -1,6 +1,8 @@
 # Prospective stock-vLLM deployment comparison
 
-Prepared 21 October 2026. **GPU comparison not yet started.** The user now requests
+Launched 21 October 2026, 18:46 UTC. **Comparison is running; scores are pending.**
+Controller 2545114 / watchdog 2545780; remote root `deployment-compare-v1`.
+The user now requests
 concrete outcomes and full GSM8K without further tuning beforehand. Collection is
 diagnostic while numerical/output-identity gates remain failed; it cannot qualify
 or promote the candidate. The user's latest requirement makes upstream

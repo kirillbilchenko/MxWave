@@ -1,5 +1,24 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 18:46 UTC: deployment comparison launched on Spark.**
+Root `glm53-package-v1/deployment-compare-v1`, controller **2545114**, independent
+watchdog **2545780**. Frozen plan SHA256
+`e0dd47afd4ed10062892fda81dba0c28138194fe00a012c6d4d06bbc993f3db6`;
+source commit **a166019**. Both no-GPU stock preflights pass. The first stage is
+unchanged production, `timing-A-0`. Twelve A/B timing blocks precede full GSM8K
+on both targets with speculation disabled. All 1,319 questions per arm are pinned;
+no answer-based selection, retries, gate changes or promotion. The ten-hour lease
+is a restoration limit, not a predicted duration. Work continues without the laptop.
+
+Both production quality clones are prepared but stopped. Their original image,
+mounts, overlays, environment and capacity are verified; only speculation and
+private ports differ, plus Docker's equivalent default OOM flag normalization.
+The watchdog also terminates an orphaned benchmark client before restoring the
+original service. Local Ruff, core mypy and the full suite pass; the added collector,
+grading and orphan-client checks pass. The unrelated investigation-proposals document
+is untouched. Consult `controller.json` and per-stage `progress.json` for live status;
+no completed timing or GSM8K score is claimed at launch.
+
 **21 October 2026, 18:40 UTC: bounded comparison and full GSM8K preparation.**
 Latest user priority is a usable stock-vLLM recipe and concrete end-to-end results,
 including **all 1,319 GSM8K questions on both production and CT, speculation off**.
