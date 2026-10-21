@@ -120,8 +120,12 @@ r={{'status':'verified','payloads':len(found),'archive_sha256':{archive_sha!r},'
     return report
 
 
-def prepare(capture: Path, output: Path, inputs: dict[str, Path]) -> dict[str, Any]:
+def prepare(
+    capture: Path, output: Path, inputs: dict[str, Path], *, cpu_threads: int = 4,
+) -> dict[str, Any]:
     """Freeze the trainer and paths after the complete capture plan has been prepared."""
+    if cpu_threads < 1:
+        raise ValueError("CPU thread count must be positive")
     manifest = json.loads((capture / "source-manifest.json").read_bytes())
     if not all(digest(capture / name) == sha for name, sha in manifest.items()):
         raise ValueError("Capture sources changed")
@@ -146,6 +150,7 @@ def prepare(capture: Path, output: Path, inputs: dict[str, Path]) -> dict[str, A
         "plan_sha256": digest(output / "plan.json"),
         "protocol_sha256": digest(output / "training-protocol.json"),
         "wait_seconds": plan["outage_seconds"] + 1800,
+        "cpu_threads": cpu_threads,
         "inputs": {key: str(path.resolve(strict=True)) for key, path in inputs.items()},
         "input_metadata_sha256": {
             str(path.resolve()): digest(path) for path in (
@@ -170,6 +175,9 @@ def run(config_path: Path) -> None:
     if not all(digest(root / name) == sha for name, sha in sources.items()):
         raise ValueError("Frozen continuation sources changed")
     config = json.loads(config_path.read_bytes())
+    cpu_threads = config.get("cpu_threads", 4)
+    if not isinstance(cpu_threads, int) or cpu_threads < 1:
+        raise ValueError("CPU thread count must be a positive integer")
     plan = json.loads((root / "plan.json").read_bytes())
     state_path = root / "continuation-status.json"
     if state_path.exists():
@@ -265,15 +273,17 @@ with tarfile.open(fileobj=sys.stdout.buffer,mode='w|') as t:
         env = dict(os.environ, PYTHONPATH=inputs["deps"])
         argv = [sys.executable, "-u", "-m", "integrations.glm53_mxfp4.train_drafter_context_pilot",
                 "--dataset", str(dataset), "--protocol", str(root / "training-protocol.json"),
-                "--output", str(root / "run")]
+                "--output", str(root / "run"), "--cpu-threads", str(cpu_threads)]
         for name in ("checkpoint", "checkout", "weights"):
             argv += ["--" + name, inputs[name]]
-        update("training", local_dataset=receipt)
+        update("training", local_dataset=receipt, cpu_threads=cpu_threads)
         with (root / "training.log").open("xb") as log:
             subprocess.run(argv, cwd=root / "frozen", env=env, stdout=log,
                            stderr=subprocess.STDOUT, check=True)
         report = json.loads((root / "run/report.json").read_bytes())
-        if report["status"] != "complete" or report["protocol_sha256"] != config["protocol_sha256"]:
+        if (report["status"] != "complete"
+                or report["protocol_sha256"] != config["protocol_sha256"]
+                or report.get("cpu_threads", 4) != cpu_threads):
             raise ValueError("Training did not complete the frozen protocol")
         if report["offline_screen_pass"]:
             update("exporting_selected_candidate", selected_step=report["selected"]["step"])
@@ -299,6 +309,7 @@ def main() -> None:
     prepare_parser = sub.add_parser("prepare")
     for name in ("capture", "output", "checkpoint", "checkout", "weights", "native", "deps"):
         prepare_parser.add_argument("--" + name, type=Path, required=True)
+    prepare_parser.add_argument("--cpu-threads", type=int, default=4)
     sub.add_parser("run").add_argument("--config", type=Path, required=True)
     args = parser.parse_args()
     if args.action == "run":
@@ -306,7 +317,8 @@ def main() -> None:
     else:
         inputs = {name: getattr(args, name) for name in
                   ("checkpoint", "checkout", "weights", "native", "deps")}
-        print(json.dumps(prepare(args.capture, args.output, inputs), indent=2))
+        print(json.dumps(prepare(args.capture, args.output, inputs, cpu_threads=args.cpu_threads),
+                         indent=2))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,58 @@
+"""Verify the complete 12-thread replay against the retained four-thread run."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+
+
+def digest(path: Path) -> str:
+    """Hash retained bytes independently of the trainer."""
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+root = Path("out/drafter-throughput-audit-v1")
+reference = Path("out/drafter-bounded-loader-replay-v1/run")
+candidate = root / "replay-12"
+a = json.loads((reference / "report.json").read_bytes())
+b = json.loads((candidate / "report.json").read_bytes())
+assert a["status"] == b["status"] == "complete" and b["cpu_threads"] == 12
+assert len(a["steps"]) == len(b["steps"]) == 32
+assert len(a["evaluations"]) == len(b["evaluations"]) == 4
+assert a["protocol_sha256"] == b["protocol_sha256"]
+assert b["trainer_sha256"] == digest(
+    Path("integrations/glm53_mxfp4/train_drafter_context_pilot.py")
+)
+for key in (
+    "inputs", "baseline", "baseline_repeat_exact", "baseline_vs_original_derivatives_exact",
+    "isolated_explicit_vs_inference_mask_bitwise_equal", "fp32_derivative_linear_modules",
+    "execution_policy", "original_drafter_parameters_unchanged", "selected",
+    "offline_screen_pass", "native_reload_performed", "speed_gain_proven",
+    "production_changed", "sealed_test_opened", "evaluations",
+):
+    assert a[key] == b[key], key
+for first, second in zip(a["steps"], b["steps"], strict=True):
+    assert {k: v for k, v in first.items() if k != "seconds"} == {
+        k: v for k, v in second.items() if k != "seconds"
+    }, first["step"]
+checkpoints = []
+for first, second in zip(a["evaluations"], b["evaluations"], strict=True):
+    assert digest(reference / first["path"]) == digest(candidate / second["path"])
+    assert digest(candidate / second["path"]) == second["sha256"]
+    checkpoints.append({"step": second["step"], "sha256": second["sha256"]})
+report = {
+    "status": "verified", "cpu_threads": 12, "reference_cpu_threads": 4,
+    "exact_updates": 32, "exact_checkpoints": checkpoints,
+    "baseline_and_all_proposals_exact": True, "training_losses_and_gradient_norms_exact": True,
+    "saved_checkpoint_bytes_exact": True, "validation_and_selected_checkpoint_exact": True,
+    "reference_report_sha256": digest(reference / "report.json"),
+    "replay_report_sha256": digest(candidate / "report.json"),
+    "trainer_sha256": b["trainer_sha256"], "reviewer_sha256": digest(Path(__file__)),
+    "protocol_sha256": b["protocol_sha256"], "sealed_test_opened": False,
+    "production_changed": False, "elapsed_seconds": b["elapsed_seconds"],
+    "limits": "Retained 32-prompt development replay; full-corpus timing and serving gains unmeasured.",
+}
+(root / "replay-12-comparison.json").write_text(json.dumps(report, indent=2) + "\n")
+print(json.dumps(report, indent=2))

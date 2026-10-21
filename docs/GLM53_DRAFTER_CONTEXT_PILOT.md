@@ -1,5 +1,13 @@
 # CT drafter: verified features and context-projection pilot
 
+**21 October 2026, 05:23 UTC: capture continues without restart; CPU training queued at 12 threads.**
+Latest capture read: 892/4,200 prompts, 13 paired chunks, two passing repeat controls,
+no error. The 12-thread CPU replay preserves all 32 update metrics and four saved
+checkpoints exactly. An interleaved step screen falls from 2.483 to 1.805 seconds;
+full-corpus runtime remains unmeasured. Continuation v2 waits for complete verified
+capture and production restoration. Estimated CPU training is now 3–4 hours;
+serving acceptance/speed remain unqualified. [Current handoff](GLM53_HANDOFF.md).
+
 **21 October 2026, 04:53 UTC: full capture continues; 576 prompts independently verified.**
 Nine completed batches have identical accepted payloads on both GPUs; NumPy
 checks cover 7.05 billion BF16 elements with zero differences. Both repeat controls

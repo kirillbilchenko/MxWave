@@ -1,6 +1,54 @@
 # GLM compression experiment handoff
 
 <!-- FULL_CAPTURE_PROGRESS_BEGIN -->
+**21 October 2026, 05:23 UTC: capture continues unchanged; queued CPU training accelerated.**
+The original controller PID 3702964 and client PID 3763665 remain running under
+the original capture plan. Latest read: **892 / 4,200 prompts**, 13 paired chunks,
+both completed repeat controls exact, no error. Production remains paused under
+its original watchdog. No capture requests or accepted data were restarted.
+
+At the user's request, an isolated Mac audit tested 4/8/12 CPU threads on the
+retained training step. Interleaved medians are **2.483 / 2.066 / 1.805 seconds**;
+all losses, proposals, clipped gradients, FP32 masters and BF16 export hashes
+match. The 12-thread full 32-update replay also passes: baseline, all update
+metrics, all validation/selection results and all four checkpoint files are exact.
+The replay completes in 108.116 seconds. This is a CPU execution audit, not a
+serving-speed result; full-corpus training time remains unmeasured.
+
+The idle Mac continuation was replaced only after this replay and checks passed.
+Active continuation: `out/drafter-full-training-v1/continuation-v2/`, **PID 80216**,
+keep-awake **PID 80217**, frozen at **12 CPU threads**. It retains the identical
+capture plan and training protocol hashes and all completion/restoration gates.
+The previous launcher PID 19984 is stopped; its directory and supersession receipt
+remain. The new job is `waiting_for_verified_capture`; no optimizer updates have
+started. Expect roughly **3–4 hours CPU training** instead of 4–5 if the observed
+gain transfers to the full corpus, with about **5.5–6.5 hours capture remaining**.
+
+Capture timing audit: mean request duration **3.360 seconds** plus **two seconds
+of fixed client waits per request**, followed by incremental export/audit overhead.
+The fixed waits are an optimization opportunity, but the current client has no
+qualified resume path and is left running. No concurrency or numerical policy
+changes are applied. Source files, timing/replay reviews and the replacement
+launch receipt are retained under `diagnostics-v1/drafter-cpu-threads-v1-*` and
+`drafter-full-capture-v1-throughput-review.json`. Ruff, strict mypy and the full
+pytest suite pass (pytest uses the worktree on `PYTHONPATH`). Sealed test closed.
+
+**21 October 2026, 05:16 UTC: 820 / 4,200 prompts captured (19.5%); training updates have not started.**
+The live controller remains `measuring_ct`, with no reported error. Both completed
+repeat controls pass exact tokens and speculative counters. Twelve paired receipts
+now cover the first 768 prompts; this status read does not replace the independent
+576-prompt host verification recorded below. The local CPU continuation remains
+`waiting_for_verified_capture`; production is still paused under the restoration
+watchdog and must restore before CPU training starts. Sealed test remains closed.
+
+Observed capture pace is approximately 10 prompts/minute, including periodic export
+and audit. Estimate **5.5–6.5 hours more capture**, then transfer/final verification
+and **4–5 hours CPU training**: roughly **10–12 hours to the first trained candidate**
+if the current pace holds. This is an estimate, not a measured training runtime;
+native reload, acceptance and serving-speed qualification remain subsequent gates.
+Live snapshot: `out/drafter-full-capture-v1/runtime/progress-live-20261021-0515.json`
+(actual observation 05:16:26 UTC).
+
 **21 October 2026, 04:53 UTC: capture continues; nine chunks / 576 prompts independently verified on both Sparks.**
 Both nodes retain identical accepted exports: 7,052,377,021 bytes per node and
 172,101 feature rows. Independent NumPy audits cover **7,049,256,960 BF16 elements

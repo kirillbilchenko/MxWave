@@ -264,14 +264,17 @@ class Pilot:
 
 def train(
     dataset: Path, checkpoint: Path, checkout: Path, weights: Path,
-    protocol_path: Path, output: Path,
+    protocol_path: Path, output: Path, *, cpu_threads: int = 4,
 ) -> dict[str, Any]:
     """Run at most one seeded pass with the frozen protocol's budget and preserve every result."""
+    if cpu_threads < 1:
+        raise ValueError("CPU thread count must be positive")
     output.mkdir(exist_ok=False)
     protocol = json.loads(protocol_path.read_bytes())
     report: dict[str, Any] = {
         "schema": "mxwave-drafter-context-pilot-v1-result", "status": "initializing",
         "protocol_sha256": digest(protocol_path), "trainer_sha256": digest(Path(__file__)),
+        "cpu_threads": cpu_threads,
         "production_changed": False, "sealed_test_opened": False, "steps": [], "evaluations": [],
     }
     started = time.monotonic()
@@ -288,7 +291,7 @@ def train(
 
     try:
         schedule = TrainingSchedule.from_protocol(protocol)
-        torch.set_num_threads(4)
+        torch.set_num_threads(cpu_threads)
         torch.manual_seed(42)
         pilot = Pilot(dataset, checkpoint, checkout, weights, protocol)
         report["inputs"] = pilot.inputs
@@ -399,8 +402,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("dataset", "checkpoint", "checkout", "weights", "protocol", "output"):
         parser.add_argument(f"--{name}", type=Path, required=True)
+    parser.add_argument("--cpu-threads", type=int, default=4)
     args = parser.parse_args()
-    train(args.dataset, args.checkpoint, args.checkout, args.weights, args.protocol, args.output)
+    train(args.dataset, args.checkpoint, args.checkout, args.weights, args.protocol, args.output,
+          cpu_threads=args.cpu_threads)
 
 
 if __name__ == "__main__":

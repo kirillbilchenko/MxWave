@@ -69,3 +69,22 @@ def test_dataset_manifest_must_bind_the_exact_qualified_capture(tmp_path: Path) 
             "ordering_qualification_review_sha256": "proof"}
     with pytest.raises(ValueError, match="verified corrected capture"):
         continuation.verify_dataset(tmp_path, plan, continuation.digest(path), "expected")
+
+
+@pytest.mark.parametrize("threads", [0, -1, 1.5, "12"])
+def test_invalid_thread_config_cannot_start_a_continuation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, threads: object,
+) -> None:
+    config = tmp_path / "continuation.json"
+    config.write_text(json.dumps({"cpu_threads": threads}))
+    (tmp_path / "continuation-source-manifest.json").write_text(json.dumps({
+        config.name: continuation.digest(config),
+    }))
+
+    def forbidden(*args: Any, **kwargs: Any) -> Any:
+        raise AssertionError("Invalid execution config must not reach remote capture")
+
+    monkeypatch.setattr(continuation, "remote", forbidden)
+    with pytest.raises(ValueError, match="CPU thread count"):
+        continuation.run(config)
+    assert not (tmp_path / "continuation-status.json").exists()

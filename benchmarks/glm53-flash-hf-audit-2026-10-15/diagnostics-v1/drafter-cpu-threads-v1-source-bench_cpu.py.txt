@@ -1,0 +1,104 @@
+"""Time existing CPU training at different thread counts without touching the live run."""
+
+from __future__ import annotations
+
+import gc
+import hashlib
+import json
+import random
+import statistics
+import time
+from pathlib import Path
+
+import torch
+
+from integrations.glm53_mxfp4.train_drafter_context_pilot import Pilot
+
+
+def tensor_sha(value: torch.Tensor) -> str:
+    """Hash the exact contiguous tensor bytes."""
+    return hashlib.sha256(value.detach().contiguous().view(torch.uint8).numpy()).hexdigest()
+
+
+root = Path.cwd()
+output = root / "out/drafter-throughput-audit-v1"
+config = json.loads((root / "out/drafter-full-training-v1/continuation-v1/continuation.json").read_bytes())
+inputs = {key: Path(value) for key, value in config["inputs"].items()}
+protocol = json.loads((root / "out/drafter-bounded-loader-replay-v1/protocol.json").read_bytes())
+torch.set_num_threads(4)
+torch.manual_seed(42)
+pilot = Pilot(
+    root / "out/drafter-feature-capture-v1/verified-features", inputs["checkpoint"],
+    inputs["checkout"], root / "out/drafter-context-pilot-v1/weights", protocol,
+)
+samples = [sample for sample in pilot.samples if sample["split"] == "train"]
+random.Random(42).shuffle(samples)
+sample = samples[0]
+original = pilot.master.detach().clone()
+rows: list[dict[str, object]] = []
+report: dict[str, object] = {
+    "status": "running", "scope": "One retained development prompt; no full-run mutation",
+    "sample": sample["id"], "prompt_tokens": sample["prompt_tokens"],
+    "seed": 42, "sealed_test_opened": False, "trials": rows,
+}
+
+
+def trial(threads: int, measured: bool = True) -> None:
+    """Replay one complete original-weight AdamW update with frozen inputs."""
+    torch.set_num_threads(threads)
+    with torch.no_grad():
+        pilot.master.copy_(original)
+    pilot.master.grad = None
+    optimizer = torch.optim.AdamW([pilot.master], lr=2.5e-6, weight_decay=0)
+    gc.collect()
+    start = time.perf_counter()
+    loss, metrics = pilot.objective(sample)
+    forward = time.perf_counter()
+    loss.backward()
+    backward = time.perf_counter()
+    assert pilot.master.grad is not None and torch.isfinite(pilot.master.grad).all()
+    grad_norm = torch.nn.utils.clip_grad_norm_([pilot.master], 1.0)
+    optimizer.step()
+    finished = time.perf_counter()
+    row = {
+        "threads": threads, "forward_seconds": forward - start,
+        "backward_seconds": backward - forward, "update_seconds": finished - backward,
+        "total_seconds": finished - start, "loss": float(loss.detach()),
+        "metrics": metrics, "gradient_norm": float(grad_norm),
+        "gradient_sha256": tensor_sha(pilot.master.grad),
+        "master_sha256": tensor_sha(pilot.master),
+        "export_sha256": tensor_sha(pilot.master.to(torch.bfloat16)),
+    }
+    if measured:
+        rows.append(row)
+        (output / "cpu-thread-review.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps({k: v for k, v in row.items() if k != "metrics"}), flush=True)
+    del loss, optimizer
+
+
+trial(4, measured=False)
+for count in (4, 8, 4, 12, 4, 8, 4, 12, 4, 8, 4, 12, 4):
+    trial(count)
+reference = rows[0]
+comparison_keys = (
+    "loss", "metrics", "gradient_norm", "gradient_sha256", "master_sha256", "export_sha256",
+)
+report["summary"] = {
+    str(count): {
+        "median_seconds": statistics.median(
+            float(row["total_seconds"]) for row in rows if row["threads"] == count
+        ),
+        "all_replays_exact": all(
+            all(row[key] == reference[key] for key in comparison_keys)
+            for row in rows if row["threads"] == count
+        ),
+        "different_fields": sorted({
+            key for row in rows if row["threads"] == count
+            for key in comparison_keys if row[key] != reference[key]
+        }),
+    }
+    for count in (4, 8, 12)
+}
+report["status"] = "complete"
+(output / "cpu-thread-review.json").write_text(json.dumps(report, indent=2) + "\n")
+print(json.dumps(report["summary"]), flush=True)
