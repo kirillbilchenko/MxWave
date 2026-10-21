@@ -1,5 +1,25 @@
 # GLM compression experiment handoff
 
+**21 October 2026: whole-project assessment and easy vLLM 0.32.0 setup requested.**
+The [consolidated assessment and deployment audit](GLM53_CURRENT_STATE.md) now
+records the measured benefits, failed/unqualified gates and concrete packaging
+work. Lossless compression saves **9.367 GiB total across TP2** on the same CT;
+the separate CT MXFP8 comparison saves **14.877 GiB total versus matched ModelOpt**,
+including format/quantization differences. These figures are not additive.
+MXFP8 KDA removes the traced reconstruction work but remains lossy and fails the
+original 1e-5 KL gate despite the higher observed full-GSM8K score.
+
+Continue with **pretrained Modal FP8, five drafts at C1/C2 and three at C3–C16**;
+training remains stopped. The user now explicitly wants easy deployment on
+upstream vLLM 0.32.0. Documentation/source audit finds upstream GLM DFlash2 support,
+but our existing plugin metadata is only a registration shim; compressed-scale
+and vocabulary consumers, pinned Marlin builds and in-memory KDA conversion still
+need packaging and version qualification. Target upstream vLLM plus one extension
+and a pinned ready image. Do not claim zero-extension compatibility or a completed
+0.32.0 port. No GPU experiment, production switch or training was launched here.
+Production-equivalent serving, stable concurrency and long-context qualification
+remain required. See the linked assessment for the ordered implementation/check plan.
+
 **21 October 2026, 12:49 UTC: training abandoned at user request; original 500k production healthy.**
 CT's selected configuration is **pretrained Modal FP8, five drafts at C1/C2,
 three at C3–C16**. The unmodified checkpoint and config verify on both Sparks;

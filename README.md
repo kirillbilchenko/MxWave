@@ -1,5 +1,19 @@
 # MxWave
 
+**21 October 2026: consolidated GLM outcome and deployment target.**
+Lossless compression is verified to save **9.367 GiB across TP2 (5.33%)** on
+the same CT checkpoint; its no-speculation C1 gain is **11.82–13.28%**, with
+higher concurrency near parity. The separate **lossy MXFP8 KDA** variant removes
+the traced reconstruction work and scores **95.53% versus 94.62%** on full GSM8K,
+while still failing the original 1e-5 KL gate. The selected pretrained Modal FP8
+five-draft profile improves measured C1 development throughput **6.48–7.72%**
+versus seven drafts; these gains are not additive and do not establish a win over
+tuned production. Training is stopped; CT has not replaced the original 500k service.
+
+The next delivery target is **upstream vLLM 0.32.0 plus a packaged compression
+extension and a simple reproducible launch**. Compatibility and clean installation
+are not yet qualified. [Whole-project assessment, evidence and deployment plan](docs/GLM53_CURRENT_STATE.md).
+
 **21 October 2026, 12:49 UTC: user stops adaptation; CT selects pretrained Modal FP8 at five drafts.**
 Original **500k production is restored and healthy**. The CT configuration is
 C1:5 / C2:5 / C3–C16:3, verified on both Sparks; it is selected for the next CT

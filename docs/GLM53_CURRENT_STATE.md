@@ -1,5 +1,110 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026: consolidated outcome and stock-vLLM deployment target.**
+The compression mechanism works: it preserves the encoded weight values, reduces
+live GPU allocation and improves some measured workloads. The complete CT serving
+candidate is not yet qualified as a replacement for tuned production. The current
+selection is CT MXFP4 experts + MXFP8 KDA + lossless expert-scale/vocabulary packing
+and pretrained Modal FP8 DFlash2, with five drafts at C1/C2 and three at C3–C16.
+MXFP8 KDA is a separate lossy quantization step; the whole candidate must not be
+described as lossless relative to the original BF16-KDA CT checkpoint.
+
+This work starts from the imported AutoRound compressed-tensors checkpoint. It
+does not establish that MxWave generated a new full-model GLM MXFP4 quantization.
+Our contributions here are codecs, direct GPU consumers, runtime integration,
+profiling, repeatability diagnostics and serving/drafter experiments.
+
+| Question | Verified result | Scope / limitation |
+| --- | --- | --- |
+| Does lossless compression save memory? | 9.367 GiB across TP2, about 4.68 GiB per GPU / 5.33% | Same CT checkpoint, matched KV allocation; this is not 9.37 GiB per GPU. |
+| Does compression alone improve speed? | C1 +11.82–13.28% without speculation; C8/C16 near parity | The early overall gate still failed on latency. With DFlash, later gains were much smaller. |
+| Did MXFP8 KDA remove the bottleneck? | Roughly 9–10 ms less KDA kernel time per eight-row verification step; zero reconstruction kernels in the retained MXFP8 traces | Separate lossy change, native Marlin W8A16; not every graph size or API workload becomes faster. |
+| Memory versus ModelOpt? | CT MXFP8 allocated 7.447 / 7.430 GiB less per GPU, 14.877 GiB total | Matched settings in the earlier drafter configuration; includes checkpoint-format differences and quantization. Not additive to the 9.367 GiB figure, and not a fresh measurement of the selected Modal profile. |
+| Quality? | Full GSM8K 1,248/1,319 (94.62%) → 1,260/1,319 (95.53%) | Same CT before/after MXFP8 KDA, speculation off. The 1e-5 KL gate still fails; one task does not establish general superiority or zero quality loss. |
+| Does a pretrained drafter help? | Five drafts: code 44.37, chat 32.80, explanation 34.74 tok/s | +6.48% / +6.91% / +7.72% over bracketed seven-draft medians on eight C1 development prompts. Not a production comparison. |
+| Did adaptation justify more training? | No compelling native benefit in the cancelled small pilot | 96 baseline + 32 adapted requests; final reload cancelled. Training stopped, pretrained checkpoint selected. |
+
+The five-draft screen passed its reload timing controls, but all eight output
+sequences changed between draft depths. It establishes measured development speed,
+not output invariance or task quality. The earlier MXFP8-versus-ModelOpt C1 code
+comparison remained 8.61% slower; its larger-concurrency controls failed. Gains
+from these different experiments must not be added together.
+
+Repeatability investigations found sparse-MLA ordering, mHC kernel selection and
+MoE reduction partitioning could change rounding independently of compression.
+Controlled fixes and component fixtures improved repeatability; universal
+full-model invariance across batch sizes and draft depths remains unqualified.
+The separate NVFP4 scale-compression branch saved about 6.33 GiB across TP2, but
+its speed/full-model quality qualification remained unresolved. It is an
+alternative branch, not an additional saving in the selected CT configuration.
+
+Evidence: [lossless results](GLM53_LOSSLESS_RUNTIME_HANDOFF.md),
+[native MXFP8 speed and memory](GLM53_KDA_MXFP8_SPEED.md),
+[full GSM8K](GLM53_KDA_MXFP8_GSM8K.md),
+[drafter/depth results](GLM53_PRETRAINED_DRAFTERS.md), and
+[NVFP4 branch](GLM53_NVFP4_MODEL_TEST.md).
+
+The latest independent service check retained by the completed work is
+21 October 12:55:54 UTC: original ModelOpt/Inco production, 500,000-token context.
+The CT profile is selected for its next launch and is not deployed. No training
+or GPU benchmark was started for this summary/compatibility audit.
+
+**Easy deployment is now an explicit requirement: pin vLLM 0.32.0 and minimize
+the extension, with a reproducible install and launch.** Upstream's
+[0.32.0 release](https://github.com/vllm-project/vllm/releases/tag/v0.32.0)
+includes GLM-5.3-Flash DFlash2 support and additional MXFP4 backend options.
+Its [plugin interface](https://docs.vllm.ai/en/v0.32.0/design/plugin_system/)
+provides a route to extend an upstream installation. These are upstream
+capabilities, not proof that our complete combination loads or performs correctly.
+This audit reads documentation and our integration source; it is not a 0.32.0
+build, import test or GPU compatibility qualification.
+
+The local source identifies concrete packaging work:
+
+- `engine_plugin/pyproject.toml` registers `model_plugin:install` but declares
+  `py-modules = []`. It is a registration shim relying on external runtime files,
+  not a self-contained installable distribution of the full approach.
+- `model_plugin.py` wraps internal compressed-tensors preparation and Marlin MoE
+  dispatch; `vocab_adapter.py` installs custom compressed vocabulary methods.
+  Our packed buffers still need these consumers. Loading expanded standard
+  tensors can provide a fallback but forfeits those resident-memory savings.
+- `kda_mxfp8_runtime.py` currently converts 68 matrices in memory and pins an
+  installed Marlin helper by source hash. The original checkpoint files are
+  unchanged. Portable checkpoint/config emission with coverage verification,
+  or a packaged and verified load-time conversion, is still required.
+- `build_moe.py` adapts pinned Marlin source and requires a compatible CUDA build.
+  Rebuild and qualify the extension for the exact upstream Torch/CUDA/SM121 stack;
+  retain the source notices already recorded in `CONTRIBUTING.md`.
+- Fused-module aliases, pretrained Modal feature taps, FP8 loading, graph capture
+  and repeatability hooks must be compared with upstream support individually.
+  Remove an overlay only after its native replacement passes the relevant checks.
+
+The practical target is **upstream vLLM plus one versioned extension**, distributed
+as a wheel and a ready image based on a pinned official vLLM image. Zero-extension
+vLLM cannot be assumed to understand our private packing; that would require
+upstream codec/kernel support or expanded tensors. The intended user workflow is
+one verified artifact preparation step, one install/pull, and one documented
+launch with the saved five-draft config. This workflow has not yet been delivered.
+
+Next work, in order:
+
+1. Establish a clean 0.32.0 CT + pretrained Modal baseline, then package the minimum
+   compression hooks and kernels without requiring edits inside the vLLM install.
+   Preserve the measured weight rounding and W4A16/W8A16 policies first; do not
+   silently substitute a new activation-quantizing backend during migration.
+2. Verify fresh installation on both Sparks, checkpoint identities, exact codec
+   reconstruction, the 68 KDA rounded-weight hashes, released dense storage,
+   actual loaded backend, graph replay and memory with compression on/off.
+3. Run the real harness with production-equivalent serving settings and explicit
+   KV budgets. Compare against current production separately from the same-CT
+   compression toggle. Record TTFT, end-to-end throughput, acceptance, quality,
+   actual resident concurrency and repeated timing controls.
+4. Qualify mixed-length C8/C16 and progressively longer contexts through the
+   required 500k limit before replacement. The existing 8k trials do not cover it.
+
+No new training is needed for this deployment path. New native FP4 backend
+experiments, if later chosen, are separate numerical/performance changes.
+
 **21 October 2026, 12:49 UTC: training abandoned at user request; original 500k production healthy.**
 CT's selected configuration is **pretrained Modal FP8, five drafts at C1/C2,
 three at C3–C16**. The unmodified checkpoint and config verify on both Sparks;
