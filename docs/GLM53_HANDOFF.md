@@ -1,5 +1,13 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 18:59 UTC: comparison healthy; full GSM8K remains queued.**
+The first production timing block has completed **15 / 24 cells**, with **zero
+API errors and zero unexpected prefix hits** in those measured cells. The controller,
+watchdog and client processes are alive, and all frozen source/input hashes still
+match the launch plan. Both full speculation-off GSM8K stages remain in that plan,
+after timing. No CT-versus-production speed conclusion or new GSM8K score is
+available yet. Continue the existing controller **2545114**; no new run is needed.
+
 **21 October 2026, 18:46 UTC: deployment comparison launched on Spark.**
 Root `glm53-package-v1/deployment-compare-v1`, controller **2545114**, independent
 watchdog **2545780**. Frozen plan SHA256
