@@ -15,6 +15,37 @@ from .drafter_feature_sequence import AcceptedHistory, load_frame
 from .drafter_fp8_roundtrip import digest
 
 
+def verify_ordering(evidence: Path, plan: dict[str, Any], startup: list[dict[str, Any]]) -> None:
+    """Bind corrected capture to its qualified sources and installation on both ranks."""
+    if "ordering_source_sha256" not in plan:
+        return
+    sources = plan["ordering_source_sha256"]
+    if set(sources) != {"canonical_sparse_prefill.py", "canonical_sparse_decode.py"}:
+        raise ValueError("Incomplete ordering policy sources")
+    if any(digest(evidence / name) != sha for name, sha in sources.items()):
+        raise ValueError("Qualified sparse ordering source changed")
+    path = evidence / "ordering-qualification-review.json"
+    proof = json.loads(path.read_bytes())
+    if (digest(path) != plan["ordering_qualification_review_sha256"]
+            or proof["plan_sha256"] != plan["ordering_qualification_plan_sha256"]
+            or not proof["component_checks_passed"] or not proof["target_repeat_passed"]
+            or not proof["production_restored"]):
+        raise ValueError("Missing passing ordering qualification")
+    if len(startup) != 2 or {row["rank"] for row in startup} != {0, 1}:
+        raise ValueError("Missing ordering installation evidence on one rank")
+    for row in startup:
+        prefill, decode = row["canonical_sparse_prefill"], row["canonical_sparse_decode"]
+        inherited = row["canonical_decode_component"]
+        if (prefill["status"] != "installed" or prefill["max_rows"] != 4096
+                or prefill["k"] != 512 or prefill["scores_or_selected_membership_changed"]
+                or decode["status"] != "installed" or decode["scores_or_membership_changed"]
+                or (decode["rows"], decode["next_n"], decode["k"]) != (8, 1, 512)
+                or decode["other_shapes"] != "native fallback"
+                or inherited["status"] != "inherited_verified"
+                or inherited["parent_review_sha256"] != digest(path)):
+            raise ValueError("Captured numerical ordering policy differs from qualification")
+
+
 def verify(evidence: Path, output: Path) -> dict[str, Any]:
     """Validate hashes, native controls and both ranks before exporting train/validation data."""
     if output.exists():
@@ -53,6 +84,7 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
     observed_requests = Counter((row["case"], row["policy"]) for row in measurement["cases"])
     if measurement["status"] != "complete" or observed_requests != expected_requests:
         raise ValueError("Capture requests are incomplete")
+    verify_ordering(evidence, plan, json.loads((evidence / "ct-startup.json").read_bytes()))
     policy = plan.get("expert_reduction_policy")
     if policy is not None:
         if policy != {"mode": "bounded_padding_default_occupancy", "target_rows_max": 16,
@@ -154,6 +186,8 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
         "evidence_manifest_sha256": digest(evidence / "evidence-manifest.json"),
         "plan_sha256": digest(evidence / "plan.json"),
         "expert_reduction_policy": policy,
+        "ordering_source_sha256": plan.get("ordering_source_sha256"),
+        "ordering_qualification_review_sha256": plan.get("ordering_qualification_review_sha256"),
         "verified_evidence_payloads": len(manifest["files"]),
         "frozen_dataset_hashes": plan["frozen_dataset_hashes"],
         "controls": controls, "rows": rows,

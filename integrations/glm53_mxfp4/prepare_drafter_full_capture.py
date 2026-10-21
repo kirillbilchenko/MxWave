@@ -97,6 +97,8 @@ def main():
             "plan_sha256":file_digest(ROOT / "plan.json"), "rows":rows,
             "frozen_dataset_hashes":plan["frozen_dataset_hashes"],
             "expert_reduction_policy":plan["expert_reduction_policy"],
+            "ordering_source_sha256":plan.get("ordering_source_sha256"),
+            "ordering_qualification_review_sha256":plan.get("ordering_qualification_review_sha256"),
             "all_rank_features_bitwise_equal":True, "sealed_test_opened":False,
             "production_restored":True, "training_performed":False,
             "total_bytes":sum(r["bytes"] for r in rows),
@@ -142,6 +144,13 @@ def prepare(
     plan = json.loads((smoke / "plan.json").read_bytes())
     if hashes != plan["frozen_dataset_hashes"] or not plan["prefill_dispatch_source_sha256"]:
         raise ValueError("Frozen corpus or qualified prefill policy differs")
+    if (report.get("ordering_source_sha256") != plan.get("ordering_source_sha256")
+            or report.get("ordering_qualification_review_sha256")
+            != plan.get("ordering_qualification_review_sha256")):
+        raise ValueError("Smoke export did not verify the frozen ordering policies")
+    source_port = str(plan["private_port"])
+    source_master_port = str(plan.get("master_port", 29701))
+    source_revision = plan["revision"]
     output.mkdir(parents=True, exist_ok=False)
     for name in original:
         shutil.copyfile(smoke / name, output / name)
@@ -150,7 +159,7 @@ def prepare(
         + [cases[-1]["id"], *plan["control_cases"]],
     ))
     plan.update(
-        revision="drafter-full-capture-v1", private_port=8029,
+        revision="drafter-full-capture-v1", private_port=8037, master_port=29710,
         purpose="Collect the full frozen 4000/200 corpus with independent incremental rank export.",
         calibration_cases=cases, control_cases=controls, requests=len(cases) + 2 * len(controls),
         quotas={split: dict(Counter(r["domain"] for r in cases if r["split"] == split))
@@ -173,13 +182,17 @@ def prepare(
     (output / "plan.json").write_text(json.dumps(plan, indent=2) + "\n")
     for name in ("prepare.py", "control.py", "measure_features.py"):
         path = output / name
-        path.write_text(path.read_text().replace("8028", "8029").replace("29701", "29702")
-                        .replace("mxwave-drafter-fresh-capture-smoke-v3", "mxwave-drafter-full-capture-v1"))
+        path.write_text(path.read_text().replace(source_port, "8037")
+                        .replace(source_master_port, "29710")
+                        .replace("mxwave-" + source_revision, "mxwave-drafter-full-capture-v1"))
     path = output / "prepare.py"
     text = path.read_text()
     anchor = '            for mount in entry["mounts"]:\n'
     assert text.count(anchor) == 1
-    path.write_text(text.replace(anchor, '            entry["mounts"].append([str(ROOT), "/capture", "rw"])\n' + anchor))
+    path.write_text(text.replace(anchor, (
+        '            c.run(rank, ["mkdir", "-p", str(ROOT / "accepted")])\n'
+        '            entry["mounts"].append([str(ROOT), "/capture", "rw"])\n'
+    ) + anchor))
     path = output / "measure_features.py"
     text = path.read_text().replace("\ndef main():", EXPORT + "\ndef main():")
     text = text.replace('        for case in plan["calibration_cases"]:\n',

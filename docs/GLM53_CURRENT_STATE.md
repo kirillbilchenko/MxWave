@@ -1,5 +1,11 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 03:30 UTC: continuing with the corrected eight-prompt capture smoke.**
+The frozen v4 plan retains both verified ordering fixes and the original prompts;
+CPU preflight precedes the GPU run. Passing rank exports and independent NumPy
+checks are required before full 4,000/200 capture/training. Production is running;
+sealed test stays closed. [Current handoff](GLM53_HANDOFF.md).
+
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**
 All six requests match in tokens/counters; all 12 capture comparisons have exact
 target features/logits and initial drafter fields. All 430 evidence payloads

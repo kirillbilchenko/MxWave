@@ -85,6 +85,8 @@ def export_case(
         "target_features": history.context()[:stats["feature_rows"]].contiguous(),
         "generated_token_mask": torch.arange(ids.numel()) >= len(case["prompt_ids"]),
     }, str(path))
+    # The container writes as root; host verification and training must read the payload.
+    path.chmod(0o644)
     del history, tensors
     compared = audit_rank_export(paths, path, expected_ids)
     return {

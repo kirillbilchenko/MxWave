@@ -1,5 +1,31 @@
 # GLM compression experiment handoff
 
+<!-- CORRECTED_CAPTURE_BEGIN -->
+**21 October 2026, 03:30 UTC: corrected eight-prompt capture smoke prepared; CPU preflight starting.**
+User authorized the next smoke and full 4,000/200 capture/training continuation.
+`drafter-fresh-capture-smoke-v4` preserves the original eight frozen prompts,
+including 3,973-token training and 2,248-token validation controls, each with
+before/capture/after output and speculative-counter checks. Twelve requests total,
+128 output tokens, original drafter, seven drafts, prefill budget 4,096.
+Both numerical ordering fixes and the existing expert/mHC policies are inherited
+from the independently verified `drafter-canonical-decode-v1` run. No operation
+observers or full-logit retention; component timing qualification is inherited.
+
+Plan SHA `ddebc9515d29877255cfcd6aa3432fea6260f734bebafd825777adfaea344405`,
+43 frozen files, private port 8036 / master 29709. Full local ruff, strict mypy
+and pytest checks pass. Source upload and two-node CPU preflights are in progress;
+production is still running. The controller/watchdog will restore original
+500,000-context production on every GPU-run exit.
+
+Full capture remains conditional on successful smoke, complete retained evidence,
+bit-identical accepted-feature exports across both GPUs, and independent NumPy
+review. No sealed-test access or training has occurred. The full-capture preparer
+now derives source ports/revision from the passing smoke instead of assuming v3.
+Incremental exports explicitly use 0644 for host readers; accepted directories
+are created by the host before root-owned container writes. A new verifier binds
+both installed ordering policies and source hashes to the prior qualification.
+<!-- CORRECTED_CAPTURE_END -->
+
 <!-- LONG_DECODE_BEGIN -->
 **20 October 2026, 22:37 UTC: combined sparse-prefill/decode ordering correction passes the long-prompt C1 repeat gate.**
 `drafter-canonical-decode-v1` completes all six requests and restores original

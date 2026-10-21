@@ -95,6 +95,7 @@ def test_incremental_rank_exports_match_and_numpy_detects_corruption(tmp_path: P
                         payload_sha256=digest(path))
             path.with_suffix(".json").write_text(json.dumps(meta))
         row = export_case(tmp_path, case, [20, 21], rank, tmp_path / f"accepted-r{rank}")
+        assert (tmp_path / f"accepted-r{rank}" / row["path"]).stat().st_mode & 0o777 == 0o644
         reports.append({"status": "rank_verified", "rank": rank, "start": 0, "stop": 1,
                         "plan_sha256": "plan", "source_sha256": "source", "rows": [row]})
     paired = compare_ranks(*reports)
