@@ -1,5 +1,15 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 06:56 UTC: paired trace reviewed; production restored.**
+All eight controls and both GPUs' capture repeats pass; all 406 retained payloads
+verify on Mac/Spark2. Target logits first differ at output 38, text at output 48.
+Both arms select their own target argmax. The last common observed equal layer 0/4
+recurrent-state boundary is position 87; by 94 layer 4 differs while layer 0 remains
+exact. This narrows the next cache/arithmetic investigation to the intervening
+steps; a specific kernel or compression fault is not proved. Original 500k
+production is healthy. No new GPU experiment is queued; training held, sealed
+closed. [Result and next targeted check](GLM53_HANDOFF.md).
+
 **21 October 2026, 06:41 UTC: first trace arm complete, second loading.**
 All four Inco controls reproduce the frozen 64-token output and matching
 speculative counters. Both ranks retain 34 frames each. Modal BF16 is now loading;

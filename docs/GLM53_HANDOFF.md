@@ -1,5 +1,51 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 06:56 UTC: paired native trace complete and independently reviewed.**
+All eight before/capture/repeat/after requests reproduce their arm's frozen
+64-token output and counters. All captured inputs, logits, final-hidden states,
+arm-specific auxiliary features and proposals repeat exactly on both GPUs:
+17 frames per Inco capture, 20 per Modal capture, **148 frames total**. All
+**406 evidence payloads** independently verify on Mac and Spark2. Original
+production restores healthy at **06:49:03 UTC**, with unchanged identities and
+**500,000 context**. No experiment is running; training is held and sealed test closed.
+
+The first **37 output decisions (indices 0–36)** have identical target logits
+and final-hidden states. The first difference is output **38 / index 37**, at
+absolute input position 92: Inco processes row1 of a forward beginning at 91,
+Modal row0 of one beginning at 92. Both use native eight-row graphs. The token
+still agrees (1477); its logits are 33.75/34.0 and decision KL is 7.5371e-8.
+At output **48 / index 47**, both arms consume the same eight input IDs and
+positions 97–104 but the target scores already differ before sampling:
+
+| Token ID | Inco target logit | Modal target logit |
+| --- | ---: | ---: |
+| 11 | 26.500 | 25.875 |
+| 198 | 26.125 | 26.375 |
+
+Each arm selects its own unique argmax. This boundary therefore reflects changed
+target computation/state, rather than different selection from identical logits.
+Both ranks agree on the decision evidence. The local decision KL 0.094529 is
+**not** a corpus quality metric. Different drafters' auxiliary layers are never
+compared as equal layer boundaries.
+
+The supplemental state audit narrows the interval: selected layer 0 and layer 4
+recurrent read states match at every common boundary through absolute position 87,
+including earlier different batch groupings. At 94 and 97, layer 0 still matches
+while layer 4 differs. Layer 4 may inherit an upstream difference; no particular
+kernel, cache defect or compression defect is established. Convolution-history
+valid slices have not yet been independently compared. Next: audit those slices
+and rollback metadata, then trace layers 0–4 around positions 87–94 and replay the
+first changed component with equal past inputs/state. The follow-up is specified,
+**not launched**; no new production pause is queued. A fix must pass native
+output identity and measured serving cost before drafter promotion.
+
+Retained evidence: `diagnostics-v1/drafter-pretrained-verification-v1-review.json`,
+`...-batch-boundaries.json`, and `...-followup-plan.json`. Immutable archive:
+5,243,463,145 bytes, SHA256
+`f549cfe5bdc0f5713ca4d5e2e2515af09e8fc229595fd8c07b9081fdbbf2fa83`;
+local `out/drafter-pretrained-verification-v1/retained`; Spark2 sibling
+`drafter-pretrained-verification-v1-retained-backup`.
+
 **21 October 2026, 06:44 UTC: preliminary Inco boundary review finds a unique target winner.**
 Four selected rank-0 frames independently match their payload hashes: first
 output and output index 47, in both captures. At index 47, token **11** has

@@ -1,0 +1,1200 @@
+{
+  "status": "reviewed",
+  "source_sha256": "977fdaa9a832c42c7a67bcbd92ba1e5b31f5a06184de9582ca5a562d56e27f89",
+  "payloads_verified": 406,
+  "plan_sha256": "ae1f8d983ada1955fbf94d31ce72ac84e9292ac55ad2909271b555c0150dfe29",
+  "original_prefix_and_counter_controls_pass": true,
+  "capture_repeats": [
+    {
+      "arm": "a1",
+      "rank": 0,
+      "frames": 17,
+      "inputs_logits_features_proposals_exact": true
+    },
+    {
+      "arm": "a1",
+      "rank": 1,
+      "frames": 17,
+      "inputs_logits_features_proposals_exact": true
+    },
+    {
+      "arm": "b1",
+      "rank": 0,
+      "frames": 20,
+      "inputs_logits_features_proposals_exact": true
+    },
+    {
+      "arm": "b1",
+      "rank": 1,
+      "frames": 20,
+      "inputs_logits_features_proposals_exact": true
+    }
+  ],
+  "all_capture_repeats_exact": true,
+  "first_different_output_index": 47,
+  "rank_results": [
+    {
+      "rank": 0,
+      "first_changed_logits": {
+        "position": 92,
+        "frames": [
+          "context-opencoder-evol-92378-capture1-0009-r0.safetensors",
+          "context-opencoder-evol-92378-capture1-0011-r0.safetensors"
+        ],
+        "logit_rows": [
+          1,
+          0
+        ],
+        "input_rows": [
+          1,
+          0
+        ],
+        "sampled_tokens": [
+          1477,
+          1477
+        ],
+        "pre_sampler_logits": {
+          "same_shape": true,
+          "elements": 154880,
+          "different_elements": 142658,
+          "bitwise_equal": false,
+          "max_abs": 0.484375,
+          "forward_kl_a_to_b": 7.537098276598203e-08,
+          "a_argmax_ids": [
+            1477
+          ],
+          "b_argmax_ids": [
+            1477
+          ],
+          "selected_token_logits": {
+            "1477": {
+              "a": 33.75,
+              "b": 34.0
+            }
+          }
+        },
+        "sample_is_pre_sampler_argmax": [
+          true,
+          true
+        ],
+        "final_hidden": {
+          "same_shape": true,
+          "elements": 4096,
+          "different_elements": 3977,
+          "bitwise_equal": false
+        },
+        "graph_descriptors": [
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          },
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          }
+        ],
+        "target_inputs": [
+          [
+            12,
+            2014,
+            1477,
+            264,
+            729,
+            282,
+            2075,
+            701
+          ],
+          [
+            2014,
+            1477,
+            264,
+            3704,
+            315,
+            264,
+            3704,
+            11
+          ]
+        ],
+        "target_positions": [
+          [
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98
+          ],
+          [
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99
+          ]
+        ],
+        "before_state_boundaries_equal": false,
+        "selected_recurrent_inputs": null,
+        "post_sampler_original_buffer": [
+          {
+            "1477": 33.75
+          },
+          {
+            "1477": 34.0
+          }
+        ],
+        "output_index": 37
+      },
+      "first_different_output": {
+        "position": 102,
+        "frames": [
+          "context-opencoder-evol-92378-capture1-0011-r0.safetensors",
+          "context-opencoder-evol-92378-capture1-0014-r0.safetensors"
+        ],
+        "logit_rows": [
+          5,
+          5
+        ],
+        "input_rows": [
+          5,
+          5
+        ],
+        "sampled_tokens": [
+          11,
+          198
+        ],
+        "pre_sampler_logits": {
+          "same_shape": true,
+          "elements": 154880,
+          "different_elements": 152328,
+          "bitwise_equal": false,
+          "max_abs": 1.84375,
+          "forward_kl_a_to_b": 0.09452942846724867,
+          "a_argmax_ids": [
+            11
+          ],
+          "b_argmax_ids": [
+            198
+          ],
+          "selected_token_logits": {
+            "11": {
+              "a": 26.5,
+              "b": 25.875
+            },
+            "198": {
+              "a": 26.125,
+              "b": 26.375
+            }
+          }
+        },
+        "sample_is_pre_sampler_argmax": [
+          true,
+          true
+        ],
+        "final_hidden": {
+          "same_shape": true,
+          "elements": 4096,
+          "different_elements": 4067,
+          "bitwise_equal": false
+        },
+        "graph_descriptors": [
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          },
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          }
+        ],
+        "target_inputs": [
+          [
+            282,
+            2075,
+            8,
+            284,
+            220,
+            15,
+            11,
+            582
+          ],
+          [
+            282,
+            2075,
+            8,
+            284,
+            220,
+            15,
+            11,
+            582
+          ]
+        ],
+        "target_positions": [
+          [
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ],
+          [
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ]
+        ],
+        "before_state_boundaries_equal": true,
+        "selected_recurrent_inputs": {
+          "0": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true,
+            "accepted_columns": [
+              2,
+              1
+            ],
+            "physical_slots": [
+              31,
+              32
+            ],
+            "finite": true,
+            "max_abs": 0.0
+          },
+          "4": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 524234,
+            "bitwise_equal": false,
+            "accepted_columns": [
+              2,
+              1
+            ],
+            "physical_slots": [
+              7,
+              8
+            ],
+            "finite": true,
+            "max_abs": 0.00017560366541147232
+          }
+        },
+        "post_sampler_original_buffer": [
+          {
+            "11": 26.5,
+            "198": 26.125
+          },
+          {
+            "11": 25.875,
+            "198": 26.375
+          }
+        ],
+        "output_index": 47
+      },
+      "shared_history_decisions": [
+        {
+          "index": 0,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 1,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 2,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 3,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 4,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 5,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 6,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 7,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 8,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 9,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 10,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 11,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 12,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 13,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 14,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 15,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 16,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 17,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 18,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 19,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 20,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 21,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 22,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 23,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 24,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 25,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 26,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 27,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 28,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 29,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 30,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 31,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 32,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 33,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 34,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 35,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 36,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 37,
+          "logits_exact": false,
+          "forward_kl": 7.537098276598203e-08,
+          "same_selected_token": true
+        },
+        {
+          "index": 38,
+          "logits_exact": false,
+          "forward_kl": 0.01674973353414525,
+          "same_selected_token": true
+        },
+        {
+          "index": 39,
+          "logits_exact": false,
+          "forward_kl": 0.00010837786949523509,
+          "same_selected_token": true
+        },
+        {
+          "index": 40,
+          "logits_exact": false,
+          "forward_kl": 3.205939432591166e-09,
+          "same_selected_token": true
+        },
+        {
+          "index": 41,
+          "logits_exact": false,
+          "forward_kl": 0.00013165614219046368,
+          "same_selected_token": true
+        },
+        {
+          "index": 42,
+          "logits_exact": false,
+          "forward_kl": 2.6471620670829018e-09,
+          "same_selected_token": true
+        },
+        {
+          "index": 43,
+          "logits_exact": false,
+          "forward_kl": 1.108340063750274e-07,
+          "same_selected_token": true
+        },
+        {
+          "index": 44,
+          "logits_exact": false,
+          "forward_kl": 1.2213423075840833e-08,
+          "same_selected_token": true
+        },
+        {
+          "index": 45,
+          "logits_exact": false,
+          "forward_kl": 3.471506161339457e-07,
+          "same_selected_token": true
+        },
+        {
+          "index": 46,
+          "logits_exact": false,
+          "forward_kl": 1.050915427541735e-06,
+          "same_selected_token": true
+        },
+        {
+          "index": 47,
+          "logits_exact": false,
+          "forward_kl": 0.09452942846724867,
+          "same_selected_token": false
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "first_changed_logits": {
+        "position": 92,
+        "frames": [
+          "context-opencoder-evol-92378-capture1-0009-r1.safetensors",
+          "context-opencoder-evol-92378-capture1-0011-r1.safetensors"
+        ],
+        "logit_rows": [
+          1,
+          0
+        ],
+        "input_rows": [
+          1,
+          0
+        ],
+        "sampled_tokens": [
+          1477,
+          1477
+        ],
+        "pre_sampler_logits": {
+          "same_shape": true,
+          "elements": 154880,
+          "different_elements": 142658,
+          "bitwise_equal": false,
+          "max_abs": 0.484375,
+          "forward_kl_a_to_b": 7.537098276598203e-08,
+          "a_argmax_ids": [
+            1477
+          ],
+          "b_argmax_ids": [
+            1477
+          ],
+          "selected_token_logits": {
+            "1477": {
+              "a": 33.75,
+              "b": 34.0
+            }
+          }
+        },
+        "sample_is_pre_sampler_argmax": [
+          true,
+          true
+        ],
+        "final_hidden": {
+          "same_shape": true,
+          "elements": 4096,
+          "different_elements": 3977,
+          "bitwise_equal": false
+        },
+        "graph_descriptors": [
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          },
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          }
+        ],
+        "target_inputs": [
+          [
+            12,
+            2014,
+            1477,
+            264,
+            729,
+            282,
+            2075,
+            701
+          ],
+          [
+            2014,
+            1477,
+            264,
+            3704,
+            315,
+            264,
+            3704,
+            11
+          ]
+        ],
+        "target_positions": [
+          [
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98
+          ],
+          [
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99
+          ]
+        ],
+        "before_state_boundaries_equal": false,
+        "selected_recurrent_inputs": null,
+        "post_sampler_original_buffer": [
+          {
+            "1477": 33.75
+          },
+          {
+            "1477": 34.0
+          }
+        ],
+        "output_index": 37
+      },
+      "first_different_output": {
+        "position": 102,
+        "frames": [
+          "context-opencoder-evol-92378-capture1-0011-r1.safetensors",
+          "context-opencoder-evol-92378-capture1-0014-r1.safetensors"
+        ],
+        "logit_rows": [
+          5,
+          5
+        ],
+        "input_rows": [
+          5,
+          5
+        ],
+        "sampled_tokens": [
+          11,
+          198
+        ],
+        "pre_sampler_logits": {
+          "same_shape": true,
+          "elements": 154880,
+          "different_elements": 152328,
+          "bitwise_equal": false,
+          "max_abs": 1.84375,
+          "forward_kl_a_to_b": 0.09452942846724867,
+          "a_argmax_ids": [
+            11
+          ],
+          "b_argmax_ids": [
+            198
+          ],
+          "selected_token_logits": {
+            "11": {
+              "a": 26.5,
+              "b": 25.875
+            },
+            "198": {
+              "a": 26.125,
+              "b": 26.375
+            }
+          }
+        },
+        "sample_is_pre_sampler_argmax": [
+          true,
+          true
+        ],
+        "final_hidden": {
+          "same_shape": true,
+          "elements": 4096,
+          "different_elements": 4067,
+          "bitwise_equal": false
+        },
+        "graph_descriptors": [
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          },
+          {
+            "cg_mode": "FULL",
+            "num_tokens": 8,
+            "num_reqs": 1,
+            "uniform_token_count": 8,
+            "max_query_len": null,
+            "num_active_loras": 0
+          }
+        ],
+        "target_inputs": [
+          [
+            282,
+            2075,
+            8,
+            284,
+            220,
+            15,
+            11,
+            582
+          ],
+          [
+            282,
+            2075,
+            8,
+            284,
+            220,
+            15,
+            11,
+            582
+          ]
+        ],
+        "target_positions": [
+          [
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ],
+          [
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104
+          ]
+        ],
+        "before_state_boundaries_equal": true,
+        "selected_recurrent_inputs": {
+          "0": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true,
+            "accepted_columns": [
+              2,
+              1
+            ],
+            "physical_slots": [
+              31,
+              32
+            ],
+            "finite": true,
+            "max_abs": 0.0
+          },
+          "4": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 524255,
+            "bitwise_equal": false,
+            "accepted_columns": [
+              2,
+              1
+            ],
+            "physical_slots": [
+              7,
+              8
+            ],
+            "finite": true,
+            "max_abs": 0.0002510715276002884
+          }
+        },
+        "post_sampler_original_buffer": [
+          {
+            "11": 26.5,
+            "198": 26.125
+          },
+          {
+            "11": 25.875,
+            "198": 26.375
+          }
+        ],
+        "output_index": 47
+      },
+      "shared_history_decisions": [
+        {
+          "index": 0,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 1,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 2,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 3,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 4,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 5,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 6,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 7,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 8,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 9,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 10,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 11,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 12,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 13,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 14,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 15,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 16,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 17,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 18,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 19,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 20,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 21,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 22,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 23,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 24,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 25,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 26,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 27,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 28,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 29,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 30,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 31,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 32,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 33,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 34,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 35,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 36,
+          "logits_exact": true,
+          "forward_kl": 0.0,
+          "same_selected_token": true
+        },
+        {
+          "index": 37,
+          "logits_exact": false,
+          "forward_kl": 7.537098276598203e-08,
+          "same_selected_token": true
+        },
+        {
+          "index": 38,
+          "logits_exact": false,
+          "forward_kl": 0.01674973353414525,
+          "same_selected_token": true
+        },
+        {
+          "index": 39,
+          "logits_exact": false,
+          "forward_kl": 0.00010837786949523509,
+          "same_selected_token": true
+        },
+        {
+          "index": 40,
+          "logits_exact": false,
+          "forward_kl": 3.205939432591166e-09,
+          "same_selected_token": true
+        },
+        {
+          "index": 41,
+          "logits_exact": false,
+          "forward_kl": 0.00013165614219046368,
+          "same_selected_token": true
+        },
+        {
+          "index": 42,
+          "logits_exact": false,
+          "forward_kl": 2.6471620670829018e-09,
+          "same_selected_token": true
+        },
+        {
+          "index": 43,
+          "logits_exact": false,
+          "forward_kl": 1.108340063750274e-07,
+          "same_selected_token": true
+        },
+        {
+          "index": 44,
+          "logits_exact": false,
+          "forward_kl": 1.2213423075840833e-08,
+          "same_selected_token": true
+        },
+        {
+          "index": 45,
+          "logits_exact": false,
+          "forward_kl": 3.471506161339457e-07,
+          "same_selected_token": true
+        },
+        {
+          "index": 46,
+          "logits_exact": false,
+          "forward_kl": 1.050915427541735e-06,
+          "same_selected_token": true
+        },
+        {
+          "index": 47,
+          "logits_exact": false,
+          "forward_kl": 0.09452942846724867,
+          "same_selected_token": false
+        }
+      ]
+    }
+  ],
+  "production_restored": true,
+  "sealed_test_opened": false,
+  "limits": [
+    "One development prompt; decision KL is not corpus quality.",
+    "Different drafter feature taps are never treated as matching layer boundaries.",
+    "Only layers0/4 recurrent state retained; cache values compared only at equal forward start positions.",
+    "Recurrent slot selection uses the previously audited accepted-column-minus-one rule.",
+    "Convolution-history slices are retained but not independently compared by this reviewer.",
+    "Post-sampler copy observes the original logits buffer,not separately processed logits.",
+    "Boundary differences locate a stage; they do not alone identify a responsible kernel."
+  ]
+}

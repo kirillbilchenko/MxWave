@@ -1,11 +1,22 @@
 # Pretrained drafter screen before further training
 
+**21 October 2026, 06:56 UTC: native-decision trace completes and independently verifies.**
+Both GPUs reproduce the same finding: target logits/hidden states remain exact
+for the first 37 output decisions, then differ at output 38; generated tokens
+first differ at 48. Each arm follows its own target argmax. All within-arm controls
+and tensor repeats pass. Layer0/4 recurrent read states match through the common
+position 87 boundary; layer 4 differs by 94 while layer 0 remains exact. The next
+check targets state/rollback and arithmetic between those boundaries. This does
+not establish a responsible kernel or a speed improvement. Production is restored
+with 500k context; all 406 artifacts are verified on Mac/Spark2. No follow-up GPU
+run is queued. [Full result and limits](GLM53_HANDOFF.md).
+
 **21 October 2026, 06:41 UTC: Inco trace complete; Modal BF16 loading.**
 All four Inco before/capture/repeat/after controls reproduce the frozen output and
 speculative counters; both ranks retain 34 frames each. Paired trace analysis is
 pending. See [the latest handoff](GLM53_HANDOFF.md).
 
-Updated **21 October 2026, 06:35 UTC**. The user prioritizes the native-decision
+Earlier speed-screen checkpoint, **21 October 2026, 06:35 UTC**. The user prioritizes the native-decision
 trace over the final speed baseline reload. The reload is deliberately stopped
 before any a2 measurement; its controller restores healthy original production
 at **06:32:09 UTC**, with unchanged identities and **500,000 context**.
@@ -26,13 +37,13 @@ speed comparisons. The baseline reload drift control is intentionally absent;
 these medians do not qualify a speed gain or establish a quality regression.
 See `diagnostics-v1/drafter-pretrained-modal-v1-retained-summary.json`.
 
-Detached native-trace launcher **1180511** passes CPU preflight. Controller
-**1186244** now loads the first/Inco arm under watchdog **1186334**, temporarily
-pausing production again. The launcher verifies
+At 06:35 UTC, detached native-trace launcher **1180511** passed CPU preflight.
+Controller **1186244** loaded the first/Inco arm under watchdog **1186334**,
+temporarily pausing production again. That run is now complete and restored. The launcher verifies
 the specific user-stop receipt, successful restoration/finalization and saved
 measurements before proceeding with the unchanged frozen diagnostic. Read
 `after-priority-status.json`, then `controller.json`; old waiter PID 987188 and
-its `queue.json` are superseded. GPU captures have not completed yet. Training remains
+its `queue.json` are superseded. GPU capture and independent review are now complete; see the result above. Training remains
 stopped and the sealed test closed. The long capture remains at 1,095 prompts,
 with 1,088 verified exports in 17 completed chunks (13,097,763,612 bytes per node).
 The unexported files remain; this incomplete dataset is not published for training.
@@ -83,7 +94,7 @@ FP8 weights SHA256:
 
 ### First-divergence diagnostic specification
 
-The diagnostic passes CPU preflight and is **loading its first arm**. Use development case
+The diagnostic is **complete and independently reviewed**; the frozen specification follows. Use development case
 `opencoder-evol-92378` (56 prompt tokens): the first 47 output tokens agree,
 and output index 47 differs. Retain the observed 64-token prefixes for both arms
 and require before/capture/repeated-capture/after controls to reproduce them.
