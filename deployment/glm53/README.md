@@ -4,12 +4,22 @@ This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
 The extension wraps version-pinned internal APIs and requires the verified bundle.
 
-**Status, 21 October 2026: GPU startup and generation work; qualification is incomplete.**
-The selected 8k Modal profile subsequently completes six C1 requests but accepts
-**zero of 3,810 DFlash2 proposals**. It allocates 172.496 GiB across TP2, about
-0.751 GiB above the previous selected CT profile. Speculative execution must be
-diagnosed before this recipe is recommended for performance. Native MTP also
-needs a CT namespace/quantization-policy repair before comparison.
+**Status, 21 October 2026, 19:56 UTC: a drafter metadata correction is GPU-verified;
+the package CLI still needs integration.** Native 0.32 applies FP8 loading to
+twelve BF16 convolution weights with missing scales, producing NaN draft output.
+A separate config with explicit BF16 exclusions restores 50–67.5% acceptance on
+two short diagnostic prompts, with byte-identical weights and no vLLM source edits.
+The current CLI still pins the original config; **the launch example below does
+not yet include this correction** and must not be presented as a working performance
+recipe. The isolated experiment used
+[prepare_drafter_compat.py](prepare_drafter_compat.py) and a separately frozen launch.
+[Diagnosis, settings and retained evidence](../../docs/GLM53_STOCK_DRAFTER_LOADING.md).
+
+The earlier selected 8k Modal profile completed six C1 requests but accepted
+**zero of 3,810 proposals**. Its 172.496 GiB TP2 allocation (+0.751 GiB versus the
+historical selected profile) predates the correction; no fresh corrected-profile
+memory delta is claimed. Native MTP separately needs a CT namespace/quantization
+policy repair before comparison. Exact original 500k production is restored.
 
 V6 starts at 500k context with 32 slots, 6 GiB KV per rank, a 6,919-token prefill
 budget, prefix caching enabled and a dense target head. It uses native

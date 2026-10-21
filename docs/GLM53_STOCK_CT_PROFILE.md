@@ -1,5 +1,20 @@
 # Selected CT profile on stock vLLM
 
+**Latest, 21 October 2026, 19:56 UTC: zero acceptance has a verified loading fix.**
+Native 0.32 incorrectly selected twelve existing BF16 drafter convolution matrices
+for FP8 loading without scales. A separate config adds explicit BF16 exclusions;
+weights remain byte-identical and vLLM source is unchanged. The two-prompt, 32-token
+V2 diagnostic restores **27/40 and 25/50 accepted proposals**, with **8 and 10 rounds**
+instead of **31**. Native graph replay and draft-eager agree on counters and outputs.
+Both ranks' 64 observed score/context frames and 32 eager hidden/logit frames are
+finite. Exact original 500k production was restored at **19:55:15 UTC**.
+
+This fixes the observed invalid drafter computation, not the separate target KL
+or output-repeat failures. Package CLI integration, corrected-profile memory and
+untraced timing, 500k/prefix-on compatibility and full GSM8K are still pending.
+All prior failures and allocations below are historical measurements before this
+correction. [Diagnosis, reproducibility and archived evidence](GLM53_STOCK_DRAFTER_LOADING.md).
+
 **V3 cache isolation result:** actual BF16 cache on all six drafter layers still gives
 **0 accepted / 3,810 proposed tokens** across the same six requests. Startup allocation
 is 172.490866 GiB TP2. FP8 draft cache alone is not the cause. Exact original production

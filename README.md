@@ -1,5 +1,16 @@
 # MxWave
 
+**Latest GLM result, 21 October, 19:56 UTC:** the stock-vLLM drafter loading failure
+is identified and corrected in a short GPU test. Metadata exclusions keep twelve
+existing BF16 convolution matrices out of FP8 loading; weights are unchanged.
+Acceptance rises **0% → 50–67.5%**, with **31 → 8–10 verification rounds** on two
+32-token development requests, in both native replay and eager mode. This is a
+causal diagnostic, not a throughput benchmark. Exact original 500k production is
+restored; both-rank evidence is verified and backed up. Package CLI integration,
+the full comparison/GSM8K and separate numerical gates remain pending.
+[Diagnosis and evidence](docs/GLM53_STOCK_DRAFTER_LOADING.md).
+Earlier dated entries below retain the failed runs and previous measurements.
+
 **21 October, 19:35 UTC:** the user prioritizes diagnosing zero draft acceptance.
 The long comparison was stopped with all partial data retained; exact original
 500k production was restored at **19:35:23 UTC**. Remaining speed repetitions and

@@ -1,5 +1,40 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 19:56 UTC: drafter loading fix verified; exact production restored.**
+The metadata-only V2 correction restores useful native DFlash2 acceptance on the
+two short development prompts. Both native graph replay and draft-eager give the
+same results: **27/40 accepted, 8 rounds** on case 0; **25/50 accepted, 10 rounds**
+on case 1, for 32 output tokens each. Before correction each request accepted
+**0/155 in 31 rounds**. Native/eager output token IDs also match for each prompt.
+These synchronized traces are **not speed measurements**, and the tiny screen
+does not qualify general acceptance, quality or production performance.
+
+All **64 observed proposal frames across both ranks** now have finite candidate
+scores and combined context; all **32 eager hidden/logit frames** are finite.
+Both ranks confirm all twelve convolution projections are BF16 with
+`UnquantizedLinearMethod`. This establishes the loading incompatibility: native
+vLLM 0.32 applies FP8 to existing BF16 convolution tensors absent from the original
+ignore list, with no checkpoint scales. The unchanged scale sentinel overflows
+when cast to BF16. Explicit exclusions preserve the checkpoint's intended dtypes;
+no weight bytes, target precision, vLLM source or training changed.
+
+V2 completes normally and restores the exact original containers/configuration
+hashes and authenticated **500,000-token** endpoint at **19:55:15 UTC**.
+Controller state: `complete_restored`; no experiment is running or queued.
+The **54-payload** V2 archive independently verifies on Mac and Spark2:
+`stock-draft-trace-v2-evidence.tar.gz`, SHA256
+`8e1cf2d6c872431e1bbab9aba958923937cc94241f3b149681cae4cc03f247b4`.
+V1's NaN traces and the stopped comparison remain preserved separately.
+See [the complete diagnosis, settings, hashes and evidence index](GLM53_STOCK_DRAFTER_LOADING.md).
+
+**Next work remains explicit:** integrate the validated metadata correction into
+the package CLI (the current CLI still pins the original config), then validate
+the intended deployment settings before a new frozen performance comparison and
+both full GSM8K arms. This diagnostic used 8k context, prefix off and BF16 draft KV;
+it does not requalify 500k/prefix-on/FP8-KV serving. Earlier target KL and output-repeat
+failures remain failures. No promotion, gate change, throughput win or new memory
+delta is claimed. The historical entries below retain their original status/date.
+
 **21 October 2026, 19:47:56 UTC: metadata-only correction test launched.**
 V1 restored exact production at **19:45:42 UTC**. V2 controller **3054345** now
 runs under a fresh 25-minute watchdog lease, root `stock-draft-trace-v2`, plan

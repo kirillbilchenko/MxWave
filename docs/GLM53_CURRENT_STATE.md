@@ -1,5 +1,17 @@
 # GLM lossless experiment: current state and next steps
 
+**Latest, 21 October, 19:56 UTC:** the native DFlash2 zero-acceptance failure is
+fixed in a bounded GPU diagnostic. Twelve existing BF16 convolution weights were
+being loaded as FP8 without scales; correcting only their quantization exclusions
+restores **50–67.5% acceptance** on two short prompts. Verification rounds fall
+**31 → 8–10**; native graph replay and eager controls agree. Both ranks' retained
+scores and eager hidden/logit tensors are finite. The 54 evidence payloads verify
+on Mac and Spark2, and exact original 500k production is restored at **19:55:15 UTC**.
+Package CLI integration and a new untraced comparison remain pending. No speed or
+quality pass follows from these diagnostic timings; earlier target KL/repeat failures
+remain. [Complete finding and limits](GLM53_STOCK_DRAFTER_LOADING.md).
+Earlier dated entries below are retained as history.
+
 **21 October, 19:35 UTC:** the user prioritizes diagnosing zero draft acceptance.
 The long comparison was stopped with all partial data retained; exact original
 500k production was restored at **19:35:23 UTC**. Remaining speed repetitions and
