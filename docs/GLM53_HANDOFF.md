@@ -1,5 +1,32 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 19:35 UTC: comparison stopped; diagnose zero acceptance first.**
+The user reprioritized identifying the failure before more benchmarking. Controller
+2545114 received SIGTERM through its normal restoration path; all partial results
+remain in `deployment-compare-v1`. Exact original production was restored at
+**19:35:23 UTC**, with both original identity/configuration hashes and authenticated
+500,000-token endpoint verified. Controller state is `failed_restored` because of
+the intentional interruption. Remaining timing repetitions and both full GSM8K
+arms are **deferred, not completed or cancelled**. Do not resume the old controller.
+
+The short-code C1 gap is explained mainly by round count: production accepts 195
+draft tokens in 60 rounds; stock CT accepts zero in 255 rounds for the same 256
+output tokens. Total request times are 4.662 / 20.472 seconds. After subtracting
+TTFT, client-derived time per round is about 70.31 / 78.49 ms (not GPU kernel
+timing). Thus 4.25x more rounds explain most of the 4.39x runtime; neither C1 arm
+queues. Production's measured proposals are seven per round even at C4/C8/C16;
+record this effective behavior separately from its nominal CLI policy.
+
+Preparing `stock-draft-trace-v1`: two existing development prompts, 32 output tokens,
+native graph replay versus explicitly labelled draft-only eager execution. Capture
+the first eight target/proposal boundaries per request, actual auxiliary feature
+health, token IDs, query positions, slots, candidate scores and rejection counts.
+This is an observer and graph-isolation diagnostic, not a speed trial or retraining.
+Native source review finds matching six target-layer boundaries; numerical
+equivalence is not established. V3 already ruled out draft cache precision alone.
+No exact cause or fix is claimed. A new independent watchdog and exact restoration
+must cover the diagnostic; production is currently restored, preparation is CPU-only.
+
 **21 October 2026, 19:22 UTC: first production pass complete; CT is slower.**
 `timing-A-0` completes all 24 cells. `timing-B-0` has completed five cells with
 zero API errors and zero unexpected cold-prefix hits. Every completed CT cell

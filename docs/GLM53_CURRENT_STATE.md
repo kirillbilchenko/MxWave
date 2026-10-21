@@ -1,10 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
-**21 October, latest:** full production-versus-stock-CT timing and **all 1,319 GSM8K
-questions per arm, speculation off**, are running/queued under independent restoration
-controls (controller 2545114; timing first, then GSM8K). The isolated BF16 draft-cache check still accepts **0/3,810** proposals;
-FP8 cache dtype alone is not the cause. Original 500k production was exactly restored
-at 18:29:47 UTC. No new quality or speed result is claimed.
+**21 October, 19:35 UTC:** the user prioritizes diagnosing zero draft acceptance.
+The long comparison was stopped with all partial data retained; exact original
+500k production was restored at **19:35:23 UTC**. Remaining speed repetitions and
+both full 1,319-question GSM8K arms are deferred. First short-code C1: production
+accepts 195 draft tokens in 60 rounds versus CT's zero in 255 rounds, explaining
+most of the 4.66 versus 20.47 second gap. This is not a compression-only comparison.
+A bounded native-versus-draft-eager trace is being prepared; no fix is claimed.
 See [the live handoff](GLM53_HANDOFF.md).
 
 
