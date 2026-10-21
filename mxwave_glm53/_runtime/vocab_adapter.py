@@ -42,6 +42,10 @@ class VocabMethod(UnquantizedEmbeddingMethod):
                 or output_partition_sizes != [self.target.rows]):
             raise ValueError("Vocabulary adapter requires the audited BF16 TP2 dimensions")
         validate_layer(layer, self.target)
+        # v0.32 treats subclasses of UnquantizedEmbeddingMethod as dense and
+        # bypasses embedding() through a fused weight lookup. Our storage is
+        # packed, so retain upstream's mask/reduce path and our row decoder.
+        layer.use_fused_embedding = False
         loader = attrs.pop("weight_loader")
         layer.mxwave_vocab_source_loaded = False
 

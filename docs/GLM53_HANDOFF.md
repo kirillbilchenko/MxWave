@@ -1,5 +1,28 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 15:19 UTC: native loading accelerated; embedding dispatch gap fixed.**
+`stock-trial-v4` failed during the first profile forward and restored exact
+production at **15:18:05 UTC**. The verified native Run:ai loader completes the
+76,060-tensor stream in about 33 seconds on rank 0; total logged model loading
+is **126.066 seconds**, versus 794.378 seconds in V3. These are sequential startup
+observations, not controlled cold-load benchmarks. API readiness is still pending.
+
+The failure is concrete: v0.32 enables its dense fused embedding lookup for
+`UnquantizedEmbeddingMethod` subclasses, bypassing our `embedding()` method and
+reading `weight=None` after compression. The packaged method now clears that
+dense-only flag during construction. Upstream's masking/reduction and unowned
+dense embedding fast path stay intact. The official embedding source is now
+hash-bound in the compatibility contract. Both v7 CPU containers pass an actual
+upstream forward test with the dense parameter removed, two vocabulary shards,
+boundary/repeated/multidimensional IDs, and unchanged dense dispatch. The GPU
+component check now also exercises that forward with the real compressed row codec.
+
+Local validation: 1,083 tests / 1 skipped, Ruff and strict core mypy pass.
+Wheel SHA256 `a887202f278e57b9bcdfdad1638234eb1d01cad9fc6effd1a05e2272a5272c8e`
+(238,249 bytes). The next bounded startup check is `stock-trial-v5`, with the
+same 500k/32-slot/6-GiB/6,919/prefix-on/dense-head settings and the 3 GiB Run:ai
+buffer. No default kernel change, quality gate change or promotion.
+
 **21 October 2026, 15:12 UTC: full-K independently verified; stock startup retry launched.**
 `marlin-full-k-v1` completes in 412.06 seconds. Exact production restoration is
 verified at **15:08:02 UTC**. The 45-payload archive is SHA-verified on Mac and

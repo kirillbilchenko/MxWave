@@ -137,6 +137,9 @@ def check(bundle: Path, report: dict) -> dict:
     head_result = head.linear(basis, packed_head)
     if not torch.equal(head_result, dense[:, columns].T):
         raise RuntimeError("Vocabulary GEMM basis decode differs")
+    from check_vocab_dispatch import check as check_embedding_dispatch
+
+    report["embedding_dispatch"] = check_embedding_dispatch("cuda")
     # Attribute access above must resolve a real vLLM GPU operation, not a CPU stub.
     assert callable(ops.gptq_marlin_repack)
     report.update(status="passed", stage="complete", installation=installation, expert_cases=cases,

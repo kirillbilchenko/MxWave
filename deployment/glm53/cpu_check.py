@@ -81,6 +81,7 @@ def main() -> None:
     assert follower_args.model_loader_extra_config == {
         "memory_limit": 2 * 1024**3, "concurrency": 8,
     }
+    from check_vocab_dispatch import check as check_embedding_dispatch
     from vllm.v1.worker.gpu_worker import Worker
 
     from mxwave_glm53._runtime.kda_mxfp8_runtime import method_type
@@ -97,6 +98,7 @@ def main() -> None:
         "capacity_cli_validated": True, "capacity_command": capacity_command,
         "capacity_environment": capacity_environment,
         "follower_cli_validated": True, "follower_command": follower_command,
+        "embedding_dispatch": check_embedding_dispatch(),
         "gpu_model_qualification": "pending",
     }
     Path("/release/cpu-check.json").write_text(json.dumps(result, indent=2) + "\n")
