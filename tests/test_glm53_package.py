@@ -113,6 +113,9 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
     assert command[command.index("--kv-cache-memory-bytes") + 1] == str(10 * 1024**3)
     spec = json.loads(command[command.index("--speculative-config") + 1])
     assert spec["num_speculative_tokens"] == 5
+    assert spec["kv_cache_dtype"] == "fp8_e4m3"
+    assert command[command.index("--gpu-memory-utilization") + 1] == "0.85"
+    assert command[command.index("--block-size") + 1] == "2304"
     assert spec["num_speculative_tokens_per_batch_size"] == [[1, 1, 5], [2, 2, 5], [3, 16, 3]]
     assert env["VLLM_PLUGINS"] == "mxwave_glm53"
     assert "PYTHONPATH" not in env

@@ -1,5 +1,32 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 14:35 UTC: upstream GPU components pass; explicit serving defaults corrected.**
+`gpu-check-v3.json` passes on the official image: exact expert U8/BF16 decode,
+raw/packed expert GEMMs with four graph replays at M=1/6/12/16/48, native MXFP8
+basis checks and four graph replays at M=4/8/16/48, and exact vocabulary decode/basis.
+Peak Torch allocation in this synthetic fixture is 2,830,336 bytes. This validates
+component compatibility, not full-model quality, speed or memory savings.
+
+The following `stock-trial-v2` full-model load stopped before weight loading at
+the upstream memory-reservation guard: free 110.42 GiB, requested 111.90 GiB from
+the omitted/default 0.92 utilization setting. The audited production explicitly
+uses **0.85**. That setting is now explicit, along with production's 2,304 cache
+block size and disabled FlashInfer autotuning. Context/slots/prefill/KV remain
+500k/32/6,919/6 GiB. The trial is restoring exact production.
+
+The stock draft cache is now explicitly `fp8_e4m3`. Upstream `auto` selects the
+model dtype; unlike production it has no custom adapter overriding that choice.
+This corrects the launch contract and still needs GPU verification. Images
+`vllm032-sm121-v5` pass local checks and are undergoing both-node CPU preflight for
+fresh `stock-trial-v3`. Wheel SHA256:
+`7df60dd0e34e27bc10a8d1d03a5001311976c65acbae9a6e2932a720a2e7d9c1` (237,859 bytes).
+
+[Deployment instructions](../deployment/glm53/README.md) now document the official
+image, build/install/export/doctor/launch commands, exact capacity flags and release
+limitations. A public asset download/build path is still missing; the current
+exporter consumes the existing verified experiment. Do not claim a fresh user can
+already reproduce everything from a publicly released bundle.
+
 **21 October 2026, 14:30 UTC: first controlled upstream GPU check found an API gap; production restored.**
 `stock-trial-v1` finished `failed_restored` at 14:28:16 UTC. Both original container
 identities and the authenticated 500k endpoint are verified. Full-model candidate
