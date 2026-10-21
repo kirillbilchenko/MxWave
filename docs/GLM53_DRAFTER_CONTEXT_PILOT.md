@@ -1,5 +1,28 @@
 # CT drafter: verified features and context-projection pilot
 
+**21 October 2026, 12:16 UTC: native Modal pilot comparison authorized and preparing.**
+The selected step-16 drafter will be compared with its unmodified Modal FP8 source
+on the same CT target, with **five drafts in every arm**, original/adapted/original
+loads, all **16 pilot-validation prompts**, six seed-42 shuffled cycles, and 256
+output tokens (**288 measured requests**). Candidate bytes verify on both Sparks;
+CPU serving-image preflight is running. No GPU trial has started at this checkpoint.
+Private API 8044 / master 29717; independent watchdog bounds outage to 75 minutes,
+then restores the original 500k production containers. No deployment or full training.
+
+**These validation prompts selected the checkpoint.** This experiment checks whether
+the offline signal transfers to native serving; it does **not** establish generalization
+to new prompts. Keep the sealed set closed. A useful native result still needs an
+unseen-prompt gate before broader claims. Record all output differences, acceptance,
+TTFT, wall time, graph replay evidence and clock/thermal telemetry. Frozen development
+criteria: paired geometric-mean code throughput gain at least 8%, chat/explanation
+regression no more than 2%, exact within-arm/reloaded-original outputs and counters,
+and at most 2% reload timing drift, including each prompt.
+
+Evidence root: `out/drafter-modal-native-v1`; remote `full-model-v1/drafter-modal-native-v1`.
+Frozen plan SHA256: `6a03ea86ee3d7c7ddd92c81328a7f491de22959d3e25c53e6e4e1303c9770e18`.
+Estimated total serving check: 45–60 minutes including loads/restoration, subject to startup.
+
+
 **21 October 2026, 12:05 UTC: small Modal training pilot complete; original production restored.**
 The user-authorized bounded run completes **64 updates on 64 training prompts** in
 **259.902 seconds (4m 20s)**, with 16 development-validation prompts and no skipped

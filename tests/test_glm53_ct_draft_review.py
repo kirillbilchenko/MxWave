@@ -84,3 +84,62 @@ def test_unbound_measurement_blocks_review(tmp_path: Path) -> None:
     with pytest.raises(AssertionError, match="Unbound evidence"):
         review(tmp_path, tmp_path / "review.json")
     assert not (tmp_path / "review.json").exists()
+
+
+def native_evidence(root: Path, *, reload_slow: bool = False) -> None:
+    """Build native pilot evidence with a speed gain and intentional output differences."""
+    evidence(root)
+    plan = json.loads((root / "plan.json").read_bytes())
+    cases = plan["calibration_cases"]
+    cases += [{**c, "id": c["id"] + "-extra"} for c in cases]
+    arms = ["original_a", "adapted", "original_b"]
+    plan.update(revision="drafter-modal-native-v1", depths=dict.fromkeys(arms, 5), arms=arms,
+                trials=6, requests=96, selected_step=16,
+                variants={a: "modal_fp8_step16" if a == "adapted" else "modal_fp8" for a in arms},
+                drafter_files={"modal_fp8": {"model.safetensors": "original"},
+                               "modal_fp8_step16": {"model.safetensors": "adapted"}},
+                development_thresholds={"code_geomean_tps_gain": .08,
+                                        "maximum_chat_explanation_tps_regression": .02})
+    (root / "plan.json").write_text(json.dumps(plan))
+    (root / "measure_features.py").write_text("# frozen native client\n")
+    (root / "prepared.json").write_text(json.dumps({"plan_sha256": digest(root / "plan.json")}))
+    for arm in arms:
+        data = json.loads((root / "s5-measurement.json").read_bytes())
+        data["cases"] += [{**r, "case": r["case"] + "-extra"} for r in data["cases"]]
+        data.update(plan_sha256=digest(root / "plan.json"),
+                    source_sha256=digest(root / "measure_features.py"))
+        for row in data["cases"]:
+            # Deep-copy before mutation: avoid altering another prompt's result dictionary.
+            row["result"] = dict(row["result"])
+            if arm == "adapted":
+                row["result"]["token_ids"] = [6] * 256
+                row["result"]["latency_seconds"] /= 1.1
+            if reload_slow and arm == "original_b" and row["case"] == "case-0":
+                row["result"]["latency_seconds"] *= 1.2
+        (root / f"{arm}-measurement.json").write_text(json.dumps(data))
+        startup = json.loads((root / "s5-startup.json").read_bytes())
+        for item in startup:
+            variant = plan["variants"][arm]
+            item["context_probe"].update(checkpoint_files_verified=True, fc_native_bitwise_equal=True,
+                variant=variant, checkpoint_files=plan["drafter_files"][variant],
+                quant_config="Fp8Config", draft_layers=6, context_width=24576, causal=True,
+                aux_layers=[24, 28, 32, 36, 40, 44])
+        (root / f"{arm}-startup.json").write_text(json.dumps(startup))
+    (root / "evidence-manifest.json").unlink()
+    (root / "evidence-manifest.json").write_text(json.dumps({"files": [
+        {"path": p.name, "bytes": p.stat().st_size, "sha256": digest(p)} for p in root.iterdir()]}))
+
+
+@pytest.mark.parametrize("reload_slow", [False, True])
+def test_native_development_gate_keeps_prompt_drift_and_generalization_limits(
+    tmp_path: Path, reload_slow: bool,
+) -> None:
+    native_evidence(tmp_path, reload_slow=reload_slow)
+    result = review(tmp_path, tmp_path / "review.json")
+    gate = result["development_gate"]
+    assert gate["code_gain_pass"] and gate["original_reload_exact"]
+    assert gate["passed"] is (not reload_slow)
+    assert not gate["generalization_proven"] and not result["automatic_promotion"]
+    assert result["comparisons"]["code"]["adapted"]["paired_geomean_tps_gain"] > .08
+    assert all(not row["tokens_exact"] for row in result["output_comparisons"]
+               if row["arm"] == "adapted")
