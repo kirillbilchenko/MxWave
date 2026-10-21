@@ -1,5 +1,24 @@
 # MxWave
 
+**21 October 2026, 07:16 UTC: production acceptance comparison complete; original 500k service healthy.**
+The same eight development prompts use C1, 256 output tokens and seven drafts.
+Production runs twice; prior CT arms run six cycles. Accepted / proposed tokens:
+
+| Setup | Code | Chat | Explanation |
+| --- | ---: | ---: | ---: |
+| Current production + Inco FP8 | 34.82% | 23.36% | 27.51% |
+| CT + Inco FP8 | 38.81% | 25.60% | 28.16% |
+| CT + Modal BF16 | 42.91% | 26.90% | 30.75% |
+| CT + Modal FP8 | 42.03% | 27.60% | 30.21% |
+
+Production still has higher descriptive throughput, so acceptance alone does not
+explain CT's serving gap. Different targets, trajectories and serving tuning
+prevent causal attribution. Production's fixed-seed outputs differ on all eight
+repeats; prior CT within-load repeats were exact. No new quality/speed qualification,
+training or serving change. The CPU trace audit narrows divergence to at or before
+layer4's pre-convolution QKV at position92; inspected cache metadata/carry checks
+pass. [Evidence and next investigation](docs/GLM53_HANDOFF.md).
+
 **21 October 2026: full capture stopped at the user’s request; pretrained test moved forward.**
 Capture ends at 1,095 prompts; original production restores healthy at 05:46:55 UTC,
 with its original 500,000-token context. Both Sparks independently rehash all

@@ -8,7 +8,7 @@
     "payloads": 406
   },
   "case": "opencoder-evol-92378",
-  "last_shared_observed_equal_state_boundary": 87,
+  "last_shared_observed_equal_state_boundary": 91,
   "first_changed_decision_absolute_position": 92,
   "first_changed_output_index": 37,
   "first_different_token_output_index": 47,
@@ -30,8 +30,8 @@
     ]
   },
   "priority_steps": [
-    "Audit valid convolution-history slices and rollback metadata in the retained layer0/layer4 states; never compare unused cache columns.",
-    "Capture layer0 through layer4 boundaries across positions87 through94 under the two observed native batch groupings, retaining native proposals and before/capture/repeat/after controls.",
+    "Completed: 200 valid convolution-history carry checks, accepted-count/position/slot metadata, and reconstructed accepted QKV/recurrent states on both captures and ranks. Layer4 pre-convolution QKV already differs at92; no inspected metadata/carry defect.",
+    "Capture layer0 through layer4 component boundaries across positions87 through94, including layer1/2 KDA and layer3 MLA state, mHC/norm, experts and layer4 input projection; preserve native eight-row graph grouping and controls.",
     "Replay the first changed component with identical accepted inputs and initial state, changing only the implicated partition or future draft suffix.",
     "Choose a cache-index/rollback correction only if actual read state is wrong; otherwise test a consistent arithmetic schedule on the localized component.",
     "Re-run the same output-identity fixture and measure serving overhead before further drafter qualification."
@@ -42,8 +42,11 @@
     "No training, sealed-test access or model promotion."
   ],
   "limitations": [
-    "Selected layer4 recurrent state differs by position94; this does not prove layer4 itself is faulty.",
+    "Layer4 QKV differs before its convolution/recurrent update at92; the first changed operation is at or upstream of that projection. Earlier-layer cache defects are not excluded.",
     "Earlier different batch groupings already passed, so grouping difference alone is not the root cause.",
     "Fixing target invariance does not establish an acceptance or speed improvement."
-  ]
+  ],
+  "cpu_cache_audit": "completed_on_both_ranks_and_both_captures",
+  "last_shared_observed_equal_state_boundary_kind": "post-token accepted recurrent state reconstructed from next snapshot",
+  "first_changed_preconv_qkv_position": 92
 }

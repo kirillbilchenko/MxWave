@@ -1,5 +1,31 @@
 # Pretrained drafter screen before further training
 
+**21 October 2026, 07:16 UTC: production comparison does not show a CT acceptance deficit.**
+A live, unchanged-production screen uses the same eight development prompts,
+C1, 256 output tokens, seed 42, temperature 0 and seven drafts, twice. Results:
+
+| Setup | Code acceptance | Chat acceptance | Explanation acceptance |
+| --- | ---: | ---: | ---: |
+| Current production + Inco FP8 | 34.82% | 23.36% | 27.51% |
+| CT + Inco FP8 | 38.81% | 25.60% | 28.16% |
+| CT + Modal BF16 | 42.91% | 26.90% | 30.75% |
+| CT + Modal FP8 | 42.03% | 27.60% | 30.21% |
+
+Acceptance means accepted draft tokens / all proposed tokens. Production accepts
+2.44 code tokens per seven-token draft round; first-position agreement is 82.24%.
+All eight production outputs and counters differ between cycles despite fixed
+seed; CT's six within-load repeats were exact. The target, output trajectories,
+prefix caching and other serving tuning differ, so this is a descriptive setup
+comparison. Production still records 49.09/41.47/41.71 tok/s for code/chat/explanation;
+no causal speed or quality claim. The run finishes healthy without restarting or
+changing production. Report: `diagnostics-v1/production-drafter-acceptance-v1-review.json`.
+
+The saved CT trace also now confirms matching accepted layer0/4 QKV and state
+through position 91, with layer4 QKV first different at 92, before its recurrent
+update. All 200 inspected convolution-history carry checks pass. Next is a
+component trace in layers0–4; no follow-up GPU run is queued. Training stays held.
+[Full evidence and limits](GLM53_HANDOFF.md).
+
 **21 October 2026, 06:56 UTC: native-decision trace completes and independently verifies.**
 Both GPUs reproduce the same finding: target logits/hidden states remain exact
 for the first 37 output decisions, then differ at output 38; generated tokens

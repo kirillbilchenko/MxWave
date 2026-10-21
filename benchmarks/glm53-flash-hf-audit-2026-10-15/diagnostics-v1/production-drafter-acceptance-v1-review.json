@@ -1,0 +1,1387 @@
+{
+  "status": "reviewed",
+  "production_requests": 16,
+  "production_excluded_warmups": 2,
+  "prompt_count": 8,
+  "generation": {
+    "concurrency": 1,
+    "output_tokens": 256,
+    "draft_tokens": 7,
+    "temperature": 0,
+    "seed": 42
+  },
+  "reference_plan_sha256": "52ed3ed2ad97f0de5b05c06342ce04ccc9c866ff82f069d519a6d054a4b8c1e8",
+  "production_measurement_sha256": "34ea88068b35b8e335eb7a42c021f7344af5cd619adcac7d46e8e8f2c091d08d",
+  "production_identity": {
+    "container_id": "8e0426b9a4183b8fdaa2ed2d4047924e9554b2cb37950e8f31bce52589d07e11",
+    "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+    "started_at": "2026-10-21T06:46:38.010465519Z",
+    "running": true,
+    "args": {
+      "--speculative-config": "{\"method\": \"dflash\", \"model\": \"/draft\", \"num_speculative_tokens\": 7, \"kv_cache_dtype\": \"auto\", \"num_speculative_tokens_per_batch_size\": [[1, 1, 7], [2, 2, 5], [3, 27, 3], [28, 28, 6], [29, 29, 4], [30, 30, 2], [31, 32, 1]], \"rejection_sample_method\": \"standard\"}",
+      "--max-model-len": "500000",
+      "--max-num-seqs": "32",
+      "--max-num-batched-tokens": "6919"
+    },
+    "prefix_caching": true
+  },
+  "production_repeats": [
+    {
+      "case": "dolly-12645",
+      "first_different_output_index": 8,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "dolly-1769",
+      "first_different_output_index": 4,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "dolly-4017",
+      "first_different_output_index": 32,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "dolly-7475",
+      "first_different_output_index": 20,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "opencoder-evol-15654",
+      "first_different_output_index": 35,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "opencoder-evol-20845",
+      "first_different_output_index": 86,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "opencoder-evol-69100",
+      "first_different_output_index": 104,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    },
+    {
+      "case": "opencoder-evol-92378",
+      "first_different_output_index": 60,
+      "tokens_exact": false,
+      "speculative_counters_exact": false
+    }
+  ],
+  "summary": {
+    "production": {
+      "code": {
+        "draft_rounds": 597.0,
+        "proposed_tokens": 4179.0,
+        "accepted_tokens": 1455.0,
+        "acceptance_rate": 0.34816941852117733,
+        "accepted_per_round": 2.437185929648241,
+        "prefix_survival": [
+          0.8224455611390284,
+          0.5829145728643216,
+          0.38358458961474035,
+          0.24120603015075376,
+          0.19095477386934673,
+          0.1323283082077052,
+          0.08375209380234507
+        ],
+        "requests": 8,
+        "distinct_prompts": 4,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 297.0,
+            "proposed_tokens": 2079.0,
+            "accepted_tokens": 730.0,
+            "acceptance_rate": 0.3511303511303511,
+            "accepted_per_round": 2.457912457912458,
+            "prefix_survival": [
+              0.8215488215488216,
+              0.5723905723905723,
+              0.37037037037037035,
+              0.24915824915824916,
+              0.20202020202020202,
+              0.14814814814814814,
+              0.09427609427609428
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 300.0,
+            "proposed_tokens": 2100.0,
+            "accepted_tokens": 725.0,
+            "acceptance_rate": 0.34523809523809523,
+            "accepted_per_round": 2.4166666666666665,
+            "prefix_survival": [
+              0.8233333333333334,
+              0.5933333333333334,
+              0.39666666666666667,
+              0.23333333333333334,
+              0.18,
+              0.11666666666666667,
+              0.07333333333333333
+            ]
+          }
+        ],
+        "median_tps": 49.085714532424035,
+        "median_ttft": 0.28964690049999997
+      },
+      "chat": {
+        "draft_rounds": 389.0,
+        "proposed_tokens": 2723.0,
+        "accepted_tokens": 636.0,
+        "acceptance_rate": 0.2335659199412413,
+        "accepted_per_round": 1.634961439588689,
+        "prefix_survival": [
+          0.7557840616966581,
+          0.4241645244215938,
+          0.2544987146529563,
+          0.09511568123393316,
+          0.05398457583547558,
+          0.03598971722365039,
+          0.015424164524421594
+        ],
+        "requests": 4,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 200.0,
+            "proposed_tokens": 1400.0,
+            "accepted_tokens": 314.0,
+            "acceptance_rate": 0.22428571428571428,
+            "accepted_per_round": 1.57,
+            "prefix_survival": [
+              0.745,
+              0.425,
+              0.22,
+              0.085,
+              0.05,
+              0.035,
+              0.01
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 189.0,
+            "proposed_tokens": 1323.0,
+            "accepted_tokens": 322.0,
+            "acceptance_rate": 0.24338624338624337,
+            "accepted_per_round": 1.7037037037037037,
+            "prefix_survival": [
+              0.7671957671957672,
+              0.42328042328042326,
+              0.291005291005291,
+              0.10582010582010581,
+              0.0582010582010582,
+              0.037037037037037035,
+              0.021164021164021163
+            ]
+          }
+        ],
+        "median_tps": 41.47111875883003,
+        "median_ttft": 0.2031122585
+      },
+      "explanation": {
+        "draft_rounds": 351.0,
+        "proposed_tokens": 2457.0,
+        "accepted_tokens": 676.0,
+        "acceptance_rate": 0.2751322751322751,
+        "accepted_per_round": 1.9259259259259258,
+        "prefix_survival": [
+          0.7692307692307693,
+          0.47293447293447294,
+          0.2934472934472934,
+          0.16809116809116809,
+          0.1168091168091168,
+          0.06552706552706553,
+          0.039886039886039885
+        ],
+        "requests": 4,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 334.0,
+            "acceptance_rate": 0.2607338017174083,
+            "accepted_per_round": 1.825136612021858,
+            "prefix_survival": [
+              0.7704918032786885,
+              0.4262295081967213,
+              0.2786885245901639,
+              0.14754098360655737,
+              0.09836065573770492,
+              0.060109289617486336,
+              0.04371584699453552
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 168.0,
+            "proposed_tokens": 1176.0,
+            "accepted_tokens": 342.0,
+            "acceptance_rate": 0.29081632653061223,
+            "accepted_per_round": 2.0357142857142856,
+            "prefix_survival": [
+              0.7678571428571429,
+              0.5238095238095238,
+              0.30952380952380953,
+              0.19047619047619047,
+              0.13690476190476192,
+              0.07142857142857142,
+              0.03571428571428571
+            ]
+          }
+        ],
+        "median_tps": 41.70518518906512,
+        "median_ttft": 0.196630589
+      }
+    },
+    "ct_inco_fp8": {
+      "code": {
+        "draft_rounds": 1650.0,
+        "proposed_tokens": 11550.0,
+        "accepted_tokens": 4482.0,
+        "acceptance_rate": 0.38805194805194804,
+        "accepted_per_round": 2.7163636363636363,
+        "prefix_survival": [
+          0.7672727272727272,
+          0.5781818181818181,
+          0.44363636363636366,
+          0.3236363636363636,
+          0.24727272727272728,
+          0.2,
+          0.15636363636363637
+        ],
+        "requests": 24,
+        "distinct_prompts": 4,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 275.0,
+            "proposed_tokens": 1925.0,
+            "accepted_tokens": 747.0,
+            "acceptance_rate": 0.38805194805194804,
+            "accepted_per_round": 2.7163636363636363,
+            "prefix_survival": [
+              0.7672727272727272,
+              0.5781818181818181,
+              0.44363636363636366,
+              0.3236363636363636,
+              0.24727272727272728,
+              0.2,
+              0.15636363636363637
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 275.0,
+            "proposed_tokens": 1925.0,
+            "accepted_tokens": 747.0,
+            "acceptance_rate": 0.38805194805194804,
+            "accepted_per_round": 2.7163636363636363,
+            "prefix_survival": [
+              0.7672727272727272,
+              0.5781818181818181,
+              0.44363636363636366,
+              0.3236363636363636,
+              0.24727272727272728,
+              0.2,
+              0.15636363636363637
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 275.0,
+            "proposed_tokens": 1925.0,
+            "accepted_tokens": 747.0,
+            "acceptance_rate": 0.38805194805194804,
+            "accepted_per_round": 2.7163636363636363,
+            "prefix_survival": [
+              0.7672727272727272,
+              0.5781818181818181,
+              0.44363636363636366,
+              0.3236363636363636,
+              0.24727272727272728,
+              0.2,
+              0.15636363636363637
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 275.0,
+            "proposed_tokens": 1925.0,
+            "accepted_tokens": 747.0,
+            "acceptance_rate": 0.38805194805194804,
+            "accepted_per_round": 2.7163636363636363,
+            "prefix_survival": [
+              0.7672727272727272,
+              0.5781818181818181,
+              0.44363636363636366,
+              0.3236363636363636,
+              0.24727272727272728,
+              0.2,
+              0.15636363636363637
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 275.0,
+            "proposed_tokens": 1925.0,
+            "accepted_tokens": 747.0,
+            "acceptance_rate": 0.38805194805194804,
+            "accepted_per_round": 2.7163636363636363,
+            "prefix_survival": [
+              0.7672727272727272,
+              0.5781818181818181,
+              0.44363636363636366,
+              0.3236363636363636,
+              0.24727272727272728,
+              0.2,
+              0.15636363636363637
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 275.0,
+            "proposed_tokens": 1925.0,
+            "accepted_tokens": 747.0,
+            "acceptance_rate": 0.38805194805194804,
+            "accepted_per_round": 2.7163636363636363,
+            "prefix_survival": [
+              0.7672727272727272,
+              0.5781818181818181,
+              0.44363636363636366,
+              0.3236363636363636,
+              0.24727272727272728,
+              0.2,
+              0.15636363636363637
+            ]
+          }
+        ],
+        "median_tps": 39.87572703221729,
+        "median_ttft": 0.2766493635
+      },
+      "chat": {
+        "draft_rounds": 1098.0,
+        "proposed_tokens": 7686.0,
+        "accepted_tokens": 1968.0,
+        "acceptance_rate": 0.25604996096799376,
+        "accepted_per_round": 1.7923497267759563,
+        "prefix_survival": [
+          0.6994535519125683,
+          0.4426229508196721,
+          0.28415300546448086,
+          0.15846994535519127,
+          0.10382513661202186,
+          0.06557377049180328,
+          0.03825136612021858
+        ],
+        "requests": 12,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 328.0,
+            "acceptance_rate": 0.25604996096799376,
+            "accepted_per_round": 1.7923497267759563,
+            "prefix_survival": [
+              0.6994535519125683,
+              0.4426229508196721,
+              0.28415300546448086,
+              0.15846994535519127,
+              0.10382513661202186,
+              0.06557377049180328,
+              0.03825136612021858
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 328.0,
+            "acceptance_rate": 0.25604996096799376,
+            "accepted_per_round": 1.7923497267759563,
+            "prefix_survival": [
+              0.6994535519125683,
+              0.4426229508196721,
+              0.28415300546448086,
+              0.15846994535519127,
+              0.10382513661202186,
+              0.06557377049180328,
+              0.03825136612021858
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 328.0,
+            "acceptance_rate": 0.25604996096799376,
+            "accepted_per_round": 1.7923497267759563,
+            "prefix_survival": [
+              0.6994535519125683,
+              0.4426229508196721,
+              0.28415300546448086,
+              0.15846994535519127,
+              0.10382513661202186,
+              0.06557377049180328,
+              0.03825136612021858
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 328.0,
+            "acceptance_rate": 0.25604996096799376,
+            "accepted_per_round": 1.7923497267759563,
+            "prefix_survival": [
+              0.6994535519125683,
+              0.4426229508196721,
+              0.28415300546448086,
+              0.15846994535519127,
+              0.10382513661202186,
+              0.06557377049180328,
+              0.03825136612021858
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 328.0,
+            "acceptance_rate": 0.25604996096799376,
+            "accepted_per_round": 1.7923497267759563,
+            "prefix_survival": [
+              0.6994535519125683,
+              0.4426229508196721,
+              0.28415300546448086,
+              0.15846994535519127,
+              0.10382513661202186,
+              0.06557377049180328,
+              0.03825136612021858
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 183.0,
+            "proposed_tokens": 1281.0,
+            "accepted_tokens": 328.0,
+            "acceptance_rate": 0.25604996096799376,
+            "accepted_per_round": 1.7923497267759563,
+            "prefix_survival": [
+              0.6994535519125683,
+              0.4426229508196721,
+              0.28415300546448086,
+              0.15846994535519127,
+              0.10382513661202186,
+              0.06557377049180328,
+              0.03825136612021858
+            ]
+          }
+        ],
+        "median_tps": 29.563855126194603,
+        "median_ttft": 0.1759401345
+      },
+      "explanation": {
+        "draft_rounds": 1038.0,
+        "proposed_tokens": 7266.0,
+        "accepted_tokens": 2046.0,
+        "acceptance_rate": 0.2815854665565648,
+        "accepted_per_round": 1.9710982658959537,
+        "prefix_survival": [
+          0.7167630057803468,
+          0.4913294797687861,
+          0.3468208092485549,
+          0.20809248554913296,
+          0.09826589595375723,
+          0.06358381502890173,
+          0.046242774566473986
+        ],
+        "requests": 12,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 173.0,
+            "proposed_tokens": 1211.0,
+            "accepted_tokens": 341.0,
+            "acceptance_rate": 0.2815854665565648,
+            "accepted_per_round": 1.9710982658959537,
+            "prefix_survival": [
+              0.7167630057803468,
+              0.4913294797687861,
+              0.3468208092485549,
+              0.20809248554913296,
+              0.09826589595375723,
+              0.06358381502890173,
+              0.046242774566473986
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 173.0,
+            "proposed_tokens": 1211.0,
+            "accepted_tokens": 341.0,
+            "acceptance_rate": 0.2815854665565648,
+            "accepted_per_round": 1.9710982658959537,
+            "prefix_survival": [
+              0.7167630057803468,
+              0.4913294797687861,
+              0.3468208092485549,
+              0.20809248554913296,
+              0.09826589595375723,
+              0.06358381502890173,
+              0.046242774566473986
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 173.0,
+            "proposed_tokens": 1211.0,
+            "accepted_tokens": 341.0,
+            "acceptance_rate": 0.2815854665565648,
+            "accepted_per_round": 1.9710982658959537,
+            "prefix_survival": [
+              0.7167630057803468,
+              0.4913294797687861,
+              0.3468208092485549,
+              0.20809248554913296,
+              0.09826589595375723,
+              0.06358381502890173,
+              0.046242774566473986
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 173.0,
+            "proposed_tokens": 1211.0,
+            "accepted_tokens": 341.0,
+            "acceptance_rate": 0.2815854665565648,
+            "accepted_per_round": 1.9710982658959537,
+            "prefix_survival": [
+              0.7167630057803468,
+              0.4913294797687861,
+              0.3468208092485549,
+              0.20809248554913296,
+              0.09826589595375723,
+              0.06358381502890173,
+              0.046242774566473986
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 173.0,
+            "proposed_tokens": 1211.0,
+            "accepted_tokens": 341.0,
+            "acceptance_rate": 0.2815854665565648,
+            "accepted_per_round": 1.9710982658959537,
+            "prefix_survival": [
+              0.7167630057803468,
+              0.4913294797687861,
+              0.3468208092485549,
+              0.20809248554913296,
+              0.09826589595375723,
+              0.06358381502890173,
+              0.046242774566473986
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 173.0,
+            "proposed_tokens": 1211.0,
+            "accepted_tokens": 341.0,
+            "acceptance_rate": 0.2815854665565648,
+            "accepted_per_round": 1.9710982658959537,
+            "prefix_survival": [
+              0.7167630057803468,
+              0.4913294797687861,
+              0.3468208092485549,
+              0.20809248554913296,
+              0.09826589595375723,
+              0.06358381502890173,
+              0.046242774566473986
+            ]
+          }
+        ],
+        "median_tps": 31.195025870068264,
+        "median_ttft": 0.19709592999999997
+      }
+    },
+    "ct_modal_bf16": {
+      "code": {
+        "draft_rounds": 1536.0,
+        "proposed_tokens": 10752.0,
+        "accepted_tokens": 4614.0,
+        "acceptance_rate": 0.4291294642857143,
+        "accepted_per_round": 3.00390625,
+        "prefix_survival": [
+          0.8125,
+          0.5859375,
+          0.4921875,
+          0.40234375,
+          0.296875,
+          0.23828125,
+          0.17578125
+        ],
+        "requests": 24,
+        "distinct_prompts": 4,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 256.0,
+            "proposed_tokens": 1792.0,
+            "accepted_tokens": 769.0,
+            "acceptance_rate": 0.4291294642857143,
+            "accepted_per_round": 3.00390625,
+            "prefix_survival": [
+              0.8125,
+              0.5859375,
+              0.4921875,
+              0.40234375,
+              0.296875,
+              0.23828125,
+              0.17578125
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 256.0,
+            "proposed_tokens": 1792.0,
+            "accepted_tokens": 769.0,
+            "acceptance_rate": 0.4291294642857143,
+            "accepted_per_round": 3.00390625,
+            "prefix_survival": [
+              0.8125,
+              0.5859375,
+              0.4921875,
+              0.40234375,
+              0.296875,
+              0.23828125,
+              0.17578125
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 256.0,
+            "proposed_tokens": 1792.0,
+            "accepted_tokens": 769.0,
+            "acceptance_rate": 0.4291294642857143,
+            "accepted_per_round": 3.00390625,
+            "prefix_survival": [
+              0.8125,
+              0.5859375,
+              0.4921875,
+              0.40234375,
+              0.296875,
+              0.23828125,
+              0.17578125
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 256.0,
+            "proposed_tokens": 1792.0,
+            "accepted_tokens": 769.0,
+            "acceptance_rate": 0.4291294642857143,
+            "accepted_per_round": 3.00390625,
+            "prefix_survival": [
+              0.8125,
+              0.5859375,
+              0.4921875,
+              0.40234375,
+              0.296875,
+              0.23828125,
+              0.17578125
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 256.0,
+            "proposed_tokens": 1792.0,
+            "accepted_tokens": 769.0,
+            "acceptance_rate": 0.4291294642857143,
+            "accepted_per_round": 3.00390625,
+            "prefix_survival": [
+              0.8125,
+              0.5859375,
+              0.4921875,
+              0.40234375,
+              0.296875,
+              0.23828125,
+              0.17578125
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 256.0,
+            "proposed_tokens": 1792.0,
+            "accepted_tokens": 769.0,
+            "acceptance_rate": 0.4291294642857143,
+            "accepted_per_round": 3.00390625,
+            "prefix_survival": [
+              0.8125,
+              0.5859375,
+              0.4921875,
+              0.40234375,
+              0.296875,
+              0.23828125,
+              0.17578125
+            ]
+          }
+        ],
+        "median_tps": 40.83036115173202,
+        "median_ttft": 0.2513510205
+      },
+      "chat": {
+        "draft_rounds": 1074.0,
+        "proposed_tokens": 7518.0,
+        "accepted_tokens": 2022.0,
+        "acceptance_rate": 0.26895450917797287,
+        "accepted_per_round": 1.8826815642458101,
+        "prefix_survival": [
+          0.7206703910614525,
+          0.4581005586592179,
+          0.2905027932960894,
+          0.19553072625698323,
+          0.09497206703910614,
+          0.0670391061452514,
+          0.055865921787709494
+        ],
+        "requests": 12,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 179.0,
+            "proposed_tokens": 1253.0,
+            "accepted_tokens": 337.0,
+            "acceptance_rate": 0.26895450917797287,
+            "accepted_per_round": 1.8826815642458101,
+            "prefix_survival": [
+              0.7206703910614525,
+              0.4581005586592179,
+              0.2905027932960894,
+              0.19553072625698323,
+              0.09497206703910614,
+              0.0670391061452514,
+              0.055865921787709494
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 179.0,
+            "proposed_tokens": 1253.0,
+            "accepted_tokens": 337.0,
+            "acceptance_rate": 0.26895450917797287,
+            "accepted_per_round": 1.8826815642458101,
+            "prefix_survival": [
+              0.7206703910614525,
+              0.4581005586592179,
+              0.2905027932960894,
+              0.19553072625698323,
+              0.09497206703910614,
+              0.0670391061452514,
+              0.055865921787709494
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 179.0,
+            "proposed_tokens": 1253.0,
+            "accepted_tokens": 337.0,
+            "acceptance_rate": 0.26895450917797287,
+            "accepted_per_round": 1.8826815642458101,
+            "prefix_survival": [
+              0.7206703910614525,
+              0.4581005586592179,
+              0.2905027932960894,
+              0.19553072625698323,
+              0.09497206703910614,
+              0.0670391061452514,
+              0.055865921787709494
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 179.0,
+            "proposed_tokens": 1253.0,
+            "accepted_tokens": 337.0,
+            "acceptance_rate": 0.26895450917797287,
+            "accepted_per_round": 1.8826815642458101,
+            "prefix_survival": [
+              0.7206703910614525,
+              0.4581005586592179,
+              0.2905027932960894,
+              0.19553072625698323,
+              0.09497206703910614,
+              0.0670391061452514,
+              0.055865921787709494
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 179.0,
+            "proposed_tokens": 1253.0,
+            "accepted_tokens": 337.0,
+            "acceptance_rate": 0.26895450917797287,
+            "accepted_per_round": 1.8826815642458101,
+            "prefix_survival": [
+              0.7206703910614525,
+              0.4581005586592179,
+              0.2905027932960894,
+              0.19553072625698323,
+              0.09497206703910614,
+              0.0670391061452514,
+              0.055865921787709494
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 179.0,
+            "proposed_tokens": 1253.0,
+            "accepted_tokens": 337.0,
+            "acceptance_rate": 0.26895450917797287,
+            "accepted_per_round": 1.8826815642458101,
+            "prefix_survival": [
+              0.7206703910614525,
+              0.4581005586592179,
+              0.2905027932960894,
+              0.19553072625698323,
+              0.09497206703910614,
+              0.0670391061452514,
+              0.055865921787709494
+            ]
+          }
+        ],
+        "median_tps": 29.29755166393795,
+        "median_ttft": 0.18389532549999998
+      },
+      "explanation": {
+        "draft_rounds": 984.0,
+        "proposed_tokens": 6888.0,
+        "accepted_tokens": 2118.0,
+        "acceptance_rate": 0.3074912891986063,
+        "accepted_per_round": 2.152439024390244,
+        "prefix_survival": [
+          0.725609756097561,
+          0.5060975609756098,
+          0.35365853658536583,
+          0.22560975609756098,
+          0.15853658536585366,
+          0.11585365853658537,
+          0.06707317073170732
+        ],
+        "requests": 12,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 164.0,
+            "proposed_tokens": 1148.0,
+            "accepted_tokens": 353.0,
+            "acceptance_rate": 0.3074912891986063,
+            "accepted_per_round": 2.152439024390244,
+            "prefix_survival": [
+              0.725609756097561,
+              0.5060975609756098,
+              0.35365853658536583,
+              0.22560975609756098,
+              0.15853658536585366,
+              0.11585365853658537,
+              0.06707317073170732
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 164.0,
+            "proposed_tokens": 1148.0,
+            "accepted_tokens": 353.0,
+            "acceptance_rate": 0.3074912891986063,
+            "accepted_per_round": 2.152439024390244,
+            "prefix_survival": [
+              0.725609756097561,
+              0.5060975609756098,
+              0.35365853658536583,
+              0.22560975609756098,
+              0.15853658536585366,
+              0.11585365853658537,
+              0.06707317073170732
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 164.0,
+            "proposed_tokens": 1148.0,
+            "accepted_tokens": 353.0,
+            "acceptance_rate": 0.3074912891986063,
+            "accepted_per_round": 2.152439024390244,
+            "prefix_survival": [
+              0.725609756097561,
+              0.5060975609756098,
+              0.35365853658536583,
+              0.22560975609756098,
+              0.15853658536585366,
+              0.11585365853658537,
+              0.06707317073170732
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 164.0,
+            "proposed_tokens": 1148.0,
+            "accepted_tokens": 353.0,
+            "acceptance_rate": 0.3074912891986063,
+            "accepted_per_round": 2.152439024390244,
+            "prefix_survival": [
+              0.725609756097561,
+              0.5060975609756098,
+              0.35365853658536583,
+              0.22560975609756098,
+              0.15853658536585366,
+              0.11585365853658537,
+              0.06707317073170732
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 164.0,
+            "proposed_tokens": 1148.0,
+            "accepted_tokens": 353.0,
+            "acceptance_rate": 0.3074912891986063,
+            "accepted_per_round": 2.152439024390244,
+            "prefix_survival": [
+              0.725609756097561,
+              0.5060975609756098,
+              0.35365853658536583,
+              0.22560975609756098,
+              0.15853658536585366,
+              0.11585365853658537,
+              0.06707317073170732
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 164.0,
+            "proposed_tokens": 1148.0,
+            "accepted_tokens": 353.0,
+            "acceptance_rate": 0.3074912891986063,
+            "accepted_per_round": 2.152439024390244,
+            "prefix_survival": [
+              0.725609756097561,
+              0.5060975609756098,
+              0.35365853658536583,
+              0.22560975609756098,
+              0.15853658536585366,
+              0.11585365853658537,
+              0.06707317073170732
+            ]
+          }
+        ],
+        "median_tps": 31.575413064432656,
+        "median_ttft": 0.19678893400000003
+      }
+    },
+    "ct_modal_fp8": {
+      "code": {
+        "draft_rounds": 1560.0,
+        "proposed_tokens": 10920.0,
+        "accepted_tokens": 4590.0,
+        "acceptance_rate": 0.42032967032967034,
+        "accepted_per_round": 2.9423076923076925,
+        "prefix_survival": [
+          0.8038461538461539,
+          0.5807692307692308,
+          0.47692307692307695,
+          0.3923076923076923,
+          0.2923076923076923,
+          0.22692307692307692,
+          0.16923076923076924
+        ],
+        "requests": 24,
+        "distinct_prompts": 4,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 260.0,
+            "proposed_tokens": 1820.0,
+            "accepted_tokens": 765.0,
+            "acceptance_rate": 0.42032967032967034,
+            "accepted_per_round": 2.9423076923076925,
+            "prefix_survival": [
+              0.8038461538461539,
+              0.5807692307692308,
+              0.47692307692307695,
+              0.3923076923076923,
+              0.2923076923076923,
+              0.22692307692307692,
+              0.16923076923076924
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 260.0,
+            "proposed_tokens": 1820.0,
+            "accepted_tokens": 765.0,
+            "acceptance_rate": 0.42032967032967034,
+            "accepted_per_round": 2.9423076923076925,
+            "prefix_survival": [
+              0.8038461538461539,
+              0.5807692307692308,
+              0.47692307692307695,
+              0.3923076923076923,
+              0.2923076923076923,
+              0.22692307692307692,
+              0.16923076923076924
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 260.0,
+            "proposed_tokens": 1820.0,
+            "accepted_tokens": 765.0,
+            "acceptance_rate": 0.42032967032967034,
+            "accepted_per_round": 2.9423076923076925,
+            "prefix_survival": [
+              0.8038461538461539,
+              0.5807692307692308,
+              0.47692307692307695,
+              0.3923076923076923,
+              0.2923076923076923,
+              0.22692307692307692,
+              0.16923076923076924
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 260.0,
+            "proposed_tokens": 1820.0,
+            "accepted_tokens": 765.0,
+            "acceptance_rate": 0.42032967032967034,
+            "accepted_per_round": 2.9423076923076925,
+            "prefix_survival": [
+              0.8038461538461539,
+              0.5807692307692308,
+              0.47692307692307695,
+              0.3923076923076923,
+              0.2923076923076923,
+              0.22692307692307692,
+              0.16923076923076924
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 260.0,
+            "proposed_tokens": 1820.0,
+            "accepted_tokens": 765.0,
+            "acceptance_rate": 0.42032967032967034,
+            "accepted_per_round": 2.9423076923076925,
+            "prefix_survival": [
+              0.8038461538461539,
+              0.5807692307692308,
+              0.47692307692307695,
+              0.3923076923076923,
+              0.2923076923076923,
+              0.22692307692307692,
+              0.16923076923076924
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 260.0,
+            "proposed_tokens": 1820.0,
+            "accepted_tokens": 765.0,
+            "acceptance_rate": 0.42032967032967034,
+            "accepted_per_round": 2.9423076923076925,
+            "prefix_survival": [
+              0.8038461538461539,
+              0.5807692307692308,
+              0.47692307692307695,
+              0.3923076923076923,
+              0.2923076923076923,
+              0.22692307692307692,
+              0.16923076923076924
+            ]
+          }
+        ],
+        "median_tps": 41.17681872351951,
+        "median_ttft": 0.25748424449999996
+      },
+      "chat": {
+        "draft_rounds": 1056.0,
+        "proposed_tokens": 7392.0,
+        "accepted_tokens": 2040.0,
+        "acceptance_rate": 0.275974025974026,
+        "accepted_per_round": 1.9318181818181819,
+        "prefix_survival": [
+          0.7159090909090909,
+          0.4659090909090909,
+          0.3068181818181818,
+          0.21022727272727273,
+          0.10795454545454546,
+          0.07386363636363637,
+          0.05113636363636364
+        ],
+        "requests": 12,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 176.0,
+            "proposed_tokens": 1232.0,
+            "accepted_tokens": 340.0,
+            "acceptance_rate": 0.275974025974026,
+            "accepted_per_round": 1.9318181818181819,
+            "prefix_survival": [
+              0.7159090909090909,
+              0.4659090909090909,
+              0.3068181818181818,
+              0.21022727272727273,
+              0.10795454545454546,
+              0.07386363636363637,
+              0.05113636363636364
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 176.0,
+            "proposed_tokens": 1232.0,
+            "accepted_tokens": 340.0,
+            "acceptance_rate": 0.275974025974026,
+            "accepted_per_round": 1.9318181818181819,
+            "prefix_survival": [
+              0.7159090909090909,
+              0.4659090909090909,
+              0.3068181818181818,
+              0.21022727272727273,
+              0.10795454545454546,
+              0.07386363636363637,
+              0.05113636363636364
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 176.0,
+            "proposed_tokens": 1232.0,
+            "accepted_tokens": 340.0,
+            "acceptance_rate": 0.275974025974026,
+            "accepted_per_round": 1.9318181818181819,
+            "prefix_survival": [
+              0.7159090909090909,
+              0.4659090909090909,
+              0.3068181818181818,
+              0.21022727272727273,
+              0.10795454545454546,
+              0.07386363636363637,
+              0.05113636363636364
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 176.0,
+            "proposed_tokens": 1232.0,
+            "accepted_tokens": 340.0,
+            "acceptance_rate": 0.275974025974026,
+            "accepted_per_round": 1.9318181818181819,
+            "prefix_survival": [
+              0.7159090909090909,
+              0.4659090909090909,
+              0.3068181818181818,
+              0.21022727272727273,
+              0.10795454545454546,
+              0.07386363636363637,
+              0.05113636363636364
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 176.0,
+            "proposed_tokens": 1232.0,
+            "accepted_tokens": 340.0,
+            "acceptance_rate": 0.275974025974026,
+            "accepted_per_round": 1.9318181818181819,
+            "prefix_survival": [
+              0.7159090909090909,
+              0.4659090909090909,
+              0.3068181818181818,
+              0.21022727272727273,
+              0.10795454545454546,
+              0.07386363636363637,
+              0.05113636363636364
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 176.0,
+            "proposed_tokens": 1232.0,
+            "accepted_tokens": 340.0,
+            "acceptance_rate": 0.275974025974026,
+            "accepted_per_round": 1.9318181818181819,
+            "prefix_survival": [
+              0.7159090909090909,
+              0.4659090909090909,
+              0.3068181818181818,
+              0.21022727272727273,
+              0.10795454545454546,
+              0.07386363636363637,
+              0.05113636363636364
+            ]
+          }
+        ],
+        "median_tps": 30.699708603741044,
+        "median_ttft": 0.1842377925
+      },
+      "explanation": {
+        "draft_rounds": 996.0,
+        "proposed_tokens": 6972.0,
+        "accepted_tokens": 2106.0,
+        "acceptance_rate": 0.30206540447504304,
+        "accepted_per_round": 2.1144578313253013,
+        "prefix_survival": [
+          0.7228915662650602,
+          0.4939759036144578,
+          0.3493975903614458,
+          0.22289156626506024,
+          0.14457831325301204,
+          0.10843373493975904,
+          0.07228915662650602
+        ],
+        "requests": 12,
+        "distinct_prompts": 2,
+        "per_trial": [
+          {
+            "trial": 0,
+            "draft_rounds": 166.0,
+            "proposed_tokens": 1162.0,
+            "accepted_tokens": 351.0,
+            "acceptance_rate": 0.30206540447504304,
+            "accepted_per_round": 2.1144578313253013,
+            "prefix_survival": [
+              0.7228915662650602,
+              0.4939759036144578,
+              0.3493975903614458,
+              0.22289156626506024,
+              0.14457831325301204,
+              0.10843373493975904,
+              0.07228915662650602
+            ]
+          },
+          {
+            "trial": 1,
+            "draft_rounds": 166.0,
+            "proposed_tokens": 1162.0,
+            "accepted_tokens": 351.0,
+            "acceptance_rate": 0.30206540447504304,
+            "accepted_per_round": 2.1144578313253013,
+            "prefix_survival": [
+              0.7228915662650602,
+              0.4939759036144578,
+              0.3493975903614458,
+              0.22289156626506024,
+              0.14457831325301204,
+              0.10843373493975904,
+              0.07228915662650602
+            ]
+          },
+          {
+            "trial": 2,
+            "draft_rounds": 166.0,
+            "proposed_tokens": 1162.0,
+            "accepted_tokens": 351.0,
+            "acceptance_rate": 0.30206540447504304,
+            "accepted_per_round": 2.1144578313253013,
+            "prefix_survival": [
+              0.7228915662650602,
+              0.4939759036144578,
+              0.3493975903614458,
+              0.22289156626506024,
+              0.14457831325301204,
+              0.10843373493975904,
+              0.07228915662650602
+            ]
+          },
+          {
+            "trial": 3,
+            "draft_rounds": 166.0,
+            "proposed_tokens": 1162.0,
+            "accepted_tokens": 351.0,
+            "acceptance_rate": 0.30206540447504304,
+            "accepted_per_round": 2.1144578313253013,
+            "prefix_survival": [
+              0.7228915662650602,
+              0.4939759036144578,
+              0.3493975903614458,
+              0.22289156626506024,
+              0.14457831325301204,
+              0.10843373493975904,
+              0.07228915662650602
+            ]
+          },
+          {
+            "trial": 4,
+            "draft_rounds": 166.0,
+            "proposed_tokens": 1162.0,
+            "accepted_tokens": 351.0,
+            "acceptance_rate": 0.30206540447504304,
+            "accepted_per_round": 2.1144578313253013,
+            "prefix_survival": [
+              0.7228915662650602,
+              0.4939759036144578,
+              0.3493975903614458,
+              0.22289156626506024,
+              0.14457831325301204,
+              0.10843373493975904,
+              0.07228915662650602
+            ]
+          },
+          {
+            "trial": 5,
+            "draft_rounds": 166.0,
+            "proposed_tokens": 1162.0,
+            "accepted_tokens": 351.0,
+            "acceptance_rate": 0.30206540447504304,
+            "accepted_per_round": 2.1144578313253013,
+            "prefix_survival": [
+              0.7228915662650602,
+              0.4939759036144578,
+              0.3493975903614458,
+              0.22289156626506024,
+              0.14457831325301204,
+              0.10843373493975904,
+              0.07228915662650602
+            ]
+          }
+        ],
+        "median_tps": 32.214804806825015,
+        "median_ttft": 0.1893903
+      }
+    }
+  },
+  "archive": {
+    "archive_sha256": "015aff8346db0b1967fbf9fa46a6d2f22d582d07525668e1a7c52ff12ac1acb3",
+    "archive_bytes": 433015,
+    "payloads_verified": 10
+  },
+  "production_unchanged_healthy": true,
+  "speed_qualified": false,
+  "sealed_test_opened": false,
+  "limits": [
+    "Eight development prompts; production two cycles versus CT six, not broad workload accuracy.",
+    "Production and CT use different target checkpoints, runtime policies and output trajectories; acceptance differences cannot be attributed to lossless compression.",
+    "All eight production token outputs and speculative counters differ across cycles despite seed42/temp0; prefix cache remains enabled as in current serving; cause not isolated.",
+    "Raw request-success deltas are exactly one with idle boundaries; no observed other completed requests contaminate per-request counters.",
+    "Production-versus-CT timing is descriptive, from different loads and tuning; no matched timing or drift-control qualification."
+  ]
+}

@@ -1,5 +1,18 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 07:16 UTC: current production has similarly modest acceptance.**
+Same eight development prompts, C1/256 tokens/seven drafts, two production cycles:
+code/chat/explanation accepted-proposal rates **34.82%/23.36%/27.51%**; CT + Modal
+FP8 previously measured **42.03%/27.60%/30.21%**. Production remains faster in
+these descriptive timings, despite lower aggregate acceptance. Different targets,
+outputs, settings and loads prevent causal attribution. All eight production
+outputs/counters differ across fixed-seed cycles; CT's six within-load cycles
+were exact. No serving changes: original 500k production remains healthy.
+The CPU cache audit passes 200 carry checks and narrows native divergence to
+at or before layer 4 pre-convolution QKV at position 92; no inspected rollback
+metadata error. Follow-up GPU trace not queued; training held, sealed closed.
+[Measurements, limits and next trace](GLM53_HANDOFF.md).
+
 **21 October 2026, 06:56 UTC: paired trace reviewed; production restored.**
 All eight controls and both GPUs' capture repeats pass; all 406 retained payloads
 verify on Mac/Spark2. Target logits first differ at output 38, text at output 48.

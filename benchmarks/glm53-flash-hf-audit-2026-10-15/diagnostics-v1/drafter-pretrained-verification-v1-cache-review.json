@@ -1,0 +1,679 @@
+{
+  "status": "reviewed",
+  "source_sha256": "45a6361fd00e39a4cf24db4a0962750d73ec739611bccd59df19d11704141927",
+  "plan_sha256": "ae1f8d983ada1955fbf94d31ce72ac84e9292ac55ad2909271b555c0150dfe29",
+  "runtime_source_receipt": {
+    "vllm_root": "/usr/local/lib/python3.12/dist-packages/vllm",
+    "files": {
+      "a1:model_executor/layers/mamba/ops/causal_conv1d.py": {
+        "sha256": "044d005cfe59fd0818ed421274e04f3e8dd679b8cdb64fca9f4422f2643484b2",
+        "bytes": 51129,
+        "local_file": "a1-model_executor_layers_mamba_ops_causal_conv1d.py"
+      },
+      "a1:models/glm5next/nvidia/kda.py": {
+        "sha256": "a0ceff81bd196afa57dfcd5bb49582687029438d1e42c88a6720dbd1a7f6966f",
+        "bytes": 28625,
+        "local_file": "a1-models_glm5next_nvidia_kda.py"
+      },
+      "b1:model_executor/layers/mamba/ops/causal_conv1d.py": {
+        "sha256": "044d005cfe59fd0818ed421274e04f3e8dd679b8cdb64fca9f4422f2643484b2",
+        "bytes": 51129,
+        "local_file": "b1-model_executor_layers_mamba_ops_causal_conv1d.py"
+      },
+      "b1:models/glm5next/nvidia/kda.py": {
+        "sha256": "a0ceff81bd196afa57dfcd5bb49582687029438d1e42c88a6720dbd1a7f6966f",
+        "bytes": 28625,
+        "local_file": "b1-models_glm5next_nvidia_kda.py"
+      },
+      "a1:third_party/flash_linear_attention/ops/kda.py": {
+        "sha256": "ac2260c84a36936ad7d56ef63dbceb4618b2c499d7637e08b407f0cd706f9d02",
+        "bytes": 50580,
+        "local_file": "a1-third_party_flash_linear_attention_ops_kda.py"
+      },
+      "a1:third_party/flash_linear_attention/ops/fused_recurrent.py": {
+        "sha256": "371e7d733e90a7147fbca8dbfe67e62503ba663bd1570424bc0efa22c54f3e2b",
+        "bytes": 22697,
+        "local_file": "a1-third_party_flash_linear_attention_ops_fused_recurrent.py"
+      },
+      "b1:third_party/flash_linear_attention/ops/kda.py": {
+        "sha256": "ac2260c84a36936ad7d56ef63dbceb4618b2c499d7637e08b407f0cd706f9d02",
+        "bytes": 50580,
+        "local_file": "b1-third_party_flash_linear_attention_ops_kda.py"
+      },
+      "b1:third_party/flash_linear_attention/ops/fused_recurrent.py": {
+        "sha256": "371e7d733e90a7147fbca8dbfe67e62503ba663bd1570424bc0efa22c54f3e2b",
+        "bytes": 22697,
+        "local_file": "b1-third_party_flash_linear_attention_ops_fused_recurrent.py"
+      }
+    },
+    "containers": {
+      "a1": {
+        "name": "mxwave-drafter-pretrained-verification-v1-a1-r0",
+        "id": "3c0a2010a0234c7112aaea4a5803f07a576aa84a737a34a8f85626eeead4c86c",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "running": false
+      },
+      "b1": {
+        "name": "mxwave-drafter-pretrained-verification-v1-b1-r0",
+        "id": "50c688fee4d106c05521d9a479f1f2502e3b2d41aecfa2a5b3233e7a06979498",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "running": false
+      }
+    },
+    "model_config": {
+      "local_file": "model-config.json",
+      "sha256": "194d290ebb0f19aedc60d24ea9e236e33c86616e460f4a108a842f6fd5b8b198",
+      "source": "a1 stopped diagnostic container /model/config.json; matches both prepared checkpoint manifests"
+    }
+  },
+  "kernel_width": 4,
+  "last_common_input_position": 102,
+  "valid_read_rules": {
+    "convolution": "First physical slot; history starts at accepted_count-1; next snapshot stores two carried rows followed by eight pre-convolution input rows.",
+    "recurrent": "Initial state at spec_slots[accepted_count-1]; post-row j state stored at spec_slots[j]."
+  },
+  "capture_repeats": [
+    {
+      "rank": 0,
+      "arm": "a1",
+      "logical_layer_positions": 94,
+      "qkv_and_state_bitwise_equal": true
+    },
+    {
+      "rank": 0,
+      "arm": "b1",
+      "logical_layer_positions": 94,
+      "qkv_and_state_bitwise_equal": true
+    },
+    {
+      "rank": 1,
+      "arm": "a1",
+      "logical_layer_positions": 94,
+      "qkv_and_state_bitwise_equal": true
+    },
+    {
+      "rank": 1,
+      "arm": "b1",
+      "logical_layer_positions": 94,
+      "qkv_and_state_bitwise_equal": true
+    }
+  ],
+  "conclusion": "Layer4 pre-convolution QKV and post-token state first differ at position92 on both ranks and captures; layer0 matches throughout56..102. No inspected metadata or history-carry mismatch.",
+  "limits": [
+    "Only layers0/4 retained; other-layer cache defects and kernel arithmetic remain unseparated.",
+    "QKV is reconstructed from the next snapshot using audited native writes, not a direct projection hook.",
+    "A changed layer4 recurrent state is downstream of already changed QKV; this does not identify the first responsible operation.",
+    "One development prompt; no speed, broad quality or drafter promotion claim."
+  ],
+  "results": [
+    {
+      "rank": 0,
+      "capture": "capture1",
+      "checks": [
+        {
+          "arm": "a1",
+          "history_carry_checks": 22,
+          "all_exact": true,
+          "metadata_consistent": true
+        },
+        {
+          "arm": "b1",
+          "history_carry_checks": 28,
+          "all_exact": true,
+          "metadata_consistent": true
+        }
+      ],
+      "first_differences": {
+        "0": {
+          "qkv": null,
+          "state": null
+        },
+        "4": {
+          "qkv": 92,
+          "state": 92
+        }
+      },
+      "boundary_rows": [
+        {
+          "layer": "0",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0010-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r0.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "0",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0012-r0.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0010-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r0.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 5835,
+            "bitwise_equal": false
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 523972,
+            "bitwise_equal": false
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture1-0012-r0.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "rank": 0,
+      "capture": "capture2",
+      "checks": [
+        {
+          "arm": "a1",
+          "history_carry_checks": 22,
+          "all_exact": true,
+          "metadata_consistent": true
+        },
+        {
+          "arm": "b1",
+          "history_carry_checks": 28,
+          "all_exact": true,
+          "metadata_consistent": true
+        }
+      ],
+      "first_differences": {
+        "0": {
+          "qkv": null,
+          "state": null
+        },
+        "4": {
+          "qkv": 92,
+          "state": 92
+        }
+      },
+      "boundary_rows": [
+        {
+          "layer": "0",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0010-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r0.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "0",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0012-r0.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0010-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r0.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 5835,
+            "bitwise_equal": false
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 523972,
+            "bitwise_equal": false
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r0.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r0.safetensors",
+            "context-opencoder-evol-92378-capture2-0012-r0.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "capture": "capture1",
+      "checks": [
+        {
+          "arm": "a1",
+          "history_carry_checks": 22,
+          "all_exact": true,
+          "metadata_consistent": true
+        },
+        {
+          "arm": "b1",
+          "history_carry_checks": 28,
+          "all_exact": true,
+          "metadata_consistent": true
+        }
+      ],
+      "first_differences": {
+        "0": {
+          "qkv": null,
+          "state": null
+        },
+        "4": {
+          "qkv": 92,
+          "state": 92
+        }
+      },
+      "boundary_rows": [
+        {
+          "layer": "0",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0010-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r1.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "0",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0012-r1.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0010-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r1.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 5796,
+            "bitwise_equal": false
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 524149,
+            "bitwise_equal": false
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture1-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0011-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture1-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture1-0012-r1.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "capture": "capture2",
+      "checks": [
+        {
+          "arm": "a1",
+          "history_carry_checks": 22,
+          "all_exact": true,
+          "metadata_consistent": true
+        },
+        {
+          "arm": "b1",
+          "history_carry_checks": 28,
+          "all_exact": true,
+          "metadata_consistent": true
+        }
+      ],
+      "first_differences": {
+        "0": {
+          "qkv": null,
+          "state": null
+        },
+        "4": {
+          "qkv": 92,
+          "state": 92
+        }
+      },
+      "boundary_rows": [
+        {
+          "layer": "0",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0010-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r1.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "0",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0012-r1.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 91,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 0,
+            "bitwise_equal": true
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0010-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r1.safetensors"
+          ],
+          "rows": [
+            0,
+            3
+          ]
+        },
+        {
+          "layer": "4",
+          "position": 92,
+          "qkv": {
+            "same_shape": true,
+            "elements": 12288,
+            "different_elements": 5796,
+            "bitwise_equal": false
+          },
+          "state": {
+            "same_shape": true,
+            "elements": 524288,
+            "different_elements": 524149,
+            "bitwise_equal": false
+          },
+          "producer_frames": [
+            "context-opencoder-evol-92378-capture2-0009-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0011-r1.safetensors"
+          ],
+          "retained_frames": [
+            "context-opencoder-evol-92378-capture2-0010-r1.safetensors",
+            "context-opencoder-evol-92378-capture2-0012-r1.safetensors"
+          ],
+          "rows": [
+            1,
+            0
+          ]
+        }
+      ]
+    }
+  ],
+  "full_report_sha256": "c0f65615243003c13879833d6e511d30f68265f590ddd43c016913a7a5b54560"
+}

@@ -1,5 +1,56 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 07:16 UTC: production acceptance screen and CPU cache audit complete.**
+Production stays online throughout: same container identity, image, 500,000-token
+context and serving settings; final health is 200. Run the same eight frozen
+validation prompts twice (16 requests plus two excluded warmups), C1, 256 output
+tokens, temperature 0, seed 42 and seven drafts. Counter deltas reconcile per
+position and show exactly one completed request between idle boundaries. No
+training, sealed-test access or serving change. The diagnostic has finished.
+
+| Setup | Code accepted/proposed | Chat | Explanation |
+| --- | ---: | ---: | ---: |
+| Current production + Inco FP8 | 34.82% | 23.36% | 27.51% |
+| CT MXFP8 + Inco FP8 | 38.81% | 25.60% | 28.16% |
+| CT MXFP8 + Modal BF16 | 42.91% | 26.90% | 30.75% |
+| CT MXFP8 + Modal FP8 | 42.03% | 27.60% | 30.21% |
+
+Production's two cycle rates are code 35.11%/34.52%, chat 22.43%/24.34%, and
+explanation 26.07%/29.08%. Its first code proposal survives 82.24% of rounds,
+but all seven survive only 8.38%; the aggregate 34.82% is a different denominator.
+Thus modest aggregate acceptance is present in production too, and these prompts
+do not establish a CT acceptance deficit. Production is still faster in this
+screen: code/chat/explanation 49.09/41.47/41.71 tok/s, versus Modal FP8
+41.18/30.70/32.21. These are different targets, trajectories, tuning and loads;
+this is not a controlled attribution to compression or a new speed qualification.
+**All eight production outputs and counters differ between cycles**, despite the
+fixed seed; first token differences occur at zero-based indices 4–104. CT's prior
+six within-load cycles repeat exactly. Prefix caching stays enabled on production
+and was disabled in CT; its role in these differences is not isolated. Two cycles
+and eight reused development prompts do not establish broad quality or speed.
+
+All ten new evidence payloads verify independently on the Mac. Report:
+`diagnostics-v1/production-drafter-acceptance-v1-review.json`. Raw evidence on Spark:
+`full-model-v1/production-drafter-acceptance-v1`; local:
+`out/production-drafter-acceptance-v1/retained`. Archive 433,015 bytes, SHA256
+`015aff8346db0b1967fbf9fa46a6d2f22d582d07525668e1a7c52ff12ac1acb3`.
+
+Separately, the saved native trace now passes **200 valid convolution-history
+carry checks**, with accepted-count, position, slot and accepted-input metadata
+consistent on both captures and ranks. Bind cache semantics to the stopped
+runtime's exact convolution/KDA/recurrent sources and frozen width-4 config.
+Reconstruct only accepted per-token QKV and recurrent-state writes from the next
+snapshot; all 376 logical layer/position repeat comparisons are bit-identical.
+Layer 0 QKV/state matches between arms throughout positions 56–102. Layer 4
+QKV/state matches through 91, then first differs at **92** on both ranks and
+captures. The QKV difference precedes layer 4's convolution/recurrent update;
+its later cache difference alone is not a rollback defect. Other-layer cache
+issues and arithmetic remain unseparated. Next trace should cover component
+boundaries in layers 0–4, particularly layer 1/2 KDA, layer 3 MLA, mHC/experts
+and layer 4's input projection around positions 87–94. No follow-up GPU trace
+is launched or queued. Reports: `...-cache-review.json` and updated
+`...-followup-plan.json`. Ruff, strict core mypy and the full pytest suite pass.
+
 **21 October 2026, 06:56 UTC: paired native trace complete and independently reviewed.**
 All eight before/capture/repeat/after requests reproduce their arm's frozen
 64-token output and counters. All captured inputs, logits, final-hidden states,
