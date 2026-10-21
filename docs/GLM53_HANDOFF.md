@@ -1,5 +1,75 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 21:54 UTC: final screen complete, exact production restored, evidence verified.**
+The controller ends **`complete_restored` at 21:53:12 UTC**, with all eight stages
+complete and no stage errors. Both original container/image/config/mount identities
+match, the original authenticated **500k** service is healthy, and every owned trial
+container is stopped. The reduced session takes **57.94 minutes** from controller
+start through restoration. **No promotion and no further experiments queued.**
+
+All **733 final evidence payloads** independently verify on **Mac and Spark2**.
+Archive: `out/glm53-package-v1/deployment-quick-v1-final-evidence.tar.gz`, SHA256
+`855d8bfef9a8944e42f3913c97423ca85723ceae0a02412686ce3a548e3af1ae`.
+The independent Mac review verifies all **21 frozen preparation files**, recomputes
+every timing result, checks both sets of 300 question identities/counts, and confirms
+the paired quality result and speculation-off accounting. Derived review:
+`out/glm53-package-v1/deployment-quick-v1-final-evidence/independent-review.json`;
+reproducer: `out/glm53-package-v1/quick-review.py`.
+
+The source/report closeout snapshot is being saved next, followed by the user's
+explicitly requested **poweroff of both Sparks**. The original production configuration
+remains the default for a future restart. CT remains experimental opt-in; its
+[working owner recipe](../deployment/glm53/README.md) uses the official 0.32.0 image
+and plugin without replacing vLLM source. A self-contained public asset release and
+asset-build instructions remain outside this completed screen and are not claimed done.
+
+Scope limits: C1 repeats one frozen real prompt per domain, C8 uses eight distinct
+fixed prompts per domain; all outputs have 256 tokens. Three timing pairs and a
+300-question GSM8K subset do not establish broad workload or quality equivalence.
+Long-context probes, PPL and further determinism work were deliberately omitted.
+The full result and practical disposition are immediately below; older entries are
+historical checkpoints, not new work to resume.
+
+**21 October 2026, 21:51 UTC: all eight stages complete; original production restoring.**
+The final screen is finished. No more experiments, training or diagnostics are queued.
+
+| Frozen GSM8K subset, speculation off | Production A | Stock CT B |
+|---|---:|---:|
+| Primary numeric answer | 289/300 (96.33%) | 287/300 (95.67%) |
+| Wilson 95% interval | 93.55–97.94% | 92.73–97.45% |
+| Secondary strict format | 288/300 (96.00%) | 285/300 (95.00%) |
+| API errors / truncations | 0 / 0 | 0 / 0 |
+
+Paired outcomes: **282 both correct, 7 only A correct, 5 only B correct, 6 both
+wrong**. B is two answers lower (−0.67 percentage points); exact two-sided McNemar
+p = **0.7744**. This small screening subset establishes neither equivalence nor a
+meaningful quality difference. It does not replace full GSM8K, clear the original
+1e-5 KL gate, validate speculation-on quality, or qualify long-context retrieval.
+No gate or grader changed. The historical 95.53% full-GSM8K score remains historical.
+
+**Practical disposition:** retain CT as an experimental opt-in recipe for memory
+headroom and the measured C8 trade-off; keep the original production configuration
+as the default. The stock recipe's ~22% C1 slowdown prevents a general faster-than-
+production claim. C8 aggregate throughput and TTFT improve, while mean individual
+completion latency increases. These results compare whole deployments, not only
+lossless compression. Timing details and the exact configuration limits are below.
+
+The controller is restoring exact original 500k production; the final collector
+will verify frozen inputs and original identities, collect both ranks, and copy an
+immutable full archive to Spark2. Mac verification, final source/report backups and
+the explicitly authorized shutdown follow. **No promotion.**
+
+**21 October 2026, 21:39 UTC: production quality screen completes; CT is the last run.**
+GSM8K A is **289/300 = 96.33%** primary numeric-answer accuracy, Wilson 95% interval
+**93.55–97.94%**; secondary strict format score **288/300 = 96.00%**. There are
+**zero API errors, zero truncations and no speculation counters** in the explicitly
+speculation-disabled clone. Protocol SHA256
+`33d1fbf59bcd908edab19b79e48176b70c0914813580d38d145424fa7d09a793`.
+This is the frozen subset, **not production's full 1,319-question benchmark**.
+CT's same-subset, speculation-off load is underway (`gsm8k-B`); no B score yet.
+All six timing stages and GSM8K A are complete. After B, only restoration,
+independent result review, final backups and the authorized poweroff remain.
+
 **21 October 2026, 21:30 UTC: all timing complete; only the two quality screens remain.**
 Three interleaved A/B pairs, short real code/chat prompts, 256 outputs, seed 42,
 per-cell warm-up, controlled cold-prefix salts. **All 24 measured cells and their

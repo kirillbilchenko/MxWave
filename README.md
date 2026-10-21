@@ -1,6 +1,6 @@
 # MxWave
 
-**21 October, 21:30 UTC: stock-vLLM deployment timing is complete.** Official
+**21 October, 21:54 UTC: final stock-vLLM deployment screen is complete.** Official
 vLLM 0.32.0 plus the MxWave plugin runs the selected CT profile at 500k configured
 context. Three interleaved pairs, short prompts, 256 output tokens, two DGX Sparks
 (SM121/TP2); values are median end-to-end output tok/s with every trial retained:
@@ -17,9 +17,13 @@ runtime optimizations, not isolated lossless compression. C8 mean TTFT falls
 ~4.8–5.0 → 1.64 s, but mean completion latency rises ~1–2 s as CT runs eight
 requests together instead of six plus two queued. All measured cells are error-free;
 several repeat ranges exceed 2%, so earlier qualification gates remain open/failed.
-The two 300-question speculation-off GSM8K screens are next; PPL/SQNR are not part
-of this screen. No promotion or further tuning. After reporting and verified backups,
-both Sparks will be powered off at the user's request.
+The frozen speculation-off GSM8K screen is complete: **production 289/300 (96.33%)**,
+**CT 287/300 (95.67%)**, zero API errors or truncations. This subset establishes
+neither equivalence nor a meaningful quality gap; PPL/SQNR and long-context probes
+are outside this screen. Production remains the default; CT is retained as an
+experimental opt-in. No promotion, further tuning or experiments. Exact original
+production is restored, and all 733 evidence payloads independently verify on Mac
+and Spark2. Final source backup and the requested poweroff follow.
 [Ranges, latency, memory and evidence](docs/GLM53_HANDOFF.md) ·
 [Working stock-vLLM recipe](deployment/glm53/README.md).
 **Earlier dated entries below are historical, not the current execution plan.**

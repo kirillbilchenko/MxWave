@@ -4,39 +4,35 @@ This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
 The extension wraps version-pinned internal APIs and requires the verified bundle.
 
-**20:23 UTC update:** the corrected packaged recipe starts at 500k context with
-prefix caching and FP8 draft KV. Two 32-token probes accept 22/60 code and 21/50
-chat proposals; actual allocation is 87.20221 / 87.20218 GiB per rank. Prefix reuse
-is observed, but repeated-output identity still fails. The full timing/GSM8K
-comparison is active; no production qualification or measured speed win yet.
+**GPU-tested status, 21 October 2026:** the corrected recipe starts at **500k
+configured context**, with prefix caching and useful DFlash acceptance. All three
+paired timing blocks complete without API errors. Against the existing tuned
+ModelOpt/Inco production deployment, this stock CT recipe measures **about 22%
+lower C1 throughput**, **15% higher code / 21% higher chat aggregate throughput at
+C8**, on the frozen short prompts. C8 first-token time improves substantially,
+while mean individual completion latency increases by about 1–2 seconds. These
+are complete deployments with different draft policies and runtime optimizations.
+[Full ranges, latency, acceptance and retained evidence](../../docs/GLM53_HANDOFF.md).
 
-**Status, 21 October 2026: the package now includes the GPU-tested drafter metadata
-correction; full deployment qualification remains pending.** Native 0.32 applies FP8 loading to
-twelve BF16 convolution weights with missing scales, producing NaN draft output.
-A separate config with explicit BF16 exclusions restores 50–67.5% acceptance on
-two short diagnostic prompts, with byte-identical weights and no vLLM source edits.
-Run the new **`prepare-drafter`** step below before serving. `serve` rejects the
-original incompatible config and verifies the corrected config and unchanged
-weight hashes. Full timing and quality qualification remain pending; the isolated experiment used
-[prepare_drafter_compat.py](prepare_drafter_compat.py) and a separately frozen launch.
-[Diagnosis, settings and retained evidence](../../docs/GLM53_STOCK_DRAFTER_LOADING.md).
+The final 300-question speculation-off GSM8K screen is complete: production
+**289/300 (96.33%)**, CT **287/300 (95.67%)**, zero API errors or truncations in
+both arms. This small subset does not establish equivalence or a meaningful gap.
+This is an **experimental opt-in recipe**, with no promotion.
+The original strict KL and output-repeat failures remain recorded. A 500k startup
+is not a 32k/128k retrieval or long-context quality qualification; those probes
+were deliberately omitted from the final bounded screen.
 
-The earlier selected 8k Modal profile completed six C1 requests but accepted
-**zero of 3,810 proposals**. Its 172.496 GiB TP2 allocation (+0.751 GiB versus the
-historical selected profile) predates the correction; no fresh corrected-profile
-memory delta is claimed. Native MTP separately needs a CT namespace/quantization
-policy repair before comparison. Exact original 500k production is restored.
+Run **`prepare-drafter`** before serving. Native 0.32 otherwise applies FP8 loading
+to twelve existing BF16 convolution matrices without scales. The config-only
+correction preserves all weight bytes; `serve` verifies the corrected metadata
+and pinned weights. No training is needed.
+[Diagnosis and evidence](../../docs/GLM53_STOCK_DRAFTER_LOADING.md).
 
-V6 starts at 500k context with 32 slots, 6 GiB KV per rank, a 6,919-token prefill
-budget, prefix caching enabled and a dense target head. It uses native
-`TRITON_ATTN` draft attention to avoid the default backend's small-page cache waste.
-Actual capacity is 640,287 tokens; startup allocation is 87.157 GiB per rank after
-model, drafter, KV and graphs. This is not a new saving versus production measurement.
-The corrected 12,449-token V7 smoke confirms real prefix reuse (9,216 hit tokens),
-but greedy messages differ cold-to-warm and warm-to-warm. The combined correctness
-gate fails; V6 also differs without a reusable prefix. Fixed-input numerical tracing
-is required before timing or quality claims. No 32k/128k probe has run.
-[Current handoff and restoration status](../../docs/GLM53_HANDOFF.md).
+All three timing starts reproduce **87.202210 / 87.202180 GiB** allocated per rank,
+including drafter, KV and graphs (**174.404390 GiB TP2**). Lossless scale/embedding
+packing saves **6.941 GiB TP2** after expert scratch space. This is resident storage
+accounting, not a newly measured total-allocation delta against production; the
+historical 14.877 GiB result used a different profile.
 
 ## Supported profile
 
@@ -111,11 +107,10 @@ possible, copied byte-for-byte across filesystems, and reverified. Existing outp
 directories are never overwritten. No model training or weight quantization occurs.
 Keep the original and prepared files read-only when serving; hard links share data.
 
-The following uses the **500k capacity settings that reached API readiness in V6**,
-now with the corrected drafter metadata. The combined profile passes startup and
-positive-acceptance checks; its repeated-output identity gate still fails.
-Prefix correctness, output repeatability, the 32k/128k probes and the matched
-performance/quality comparison remain required before replacing production.
+The following uses the **500k capacity settings from the final three-pair screen**,
+with the corrected drafter metadata. Startup, positive draft acceptance and actual
+prefix reuse pass. Earlier repeated-output identity and strict KL failures remain;
+the recipe is not promoted to production. Long-context retrieval probes were not run.
 
 Run on node 1 and then node 0, setting `GLM_NODE_RANK` to 1 and 0 respectively.
 Use node 0's reachable private address for `GLM_MASTER_ADDR`, and each node's own
@@ -191,7 +186,7 @@ scale/embedding storage savings after the reported expert workspace, **6.94113 G
 across TP2**. These are resident tensor bytes, not a matched total CUDA allocation
 comparison. The lossy KDA conversion separately reduces allocation by 2.10890 GiB
 per rank during loading. Neither observation is a new saving-versus-production
-measurement. Original 500k production was verified restored at 16:44:58 UTC.
+measurement. Restoration and final shutdown status are recorded in the handoff.
 
 ## Qualification and release
 
@@ -201,9 +196,15 @@ identity. `control_stock_trial.py` is an operational harness for the owner's two
 Sparks, with exact-container restoration and an independent watchdog; it is not
 needed by consumers and must not be reused against another production deployment.
 
-After startup passes, run the frozen realistic workloads and long-context probes,
-then full GSM8K with speculation off. Keep failed trials and report runtime
-configuration differences. Publish the wheel, source, notices, asset manifest and
-reproduction commands together only after the release assets and GPU checks are
-complete. The engineering report must separate lossless packing from lossy KDA
-conversion and measured gains from estimates.
+The owner's final screen is deliberately limited to three short C1/C8 code/chat
+pairs and a fixed 300-question GSM8K subset per arm, with speculation off for
+quality. It retains earlier numerical failures and every observed result; it does
+not certify general quality or long-context serving. No further experiments are
+queued after that screen and the authorized shutdown.
+
+The wheel and working owner recipe are retained. A self-contained public asset
+release and reproducible asset-build instructions are still unavailable. Any future
+publication should include source, notices, asset manifests and reproduction commands,
+and distinguish lossless packing from lossy KDA conversion and measured gains from
+estimates. The current recipe must not be advertised as a universally faster or
+fully lossless replacement for the tuned production deployment.

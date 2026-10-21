@@ -1,5 +1,28 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 21:54 UTC: finished and verified.** The final reduced comparison ends
+`complete_restored` at **21:53:12 UTC** after **57.94 minutes**. All eight stages
+complete, all 733 evidence payloads independently verify on Mac and Spark2, and exact
+original 500k production is restored. Final source/report backup and the authorized
+poweroff are next. No further experiments, promotion or training are queued.
+The decision is to retain production as default and CT as experimental opt-in.
+[Results, recipe limits and backup hashes](GLM53_HANDOFF.md).
+
+**21 October, 21:51 UTC: measurements finished.** All eight stages complete.
+Frozen 300-question GSM8K: **production 289/300 (96.33%), CT 287/300 (95.67%)**,
+no API errors or truncations, speculation off. Paired wins are 7 for production
+and 5 for CT; this does not establish quality equivalence or a meaningful gap.
+Keep production as the default; retain CT as experimental opt-in for the measured
+memory/C8 trade-off. No more experiments are queued. Exact production restoration,
+final verified backups and the requested shutdown are in progress.
+[Complete result](GLM53_HANDOFF.md).
+
+**21 October, 21:39 UTC:** production's frozen quality screen is **289/300 (96.33%)**,
+with zero API errors/truncations and speculation off. This is a subset, not full
+GSM8K. CT is loading for the same 300 questions, the final model run. All timing
+is finished; restoration, final backups and shutdown follow this last screen.
+[Full results and current handoff](GLM53_HANDOFF.md).
+
 **21 October, 21:30 UTC: final speed screen complete.** Three A/B pairs show stock
 CT **−21.7% code / −21.5% chat at C1**, **+15.1% code / +21.3% chat at C8**, using
 median total output tok/s. At C8, mean TTFT improves ~4.8–5.0 → 1.64 s because CT
