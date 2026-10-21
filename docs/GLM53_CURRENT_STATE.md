@@ -1,5 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 20:23 UTC:** corrected stock CT starts at 500k with prefix caching
+and FP8 draft KV, accepts **22/60 code and 21/50 chat proposals** in two short probes,
+and allocates **87.20221 / 87.20218 GiB** after initialization. Actual prefix reuse
+works, but repeated-output identity still fails; prior target KL is not cleared.
+The controller advances to `timing-A-0`; six diagnostic timing pairs and both full
+GSM8K arms remain in progress/pending. No production promotion or speed win is claimed.
+[Live handoff](GLM53_HANDOFF.md).
+
 **21 October, 20:16 UTC:** corrected comparison **is running**, starting with
 500k/prefix-on compatibility. Controller **3243718**, watchdog **3244316**,
 root `deployment-compare-v2`. Six A/B timing pairs and both full GSM8K arms follow;

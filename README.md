@@ -1,5 +1,11 @@
 # MxWave
 
+**21 October, 20:23 UTC:** the corrected packaged recipe starts at **500k context**
+with prefix caching and useful DFlash acceptance; allocation is **87.20 GiB/GPU**.
+Repeated-prefix output identity still fails. The full production-versus-CT timing
+and GSM8K run has advanced past startup; it remains diagnostic and unqualified.
+[Recorded checks and live status](docs/GLM53_HANDOFF.md).
+
 **21 October, 20:16 UTC:** the corrected stock-vLLM comparison is running on Spark,
 starting with the 500k/prefix-on check before six timing pairs and full GSM8K on
 both targets. Source and launch inputs are committed and backed up; exact-production

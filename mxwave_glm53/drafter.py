@@ -71,7 +71,7 @@ def prepare_drafter(source: Path, output: Path) -> dict[str, Any]:
         verify_files(staged, {"config.json": PREPARED_DRAFTER_FILES["config.json"]})
         transfers = {}
         for path in sorted(source.iterdir()):
-            if not path.is_file() or path.name == "config.json":
+            if not path.is_file() or path.name in ("config.json", "mxwave-drafter.json"):
                 continue
             src = local_file(source, path.name)
             try:

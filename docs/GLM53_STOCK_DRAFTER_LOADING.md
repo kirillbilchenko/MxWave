@@ -1,5 +1,12 @@
 # Native vLLM DFlash2 loading diagnosis
 
+**Update, 20:23 UTC:** packaging is implemented and passes both official-image CPU
+preflights. The corrected 500k/prefix-on/native-FP8-KV profile starts and accepts
+22/60 code and 21/50 chat proposals on two different ~256-token startup prompts.
+Prefix reuse works; repeated-output identity still fails. The full comparison is
+active under restoration controls; see the [live handoff](GLM53_HANDOFF.md).
+The diagnostic below and its evidence retain their original scope and timestamps.
+
 Recorded **21 October 2026, 19:56 UTC**. The zero-acceptance failure is causally
 resolved in a bounded GPU diagnostic. Exact original 500k production was restored
 at **19:55:15.227504 UTC**; no experiment is running or queued. This is a loading

@@ -42,6 +42,8 @@ def draft_source(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("cross_device", [False, True])
 def test_preparation_preserves_bytes_and_relocates(draft_source, tmp_path, monkeypatch, cross_device):
+    # An existing source receipt must never be hard-linked and overwritten by our receipt.
+    (draft_source / "mxwave-drafter.json").write_text("unrelated source receipt")
     originals = {p.name: p.read_bytes() for p in draft_source.iterdir()}
     if cross_device:
         def no_link(*args):

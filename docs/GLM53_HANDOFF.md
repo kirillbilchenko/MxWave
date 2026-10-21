@@ -1,5 +1,38 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 20:23 UTC: corrected 500k serving works; comparison advances.**
+`compatibility-B` completes and the controller advances to **`timing-A-0`**.
+The candidate retains 500k context, 32 slots, 6 GiB KV/rank, 6,919 prefill, prefix
+on, production graph sizes, dense BF16 target head and native FP8 draft KV.
+Its two 32-output-token startup probes accept **22/60 (36.7%), 12 rounds** for
+code and **21/50 (42%), 10 rounds** for chat. These are different ~256-token prompts
+from the earlier two-prompt trace, and are not a general acceptance or speed result.
+Actual post-initialization allocation is **93,632,660,480 / 93,632,627,712 bytes**,
+**87.202210 / 87.202180 GiB per rank; 174.404390 GiB TP2**. This is an allocation,
+not a new saving versus production measurement.
+
+Prefix control passes: same-salt reuse **4,608 tokens**, fresh-salt miss **0**.
+Three 64-token repeated-prefix responses still differ: **output identity fails**.
+The target KL gate also remains failed from its prior measurement. Timing proceeds
+as a deployment diagnostic with these quality failures retained; neither feature
+is switched off and no promotion or quality qualification occurs. Both full
+speculation-off GSM8K arms remain scheduled after timing, including all 1,319 cases.
+
+The 12-payload compatibility archive independently verifies on Mac and is backed
+up on Spark2: `deployment-compare-v2-compatibility-evidence.tar.gz`, SHA256
+`094cd2ddb70bdb3c1071b950faf2a5d75a03148bc31f4fdd02eb8e77bd2d6b9a`.
+The 36-payload preparation archive also verifies on Mac and is on Spark2:
+`595826205c87a11331713681ad3d26895f05dc588e42a74ffeb31331461fa117`.
+Rank1 reports are collected into a separate user-owned directory after a copy
+into the root-owned runtime reports directory was refused; original reports and
+permissions are untouched. This collection event is retained in the checkpoint.
+
+A local packaging robustness fix excludes an existing source `mxwave-drafter.json`
+from hard-linking before writing a new receipt; regression tests verify the source
+receipt stays unchanged for hard-link and copy paths. The frozen v9 run is unchanged;
+neither original source directory contained that ancillary file. No inference
+code, setting, prompt or gate changes during the active comparison.
+
 **21 October 2026, 20:16 UTC: corrected deployment comparison launched.**
 Root `glm53-package-v1/deployment-compare-v2`; controller **3243718** (start ticks
 `74092563`), independent watchdog **3244316**. Launch **20:15:59 UTC**;

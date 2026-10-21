@@ -4,6 +4,12 @@ This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
 The extension wraps version-pinned internal APIs and requires the verified bundle.
 
+**20:23 UTC update:** the corrected packaged recipe starts at 500k context with
+prefix caching and FP8 draft KV. Two 32-token probes accept 22/60 code and 21/50
+chat proposals; actual allocation is 87.20221 / 87.20218 GiB per rank. Prefix reuse
+is observed, but repeated-output identity still fails. The full timing/GSM8K
+comparison is active; no production qualification or measured speed win yet.
+
 **Status, 21 October 2026: the package now includes the GPU-tested drafter metadata
 correction; full deployment qualification remains pending.** Native 0.32 applies FP8 loading to
 twelve BF16 convolution weights with missing scales, producing NaN draft output.
@@ -106,7 +112,8 @@ directories are never overwritten. No model training or weight quantization occu
 Keep the original and prepared files read-only when serving; hard links share data.
 
 The following uses the **500k capacity settings that reached API readiness in V6**,
-now with the corrected drafter metadata. The combined profile must be rechecked.
+now with the corrected drafter metadata. The combined profile passes startup and
+positive-acceptance checks; its repeated-output identity gate still fails.
 Prefix correctness, output repeatability, the 32k/128k probes and the matched
 performance/quality comparison remain required before replacing production.
 
