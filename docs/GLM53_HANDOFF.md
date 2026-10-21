@@ -1,5 +1,19 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 06:44 UTC: preliminary Inco boundary review finds a unique target winner.**
+Four selected rank-0 frames independently match their payload hashes: first
+output and output index 47, in both captures. At index 47, token **11** has
+logit **26.5**, versus **26.125** for token **198** (Modal's previously observed
+choice). Inco selects the unique target argmax, with a **0.375** margin; both
+captures agree. All selected input, position, full-logit, final-hidden, proposal
+and five auxiliary-feature tensors repeat byte for byte in these frames. The
+observed original logits buffer also remains unchanged after sampling. This
+rules out an exact tie on the Inco side at this boundary, but does not distinguish
+changed Modal target scores from a verifier decision. The paired Modal trace,
+full evidence review and restoration are pending; no responsible kernel or
+quality conclusion is established. Retained report:
+`diagnostics-v1/drafter-pretrained-verification-v1-inco-boundary.json`.
+
 **21 October 2026, 06:41 UTC: first native trace arm completes; Modal BF16 is loading.**
 Original/Inco arm a1 completes all four 64-token before/capture/repeat/after
 requests. Every output matches the frozen native prefix; speculative counters
