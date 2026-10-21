@@ -1,6 +1,6 @@
 # Pretrained drafter screen before further training
 
-Updated **21 October 2026, 05:42 UTC**. The user prefers checking a pretrained
+Updated **21 October 2026, 06:19 UTC**. The user prefers checking a pretrained
 FP8 drafter before paying for adaptation. Automatic CPU training is held:
 the idle continuation v2 PID 80216 was stopped before any optimizer update.
 Its frozen files and status remain; `held-for-alternatives.json` records the
@@ -9,6 +9,25 @@ original production healthy at 05:46:55 UTC with 500,000 context. All 1,088
 accepted exports in 17 completed chunks independently rehash on both Sparks
 (13,097,763,612 bytes per node); unexported raw files remain. The incomplete
 dataset is not published for full training.
+
+**Current result:** Modal BF16 completes all 48 timed requests, with exact
+token/counter repeats across all six trials. Code median throughput is
+**40.83 vs 39.88 tok/s (+2.39%)**, chat **29.30 vs 29.56 (-0.90%)**, explanation
+**31.58 vs 31.20 (+1.22%)**, compared with the first baseline load. **7/8 output sequences differ
+from the Inco baseline**, first at indices 47–206. This fails output identity;
+different trajectories confound performance/acceptance comparisons. The cause
+is not identified. Modal FP8 and the baseline reload remain pending. No
+positive candidate conclusion, quality degradation claim, or promotion follows
+from these incomplete results. The frozen run continues under its watchdog.
+
+The first original-Inco-FP8 baseline load completes **48 measured requests**
+plus two excluded warmups. All six repetitions have identical output tokens and
+speculative counters. Median end-to-end throughput is **39.88 / 29.56 / 31.20
+tok/s** for code/chat/explanation; median TTFT is **277 / 176 / 197 ms**.
+These numbers establish this development suite's first baseline; the baseline
+reload remains pending. Production is temporarily paused
+under the comparison restoration watchdog. Measurement SHA256:
+`443d95e4b3a1ef826299ae55dc2b7c3263a4e01bcb90511035860f463340f39e`.
 
 ## Verified CPU results
 
@@ -53,6 +72,39 @@ FP8 weights SHA256:
 `45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46`.
 
 ## Bounded serving comparison
+
+### First-divergence diagnostic specification
+
+The diagnostic is implemented and queued; its GPU run has **not started**. Use development case
+`opencoder-evol-92378` (56 prompt tokens): the first 47 output tokens agree,
+and output index 47 differs. Retain the observed 64-token prefixes for both arms
+and require before/capture/repeated-capture/after controls to reproduce them.
+Observe actual native decoding from the original prompt; adding the generated
+prefix to a new prefill request would not reproduce the recurrent cache history.
+
+Capture target logits before/after sampling, proposals, acceptance counts, actual
+input positions/graph shapes and recurrent cache/rollback metadata around that
+decision. Equal target logits with different chosen tokens directs investigation
+to tie handling or verification; different logits with equal accepted history
+requires comparing actual state and layer boundaries. Replay the first changed
+component with equal shared inputs/state and changed future proposals. A separate
+speculation-off reference can help, but its different row/cache layout is not
+by itself proof that the verifier is wrong.
+
+The passive context probe now follows each arm's configured five/six auxiliary
+layers; tests verify unchanged native outputs and independent retained copies.
+The reviewer aligns the actual sampled row and validates its causal prefix.
+All repository checks pass. Detached queue PID **987188** on Spark waits for the
+timing comparison, six repeat controls, finalization and healthy restoration.
+It then CPU-preflights and runs the separate two-arm trace on API **8041**, with
+a **30-minute restoration watchdog**. It needs no laptop connection. Both Sparks
+verify all 46 frozen files; plan SHA256
+`ae1f8d983ada1955fbf94d31ce72ac84e9292ac55ad2909271b555c0150dfe29`.
+The frozen timing run remains untouched. Read the diagnostic root's `queue.json`,
+then `controller.json`; no training, sealed test or promotion follows this queue.
+Specification and source measurement hashes:
+`diagnostics-v1/drafter-pretrained-first-divergence-plan.json` (SHA256
+`df23ef9849faced7e4221e9bb308b76e866846c78184d198b3c539712888f43c`).
 
 The prepared `drafter-pretrained-modal-v1` comparison uses the same CT MXFP8
 target in all four loads: **current Inco FP8 → Modal BF16 → Modal FP8 → current

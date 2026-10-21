@@ -1,5 +1,24 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 06:19 UTC: targeted native-decision trace queued.**
+Detached Spark PID 987188 waits for the current timing run and verified production
+restoration. It then runs one 64-token development case under both drafters with
+before/capture/repeat/after controls and a separate 30-minute restoration bound.
+Both hosts verify 46 frozen sources; full tests, Ruff and mypy pass. BF16 completes
+48/48 requests with exact repeats, code +2.39% versus the first baseline, but
+7/8 outputs differ: timing gain remains unqualified. FP8 is starting; baseline
+reload follows. Capture/training stopped, sealed test closed.
+[Current diagnostic and evidence](GLM53_HANDOFF.md).
+
+**21 October 2026, 06:09 UTC: Modal BF16 serving works, but output identity fails.**
+Baseline completes 48/48 requests with exact repeats; Modal BF16 completes 16/48.
+First-round code speed is about +3%, but 7/8 outputs differ across drafters,
+confounding the speed comparison. The completed Modal second round repeats its
+own outputs/counters exactly. No candidate qualification or quality verdict;
+FP8 and baseline reload are pending. Target remains CT with MXFP8 KDA. Capture
+and training are stopped; production temporarily paused under the restoring
+controller. [Evidence and limits](GLM53_HANDOFF.md).
+
 **21 October 2026: full capture stopped at the user’s request; pretrained test moved forward.**
 Capture ends at 1,095 prompts; original production restores healthy at 05:46:55 UTC,
 with its original 500,000-token context. Both Sparks independently rehash all

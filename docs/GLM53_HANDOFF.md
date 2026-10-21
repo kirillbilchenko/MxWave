@@ -1,5 +1,73 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 06:19 UTC: first-divergence diagnostic implemented and queued on Spark.**
+At 06:16:17 UTC, detached queue **PID 987188** starts independently of the Mac.
+Both nodes verify all **46 frozen files**. Diagnostic revision
+`drafter-pretrained-verification-v1`, API **8041**, master **29714**, plan SHA
+`ae1f8d983ada1955fbf94d31ce72ac84e9292ac55ad2909271b555c0150dfe29`.
+Current state: `waiting_for_timing_and_restoration`. It requires the existing
+timing run to complete, both observed prefixes to repeat six times, successful
+finalization and healthy original production before its own preparation/outage.
+No concurrent GPU experiment or change to the timed comparison. The diagnostic
+uses original/Inco FP8 and Modal BF16, one development case, 64 output tokens,
+before/capture/repeated-capture/after: eight requests plus warmups in total.
+The passive observer now supports five/six native feature taps, retains actual
+target graph identities, pre/post-sampler logits, draft proposals and layers0/4
+pre-forward state. Per-arm/rank trace bound 8 GiB; 30-minute restoration watchdog.
+The independent reviewer aligns decisions by accepted history and actual input
+position; it refuses wrong-prefix comparisons. Full pytest, Ruff and strict core
+mypy pass. CPU CLI preflights and GPU trace are pending. Capture/training remain
+stopped; sealed set closed. Read `drafter-pretrained-verification-v1/queue.json`.
+
+Modal BF16 now completes all **48 timed requests**, with exact token/counter
+repeats in all six trials. Code **40.83 vs 39.88 tok/s (+2.39%)**, chat **29.30 vs
+29.56 (-0.90%)**, explanation **31.58 vs 31.20 (+1.22%)** against the first Inco
+load. **7/8 output sequences still differ**, so changed trajectories confound
+these timing/acceptance comparisons. Modal FP8 is starting; baseline reload is
+pending. No candidate speed or quality qualification is claimed. Evidence:
+`diagnostics-v1/drafter-pretrained-modal-v1-b1-summary.json` and
+`diagnostics-v1/drafter-pretrained-verification-v1-launch.json`.
+
+**First-divergence follow-up prepared locally; no new GPU diagnostic launched.**
+Case `opencoder-evol-92378` first differs at output index 47 after an exact shared
+47-token prefix. Freeze the observed first 64 tokens and trace native decisions
+with within-arm before/capture/repeat/after controls. Inspect logits and verifier
+decisions first, then actual cache state and the earliest changed layer if needed.
+Existing context instrumentation assumes five auxiliary features; Modal has six,
+so it must be adapted before reuse. Current timing comparison is unchanged;
+the new diagnostic requires its completion and verified production restoration.
+See [diagnostic specification](GLM53_PRETRAINED_DRAFTERS.md#first-divergence-diagnostic-specification).
+
+**21 October 2026, 06:09 UTC: Modal BF16 loads and runs; output identity fails early.**
+`b1` has completed 16/48 timed requests. In the first matched eight-prompt round,
+code median throughput is 39.45 → 40.68 tok/s (+3.13%), chat +0.31%, explanation
++2.22%; median code verification rounds fall from 65.5 to 60. However, **7/8
+outputs differ from the original-drafter baseline**, first diverging at token
+indices 47–206. The completed second round repeats Modal tokens and counters
+exactly; the full six-round repeat control is still pending. Different generated
+trajectories confound speed/acceptance comparisons, so these preliminary numbers
+do not qualify the candidate. This is the unquantized BF16 Modal drafter with the
+unchanged CT MXFP4-expert/MXFP8-KDA target; Modal FP8 has not yet run. The cause of
+cross-arm divergence is unlocalized. Continue the frozen comparison, retain all
+failures, and inspect paired verification behavior before any promotion. Capture
+and training stay stopped; sealed test closed; restoration watchdog active.
+Evidence: `diagnostics-v1/drafter-pretrained-modal-v1-b1-progress.json`, backed by
+the retained in-progress measurement SHA256
+`d6178e35768dc8544dffed756beeee97efca3bd69508ae7dbfd4ef5e685769ec`.
+
+**21 October 2026, 06:01 UTC: first pretrained-screen baseline completes.**
+`a1` (CT MXFP8 target + original Inco FP8 drafter) completes all 48 measured
+requests and two excluded warmups. All six repetitions match output tokens and
+speculative counters exactly. Median end-to-end throughput: code **39.88 tok/s**,
+chat **29.56**, explanation **31.20**; median TTFT **277 / 176 / 197 ms**.
+These are first-load baseline results on the eight frozen development prompts,
+not candidate gains or a comparison with earlier prompt suites. Controller phase
+is now `starting_b1` (Modal BF16); Modal FP8 and the baseline reload follow.
+Production remains temporarily paused under the comparison restoration watchdog.
+Capture and training remain stopped; sealed test stays closed. Retained measurement
+SHA256: `443d95e4b3a1ef826299ae55dc2b7c3263a4e01bcb90511035860f463340f39e`;
+summary: `diagnostics-v1/drafter-pretrained-modal-v1-a1-summary.json`.
+
 <!-- CAPTURE_USER_STOP_BEGIN -->
 **21 October 2026: user stops the long capture to prioritize pretrained BF16/FP8.**
 At **05:44:17 UTC**, verified waiting queue PID 677064 is stopped, then the

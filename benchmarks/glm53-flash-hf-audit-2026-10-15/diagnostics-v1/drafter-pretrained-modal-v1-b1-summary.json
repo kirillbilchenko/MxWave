@@ -1,0 +1,72 @@
+{
+  "status": "BF16_load_complete_pending_FP8_and_baseline_reload",
+  "requests": 48,
+  "repeat_tokens_and_counters_exact": true,
+  "summary": {
+    "code": {
+      "requests": 24,
+      "median_tps": 40.83036115173202,
+      "median_ttft": 0.2513510205
+    },
+    "chat": {
+      "requests": 12,
+      "median_tps": 29.29755166393795,
+      "median_ttft": 0.18389532549999998
+    },
+    "explanation": {
+      "requests": 12,
+      "median_tps": 31.575413064432656,
+      "median_ttft": 0.19678893400000003
+    }
+  },
+  "first_baseline_changes": {
+    "code": 2.394023107700183,
+    "chat": -0.9007738034161217,
+    "explanation": 1.2193841285747187
+  },
+  "output_comparison": [
+    {
+      "case": "opencoder-evol-69100",
+      "tokens_equal": false,
+      "first_difference": 153
+    },
+    {
+      "case": "dolly-7475",
+      "tokens_equal": false,
+      "first_difference": 185
+    },
+    {
+      "case": "dolly-12645",
+      "tokens_equal": false,
+      "first_difference": 206
+    },
+    {
+      "case": "dolly-4017",
+      "tokens_equal": false,
+      "first_difference": 98
+    },
+    {
+      "case": "opencoder-evol-15654",
+      "tokens_equal": false,
+      "first_difference": 86
+    },
+    {
+      "case": "dolly-1769",
+      "tokens_equal": false,
+      "first_difference": 123
+    },
+    {
+      "case": "opencoder-evol-92378",
+      "tokens_equal": false,
+      "first_difference": 47
+    },
+    {
+      "case": "opencoder-evol-20845",
+      "tokens_equal": true,
+      "first_difference": null
+    }
+  ],
+  "measurement_sha256": "a332e9f1f46c1ef8d8f24f76d556cf9135a5a561611b333cb4f61cf35a19bca5",
+  "speed_qualified": false,
+  "limits": "Different generated outputs confound timings; baseline reload pending."
+}

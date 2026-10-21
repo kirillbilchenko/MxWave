@@ -159,17 +159,19 @@ class ContextCapture:
         return result
 
     def propose(self, *args: Any, **kwargs: Any) -> Any:
-        """Capture the five target boundaries and join them to the next draft graph."""
+        """Capture the configured target boundaries and join the next draft graph."""
         frame = self.pending
         if frame is None:
             return self.original_propose(*args, **kwargs)
         call = self.propose_signature.bind(*args, **kwargs).arguments
         batch = call["input_batch"]
         aux = call["aux_hidden_states"]
-        assert aux is not None and len(aux) == 5 and batch.num_reqs == 1
+        layers = self.plan["target_feature_layers"]
+        assert layers and len(set(layers)) == len(layers)
+        assert aux is not None and len(aux) == len(layers) and batch.num_reqs == 1
         n = batch.num_tokens
         tensors = frame["tensors"]
-        for layer, value in zip(self.plan["target_feature_layers"], aux, strict=True):
+        for layer, value in zip(layers, aux, strict=True):
             tensors[f"aux_layer_{layer}"] = cpu_copy(value[:n])
         slot = int(batch.idx_mapping[0].item())
         tensors.update(

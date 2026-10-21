@@ -1,0 +1,197 @@
+{
+  "snapshot_utc": "2026-10-21T06:09:18.381697+00:00",
+  "scope": "First matched trial on eight development prompts; incomplete candidate run; baseline reload pending. Different output trajectories confound speed and acceptance comparisons.",
+  "candidate_requests_completed": 16,
+  "measurement_sha256": "d6178e35768dc8544dffed756beeee97efca3bd69508ae7dbfd4ef5e685769ec",
+  "cross_arm_tokens_exact": false,
+  "divergent_cases": 7,
+  "first_trial": {
+    "code": {
+      "inco_fp8": {
+        "tps": 39.44952216093579,
+        "ttft_ms": 267.50692000000004,
+        "verification_rounds": 65.5
+      },
+      "modal_bf16": {
+        "tps": 40.682513856363116,
+        "ttft_ms": 299.9871625,
+        "verification_rounds": 60.0
+      },
+      "tps_change_percent": 3.125492091887172
+    },
+    "chat": {
+      "inco_fp8": {
+        "tps": 29.559181636944608,
+        "ttft_ms": 207.252007,
+        "verification_rounds": 91.5
+      },
+      "modal_bf16": {
+        "tps": 29.65116930531495,
+        "ttft_ms": 168.3029335,
+        "verification_rounds": 89.5
+      },
+      "tps_change_percent": 0.31119829195600524
+    },
+    "explanation": {
+      "inco_fp8": {
+        "tps": 31.215438804056586,
+        "ttft_ms": 214.7133705,
+        "verification_rounds": 86.5
+      },
+      "modal_bf16": {
+        "tps": 31.908642411720198,
+        "ttft_ms": 211.096634,
+        "verification_rounds": 82.0
+      },
+      "tps_change_percent": 2.2207075544090404
+    }
+  },
+  "cases": [
+    {
+      "case": "opencoder-evol-69100",
+      "domain": "code",
+      "tokens_exact": false,
+      "first_differing_index": 153,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 34.28052513243759,
+        "ttft_ms": 453.200297,
+        "verification_rounds": 74.0
+      },
+      "modal_bf16": {
+        "tps": 35.95640777205333,
+        "ttft_ms": 446.32955000000004,
+        "verification_rounds": 68.0
+      }
+    },
+    {
+      "case": "dolly-7475",
+      "domain": "chat",
+      "tokens_exact": false,
+      "first_differing_index": 185,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 30.650364445171224,
+        "ttft_ms": 176.407465,
+        "verification_rounds": 90.0
+      },
+      "modal_bf16": {
+        "tps": 31.835367278056914,
+        "ttft_ms": 176.58238500000002,
+        "verification_rounds": 84.0
+      }
+    },
+    {
+      "case": "dolly-12645",
+      "domain": "explanation",
+      "tokens_exact": false,
+      "first_differing_index": 206,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 33.43566271323177,
+        "ttft_ms": 239.435291,
+        "verification_rounds": 81.0
+      },
+      "modal_bf16": {
+        "tps": 32.36613503284692,
+        "ttft_ms": 222.09252400000003,
+        "verification_rounds": 82.0
+      }
+    },
+    {
+      "case": "dolly-4017",
+      "domain": "explanation",
+      "tokens_exact": false,
+      "first_differing_index": 98,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 28.9952148948814,
+        "ttft_ms": 189.99145000000001,
+        "verification_rounds": 92.0
+      },
+      "modal_bf16": {
+        "tps": 31.451149790593476,
+        "ttft_ms": 200.100744,
+        "verification_rounds": 82.0
+      }
+    },
+    {
+      "case": "opencoder-evol-15654",
+      "domain": "code",
+      "tokens_exact": false,
+      "first_differing_index": 86,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 44.618519189434,
+        "ttft_ms": 281.551685,
+        "verification_rounds": 57.0
+      },
+      "modal_bf16": {
+        "tps": 49.51647524591857,
+        "ttft_ms": 197.998563,
+        "verification_rounds": 50.0
+      }
+    },
+    {
+      "case": "dolly-1769",
+      "domain": "chat",
+      "tokens_exact": false,
+      "first_differing_index": 123,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 28.467998828717995,
+        "ttft_ms": 238.09654899999998,
+        "verification_rounds": 93.0
+      },
+      "modal_bf16": {
+        "tps": 27.466971332572992,
+        "ttft_ms": 160.023482,
+        "verification_rounds": 95.0
+      }
+    },
+    {
+      "case": "opencoder-evol-92378",
+      "domain": "code",
+      "tokens_exact": false,
+      "first_differing_index": 47,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 50.27201493093296,
+        "ttft_ms": 253.46215500000002,
+        "verification_rounds": 49.0
+      },
+      "modal_bf16": {
+        "tps": 45.40861994067289,
+        "ttft_ms": 309.258313,
+        "verification_rounds": 52.0
+      }
+    },
+    {
+      "case": "opencoder-evol-20845",
+      "domain": "code",
+      "tokens_exact": true,
+      "first_differing_index": null,
+      "observed_modal_repeats": 1,
+      "observed_repeat_tokens_counters_exact": true,
+      "inco_fp8": {
+        "tps": 28.013979871089873,
+        "ttft_ms": 225.87784399999998,
+        "verification_rounds": 95.0
+      },
+      "modal_bf16": {
+        "tps": 29.379200609555983,
+        "ttft_ms": 290.71601200000003,
+        "verification_rounds": 86.0
+      }
+    }
+  ],
+  "sealed_test_opened": false,
+  "final_speed_qualification": false
+}

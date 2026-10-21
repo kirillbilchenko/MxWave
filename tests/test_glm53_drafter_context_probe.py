@@ -36,8 +36,9 @@ def test_cpu_capture_is_independent_and_preserves_bf16_bits(
     assert path.stat().st_mode & 0o777 == 0o644
 
 
+@pytest.mark.parametrize("layers", [[5, 14, 24, 33, 42], [23, 27, 31, 35, 39, 43]])
 def test_passive_capture_returns_original_outputs_and_joins_real_graph(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, layers: list[int],
 ) -> None:
     monkeypatch.syspath_prepend(str(SOURCE))
     (tmp_path / "probe-marker.json").write_text('{"active":true,"case":"code_32"}')
@@ -78,7 +79,7 @@ def test_passive_capture_returns_original_outputs_and_joins_real_graph(
     capture = probe.ContextCapture(
         runner, tmp_path,
         {"max_frames_per_case": 16, "full_logits_frames": 4,
-         "target_feature_layers": [5, 14, 24, 33, 42]}, 0,
+         "target_feature_layers": layers}, 0,
     )
     capture.attach()
     batch = SimpleNamespace(
@@ -89,14 +90,14 @@ def test_passive_capture_returns_original_outputs_and_joins_real_graph(
     )
     assert runner.sample(torch.ones(1, 4), batch, None) is decision
     assert draft.propose(
-        batch, [torch.ones(1, 4) for _ in range(5)],
+        batch, [torch.ones(1, 4) for _ in layers],
         torch.tensor([63]), torch.tensor([0.0]), torch.tensor([42]),
     ) is proposal
     assert capture.pending is None and capture.counts == {"code_32": 1}
     data = load_file(next(tmp_path.glob("*.safetensors")))
     assert data["target_logits"].tolist() == logits.tolist()
     assert data["returned_proposal"].tolist() == proposal.tolist()
-    assert data["aux_layer_42"].tolist() == [[1, 1, 1, 1]]
+    assert data[f"aux_layer_{layers[-1]}"].tolist() == [[1, 1, 1, 1]]
     assert torch.equal(logits, torch.arange(64, dtype=torch.float32).reshape(1, 64))
 
 
