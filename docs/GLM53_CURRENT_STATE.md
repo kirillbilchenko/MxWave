@@ -1,5 +1,11 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 06:41 UTC: first trace arm complete, second loading.**
+All four Inco controls reproduce the frozen 64-token output and matching
+speculative counters. Both ranks retain 34 frames each. Modal BF16 is now loading;
+paired tensor review and root-cause analysis are pending. Production is temporarily
+paused under the restoration watchdog. [Latest evidence](GLM53_HANDOFF.md).
+
 **21 October 2026, 06:35 UTC: speed baseline repeat stopped; targeted trace loads first arm.**
 All three first loads complete 48 requests with exact within-arm repeats. Modal
 FP8 matches Modal BF16 on all 48 outputs; both differ from Inco on seven of eight

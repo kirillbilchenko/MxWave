@@ -1,5 +1,10 @@
 # Pretrained drafter screen before further training
 
+**21 October 2026, 06:41 UTC: Inco trace complete; Modal BF16 loading.**
+All four Inco before/capture/repeat/after controls reproduce the frozen output and
+speculative counters; both ranks retain 34 frames each. Paired trace analysis is
+pending. See [the latest handoff](GLM53_HANDOFF.md).
+
 Updated **21 October 2026, 06:35 UTC**. The user prioritizes the native-decision
 trace over the final speed baseline reload. The reload is deliberately stopped
 before any a2 measurement; its controller restores healthy original production

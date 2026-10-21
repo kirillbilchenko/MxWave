@@ -1,5 +1,16 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 06:41 UTC: first native trace arm completes; Modal BF16 is loading.**
+Original/Inco arm a1 completes all four 64-token before/capture/repeat/after
+requests. Every output matches the frozen native prefix; speculative counters
+match across all four controls. Both GPUs retain **34 trace frames each**
+(1,383,027,196 bytes per rank). This verifies the API/counter observer controls;
+independent tensor-repeat and cross-arm analysis remain pending. Controller is
+`starting_b1`, loading Modal BF16 with the same CT target. Production remains
+temporarily paused under the active restoration watchdog. No cause of the
+original/Modal divergence is established yet. Retained progress:
+`diagnostics-v1/drafter-pretrained-verification-v1-a1-progress.json`.
+
 **21 October 2026, 06:35 UTC: final speed repeat stopped; native trace loads first arm.**
 The user prioritizes the output-divergence trace over repeating the speed baseline.
 At 06:29:04 UTC, stop the superseded trace waiter PID 987188, then signal speed
