@@ -1,0 +1,991 @@
+{
+  "status": "three_arms_complete_final_repeat_stopped_for_trace_priority",
+  "speed_qualified": false,
+  "quality_qualified": false,
+  "stop": {
+    "status": "baseline_repeat_stopped_for_user_priority",
+    "user_message": "for now doesn't make any sense I guess",
+    "reason": "User prioritizes the requested output-divergence trace over the final speed repeat.",
+    "epoch": 1792564144.32349,
+    "parent_plan_sha256": "52ed3ed2ad97f0de5b05c06342ce04ccc9c866ff82f069d519a6d054a4b8c1e8",
+    "trace_plan_sha256": "ae1f8d983ada1955fbf94d31ce72ac84e9292ac55ad2909271b555c0150dfe29",
+    "controller_pid": 728927,
+    "controller_start_ticks": "68886880",
+    "waiter_pid": 987188,
+    "waiter_start_ticks": "69054366",
+    "phase_at_stop": "starting_a2",
+    "completed_measurements": {
+      "a1": "443d95e4b3a1ef826299ae55dc2b7c3263a4e01bcb90511035860f463340f39e",
+      "b1": "a332e9f1f46c1ef8d8f24f76d556cf9135a5a561611b333cb4f61cf35a19bca5",
+      "c1": "28a530746413960e13edfa5a118d50402e42f3f27967f2c051e5b812491d4210"
+    },
+    "data_deletion_requested": false,
+    "training_started": false,
+    "speed_qualified": false
+  },
+  "archive": {
+    "status": "independently_verified",
+    "sha256": "e8b760d95499dcc07d4faee67161ed6cdee2f6a59c36c0011c6fe37424042baf",
+    "bytes": 38751310,
+    "payloads": 132
+  },
+  "arms": {
+    "a1": {
+      "measurement_sha256": "443d95e4b3a1ef826299ae55dc2b7c3263a4e01bcb90511035860f463340f39e",
+      "requests": 48,
+      "repeat_tokens_and_counters_exact": true,
+      "summary": {
+        "code": {
+          "requests": 24,
+          "median_tps": 39.87572703221729,
+          "median_ttft": 0.2766493635
+        },
+        "chat": {
+          "requests": 12,
+          "median_tps": 29.563855126194603,
+          "median_ttft": 0.1759401345
+        },
+        "explanation": {
+          "requests": 12,
+          "median_tps": 31.195025870068264,
+          "median_ttft": 0.19709592999999997
+        }
+      }
+    },
+    "b1": {
+      "measurement_sha256": "a332e9f1f46c1ef8d8f24f76d556cf9135a5a561611b333cb4f61cf35a19bca5",
+      "requests": 48,
+      "repeat_tokens_and_counters_exact": true,
+      "summary": {
+        "code": {
+          "requests": 24,
+          "median_tps": 40.83036115173202,
+          "median_ttft": 0.2513510205
+        },
+        "chat": {
+          "requests": 12,
+          "median_tps": 29.29755166393795,
+          "median_ttft": 0.18389532549999998
+        },
+        "explanation": {
+          "requests": 12,
+          "median_tps": 31.575413064432656,
+          "median_ttft": 0.19678893400000003
+        }
+      }
+    },
+    "c1": {
+      "measurement_sha256": "28a530746413960e13edfa5a118d50402e42f3f27967f2c051e5b812491d4210",
+      "requests": 48,
+      "repeat_tokens_and_counters_exact": true,
+      "summary": {
+        "code": {
+          "requests": 24,
+          "median_tps": 41.17681872351951,
+          "median_ttft": 0.25748424449999996
+        },
+        "chat": {
+          "requests": 12,
+          "median_tps": 30.699708603741044,
+          "median_ttft": 0.1842377925
+        },
+        "explanation": {
+          "requests": 12,
+          "median_tps": 32.214804806825015,
+          "median_ttft": 0.1893903
+        }
+      }
+    }
+  },
+  "output_comparisons": {
+    "b1_vs_c1": {
+      "matched_requests": 48,
+      "exact_requests": 48,
+      "cases": [
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        }
+      ]
+    },
+    "a1_vs_b1": {
+      "matched_requests": 48,
+      "exact_requests": 6,
+      "cases": [
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 86
+        }
+      ]
+    },
+    "a1_vs_c1": {
+      "matched_requests": 48,
+      "exact_requests": 6,
+      "cases": [
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 0,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 0,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 1,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 1,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 2,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 2,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 3,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 3,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 86
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 4,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 4,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "dolly-12645",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 206
+        },
+        {
+          "case": "dolly-4017",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 98
+        },
+        {
+          "case": "dolly-1769",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 123
+        },
+        {
+          "case": "opencoder-evol-92378",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 47
+        },
+        {
+          "case": "dolly-7475",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 185
+        },
+        {
+          "case": "opencoder-evol-20845",
+          "trial": 5,
+          "exact": true,
+          "first_different_output_index": null
+        },
+        {
+          "case": "opencoder-evol-69100",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 153
+        },
+        {
+          "case": "opencoder-evol-15654",
+          "trial": 5,
+          "exact": false,
+          "first_different_output_index": 86
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "No baseline reload timing drift control; deliberately stopped before a2 measurement.",
+    "Original/Modal outputs differ in 7 of 8 cases, confounding throughput comparisons.",
+    "Exact BF16/FP8 Modal outputs on these eight cases do not establish general target invariance."
+  ],
+  "sealed_test_opened": false,
+  "training_started": false
+}

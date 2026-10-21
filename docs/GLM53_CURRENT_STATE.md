@@ -1,5 +1,17 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 06:35 UTC: speed baseline repeat stopped; targeted trace loads first arm.**
+All three first loads complete 48 requests with exact within-arm repeats. Modal
+FP8 matches Modal BF16 on all 48 outputs; both differ from Inco on seven of eight
+cases. The final Inco reload is deliberately cancelled to prioritize this mismatch;
+no speed gain is qualified. All 132 retained timing payloads independently verify.
+Original 500k production restores healthy at 06:32:09 UTC. Detached replacement
+launcher PID 1180511 passes CPU preflight; controller 1186244 now loads the
+first arm under watchdog 1186334. Production is temporarily paused again;
+no GPU trace result yet. Read `after-priority-status.json`; old queue PID 987188
+is stopped. Training remains stopped and sealed test closed.
+[Evidence and current handoff](GLM53_HANDOFF.md).
+
 **21 October 2026, 06:19 UTC: targeted native-decision trace queued.**
 Detached Spark PID 987188 waits for the current timing run and verified production
 restoration. It then runs one 64-token development case under both drafters with

@@ -1,33 +1,36 @@
 # Pretrained drafter screen before further training
 
-Updated **21 October 2026, 06:19 UTC**. The user prefers checking a pretrained
-FP8 drafter before paying for adaptation. Automatic CPU training is held:
-the idle continuation v2 PID 80216 was stopped before any optimizer update.
-Its frozen files and status remain; `held-for-alternatives.json` records the
-supersession. At the user’s request, GPU capture stopped at 1,095 prompts. Its handler restored
-original production healthy at 05:46:55 UTC with 500,000 context. All 1,088
-accepted exports in 17 completed chunks independently rehash on both Sparks
-(13,097,763,612 bytes per node); unexported raw files remain. The incomplete
-dataset is not published for full training.
+Updated **21 October 2026, 06:35 UTC**. The user prioritizes the native-decision
+trace over the final speed baseline reload. The reload is deliberately stopped
+before any a2 measurement; its controller restores healthy original production
+at **06:32:09 UTC**, with unchanged identities and **500,000 context**.
+All three completed first loads have 48 timed requests and exact token/counter
+repeats. All 132 retained timing payloads independently verify on Mac and both Sparks.
 
-**Current result:** Modal BF16 completes all 48 timed requests, with exact
-token/counter repeats across all six trials. Code median throughput is
-**40.83 vs 39.88 tok/s (+2.39%)**, chat **29.30 vs 29.56 (-0.90%)**, explanation
-**31.58 vs 31.20 (+1.22%)**, compared with the first baseline load. **7/8 output sequences differ
-from the Inco baseline**, first at indices 47–206. This fails output identity;
-different trajectories confound performance/acceptance comparisons. The cause
-is not identified. Modal FP8 and the baseline reload remain pending. No
-positive candidate conclusion, quality degradation claim, or promotion follows
-from these incomplete results. The frozen run continues under its watchdog.
+| Drafter on the unchanged CT target | Code tok/s / TTFT | Chat tok/s / TTFT | Explanation tok/s / TTFT |
+| --- | ---: | ---: | ---: |
+| Original Inco FP8 | 39.88 / 277 ms | 29.56 / 176 ms | 31.20 / 197 ms |
+| Modal BF16 | 40.83 / 251 ms | 29.30 / 184 ms | 31.58 / 197 ms |
+| Modal FP8 | 41.18 / 257 ms | 30.70 / 184 ms | 32.21 / 189 ms |
 
-The first original-Inco-FP8 baseline load completes **48 measured requests**
-plus two excluded warmups. All six repetitions have identical output tokens and
-speculative counters. Median end-to-end throughput is **39.88 / 29.56 / 31.20
-tok/s** for code/chat/explanation; median TTFT is **277 / 176 / 197 ms**.
-These numbers establish this development suite's first baseline; the baseline
-reload remains pending. Production is temporarily paused
-under the comparison restoration watchdog. Measurement SHA256:
-`443d95e4b3a1ef826299ae55dc2b7c3263a4e01bcb90511035860f463340f39e`.
+**Modal FP8 and BF16 outputs agree on all 48 matched requests.** Each matches
+Inco on only 6/48 (one of eight development cases); differences first occur at
+output indices 47–206. The observed mismatch predates FP8 conversion. Its cause
+is not identified, and changed output trajectories confound original/Modal
+speed comparisons. The baseline reload drift control is intentionally absent;
+these medians do not qualify a speed gain or establish a quality regression.
+See `diagnostics-v1/drafter-pretrained-modal-v1-retained-summary.json`.
+
+Detached native-trace launcher **1180511** passes CPU preflight. Controller
+**1186244** now loads the first/Inco arm under watchdog **1186334**, temporarily
+pausing production again. The launcher verifies
+the specific user-stop receipt, successful restoration/finalization and saved
+measurements before proceeding with the unchanged frozen diagnostic. Read
+`after-priority-status.json`, then `controller.json`; old waiter PID 987188 and
+its `queue.json` are superseded. GPU captures have not completed yet. Training remains
+stopped and the sealed test closed. The long capture remains at 1,095 prompts,
+with 1,088 verified exports in 17 completed chunks (13,097,763,612 bytes per node).
+The unexported files remain; this incomplete dataset is not published for training.
 
 ## Verified CPU results
 
@@ -75,7 +78,7 @@ FP8 weights SHA256:
 
 ### First-divergence diagnostic specification
 
-The diagnostic is implemented and queued; its GPU run has **not started**. Use development case
+The diagnostic passes CPU preflight and is **loading its first arm**. Use development case
 `opencoder-evol-92378` (56 prompt tokens): the first 47 output tokens agree,
 and output index 47 differs. Retain the observed 64-token prefixes for both arms
 and require before/capture/repeated-capture/after controls to reproduce them.
@@ -94,14 +97,16 @@ by itself proof that the verifier is wrong.
 The passive context probe now follows each arm's configured five/six auxiliary
 layers; tests verify unchanged native outputs and independent retained copies.
 The reviewer aligns the actual sampled row and validates its causal prefix.
-All repository checks pass. Detached queue PID **987188** on Spark waits for the
-timing comparison, six repeat controls, finalization and healthy restoration.
-It then CPU-preflights and runs the separate two-arm trace on API **8041**, with
-a **30-minute restoration watchdog**. It needs no laptop connection. Both Sparks
-verify all 46 frozen files; plan SHA256
+All repository checks pass. Detached replacement launcher **1180511** starts
+at 06:33:03 UTC after the speed repeat is intentionally stopped and original
+production restored. The specific cancellation receipt is required; an arbitrary
+failed comparison cannot trigger the diagnostic. Both Sparks verify the unchanged
+46 frozen files; plan SHA256
 `ae1f8d983ada1955fbf94d31ce72ac84e9292ac55ad2909271b555c0150dfe29`.
-The frozen timing run remains untouched. Read the diagnostic root's `queue.json`,
-then `controller.json`; no training, sealed test or promotion follows this queue.
+The separate two-arm trace uses API **8041**, before/capture/repeated-capture/after
+controls, and a **30-minute restoration watchdog**. It runs without the laptop.
+Read `after-priority-status.json`, then `controller.json`. No training, sealed
+qualification or promotion follows this launch. Old `queue.json` is superseded.
 Specification and source measurement hashes:
 `diagnostics-v1/drafter-pretrained-first-divergence-plan.json` (SHA256
 `df23ef9849faced7e4221e9bb308b76e866846c78184d198b3c539712888f43c`).

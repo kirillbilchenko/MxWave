@@ -1,5 +1,75 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 06:35 UTC: final speed repeat stopped; native trace loads first arm.**
+The user prioritizes the output-divergence trace over repeating the speed baseline.
+At 06:29:04 UTC, stop the superseded trace waiter PID 987188, then signal speed
+controller 728927 through its normal restoration handler. No a2 measurements
+were taken. All three completed arms retain **48/48 requests** and exact within-arm
+token/counter repeats. Original production is verified healthy at **06:32:09 UTC**,
+with its original identities and **500,000 context**. Finalization succeeds;
+`failed_restored` records the intentional signal-15 stop, not a model failure.
+The immutable timing archive independently verifies all **132 payloads** on the
+Mac and both Sparks (38,751,310 bytes; SHA256
+`e8b760d95499dcc07d4faee67161ed6cdee2f6a59c36c0011c6fe37424042baf`).
+
+Completed Modal FP8 medians: code **41.18 tok/s / 257 ms TTFT**, chat
+**30.70 / 184 ms**, explanation **32.21 / 189 ms**. All **48/48** Modal FP8
+outputs exactly match the corresponding Modal BF16 outputs. Both Modal variants
+match Inco on only **6/48 requests (one of eight cases)**. The FP8 conversion is
+therefore not the source of this observed original/Modal mismatch. Without the
+reload drift control, and with different trajectories, no speed gain is qualified.
+Retained summary: `diagnostics-v1/drafter-pretrained-modal-v1-retained-summary.json`.
+
+Replacement launcher **PID 1180511** starts detached at **06:33:03 UTC**, after
+verifying the explicit stop receipt, restoration, retained evidence and all
+unchanged frozen trace sources. CPU preflight passes (211 runtime bindings per
+rank); controller **1186244** and watchdog **1186334** now load **a1 / Inco FP8**.
+Production is temporarily paused again. GPU captures have not completed yet. The launcher accepts only this specific expected cancellation; arbitrary
+failures still block it. Both nodes verify its SHA256
+`97eb5f6e315f78c72b929efc2d5180817ce8404e8092bf0cba3076d8e5b92fb7`.
+Read diagnostic `after-priority-status.json`, then `controller.json`; old
+`queue.json` is superseded. The frozen two-arm, eight-request native trace and its
+30-minute restoration watchdog are unchanged. All tests, Ruff and strict core
+mypy pass. No training restart, sealed-test access or promotion.
+
+**Acceptance interpretation:** the 42.03% Modal FP8 code rate counts all seven
+proposals, not first-token agreement. Actual accepted-prefix survival per position
+is **80.4%, 58.1%, 47.7%, 39.2%, 29.2%, 22.7%, 16.9%**. The first mismatch truncates
+the accepted draft prefix; only 16.9% of code rounds retain all seven proposals.
+Chat reaches its first/seventh draft position in 71.6%/5.1% of rounds. Per-position
+counters independently sum to total accepted counts in all nine domain/variant
+groups. This explains much of the low-looking aggregate; it does not locate why
+predictions diverge. BF16/FP8 proximity argues against FP8 being the main observed
+cause. CT target mismatch, domain difficulty and runtime differences remain
+unseparated; the first-divergence diagnostic addresses the latter. Draft lengths
+3/5 are a subsequent measured-cost option after correctness is understood.
+
+**21 October 2026, 06:24 UTC: acceptance remains modest; FP8 is close to Modal BF16.**
+Live FP8 progress 37/48 requests. First matched development-round counters,
+accepted/proposed draft tokens, original Inco / Modal BF16 / Modal FP8:
+code **38.81% / 42.91% / 42.03%**, chat **25.60% / 26.90% / 27.60%**,
+explanation **28.16% / 30.75% / 30.21%**. Modal FP8 accepts **2.94 / 1.93 / 2.11**
+tokens per seven-token draft round in those domains. These are small-sample
+acceptance observations, not a causal gain against Inco's different output
+trajectories. BF16 already has modest acceptance; its FP8 conversion is not the
+main observed limitation. Target mismatch versus prompt difficulty is unseparated.
+The queued identity diagnostic addresses why target decisions differ; resolving
+that issue does not itself establish improved acceptance. Retained counters:
+`diagnostics-v1/drafter-pretrained-modal-v1-acceptance-progress.json`.
+
+**21 October 2026, 06:22 UTC: FP8 drafter runs; first round matches Modal BF16 outputs.**
+`c1` completes 22/48 timed requests. In the first full eight-prompt round,
+FP8 and BF16 Modal produce **identical 256-token outputs on all eight cases**;
+both match original Inco on only one case. Thus the original/Modal mismatch is
+already present before FP8 conversion; this does not yet identify its cause.
+First-round medians versus Modal BF16: code **40.81 vs 40.68 tok/s (+0.31%)**,
+chat **31.00 vs 29.65 (+4.54%)**, explanation **32.49 vs 31.91 (+1.83%)**.
+These are preliminary one-round values; full repeats/reload controls are pending.
+The detached native-decision diagnostic remains queued behind the unchanged
+timing run. Snapshot SHA256
+`9b407d90718716949c2d232212b8e756085bfa8f2c0eef9726fd6a702c465140`;
+summary `diagnostics-v1/drafter-pretrained-modal-v1-c1-progress.json`.
+
 **21 October 2026, 06:19 UTC: first-divergence diagnostic implemented and queued on Spark.**
 At 06:16:17 UTC, detached queue **PID 987188** starts independently of the Mac.
 Both nodes verify all **46 frozen files**. Diagnostic revision

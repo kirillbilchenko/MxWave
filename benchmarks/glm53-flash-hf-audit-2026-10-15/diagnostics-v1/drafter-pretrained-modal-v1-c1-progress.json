@@ -1,0 +1,93 @@
+{
+  "status": "incomplete_FP8_screen",
+  "measured_requests": 22,
+  "measurement_sha256": "9b407d90718716949c2d232212b8e756085bfa8f2c0eef9726fd6a702c465140",
+  "scope": "First matched eight-prompt development round only; full repeats and baseline reload pending.",
+  "same_tokens_as_bf16": 8,
+  "same_tokens_as_inco": 1,
+  "cases": [
+    {
+      "case": "opencoder-evol-69100",
+      "domain": "code",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 35.95640777205333,
+      "fp8_tps": 36.64662412499597
+    },
+    {
+      "case": "dolly-7475",
+      "domain": "chat",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 31.835367278056914,
+      "fp8_tps": 32.74868017340533
+    },
+    {
+      "case": "dolly-12645",
+      "domain": "explanation",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 32.36613503284692,
+      "fp8_tps": 32.40183426788853
+    },
+    {
+      "case": "dolly-4017",
+      "domain": "explanation",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 31.451149790593476,
+      "fp8_tps": 32.58159303886353
+    },
+    {
+      "case": "opencoder-evol-15654",
+      "domain": "code",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 49.51647524591857,
+      "fp8_tps": 50.08170022411042
+    },
+    {
+      "case": "dolly-1769",
+      "domain": "chat",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 27.466971332572992,
+      "fp8_tps": 29.244359098326267
+    },
+    {
+      "case": "opencoder-evol-92378",
+      "domain": "code",
+      "tokens_equal_inco": false,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 45.40861994067289,
+      "fp8_tps": 44.967718601396975
+    },
+    {
+      "case": "opencoder-evol-20845",
+      "domain": "code",
+      "tokens_equal_inco": true,
+      "tokens_equal_modal_bf16": true,
+      "bf16_tps": 29.379200609555983,
+      "fp8_tps": 29.951469291503056
+    }
+  ],
+  "summary": {
+    "code": {
+      "bf16_tps": 40.682513856363116,
+      "fp8_tps": 40.807171363196474,
+      "change_percent": 0.30641544736760284
+    },
+    "chat": {
+      "bf16_tps": 29.65116930531495,
+      "fp8_tps": 30.996519635865802,
+      "change_percent": 4.5372589414532705
+    },
+    "explanation": {
+      "bf16_tps": 31.908642411720198,
+      "fp8_tps": 32.49171365337603,
+      "change_percent": 1.8273144752835702
+    }
+  },
+  "speed_qualified": false,
+  "sealed_test_opened": false
+}
