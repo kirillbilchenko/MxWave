@@ -1,5 +1,76 @@
 # GLM compression experiment handoff
 
+**21 October 2026: memory answer, separated by what was measured.**
+
+| Measurement | Across both GPUs | Per GPU | Meaning |
+| --- | ---: | ---: | --- |
+| Current stock-vLLM lossless packing | **6.941 GiB** | **3.470 GiB** | Resident expert-scale and embedding bytes saved, after the reported expert workspace; target head is dense. |
+| Earlier lossless BF16-KDA configuration | **9.367 GiB** | **about 4.684 GiB** | Matched same-CT allocation reduction; included KDA and output-head compression. |
+| Earlier CT MXFP8 versus ModelOpt | **14.877 GiB** | **7.447 / 7.430 GiB** | Whole-model allocation difference, including different quantization and checkpoint formats. |
+
+These figures are not additive. Moving to stock vLLM did not change the selected
+KDA precision: the prior MXFP8 weights were retained and their hashes verified.
+The current recipe no longer applies lossless BF16 compression to KDA and leaves
+the output head dense, so its compression-only accounting covers fewer components.
+The full current deployment's advantage over production still needs a fresh matched
+allocation measurement; **6.941 GiB is not that total-production delta**.
+
+**21 October 2026, 17:14:45 UTC: V2 complete; exact original production restored.**
+All eight frozen short-input requests finish. Independent Mac review verifies all
+305 archive payloads, both original container identities/configuration hashes,
+the restored authenticated 500k endpoint receipt and all 154,880-value distributions.
+Cold/cold KL is **0.0323304**, warm/warm **0.0249708**; all seven comparisons fail
+the unchanged 1e-5 gate. Controller `complete_restored` describes collection and
+restoration, not a numerical pass. No further GPU experiment is queued.
+
+All four paired traces (cold/warm, ranks 0/1) first differ at event 45,
+layer 3 `self_attn.indexer.indexer_op` **output**, with all earlier recorded
+events equal. The active output has shape 4,435 x 2,176 int32. Retained last-row
+bytes have exactly equal index multisets, including the same 125 negative slots,
+but 1,964–2,036 positions differ. Attention output then differs. This supports
+an index-order hypothesis for this observed boundary; it does not yet establish
+the operation responsible, equality of every row's membership, or a causal fix
+for the full-model KL failure. Next: inspect the actual indexer implementation,
+capture/replay its ordering and attention consumption, then test canonical order
+under identical inputs. Do not blindly apply the old SM90 compaction patch to
+the native SM120 backend, change precision, or relax the gate.
+
+V2 archive: `out/glm53-package-v1/stock-numerical-v2-evidence.tar.gz`,
+**305 payloads / 6,754,397 bytes**, SHA256
+`100f82121a84ce3d72b8d1802e91e7ed2a665052ec64c2c4fce8ce348b010cab`.
+Independent review: `stock-numerical-v2-independent-review.json` in the same
+directory. V1's 75-payload archive is also independently verified on Mac and
+Spark2. The full local checks remain 1,087 passed / 1 skipped, Ruff and core mypy.
+
+**21 October 2026, 17:06:49 UTC: deep layer-three follow-up launched.**
+V1 restores exact original 500k production at **17:06:01 UTC**; all original
+identity hashes match. V2 then starts under a fresh 1,500-second watchdog,
+controller PID 1760972, plan SHA256
+`ecafce0f7bdbb9cb6762d6aa3d005abe7b55a943999ab4df444f36a93a0135ee`.
+It repeats only the frozen 4,435-token failure, retaining the same eight cold/warm
+and traced/untraced controls. The observer now includes every layer-three MLA
+submodule, excludes unused rows of shared index buffers, records actual backend
+classes and retains last-row bytes for numerical comparison. Both CPU preflights
+pass. No kernel, model weight, precision, capacity setting or gate is changed.
+Production is temporarily paused; consult `stock-numerical-v2/controller.json`.
+
+**21 October 2026, 17:04 UTC: speculation-off run completes; first divergence localized.**
+All 16 fixed-input requests finish. Cold/cold self-repeat KL is **0.0199474** for
+4,435 tokens and **0.1555095** for 12,449 tokens; both fail the unchanged 1e-5
+gate. Warm/warm and traced controls fail too, although the greedy next token is
+the same in every compared pair. These are self-repeat results, not a comparison
+of compression against a reference. Production restoration is in progress.
+
+The short cold/cold trace has 138 matching-layout events per rank. The first
+differing event on both ranks is **layer 3 `self_attn` output**, with its complete
+input hashes identical and all preceding recorded activations equal. Layers 0–2
+use dense MLPs; this difference occurs before the first compressed expert layer
+executes. Speculation is absent. This localizes the initial discrepancy to the
+native MLA path; it does not yet distinguish projection, indexer, compaction,
+cache or attention-kernel behavior. Do not label this harmless rounding or claim
+the older stable-compaction fix necessarily applies to v0.32. The next targeted
+probe observes layer 3's internal boundaries and active index rows.
+
 **21 October 2026, 16:56:51 UTC: stock numerical diagnostic launched.**
 Both CPU preflights pass; detached controller PID 1675071 owns `stock-numerical-v1`.
 Plan SHA256 `9b0b7aef0d5f0ee59fb4f9e4d9481c8a694b74d326b9bd22a749244da2727419`.

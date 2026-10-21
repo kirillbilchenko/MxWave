@@ -11,16 +11,26 @@ not been measured.
 Current lossless scale/embedding storage saves **6.941 GiB across TP2**, after
 the reported expert workspace, according to both-rank byte receipts. This excludes
 the separate lossy MXFP8 KDA conversion and is not a matched production allocation
-delta. Exact original 500k production is restored at **16:44:58 UTC**; V6/V7
-evidence is independently verified on Mac and backed up with hashes on Spark2.
+delta. The earlier **9.367 GiB** compression-only result included BF16 KDA and
+the output head; the current recipe uses MXFP8 KDA and a dense output head.
+The earlier **14.877 GiB** whole-model advantage over ModelOpt also included
+quantization/format differences. These are three different measurements, not
+evidence that stock vLLM removed the packing benefit. KDA precision was unchanged
+during the port. See the memory table at the top of the [handoff](GLM53_HANDOFF.md).
+Exact original 500k production is restored at **17:14:45 UTC** after V2.
 
 **Serving qualification remains incomplete.** The corrected 12,449-token V7
 check observes 9,216 prefix-hit tokens, confirming actual reuse, but repeated greedy
 messages differ both cold-to-warm and warm-to-warm. V6 also differs without a
-reusable prefix. The identity gate therefore fails; no KL, stock speed or long-context
-pass is claimed. The capacity fix is complete; fixed-input numerical tracing is next.
-The [handoff](GLM53_HANDOFF.md) retains failures and restoration status.
-Local checks pass: 1,085 tests / 1 skipped, Ruff and strict core mypy.
+reusable prefix. Subsequent speculation-off diagnostics also fail self-repeat KL:
+V2 cold/cold **0.0323304**, warm/warm **0.0249708**, against the unchanged 1e-5 gate.
+All four V2 paired traces first differ inside layer 3's indexer output with earlier
+recorded events equal. Its retained last row has the same index multiset in a
+different order, followed by different attention output. A causal ordering/replay
+probe is next; no fix, stock speed or long-context pass is claimed. V2's 305 archive
+payloads and exact restoration are independently verified on Mac. No GPU run is
+currently queued. The [handoff](GLM53_HANDOFF.md) retains failures and evidence.
+Local checks pass: 1,087 tests / 1 skipped, Ruff and strict core mypy.
 
 **21 October 2026: consolidated outcome and stock-vLLM deployment target.**
 The compression mechanism works: it preserves the encoded weight values, reduces
