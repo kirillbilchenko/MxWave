@@ -1,5 +1,17 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 19:38 UTC: short native drafter trace launched.**
+Root `stock-draft-trace-v1`, controller **2973511**, independent watchdog **2974159**;
+plan SHA256 `a06e81f1e76d47cf4878048b0954e40ee994bd0ebd917c3bc206e18f4a593af5`,
+source commit **ea930d3**. Both official-image no-GPU preflights, full local pytest,
+Ruff and strict core mypy pass. V3's failing BF16 draft-cache profile is retained;
+only the observational worker/client change. Each of two development prompts runs
+for 32 output tokens with native draft replay and an explicitly labelled draft-eager
+control (`is_profile=True` on the proposal call). Eight boundaries per request are
+retained; all timings are diagnostic. The 25-minute lease is a restoration bound.
+Production is temporarily paused under exact restoration controls. Consult this
+controller for live state; the old deployment comparison is permanently stopped.
+
 **21 October 2026, 19:35 UTC: comparison stopped; diagnose zero acceptance first.**
 The user reprioritized identifying the failure before more benchmarking. Controller
 2545114 received SIGTERM through its normal restoration path; all partial results
