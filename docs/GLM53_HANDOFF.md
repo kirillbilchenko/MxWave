@@ -1,5 +1,27 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 15:26 UTC: stock capacity gate blocks the requested comparison.**
+`stock-trial-v5` passes all GPU components, including the real compressed-embedding
+forward and exact TP shard masks. Both models/drafters load, the corrected embedding
+path clears the full-model profiling forward, and rank 0 logs 123.294 seconds for
+model loading. The engine then rejects **500,000 context with 6 GiB KV per rank**:
+its planner requires **13.96 GiB**, has **5.97 GiB usable**, and estimates a maximum
+length of **9,472** for this configuration. The null-block reserve explains why
+usable cache is below the explicit 6 GiB. No API readiness, prefix reuse, final
+KV/graph allocation, speed measurement or GSM8K run completed.
+
+The log also warns that it cannot identify a draft-model KV group for DFlash.
+This warning is retained, not established as the cause of the capacity rejection.
+The pinned planner accounts for shared-pool group sizes and hybrid-state blocks;
+audit those actual specifications against production before proposing a fix.
+Do not bypass its guard, reduce context, turn off prefix caching or increase KV
+silently: the user explicitly requires reporting this mismatch. No further GPU
+retry is queued. Exact original container identities and the authenticated 500k
+model endpoint are verified restored at **15:26:07 UTC** (`failed_restored`).
+V4/V5 failure and restoration archive: 40 payloads, 384,822 bytes, SHA256
+`35e5306d4c37a3d981b0221cd26894d592d5190442b31078f026deb412f4a244`.
+Source fix is committed as `8e8cdd1`; all pre-existing failures remain retained.
+
 **21 October 2026, 15:19 UTC: native loading accelerated; embedding dispatch gap fixed.**
 `stock-trial-v4` failed during the first profile forward and restored exact
 production at **15:18:05 UTC**. The verified native Run:ai loader completes the
@@ -19,9 +41,12 @@ component check now also exercises that forward with the real compressed row cod
 
 Local validation: 1,083 tests / 1 skipped, Ruff and strict core mypy pass.
 Wheel SHA256 `a887202f278e57b9bcdfdad1638234eb1d01cad9fc6effd1a05e2272a5272c8e`
-(238,249 bytes). The next bounded startup check is `stock-trial-v5`, with the
+(238,249 bytes). `stock-trial-v5` launched at **15:19:33 UTC**, with the
 same 500k/32-slot/6-GiB/6,919/prefix-on/dense-head settings and the 3 GiB Run:ai
-buffer. No default kernel change, quality gate change or promotion.
+buffer. The independent watchdog restores exact production after the run;
+production is temporarily paused. Plan SHA256:
+`f31d441a8b64adedb09ec2450eedad40c268d132f73f4692acdc89ba8d85428d`.
+No default kernel change, quality gate change or promotion.
 
 **21 October 2026, 15:12 UTC: full-K independently verified; stock startup retry launched.**
 `marlin-full-k-v1` completes in 412.06 seconds. Exact production restoration is

@@ -5,8 +5,11 @@ wheel installed through vLLM's plugin mechanism. No vLLM source files are replac
 The extension still wraps version-pinned internal APIs; it is not an unmodified
 `vllm serve` invocation without a plugin.
 
-**Status: experimental; full-model GPU qualification is in progress.** Installation,
-asset integrity and CLI checks pass on both Sparks. Follow the
+**Status: experimental; the requested 500k/6-GiB capacity profile is blocked.**
+Installation, asset integrity, CLI and synthetic GPU checks pass on both Sparks.
+The full model clears its initial profiling forward, but the stock cache planner
+requires 13.96 GiB per rank versus 5.97 GiB usable from the configured 6 GiB.
+Serving, prefix-cache correctness and final memory are still unqualified. Follow the
 [current handoff](../../docs/GLM53_HANDOFF.md) for retained GPU results. Successful
 `doctor` output alone does not qualify model output, speed or long context.
 
@@ -67,9 +70,10 @@ docker run --rm --gpus all --network none \
 
 ## Launch on both nodes
 
-The following is the explicit **500k capacity qualification profile**. A configured
-500k limit does not prove a 500k request fits within a 6 GiB cache. The planned
-32k/128k probes must establish practical capacity before replacing production.
+The following retains the explicit **500k capacity qualification profile** and
+reproduces the current cache-planner rejection; it is not a working serving recipe
+yet. Do not silently lower context or disable prefix caching to label it qualified.
+The planned 32k/128k probes remain required before replacing production.
 
 Run on node 1 and then node 0, setting `GLM_NODE_RANK` to 1 and 0 respectively.
 Use node 0's reachable private address for `GLM_MASTER_ADDR`, and each node's own
@@ -121,7 +125,8 @@ fraction. FlashInfer autotuning is disabled, matching the baseline configuration
 An optional native streaming loader is under full-model qualification:
 `--load-format runai_streamer --loader-memory-mib 3072 --loader-concurrency 8`.
 This exact 3 GiB buffer passes CPU byte checks on three complete representative
-shards; its cold model-startup speed is not established. A 1 GiB buffer rejects
+shards and loads the full target/drafter in the latest trials. Rank-0 logged model
+loading is 123–126 seconds; controlled cold-start speed is not established. A 1 GiB buffer rejects
 the largest tensor, and the 2 GiB screen stalls. Retain the explicit 3 GiB setting
 when testing this loader. The default remains `auto`; production's custom fast
 loader is not included in this upstream recipe.

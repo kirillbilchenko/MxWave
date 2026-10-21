@@ -1,10 +1,14 @@
 # MxWave
 
-**GLM packaging checkpoint, 21 October 2026, 14:30 UTC.** The default deployment
+**GLM packaging checkpoint, 21 October 2026, 15:26 UTC.** The default deployment
 target is the official vLLM 0.32.0 image plus an installed MxWave plugin. Both-node
-CPU checks pass. The first controlled GPU run passed expert components, then found
-a KDA workspace API mismatch before full-model loading. Its adapter fix is being
-rechecked; production is restored. Full-model stock serving remains unqualified.
+CPU and all synthetic GPU checks pass; both full models/drafters load and the
+initial profiling forward completes. **The requested 500k/6-GiB-KV profile fails
+the stock cache planner: 13.96 GiB required per rank, 5.97 GiB usable.** No settings
+were silently reduced. Exact production restored at 15:26:07 UTC; serving,
+prefix reuse and final memory remain unqualified. Our bounded padding and the
+upstream full-K specialization give identical bits in all 64 retained component
+comparisons, without a consistent measured speed advantage for full-K.
 Local checks pass (1,083 tests / 1 skipped, Ruff, strict core mypy).
 [Full handoff, memory scope, artifacts and remaining checks](docs/GLM53_HANDOFF.md).
 
@@ -19,8 +23,8 @@ versus seven drafts; these gains are not additive and do not establish a win ove
 tuned production. Training is stopped; CT has not replaced the original 500k service.
 
 The next delivery target is **upstream vLLM 0.32.0 plus a packaged compression
-extension and a simple reproducible launch**. Compatibility and clean installation
-are not yet qualified. [Whole-project assessment, evidence and deployment plan](docs/GLM53_CURRENT_STATE.md).
+extension and a simple reproducible launch**. Installation passes; complete serving
+compatibility is not yet qualified. [Whole-project assessment, evidence and deployment plan](docs/GLM53_CURRENT_STATE.md).
 
 **21 October 2026, 12:49 UTC: user stops adaptation; CT selects pretrained Modal FP8 at five drafts.**
 Original **500k production is restored and healthy**. The CT configuration is
