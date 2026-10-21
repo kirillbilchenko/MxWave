@@ -1,15 +1,43 @@
 # Pretrained drafter screen before further training
 
-**21 October 2026, 07:38 UTC: CT depth screen is measuring the first arm.**
-CT + Modal FP8 at seven drafts completes 26/48 requests so far; native counters
-confirm seven proposals per round and both ranks verify the intended checkpoint
-and all 68 KDA rounding hashes. The 3/5/off/7 loads remain pending. Production
-is temporarily paused under the independent restoration watchdog; the original
-500k setup is retained. Training stays held and the sealed test closed.
-The detached CPU postprocessor will review the retained results and independently
-verify a Spark2 backup after production restoration. Full pytest, Ruff and strict
-core mypy pass; no speed winner is established yet.
-[Experiment and restoration details](GLM53_HANDOFF.md).
+**21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
+Original production restores healthy at **08:32:34 UTC**, with its exact original
+container/configuration identities and **500,000-token context**. All 240 measured
+requests complete; training stays held, sealed test closed, no candidate promoted
+and no further GPU experiment queued.
+
+Same CT target and pretrained Modal FP8 drafter, C1, eight development prompts,
+six fixed-seed cycles, 256 output tokens. These are end-to-end request medians:
+
+| Native drafts | Code tok/s | Chat tok/s | Explanation tok/s |
+| --- | ---: | ---: | ---: |
+| 7, initial | 41.73 | 30.68 | 32.27 |
+| 3 | 41.06 | 34.91 | 38.62 |
+| 5 | 44.37 | 32.80 | 34.74 |
+| Off, drafter unloaded | 22.22 | 22.39 | 22.38 |
+| 7, final reload | 41.62 | 30.68 | 32.23 |
+
+Against the mean of the two seven-draft domain medians, **five drafts gains
+6.48% code, 6.91% chat and 7.72% explanation**. Three drafts changes code by
+-1.48%, but gains **13.81% chat and 19.75% explanation**. Five improves all four
+code per-prompt medians; the equal-prompt geometric-mean code gain is **5.45%**.
+Three's corresponding code mean gains 2.29%, with one code prompt regressing
+substantially: the domain median alone does not describe every prompt.
+
+All within-arm outputs/counters repeat exactly. The final seven-draft load
+reproduces all baseline outputs/counters, and reload drift **-0.28%/+0.01%/-0.11%**
+passes the frozen 2% gate in every domain. **All eight outputs differ when depth
+changes to 3, 5 or off.** Changed trajectories can affect timing and acceptance;
+this small development screen is not a task-quality, KL, zero-loss or production
+replacement qualification. No target weights, compression settings or training
+updates change during the comparison. The pretrained drafter is already useful:
+five drafts gives about **2x code throughput** versus speculation-off, while three
+gives 1.56x chat and 1.73x explanation throughput.
+
+All 152 retained payloads verify on Mac/Spark2. Five-draft code first-token
+latency is 266 ms, about 21 ms above the bracketed seven-draft baseline.
+Keep training held; profile CT serving overhead and compatible production tuning
+before a broader qualification. [Full evidence, limits and next step](GLM53_HANDOFF.md).
 
 **21 October 2026, 07:29 UTC: CT draft-length comparison running.**
 All ten CPU preflights pass. Detached controller 1622330 starts CT + Modal FP8

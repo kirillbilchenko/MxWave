@@ -1,0 +1,45 @@
+"""Summarize retained telemetry; do not interpret P0 or clocks as a throttling test."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import statistics
+from pathlib import Path
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--root', type=Path, required=True)
+parser.add_argument('--output', type=Path, required=True)
+args = parser.parse_args()
+assert not args.output.exists()
+state = json.loads((args.root / 'controller.json').read_bytes())
+assert state['phase'] == 'complete_restored' and not state['service_paused']
+report = {
+    'controller_sha256': hashlib.sha256((args.root / 'controller.json').read_bytes()).hexdigest(),
+    'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    'limits': [
+        'Samples span warmups and measured requests, including brief idle gaps.',
+        'P0 and recorded clocks/temperatures do not prove absence of throttling.',
+        'CUDA allocated bytes are runtime allocator readings, not total system memory.',
+    ],
+    'arms': {},
+}
+for arm, resources in state['resources'].items():
+    startup = json.loads((args.root / f'{arm}-startup.json').read_bytes())
+    by_rank = {}
+    for rank in (0, 1):
+        points = [row for pair in resources['during'] for row in pair if row['rank'] == rank]
+        assert points and all(p['telemetry_returncode'] == 0 and p['running'] for p in points)
+        values = [p['GPU_boundary_telemetry'].split(',') for p in points]
+        assert all(len(v) == 4 for v in values)
+        item = {'samples': len(points), 'pstates': sorted({v[3].strip() for v in values})}
+        for i, name in enumerate(('sm_clock_mhz', 'temperature_c', 'power_w')):
+            column = [float(v[i]) for v in values]
+            item[name] = {'min': min(column), 'median': statistics.median(column), 'max': max(column)}
+        start = next(s for s in startup if s['rank'] == rank)
+        item['startup_cuda_allocated_bytes'] = start['trial']['cuda_allocated_bytes']
+        item['startup_target_graph_rows'] = start['trial']['physical_graph_token_counts']
+        by_rank[str(rank)] = item
+    report['arms'][arm] = by_rank
+args.output.write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({'arms': len(report['arms']), 'output': str(args.output)}))

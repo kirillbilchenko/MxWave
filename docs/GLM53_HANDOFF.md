@@ -1,14 +1,90 @@
 # GLM compression experiment handoff
 
-**21 October 2026, 07:38 UTC: CT depth screen is measuring the first arm.**
-CT + Modal FP8 at seven drafts completes 26/48 requests so far; native counters
-confirm seven proposals per round and both ranks verify the intended checkpoint
-and all 68 KDA rounding hashes. The 3/5/off/7 loads remain pending. Production
-is temporarily paused under the independent restoration watchdog; the original
-500k setup is retained. Training stays held and the sealed test closed.
-The detached CPU postprocessor will review the retained results and independently
-verify a Spark2 backup after production restoration. Full pytest, Ruff and strict
-core mypy pass; no speed winner is established yet.
+**21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
+Original production restores healthy at **08:32:34 UTC**, with its exact original
+container/configuration identities and **500,000-token context**. All 240 measured
+requests complete; training stays held, sealed test closed, no candidate promoted
+and no further GPU experiment queued.
+
+Same CT target and pretrained Modal FP8 drafter, C1, eight development prompts,
+six fixed-seed cycles, 256 output tokens. These are end-to-end request medians:
+
+| Native drafts | Code tok/s | Chat tok/s | Explanation tok/s |
+| --- | ---: | ---: | ---: |
+| 7, initial | 41.73 | 30.68 | 32.27 |
+| 3 | 41.06 | 34.91 | 38.62 |
+| 5 | 44.37 | 32.80 | 34.74 |
+| Off, drafter unloaded | 22.22 | 22.39 | 22.38 |
+| 7, final reload | 41.62 | 30.68 | 32.23 |
+
+Against the mean of the two seven-draft domain medians, **five drafts gains
+6.48% code, 6.91% chat and 7.72% explanation**. Three drafts changes code by
+-1.48%, but gains **13.81% chat and 19.75% explanation**. Five improves all four
+code per-prompt medians; the equal-prompt geometric-mean code gain is **5.45%**.
+Three's corresponding code mean gains 2.29%, with one code prompt regressing
+substantially: the domain median alone does not describe every prompt.
+
+All within-arm outputs/counters repeat exactly. The final seven-draft load
+reproduces all baseline outputs/counters, and reload drift **-0.28%/+0.01%/-0.11%**
+passes the frozen 2% gate in every domain. **All eight outputs differ when depth
+changes to 3, 5 or off.** Changed trajectories can affect timing and acceptance;
+this small development screen is not a task-quality, KL, zero-loss or production
+replacement qualification. No target weights, compression settings or training
+updates change during the comparison. The pretrained drafter is already useful:
+five drafts gives about **2x code throughput** versus speculation-off, while three
+gives 1.56x chat and 1.73x explanation throughput.
+
+First-token medians (code/chat/explanation): seven initial **242/174/197 ms**;
+three **261/191/200 ms**; five **266/172/188 ms**; off **236/173/181 ms**;
+seven reload **247/180/197 ms**. Five's code first-token increase against the
+bracketed baseline is about 21 ms. Native accepted/proposed rates for code are
+42.03% at seven, 72.02% at three and 53.07% at five; accepted tokens per round are
+2.942, 2.160 and 2.654 respectively. Shorter drafts raise the percentage partly by
+removing later proposals; elapsed serving speed, not that percentage alone,
+determines the benefit. Median code decode elapsed time per native draft round
+is 96.36/74.33/84.95 ms at seven/three/five; it includes host and drafter work.
+
+Startup evidence confirms depths and no loaded drafter at zero, identical 68 KDA
+rounding hashes, and captured graph shapes. This run does not add a GPU profile
+attributing actual replay/kernel times. Recorded SM-clock medians span
+2,463–2,496 MHz across arms/ranks; maximum recorded temperature is 75 C and all
+samples report P0. Samples include warmups and brief idle gaps; they do not
+independently prove absence of throttling. The retained clock/thermal summaries
+and all numerical reviewer fields are **exactly identical on Spark and Mac**.
+
+The target remains CT MXFP4 experts plus the previously measured **MXFP8 KDA**
+variant, with exact vocabulary/scales. This run does not turn that later lossy
+KDA variant into a lossless claim. Serving settings stay at 8k context, prefix
+cache off, 4096 prefill budget, 16 slots and 6 GiB KV per rank. The sealed test is
+not opened. Full production tuning, C8/C16 stability and long-context qualification
+remain outstanding; the restored production configuration is unchanged.
+
+All **152 retained payloads** verify independently on Mac and Spark2. Archive:
+43,445,376 bytes, SHA256
+`c88a8ea2c109a718555b07b172476649b3f2864547a30758c2b0dfddca8b301a`.
+Plan SHA256 remains
+`2ac2443f63ea259d31d4b1802d9284b48c9fd9aea47bf07d599377f254c41f72`.
+Raw local evidence: `out/ct-draft-length-v1/retained`; Spark:
+`full-model-v1/ct-draft-length-v1`; independent backup on Spark2:
+`full-model-v1/ct-draft-length-v1-retained-backup`. Reports:
+[measurement review](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/ct-draft-length-v1-review.json),
+[verification receipt](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/ct-draft-length-v1-independent-verification.json),
+[telemetry](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/ct-draft-length-v1-telemetry-review.json)
+and [restoration](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/ct-draft-length-v1-restoration.json).
+Full pytest, Ruff and strict core mypy pass; the strengthened independent reviewer
+also passes all ten focused tests. The earlier failures and raw output differences
+remain retained.
+
+**Practical next step:** keep expensive training held. Five drafts is the stronger
+conservative code candidate on this screen; three is a chat/explanation candidate.
+Profile the current CT serving path before changing production tuning: isolate
+target/drafter/head/communication and host time, then test one compatible change
+at a time. The CPU audit confirms CT explicitly sets `OMP_NUM_THREADS=4` while
+production leaves it unset, and several production optimizations default off in
+CT; their impact and compatibility are not yet measured. The earlier component
+trace plan for target grouping differences (layers 0–4 around positions 87–94)
+remains available, separately from speed tuning. No new GPU run or promotion is
+queued after this completed bounded screen.
 
 **21 October 2026, 07:29 UTC: CT-only draft-length comparison running detached.**
 All ten CPU preflights pass, with 211 frozen runtime source bindings per node.
