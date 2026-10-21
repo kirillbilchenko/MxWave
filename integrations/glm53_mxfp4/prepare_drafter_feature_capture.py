@@ -39,13 +39,22 @@ def verify():
 '''
 
 
-def select_cases(dataset: Path) -> tuple[list[dict[str, Any]], dict[str, str]]:
+def select_cases(
+    dataset: Path, quotas: dict[str, dict[str, int]] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """Select a deterministic bounded subset without opening the sealed test file."""
     manifest = json.loads((dataset / "manifest.json").read_bytes())
     token_manifest = json.loads((dataset / "tokenized-v2/review.json").read_bytes())
     hashes = {}
     selected = []
-    for split, quota in QUOTAS.items():
+    quotas = QUOTAS if quotas is None else quotas
+    if set(quotas) != {"train", "validation"} or any(
+        set(quota) != {"code", "chat", "explanation"}
+        or any(type(count) is not int or count <= 0 for count in quota.values())
+        for quota in quotas.values()
+    ):
+        raise ValueError("Only positive train/validation domain quotas are permitted")
+    for split, quota in quotas.items():
         source = dataset / f"{split}.jsonl"
         tokens = dataset / "tokenized-v2" / f"{split}.jsonl"
         expected = next(r["sha256"] for r in manifest["files"] if r["split"] == split)

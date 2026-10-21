@@ -1,5 +1,10 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 11:37 UTC: bounded Modal pilot preparing.** The user authorizes a short
+64-train/16-validation, FC-only pilot; full training remains held. Both image CPU
+checks and Modal round-trip/mask/gradient checks pass. Production is still online;
+no GPU capture yet. [Protocol and capture-concurrency limits](GLM53_HANDOFF.md).
+
 **21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
 Original production restores healthy at **08:32:34 UTC**, with its exact original
 container/configuration identities and **500,000-token context**. All 240 measured

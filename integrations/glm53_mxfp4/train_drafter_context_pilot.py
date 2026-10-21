@@ -112,6 +112,18 @@ class Pilot:
         self.model, revision = load_model(checkout, checkpoint)
         if revision != protocol["specforge_revision"]:
             raise ValueError("Wrong upstream implementation")
+        self.window = 2048
+        self.causal = False
+        if "drafter_attention" in protocol:
+            attention = protocol["drafter_attention"]
+            self.window, self.causal = attention["sliding_window"], attention["is_causal"]
+            if (type(self.window) is not int or self.window < 8
+                    or type(self.causal) is not bool
+                    or self.window != self.model.config.sliding_window
+                    or self.causal != self.model.config.is_causal
+                    or manifest["feature_contract"]["layers"]
+                    != self.model.config.dflash_config["target_layer_ids"]):
+                raise ValueError("Capture/attention policy differs from the actual drafter")
         self.model.eval().requires_grad_(False)
         self.fp32_derivatives = protocol.get("linear_derivatives") == "fp32_accumulate_cast_back"
         if self.fp32_derivatives:
@@ -185,14 +197,15 @@ class Pilot:
         mask = self.mask_builder(
             anchor_positions=anchor_tensor,
             block_keep_mask=torch.ones_like(anchor_tensor, dtype=torch.bool),
-            S=end, block_size=8, device=torch.device("cpu"), sliding_window=2048,
-            is_causal=False,
+            S=end, block_size=8, device=torch.device("cpu"), sliding_window=self.window,
+            is_causal=self.causal,
         )
         # Check every mask element against the independent interval/block contract.
         for i, anchor in enumerate(anchors):
             for offset in range(8):
-                permitted = set(range(max(0, anchor + offset - 2047), anchor))
-                permitted.update(range(end + i * 8, end + (i + 1) * 8))
+                permitted = set(range(max(0, anchor + offset - self.window + 1), anchor))
+                query_end = end + i * 8 + offset + 1 if self.causal else end + (i + 1) * 8
+                permitted.update(range(end + i * 8, query_end))
                 actual = set(mask[0, 0, i * 8 + offset].nonzero().flatten().tolist())
                 if actual != permitted:
                     raise ValueError("Future-context or cross-block attention leak")

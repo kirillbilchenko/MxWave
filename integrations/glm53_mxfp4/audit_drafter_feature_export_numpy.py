@@ -36,6 +36,9 @@ def audit(evidence: Path, exported: Path, output: Path) -> dict[str, Any]:
         raise FileExistsError(output)
     manifest = json.loads((exported / "manifest.json").read_bytes())
     plan = json.loads((evidence / "plan.json").read_bytes())
+    layers = plan.get("target_feature_layers", [5, 14, 24, 33, 42])
+    if not layers or len(set(layers)) != len(layers):
+        raise ValueError("Target feature layers must be distinct and nonempty")
     measured = json.loads((evidence / "ct-measurement.json").read_bytes())
     cases = {r["id"]: r for r in plan["calibration_cases"]}
     responses = {r["case"]: r["result"]["token_ids"] for r in measured["cases"]
@@ -46,6 +49,8 @@ def audit(evidence: Path, exported: Path, output: Path) -> dict[str, Any]:
         if digest(dst) != row["sha256"]:
             raise ValueError("Export changed after verification")
         target = arrays(dst)
+        if target["target_features"].shape[1] != len(layers) * 4096:
+            raise ValueError("Exported width differs from the frozen feature taps")
         expected_ids = cases[row["id"]]["prompt_ids"] + responses[row["id"]]
         if target["input_ids"].tolist() != expected_ids:
             raise ValueError("Exported token sequence differs from the actual API response")
@@ -66,7 +71,7 @@ def audit(evidence: Path, exported: Path, output: Path) -> dict[str, Any]:
                     raise ValueError("Native target positions are not contiguous")
                 if src["target_input_ids"][:valid].tolist() != expected_ids[start:start + valid]:
                     raise ValueError("Native input prefix differs from actual API history")
-                for column, layer in enumerate((5, 14, 24, 33, 42)):
+                for column, layer in enumerate(layers):
                     selected = target["target_features"][
                         start:start + valid, column * 4096:(column + 1) * 4096,
                     ]

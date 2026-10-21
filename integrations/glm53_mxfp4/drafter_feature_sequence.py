@@ -29,7 +29,12 @@ def load_frame(path: Path) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
 class AcceptedHistory:
     """Accumulate contiguous, verified context without retaining rejected draft rows."""
 
-    def __init__(self) -> None:
+    def __init__(self, layers: tuple[int, ...] = LAYERS) -> None:
+        if not layers or len(set(layers)) != len(layers) or any(
+            type(layer) is not int or not 0 <= layer < 45 for layer in layers
+        ):
+            raise ValueError("Expected distinct target decoder layer IDs")
+        self.layers = layers
         self.tokens = torch.empty(0, dtype=torch.int64)
         self.features: list[torch.Tensor] = []
         self.generated: list[int] = []
@@ -74,7 +79,7 @@ class AcceptedHistory:
         if anchor != int(sampled[-1]) or int(tensors["draft_query_ids"][0]) != anchor:
             raise ValueError("Next draft anchor disagrees with the final sampled token")
         features = []
-        for layer in LAYERS:
+        for layer in self.layers:
             value = tensors[f"aux_layer_{layer}"]
             if value.shape != (ids.numel(), 4096) or value.dtype != torch.bfloat16:
                 raise ValueError(f"Unexpected target feature geometry/dtype: layer {layer}")
@@ -85,7 +90,7 @@ class AcceptedHistory:
         self.frame_index += 1
 
     def context(self) -> torch.Tensor:
-        """Return the five concatenated feature streams for accepted inputs only."""
+        """Return the configured concatenated streams for accepted inputs only."""
         return torch.cat(self.features, dim=0)
 
     def validate_response(self, prompt: list[int], response: list[int]) -> dict[str, int]:

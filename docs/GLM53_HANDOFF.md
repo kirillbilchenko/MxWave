@@ -1,5 +1,39 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 11:37 UTC: short Modal-specific training pilot authorized; CPU checks pass.**
+The user requests a small training run and asks about parallel capture. Full training
+remains out of scope. Freeze **64 training / 16 validation prompts**, 128 output tokens,
+seven drafts for capture, then at most 64 CPU updates of `fc.weight` only. All other
+Modal FP8 tensors and target weights remain fixed; sealed test stays closed. The
+planned native comparison, only if offline development improves, must use matched
+five-draft widths and record output differences rather than assume target invariance.
+
+The existing 1,088 verified bulk captures use Inco's five feature taps and cannot
+train Modal's six-tap projection. New taps are 23/27/31/35/39/43, causal attention,
+window 4096. The Modal FP8 → BF16 → FP8 round-trip preserves all 138 tensors and
+complete checkpoint/config bytes exactly (10.45 seconds). A historical inspected
+Modal fixture passes both-rank feature equality, exact explicit/inference masks,
+and finite gradients through the frozen backbone in 9.04 seconds; **zero updates**
+in this check. This is pipeline validation, not a training gain.
+
+Fresh capture revision `drafter-modal-pilot-v1`, API 8043, master 29716. Both serving
+image CPU checks pass with 211 runtime bindings per rank. Plan SHA256:
+`e9f5d8b6ff3711e38c6bc9738ddeea123188dd4a210748a44ccc22bf25807293`.
+Original production remains online at this checkpoint; GPU capture is not yet
+launched. The existing watchdog bounds capture to 35 minutes plus restoration;
+training starts only after accepted-prefix/both-rank verification and original
+500k production restoration. CPU training will use 12 threads with a 20-minute
+process limit. Estimated capture/load/restoration plus training: about 20–40 minutes,
+subject to startup. A native speed test would take additional time.
+
+Capture concurrency cannot safely be increased by only raising the client count:
+the recorder has a single marker and asserts one request. A parallel implementation
+needs request/slot mappings, per-request accepted histories, mixed-length controls,
+and graph-shape checks. The two Sparks form one tensor-parallel target, not two
+independent model replicas. This bounded pilot keeps C1 capture; bulk peer transfer
+replaces thousands of serial SCP handshakes after restoration. No C2/C4 capture
+speedup is claimed or launched.
+
 **21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
 Original production restores healthy at **08:32:34 UTC**, with its exact original
 container/configuration identities and **500,000-token context**. All 240 measured

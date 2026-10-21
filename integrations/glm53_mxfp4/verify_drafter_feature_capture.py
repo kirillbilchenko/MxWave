@@ -136,7 +136,7 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
             raise ValueError("Unexpected output length")
         histories = []
         for rank in (0, 1):
-            history = AcceptedHistory()
+            history = AcceptedHistory(tuple(plan["target_feature_layers"]))
             paths = sorted((evidence / f"ct-r{rank}").glob(
                 f"context-{case['id']}-*-r{rank}.safetensors",
             ))
@@ -197,9 +197,9 @@ def verify(evidence: Path, output: Path) -> dict[str, Any]:
         "production_restored": True, "training_performed": False,
         "feature_contract": {
             "target": "CT MXFP4 experts + previously qualified native MXFP8 KDA rounding",
-            "layers": [5, 14, 24, 33, 42], "dtype": "BF16",
+            "layers": plan["target_feature_layers"], "dtype": "BF16",
             "input_ids": "Frozen prompt followed by exactly 128 verified CT response tokens.",
-            "target_features": "One row per input token except the final response token; five layers concatenated.",
+            "target_features": "One row per input token except the final response token; configured layers concatenated.",
             "generated_token_mask": "Identifies response token positions, not a finalized training loss mask.",
             "rejected_and_post_cap_work": "Excluded before export.",
         },

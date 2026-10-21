@@ -54,6 +54,26 @@ def test_accepted_features_exclude_rejection_and_post_cap() -> None:
     assert report["post_cap_feature_rows_excluded"] == 1
 
 
+def test_modal_features_keep_all_six_taps_in_checkpoint_order() -> None:
+    layers = (23, 27, 31, 35, 39, 43)
+    history = AcceptedHistory(layers)
+    for index in (0, 1):
+        data, meta = frame(index)
+        data = {k: v for k, v in data.items() if not k.startswith("aux_layer_")}
+        for layer in layers:
+            data[f"aux_layer_{layer}"] = torch.full(
+                (len(data["target_input_ids"]), 4096), layer, dtype=torch.bfloat16,
+            )
+        history.append(data, meta)
+    assert history.context().shape == (5, 24576)
+    assert history.context()[0, ::4096].tolist() == list(layers)
+    assert history.validate_response([10, 11, 12], [20, 21])["feature_rows"] == 4
+    with pytest.raises(ValueError, match="distinct"):
+        AcceptedHistory((23, 23))
+    with pytest.raises(KeyError):
+        AcceptedHistory(layers).append(*frame(0))
+
+
 @pytest.mark.parametrize("fault", ["position", "accepted_token", "anchor", "rejected_count"])
 def test_corrupt_alignment_is_rejected(fault: str) -> None:
     history = AcceptedHistory()
