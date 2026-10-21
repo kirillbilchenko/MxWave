@@ -1,5 +1,157 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 14:07 UTC / 16:07 Berlin: packaging implementation checkpoint; official vLLM 0.32.0 CPU import check passes.**
+The user requests an easily consumable package and asks that all information be
+kept in this handoff. No GPU model trial, production stop, promotion or further
+training has occurred during packaging. The selected CT profile remains pretrained
+Modal FP8 with C1:5 / C2:5 / C3–C16:3. Original ModelOpt/Inco production was last
+independently verified at 12:55:54 UTC with 500k context; packaging does not change it.
+
+**Memory answer:** the last matched CT MXFP8-versus-ModelOpt measurement saves
+**14.877 GiB across TP2 (7.447 / 7.430 GiB per GPU)**. It includes checkpoint-format
+differences, MXFP8 KDA and lossless compression. It predates the selected Modal
+drafter and is not a fresh measurement of the complete final serving profile.
+The same-CT lossless-only saving is **9.367 GiB total / about 4.68 GiB per GPU**.
+Do not add those two figures. The final upstream-0.32.0 setup must be measured
+after loading the actual drafter, KV budget and captured graphs.
+
+Implemented, not yet GPU-qualified:
+
+- `mxwave_glm53/` is a real namespaced package included in the MxWave wheel.
+  `mxwave-glm53 prepare-bundle`, `doctor`, and `serve --dry-run` provide asset
+  export, installation/integrity checks and an explicit two-node launch.
+- `pyproject.toml` adds the `glm53` extra pinned to `vllm==0.32.0`, the public
+  command, and `vllm.general_plugins` entry point. The plugin imports no Torch
+  or vLLM and makes no changes unless explicitly enabled by the launch command.
+- `prepare-bundle` copies verified native libraries, all four compressed vocabulary
+  shards, KDA rounding references and license notices into a relocatable directory.
+  It checks the pinned payload hashes, writes atomically and refuses overwrites.
+  The resulting bundle has no dependency on old `/audit`, `/trial`, `/overlay`
+  mounts or external experiment Python paths. Model/drafter weights remain separate.
+- The existing MxWave runtime is packaged with relative imports and source
+  provenance. KDA conversion retains the measured rounding and all 68 checks.
+  Startup records actual allocation and requires all 84 expert-scale tensors and
+  both vocabulary methods, with dense vocabulary owners released.
+- The port accounts for GLM moving to `vllm.models.glm5next.common.model` and
+  Marlin MoE dropping old call arguments. Important upstream API source hashes
+  are checked before hooks install. No vLLM files are overwritten.
+- `deployment/glm53/Dockerfile` layers the wheel onto the pinned official image;
+  its `.dockerignore` excludes model/runtime assets from the image build context.
+  `deployment/glm53/cpu_check.py` is the reproducible no-GPU import/entrypoint check.
+- Existing Marlin and ZipServ native dependency licenses and modification notices
+  are included under `mxwave_glm53/licenses`; `CONTRIBUTING.md` records the reuse.
+  No DeepInfer implementation is included.
+
+Upstream pin: vLLM **0.32.0**, revision
+`5df63a7203cdb9328d824a27b682e77c7b9928be`. Official Linux ARM64 image:
+`vllm/vllm-openai@sha256:6ff5ff0ddf3658d2c2d677dac5ca2d4726ce0156b4371166d918181b210bd4bc`.
+It is pulled on Spark2, which has ample disk. Spark1 had only about 59 GiB free,
+so the isolated build/import work was deliberately placed on Spark2.
+
+Completed checks at this checkpoint:
+
+- Wheel build succeeds. Latest transferred wheel is
+  `mxwave-0.1.0-py3-none-any.whl`, 236,754 bytes, SHA256
+  `e064840445a0f8ac8ca70920f51cd63346701dea340a14c742940bba7eba1c31`.
+- Ten focused tests pass: relocatability, tamper/missing-payload rejection,
+  atomic export/no overwrite, path containment, inert plugin discovery, explicit
+  five-draft/context/KV arguments, version rejection and unchanged MXFP8 rounding.
+- An isolated official-image container on Spark2 installs the initial wheel, exports
+  and verifies the real bundle, checks all pinned upstream source hashes,
+  discovers the entry point and installs hooks twice successfully. No GPU is
+  exposed; network is disabled, with 2 CPUs / 4 GiB memory limits.
+  Report versions: vLLM 0.32.0, Torch 2.13.0+cu130, Transformers 5.19.0,
+  compressed-tensors 0.17.0. This proves CPU packaging/import compatibility only.
+  That first check used the preceding 236,677-byte wheel. The latest wheel above
+  adds upstream-contract validation to `doctor`; the updated CPU script also
+  parses the generated launch with the real vLLM CLI. These latest changes have
+  been transferred but their official-image rerun is still pending.
+- Full repository rerun passes: **1,082 passed / 1 skipped**, plus **Ruff passes**
+  and **strict `mypy mxwave` passes (35 source files)**. The initial run's only
+  failure was the public-command allowlist missing the new CLI; the expected
+  public interface was updated. No numerical test was relaxed.
+- The no-GPU container logged unavailable CUDA/native-extension warnings.
+  Successful CPU imports do not establish that vLLM's GPU extension or our native
+  libraries load and execute correctly with the official image.
+
+Artifact locations:
+
+- Mac: `out/glm53-package-v1/wheels/`.
+- Both Sparks: `full-model-v1/glm53-package-v1/` holds the wheel/check scripts.
+- Spark2: `full-model-v1/glm53-package-v1/runtime/` is the verified portable bundle;
+  `cpu-check.json` records the first successful official-image import check.
+- CPU container retained for logs: `mxwave-glm53-package-cpu-v1` (Spark2).
+
+Exact working locations and source contracts:
+
+- Active Mac worktree:
+  `/Users/kyrylobilchenko/Documents/Projects/other/mxstream/.worktrees/glm53-flash-mxfp4`,
+  branch `feat/glm53-flash-mxfp4`. Packaging changes are based on `c67cdf4`;
+  implementation, tests and this updated handoff are being saved as a checkpoint.
+- On each Spark, `full-model-v1` above means
+  `/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.
+- [Bundle manifest and fixed model/drafter/native hashes](../mxwave_glm53/bundle.py),
+  [reviewed upstream source hashes](../mxwave_glm53/upstream-contract.json),
+  [runtime source provenance](../mxwave_glm53/source-provenance.json),
+  [license notices](../mxwave_glm53/licenses/THIRD_PARTY_NOTICES.txt),
+  [launch command](../mxwave_glm53/cli.py), and
+  [CPU reproduction script](../deployment/glm53/cpu_check.py) are the implementation
+  sources of truth. The provenance inventory still needs the promoted
+  `model_plugin.py` entry before a final release.
+- The exported runtime is relocatable; model and drafter checkpoints must be
+  available separately on both nodes. The CLI verifies their pinned metadata,
+  the drafter payload and presence of every model shard. It does not independently
+  hash every full-model shard on each launch. KDA source values, vocabulary values
+  and exact expert-scale reconstruction have additional loader checks.
+- Default launch is **Linux ARM64 / SM121 / TP2 across two nodes**, API **8046**,
+  master port **29719**, context **8,192**, KV **6 GiB per rank**, **16 slots**,
+  prefill budget **4,096**, prefix caching **off**, fixed seed **42**, native Modal
+  DFlash **5/5/3**, and Marlin linear/MoE backends. Context and KV are explicit
+  CLI options; a larger requested value is not evidence of long-context support.
+  This is the development profile, not the tuned 500k production configuration.
+- `serve --dry-run` checks assets and prints arguments without starting a server.
+  `doctor --gpu` checks device availability/capability; it is not an inference
+  test. Actual launch emits per-rank KDA/startup/allocation reports. Use a fresh
+  reports directory for each launch; retained qualification files are not silently
+  overwritten by the KDA installer. API authentication uses standard vLLM settings.
+- The old sparse-ordering, mHC, expert-padding and custom drafter optimizations
+  are **not ported into this package**. Upstream implementations are used, and
+  full-model repeatability, acceptance and performance must therefore be checked
+  again. A successful import is not proof that an old overlay is safely redundant.
+
+Remaining before calling the package usable for serving: validate the full native
+CLI against 0.32.0, finish the ready-image build and final checks, exercise native
+GPU consumers and full-model startup/replay, and record actual final allocations.
+Full-model speed/quality and production-equivalent C8/C16/500k qualification remain
+separate outstanding gates. This package currently preserves the explicit 8k
+development default; it does not silently claim the production 500k qualification.
+The old patched-image performance numbers do not establish upstream-0.32.0 speed.
+
+Resume in this order:
+
+1. Complete the source-provenance inventory and add a focused check of the new
+   Marlin argument mapping (owned packed scales, ordinary passthrough, and rejected
+   incompatible modes). Keep the pinned upstream source guards.
+2. Build the ready image on Spark2 from `deployment/glm53/Dockerfile` and the
+   final wheel. Re-run the updated `cpu_check.py` without GPU access and retain
+   the initial report separately. Confirm the actual generated five-draft CLI
+   parses on 0.32.0; record the final wheel/image hashes with that report.
+3. Check native GPU loading and exact component outputs, then run a bounded TP2
+   model startup/replay trial with original production restoration. No such trial
+   is running or queued at this checkpoint. Require 42 expert layers / 84 exact
+   scale tensors, 68 converted KDA matrices, both vocabulary methods, no retained
+   dense vocabulary ownership and startup reports from both ranks.
+4. Measure the selected Modal profile's actual allocations and matched C1
+   latency/throughput before publishing a final memory or speed number. Stable
+   C8/C16, production settings and 32k→128k→500k checks remain later replacement
+   gates. Keep training stopped and the sealed test unopened.
+
+Earlier dated entries below are retained evidence, not instructions to restart
+cancelled training or old production-port trials. The whole-project result remains:
+lossless packing works; MXFP8 KDA is lossy; the selected drafter improves this CT's
+development speed; a faster, production-equivalent upstream-vLLM replacement is
+not yet established.
+
 **21 October 2026: whole-project assessment and easy vLLM 0.32.0 setup requested.**
 The [consolidated assessment and deployment audit](GLM53_CURRENT_STATE.md) now
 records the measured benefits, failed/unqualified gates and concrete packaging

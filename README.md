@@ -1,5 +1,12 @@
 # MxWave
 
+**GLM packaging checkpoint, 21 October 2026, 14:07 UTC.** The wheel, opt-in vLLM
+plugin, portable asset export and launch CLI are implemented. Initial CPU imports
+pass in the official vLLM 0.32.0 ARM64 image; GPU startup/inference remain untested
+on that image. The latest CLI rerun and ready-image build are pending. Local checks
+pass (1,082 tests / 1 skipped, Ruff, strict core mypy). Production is unchanged.
+[Full handoff, memory scope, artifacts and remaining checks](docs/GLM53_HANDOFF.md).
+
 **21 October 2026: consolidated GLM outcome and deployment target.**
 Lossless compression is verified to save **9.367 GiB across TP2 (5.33%)** on
 the same CT checkpoint; its no-speculation C1 gain is **11.82–13.28%**, with

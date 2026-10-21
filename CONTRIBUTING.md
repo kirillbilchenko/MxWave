@@ -24,6 +24,23 @@ Primary references:
 - [GPTQ](https://arxiv.org/abs/2210.17323)
 - [QuaRot](https://arxiv.org/abs/2404.00456)
 
+GLM upstream-vLLM runtime packaging (21 October 2026):
+
+- `mxwave_glm53/_runtime` promotes MxWave's existing GLM codecs, Python C ABI
+  wrappers and preparation methods into a namespaced installable package.
+  Original source hashes are retained in `mxwave_glm53/source-provenance.json`.
+  Imports are made relative; Marlin dispatch is adapted to the inspected 0.32.0
+  signature and the GLM mapping moves to upstream's common model module.
+- The native assets retain the previously recorded vLLM/Marlin and ZipServ
+  source revisions and grants below. No new external implementation is copied.
+  Exported bundles carry both upstream license texts and modification notices
+  from `mxwave_glm53/licenses`. The native binaries remain external build assets,
+  selected by their measured SHA256 values rather than rebuilt implicitly.
+- The stock vLLM 0.32.0 interfaces were inspected at revision
+  `5df63a7203cdb9328d824a27b682e77c7b9928be`; the required Python ABI hashes are
+  recorded in `mxwave_glm53/upstream-contract.json`. This source audit is separate
+  from CPU import validation and GPU model qualification.
+
 Historical DeepInfer audit (withdrawn 20 October 2026):
 
 - Reviewed `deepseek-ai/DeepInfer` revision

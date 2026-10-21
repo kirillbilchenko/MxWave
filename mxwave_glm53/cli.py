@@ -1,0 +1,167 @@
+"""Prepare assets, inspect installation and launch CT without experiment scripts."""
+
+from __future__ import annotations
+
+import argparse
+import importlib.metadata
+import json
+import os
+import platform
+import sys
+from pathlib import Path
+from typing import Any
+
+from .bundle import (
+    DRAFTER_FILES,
+    MODEL_FILES,
+    VLLM_VERSION,
+    prepare_bundle,
+    verify_bundle,
+    verify_files,
+)
+
+
+def doctor(bundle: Path | None = None, *, gpu: bool = False) -> dict[str, Any]:
+    """Inspect dependencies and assets without loading a model or changing production."""
+    versions: dict[str, str | None] = {}
+    for name in ("mxwave", "vllm", "torch", "transformers", "compressed-tensors"):
+        try:
+            versions[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            versions[name] = None
+    errors = []
+    if versions["vllm"] != VLLM_VERSION:
+        errors.append(f"Require vllm=={VLLM_VERSION}; found {versions['vllm']}")
+    if platform.system() != "Linux" or platform.machine() not in ("aarch64", "arm64"):
+        errors.append("This native bundle targets Linux ARM64 on DGX Spark (SM121)")
+    upstream_checked = False
+    if versions["vllm"] == VLLM_VERSION:
+        from .plugin import check_upstream
+
+        try:
+            check_upstream()
+            upstream_checked = True
+        except (RuntimeError, OSError) as exc:
+            errors.append(str(exc))
+    manifest = verify_bundle(bundle) if bundle is not None else None
+    device: dict[str, Any] | None = None
+    if gpu:
+        import torch
+
+        if not torch.cuda.is_available():
+            errors.append("CUDA is unavailable")
+        else:
+            capability = list(torch.cuda.get_device_capability())
+            device = {"name": torch.cuda.get_device_name(), "capability": capability}
+            if capability != [12, 1]:
+                errors.append("The supplied native kernels require SM121")
+    return {
+        "status": "failed" if errors else "passed", "versions": versions,
+        "bundle_verified": manifest is not None, "device": device, "errors": errors,
+        "upstream_contract_verified": upstream_checked,
+        "scope": "installation preflight; no full-model speed or quality qualification",
+    }
+
+
+def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]:
+    """Build explicit upstream CLI arguments and relocatable worker configuration."""
+    if args.node_rank not in (0, 1) or args.kv_cache_gib <= 0:
+        raise ValueError("Require rank 0/1 and a positive KV budget")
+    if args.max_model_len < 1 or not 1 <= args.port <= 65535:
+        raise ValueError("Require a positive context limit and a valid API port")
+    verify_bundle(args.bundle)
+    verify_files(args.model, MODEL_FILES)
+    verify_files(args.drafter, DRAFTER_FILES)
+    shards = json.loads((args.model / "model.safetensors.index.json").read_bytes())["weight_map"]
+    for name in set(shards.values()):
+        if Path(name).name != name or not (args.model / name).is_file():
+            raise ValueError(f"Missing local checkpoint shard: {name}")
+    spec = {
+        "method": "dflash", "model": str(args.drafter.resolve()),
+        "num_speculative_tokens": 5, "kv_cache_dtype": "auto",
+        "num_speculative_tokens_per_batch_size": [[1, 1, 5], [2, 2, 5], [3, 16, 3]],
+        "rejection_sample_method": "standard",
+    }
+    compile_config = {
+        "mode": 0, "cudagraph_mode": "FULL_DECODE_ONLY",
+        "cudagraph_capture_sizes": [1, 2, 4, 8, 16], "max_cudagraph_capture_size": 16,
+    }
+    command = [
+        sys.executable, "-m", "vllm.entrypoints.cli.main", "serve", str(args.model.resolve()),
+        "--served-model-name", "glm-5.3-flash", "--dtype", "bfloat16",
+        "--tensor-parallel-size", "2", "--nnodes", "2", "--node-rank", str(args.node_rank),
+        "--master-addr", args.master_addr, "--master-port", str(args.master_port),
+        "--distributed-executor-backend", "mp", "--max-model-len", str(args.max_model_len),
+        "--kv-cache-dtype", "fp8_e4m3",
+        "--kv-cache-memory-bytes", str(int(args.kv_cache_gib * 1024**3)),
+        "--max-num-seqs", "16", "--max-num-batched-tokens", "4096",
+        "--moe-backend", "marlin", "--linear-backend", "marlin",
+        "--no-enable-prefix-caching", "--enable-chunked-prefill",
+        "--disable-custom-all-reduce", "--seed", "42",
+        "--compilation-config", json.dumps(compile_config),
+        "--speculative-config", json.dumps(spec),
+        "--limit-mm-per-prompt", '{"image":0,"video":0}',
+        "--reasoning-parser", "glm45", "--tool-call-parser", "glm47",
+        "--enable-auto-tool-choice", "--generation-config", "vllm",
+        "--default-chat-template-kwargs", '{"reasoning_effort":"low"}',
+        "--host", args.host, "--port", str(args.port),
+        "--worker-extension-cls", "mxwave_glm53.worker.WorkerExtension",
+    ]
+    env = {
+        "VLLM_PLUGINS": "mxwave_glm53", "MXWAVE_GLM53_ENABLE": "1",
+        "MXWAVE_GLM53_BUNDLE": str(args.bundle.resolve()),
+        "MXWAVE_GLM53_MODEL": str(args.model.resolve()),
+        "MXWAVE_GLM53_DRAFTER": str(args.drafter.resolve()),
+        "MXWAVE_GLM53_REPORTS": str(args.reports.resolve()),
+        "VLLM_WORKER_MULTIPROC_METHOD": "spawn", "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+    }
+    return command, env
+
+
+def main() -> None:
+    """Run preparation or launch a version-checked upstream vLLM process."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="action", required=True)
+    prepare = commands.add_parser("prepare-bundle", help="Export existing verified runtime assets")
+    prepare.add_argument("--from-experiment", type=Path, required=True)
+    prepare.add_argument("--output", type=Path, required=True)
+    check = commands.add_parser("doctor", help="Check installation; GPU inspection is optional")
+    check.add_argument("--bundle", type=Path)
+    check.add_argument("--gpu", action="store_true")
+    serve = commands.add_parser("serve", help="Launch the selected five-draft CT profile")
+    for name in ("bundle", "model", "drafter", "reports"):
+        serve.add_argument("--" + name, type=Path, required=True)
+    serve.add_argument("--node-rank", type=int, required=True)
+    serve.add_argument("--master-addr", required=True)
+    serve.add_argument("--master-port", type=int, default=29719)
+    serve.add_argument("--port", type=int, default=8046)
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--max-model-len", type=int, default=8192)
+    serve.add_argument("--kv-cache-gib", type=float, default=6)
+    serve.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+    try:
+        if args.action == "prepare-bundle":
+            result = prepare_bundle(args.from_experiment, args.output)
+        elif args.action == "doctor":
+            result = doctor(args.bundle, gpu=args.gpu)
+        else:
+            command, updates = launch_command(args)
+            if args.dry_run:
+                result = {"command": command, "environment": updates,
+                          "note": "validated assets; server not started"}
+            else:
+                result = doctor(args.bundle, gpu=True)
+                if result["status"] != "passed":
+                    raise ValueError("; ".join(result["errors"]))
+                args.reports.mkdir(parents=True, exist_ok=True)
+                os.execvpe(command[0], command, {**os.environ, **updates})
+        print(json.dumps(result, indent=2))
+        if result.get("status") == "failed":
+            raise SystemExit(1)
+    except (ValueError, OSError, KeyError) as exc:
+        parser.exit(2, f"mxwave-glm53: {exc}\n")
+
+
+if __name__ == "__main__":
+    main()
