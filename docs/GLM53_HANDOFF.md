@@ -22,6 +22,18 @@ V4/V5 failure and restoration archive: 40 payloads, 384,822 bytes, SHA256
 `35e5306d4c37a3d981b0221cd26894d592d5190442b31078f026deb412f4a244`.
 Source fix is committed as `8e8cdd1`; all pre-existing failures remain retained.
 
+**Next action: CPU/read-only cache-accounting comparison, before another outage.**
+The restored production boot logs report the same explicit 6 GiB budget and
+4608-token block size, but a capacity of **723,602 tokens / 1.45x at 500k**.
+Stock V5 instead requires 13.96 GiB and estimates 9,472 tokens. These are planner
+reports, not successful long-context probes. Compare target/recurrent/drafter
+cache specifications, grouping/padding and rollback-state reservations across the
+two runtimes; the differing mamba page padding (0.70% versus 2.86%) alone is not
+evidence explaining the gap. Check the DFlash group warning as a separate lead.
+After resolving or explicitly documenting the configuration difference, repeat
+startup, prefix reuse and final memory checks, then 32k/128k probes and the frozen
+performance/quality comparison. Production remains running; no GPU retry queued.
+
 **21 October 2026, 15:19 UTC: native loading accelerated; embedding dispatch gap fixed.**
 `stock-trial-v4` failed during the first profile forward and restored exact
 production at **15:18:05 UTC**. The verified native Run:ai loader completes the
