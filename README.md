@@ -1,5 +1,10 @@
 # MxWave
 
+**21 October, 20:16 UTC:** the corrected stock-vLLM comparison is running on Spark,
+starting with the 500k/prefix-on check before six timing pairs and full GSM8K on
+both targets. Source and launch inputs are committed and backed up; exact-production
+restoration is supervised independently. [Live status](docs/GLM53_HANDOFF.md).
+
 **21 October, 20:10 UTC:** the stock-vLLM package now includes `prepare-drafter`
 for the verified metadata correction and rejects the incompatible original config
 at launch. Weight bytes remain unchanged. Local tests and checks pass; official-image

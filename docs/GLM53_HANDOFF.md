@@ -1,5 +1,30 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 20:16 UTC: corrected deployment comparison launched.**
+Root `glm53-package-v1/deployment-compare-v2`; controller **3243718** (start ticks
+`74092563`), independent watchdog **3244316**. Launch **20:15:59 UTC**;
+current stage **`compatibility-B`**, loading the corrected 500k/prefix-on candidate.
+Production is temporarily paused under exact restoration controls. Source commit
+**739fa8a**, frozen plan SHA256
+`6e6ee9920ee22359c937f075a898c01e00f4eb788ca305dfc34758dbfdf84f9e`.
+The source bundle verifies on Spark2:
+`3b91db090eacefd93ef827506ef9f63ab54eca88f027b3b1ebbbd3747a7fd133`.
+All 20 frozen launch/input files also independently match on Spark2.
+
+The initial backup attempted to overwrite three root-owned CPU receipt/launch
+files and was refused **before the controller started**. No production pause
+occurred on that attempt. A separate backup directory then completed and verified;
+existing operational files were verified without changing their permissions.
+The failure and resolution are retained in `backup-attempt-record.json`.
+
+The run is detached on Spark and does not depend on the laptop. It starts with the
+short compatibility check, then six A/B timing pairs, 32k/128k retrieval probes in
+the last timing pair, and both full speculation-off GSM8K arms. Controller/watchdog
+restore the exact original production afterwards, including failure paths. No
+new measured speed, quality or corrected-profile allocation result is available
+at launch. Read `controller.json`, `compatibility-B/progress.json`, per-stage
+`progress.json` and `comparison-summary.json`; do not launch a duplicate run.
+
 **21 October 2026, 20:15 UTC: corrected package and comparison pass both CPU preflights.**
 The real-checkpoint `prepare-drafter` command produces the exact GPU-tested config
 hash on both Sparks. Both official-image installation checks pass, as do native

@@ -1,5 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 20:16 UTC:** corrected comparison **is running**, starting with
+500k/prefix-on compatibility. Controller **3243718**, watchdog **3244316**,
+root `deployment-compare-v2`. Six A/B timing pairs and both full GSM8K arms follow;
+production is temporarily paused under exact restoration controls. The packaged
+fix and inputs are committed and backed up on Spark2. No new measurement yet.
+[Live handoff](GLM53_HANDOFF.md).
+
 **21 October, 20:15 UTC:** the drafter fix is integrated into the package.
 `prepare-drafter` and both official-image CPU checks pass on the real checkpoint;
 `serve` requires the corrected metadata and unchanged pinned weight bytes.
