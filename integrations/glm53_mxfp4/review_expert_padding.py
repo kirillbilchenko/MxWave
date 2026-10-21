@@ -43,6 +43,7 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
     half = cycles // 2
     assert len(tensors) == 64 * len(policies)
     comparisons, timings, native_matches, stock_matches, repeats = [], [], 0, 0, 0
+    full_k_padding = []
     parts = ("up", "activation", "down", "sum")
     for family, count in (("w13", 1152), ("w2", 576)):
         proofs = [json.loads((root / f"result/weight-sources-r{r}-{family}.json").read_bytes())
@@ -61,6 +62,11 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
                 assert case["native_matches"]
                 continue
             for projection in case["projections"]:
+                if case["policy"] == "full_k":
+                    assert "padding" not in projection
+                    assert projection["consumer"] in ("raw_full_k", "packed_full_k")
+                    assert all(value > 0 for value in projection["tile"])
+                    continue
                 p = projection["padding"]
                 assert p["real_entries_exact"] and p["padding_masked"]
                 assert p["before"] <= p["after"] <= p["allocated"]
@@ -95,6 +101,17 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
                             tensors[prefix + "_packed_" + part].tobytes()
                         )
                         stock_matches += 1
+                if "full_k" in policies:
+                    for implementation in ("stock", "packed"):
+                        for part in parts:
+                            prefix = f"r{rank}_{position}_{arm}_"
+                            suffix = f"_{implementation}_{part}"
+                            full_k_padding.append({
+                                "rank": rank, "position": position, "arm": arm,
+                                "implementation": implementation, "part": part,
+                                "bits_exact": tensors[prefix + "full_k" + suffix].tobytes()
+                                == tensors[prefix + "pad_default" + suffix].tobytes(),
+                            })
             for policy in policies:
                 for implementation in ("stock", "packed"):
                     counts = {}
@@ -142,9 +159,10 @@ def review(root: Path, components: Path, output: Path) -> dict[str, Any]:
         "stock_packed_matches": stock_matches, "reported_exact_graph_repeat_checks": repeats,
         "component_seconds": report["finished_epoch"] - report["started_epoch"],
         "comparisons": comparisons, "timings": timings, "telemetry_available": telemetry_ok,
+        "full_k_versus_padding": full_k_padding,
         "timing_controls_passed": sum(t["control_pass"] for t in timings),
         "timing_controls_total": len(timings),
-        "conclusion": "Every tested padding policy removes shared-row differences in this fixture.",
+        "conclusion": "Every tested correction removes shared-row differences in this fixture.",
         "limits": [
             "Both TP partitions run separately on one GPU; no distributed or serving speed result.",
             "Timing ratios whose control_pass is false are descriptive only.",

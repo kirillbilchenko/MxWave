@@ -15,7 +15,7 @@ def stage(
     affine_only: bool = False, shared_stage: bool = False, nibble_stage: bool = False,
     static_nibble_stage: bool = False, full_k: bool = False,
 ) -> dict[str, object]:
-    """Hash-check Apache-licensed sources and adapt only scale loading/host plumbing."""
+    """Hash-check licensed sources; adapt scales and an optional isolated full-K policy."""
     if (not variants or len(set(variants)) != len(variants)
             or any(v not in ("raw", "async", "prmt", "stage", "early", "bf16stage", "nibbles", "aligned", "sparse")
                    for v in variants)):
