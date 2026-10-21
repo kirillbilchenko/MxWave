@@ -1,5 +1,37 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 15:12 UTC: full-K independently verified; stock startup retry launched.**
+`marlin-full-k-v1` completes in 412.06 seconds. Exact production restoration is
+verified at **15:08:02 UTC**. The 45-payload archive is SHA-verified on Mac and
+Spark2; independent NumPy review passes 48 native-output comparisons, 96 raw/packed
+comparisons and 960 reported graph repeats. Our bounded padding and the upstream
+full-K specialization produce **identical bits in all 64 cross-policy comparisons**.
+Both fix the shared-row 440-to-448 divergence in both retained TP partitions.
+This is component evidence, not full-model or C8/C16 serving qualification.
+
+Full-K versus padding passes the 2% timing drift control in 11/16 pairs. Among
+stable packed-scale pairs, full-K latency ranges from 3.87% lower to 1.46% higher;
+there is no universal speed win. The separate comparison against native dispatch
+passes 23/32 pair controls. All failures and telemetry are retained. Keep the
+package default unchanged. Archive SHA256:
+`7c95b8c3b58d4967d16a99453b2c997123c839b3b1beda45ec19b853ad197d7f`
+(40,481,888 bytes). Local independent review: `out/marlin-full-k-v1/review.json`.
+The [measured upstream follow-up](https://github.com/vllm-project/vllm/pull/46639#issuecomment-6319447508)
+was posted at 15:13:30 UTC, with component scope and failed timing controls explicit.
+
+Stock Run:ai V3 passes all 1,601 tensors / 7,424,963,848 bytes with a **3 GiB**
+read buffer and eight readers; peak process RSS is 4,432,052,224 bytes. Its
+5.75-second sample includes hashing and warmed file cache, so it is not a model
+boot-speed result. The failed 1/2 GiB attempts remain retained. Both v6 image/CPU
+checks pass, including follower `--headless`. `stock-trial-v4` launched at
+**15:11:49 UTC**, with the independent 1,500-second outage bound and exact original
+container restoration. It explicitly selects the verified 3 GiB loader buffer;
+the CLI default remains `auto`. It retains 500k context, 32 slots, 6 GiB KV,
+6,919 prefill, prefix caching and a dense target head. No timing or promotion.
+Plan SHA256: `4d2513d6f765f878bf8342b6eaf76327704c53eba35d97af4f863ff93c4cbb96`.
+Production is temporarily paused for this startup retry; check its controller
+before assuming service availability. Full-model stock serving remains unqualified.
+
 **21 October 2026, 15:00 UTC: isolated full-K GPU comparison active; fast-loader failures retained.**
 `marlin-full-k-v1` started at 14:58:19 UTC under the retained independent
 restoration controller, with a 900-second experiment bound. It compares native,

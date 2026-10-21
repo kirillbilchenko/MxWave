@@ -118,6 +118,14 @@ Target and drafter KV use native `fp8_e4m3` settings. The 0.85 reservation fract
 matches production; the explicit 6 GiB KV budget remains independent of that
 fraction. FlashInfer autotuning is disabled, matching the baseline configuration.
 
+An optional native streaming loader is under full-model qualification:
+`--load-format runai_streamer --loader-memory-mib 3072 --loader-concurrency 8`.
+This exact 3 GiB buffer passes CPU byte checks on three complete representative
+shards; its cold model-startup speed is not established. A 1 GiB buffer rejects
+the largest tensor, and the 2 GiB screen stalls. Retain the explicit 3 GiB setting
+when testing this loader. The default remains `auto`; production's custom fast
+loader is not included in this upstream recipe.
+
 `--vocab-mode embedding` keeps the target LM head dense. `--vocab-mode all` also
 packs it and has different memory/performance characteristics. Explicit flags
 above override the CLI's smaller development defaults (8k context, 16 slots,

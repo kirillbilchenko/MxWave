@@ -1,6 +1,6 @@
 # GLM upstream evidence and article attribution
 
-Updated 21 October 2026, 14:49 UTC.
+Updated 21 October 2026, 15:12 UTC.
 
 The user authorized submitting the retained numerical evidence upstream. No
 duplicate issue was opened. Exact public comment bodies are retained under
@@ -20,15 +20,25 @@ head `21abea6c75c6b36c278c1ae87d50a2f4a57a0e40` into the existing isolated raw a
 packed-scale libraries. Provenance is recorded in `CONTRIBUTING.md` and each build
 manifest. It requires explicit thread tiles and occupancy; row-block selection
 remains caller-owned. It does not import the complete PR or change the package's
-serving default. CPU source staging/hash checks pass; compilation and GPU replay
-remain pending at this checkpoint.
+serving default. Compilation and the isolated GPU replay pass. Independent NumPy
+review verifies all 45 archived payloads, 48 native-output matches, 96 raw/packed
+matches and 960 reported graph repeats. Full-K and bounded padding agree bit for
+bit in all 64 retained output comparisons; both fix the shared-row 440-to-448
+divergence on both TP fixtures.
 
-The retained two-projection replay now accepts a `full_k` policy alongside native
-and bounded padding. It must pass raw/packed equality, shared-row equality and
-graph-repeat controls before timing. Timing remains interleaved with telemetry
-and the existing 2% drift gate. Any measured improvement is component-only until
-full-model serving checks pass. The captured geometry is not claimed to be a
-standalone synthetic reproducer.
+The retained two-projection replay compares `full_k`, native and bounded padding
+using fixed row blocks and thread configurations. Eleven of sixteen direct
+full-K/padding timing pairs pass the existing 2% drift gate. In stable packed-scale
+pairs, full-K latency ranges from 3.87% lower to 1.46% higher. Keep all failed
+controls; do not claim a universal performance win or change the package default.
+The run takes 412.06 seconds; exact production restoration is verified at
+15:08:02 UTC. Archive SHA256:
+`7c95b8c3b58d4967d16a99453b2c997123c839b3b1beda45ec19b853ad197d7f`.
+Both partitions run separately on one GPU. This is not distributed/full-model
+serving qualification or a standalone random-data reproducer.
+The [measured follow-up](https://github.com/vllm-project/vllm/pull/46639#issuecomment-6319447508)
+was posted at 15:13:30 UTC; its exact body is retained in
+`docs/upstream/46639-glm-full-k-followup.md`.
 
 ## Publication framing
 

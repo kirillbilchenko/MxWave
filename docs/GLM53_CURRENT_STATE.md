@@ -1,13 +1,19 @@
 # GLM lossless experiment: current state and next steps
 
-**Packaging checkpoint, 21 October 2026, 14:53 UTC.** The official vLLM 0.32.0
+**Packaging checkpoint, 21 October 2026, 15:12 UTC.** The official vLLM 0.32.0
 image plus the MxWave plugin is the default deployment target. Both-node CPU
 checks and all synthetic GPU component checks pass. Both full-model ranks load,
 but the follower failed before serving because our wrapper omitted `--headless`.
-The launch is corrected; exact original production is restored at 14:53:15 UTC.
+The launch is corrected. A native Run:ai loader with a 3 GiB buffer passes exact
+CPU tensor checks; whole-model startup performance still needs measurement.
+`stock-trial-v4` launched at 15:11:49 UTC under the independent restoration watchdog,
+retaining the requested 500k/prefix-cache capacity settings. Production is temporarily
+paused for this bounded retry; no promotion is authorized.
 Full-model stock serving, prefix-cache correctness and long context are still
-unqualified. The stock fast-loader audit and isolated upstream full-K comparison
-are in progress. Local checks pass: 1,083 tests / 1 skipped, Ruff and strict core
+unqualified. The isolated full-K comparison is independently verified: all 64
+outputs match our padding bit for bit, but only 11/16 direct timing pairs pass
+the 2% drift gate. Keep the existing package kernel default. Local checks pass:
+1,083 tests / 1 skipped, Ruff and strict core
 mypy; focused package checks also cover the follower fix. Training remains stopped.
 [Current packaging handoff, artifacts and exact next steps](GLM53_HANDOFF.md).
 
