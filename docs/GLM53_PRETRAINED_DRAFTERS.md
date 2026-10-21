@@ -1,5 +1,16 @@
 # Pretrained drafter screen before further training
 
+**21 October 2026, 07:38 UTC: CT depth screen is measuring the first arm.**
+CT + Modal FP8 at seven drafts completes 26/48 requests so far; native counters
+confirm seven proposals per round and both ranks verify the intended checkpoint
+and all 68 KDA rounding hashes. The 3/5/off/7 loads remain pending. Production
+is temporarily paused under the independent restoration watchdog; the original
+500k setup is retained. Training stays held and the sealed test closed.
+The detached CPU postprocessor will review the retained results and independently
+verify a Spark2 backup after production restoration. Full pytest, Ruff and strict
+core mypy pass; no speed winner is established yet.
+[Experiment and restoration details](GLM53_HANDOFF.md).
+
 **21 October 2026, 07:29 UTC: CT draft-length comparison running.**
 All ten CPU preflights pass. Detached controller 1622330 starts CT + Modal FP8
 at seven drafts; 3/5/off/7 follow. Production is temporarily paused under

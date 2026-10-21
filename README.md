@@ -1,5 +1,16 @@
 # MxWave
 
+**21 October 2026, 07:38 UTC: CT depth screen is measuring the first arm.**
+CT + Modal FP8 at seven drafts completes 26/48 requests so far; native counters
+confirm seven proposals per round and both ranks verify the intended checkpoint
+and all 68 KDA rounding hashes. The 3/5/off/7 loads remain pending. Production
+is temporarily paused under the independent restoration watchdog; the original
+500k setup is retained. Training stays held and the sealed test closed.
+The detached CPU postprocessor will review the retained results and independently
+verify a Spark2 backup after production restoration. Full pytest, Ruff and strict
+core mypy pass; no speed winner is established yet.
+[Experiment and restoration details](docs/GLM53_HANDOFF.md).
+
 **21 October 2026, 07:16 UTC: production acceptance comparison complete; original 500k service healthy.**
 The same eight development prompts use C1, 256 output tokens and seven drafts.
 Production runs twice; prior CT arms run six cycles. Accepted / proposed tokens:
