@@ -1,5 +1,41 @@
 # MxWave
 
+**21 October 2026, 12:49 UTC: user stops adaptation; CT selects pretrained Modal FP8 at five drafts.**
+Original **500k production is restored and healthy**. The CT configuration is
+C1:5 / C2:5 / C3–C16:3, verified on both Sparks; it is selected for the next CT
+launch and is not a production switch. No further training or benchmark is queued.
+The cancelled pilot retains 128 requests and 143 independently verified payloads:
+
+| Bucket | Pretrained accepted/round | Adapted accepted/round |
+| --- | ---: | ---: |
+| Code | 2.7083 | 2.7151 |
+| Chat | 1.7641 | 1.7567 |
+| Explanation | 2.1341 | 2.1152 |
+
+All 16 output sequences match, but the final reload was cancelled; no new speed
+or generalization claim. The earlier completed five-versus-seven depth screen below
+supports the configuration choice. [Selected vLLM config](integrations/glm53_mxfp4/ct_dflash_speculative_config.json)
+· [Full handoff and limits](docs/GLM53_HANDOFF.md).
+
+
+**21 October 2026, 12:46 UTC: adaptation stopped at user request; CT selects pretrained Modal FP8 at five drafts.**
+The trained pilot is not selected. CT's recorded policy is C1:5 / C2:5 / C3–C16:3;
+[the vLLM speculative config](integrations/glm53_mxfp4/ct_dflash_speculative_config.json)
+is verified on both Sparks. Production is restoring its original 500k ModelOpt/Inco
+service; this CT selection is not a production switch. Partial comparison evidence
+is retained, with no new speed qualification, further training or experiment queued.
+[Current handoff](docs/GLM53_HANDOFF.md).
+
+
+**21 October 2026, 12:23 UTC: native Modal pilot comparison running.**
+Original/adapted/original, matched five drafts, 16 development prompts and six
+cycles per arm. Production is temporarily paused under the restoration watchdog;
+no candidate result or promotion yet. This checks native transfer on the validation
+set used for checkpoint selection, **not generalization**. Full training remains
+held, sealed test closed; original 500k service restores automatically.
+[Live status and frozen criteria](docs/GLM53_HANDOFF.md).
+
+
 **21 October 2026, 12:05 UTC: short Modal pilot complete; production restored.**
 64 updates take **4m 20s**. Selected step 16 raises offline code prefix from
 4.1875 to 4.375 (+4.48%); chat/explanation prefixes are unchanged. The gain comes

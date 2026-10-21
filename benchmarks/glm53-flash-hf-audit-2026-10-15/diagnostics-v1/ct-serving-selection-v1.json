@@ -1,0 +1,51 @@
+{
+  "schema": "mxwave-ct-serving-selection-v1",
+  "status": "selected_configuration_not_deployed",
+  "user_decision": "Stop drafter adaptation; use pretrained Modal FP8 with five drafts for CT",
+  "target_mode": "ct_mxfp8",
+  "drafter_variant": "modal_fp8",
+  "adapted_checkpoint_selected": false,
+  "training_enabled": false,
+  "queued_training": false,
+  "sealed_test_opened": false,
+  "checkpoint_directory": "/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/drafter-pretrained-modal-v1-modal_fp8-checkpoint",
+  "checkpoint_files": {
+    "model.safetensors": "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46",
+    "config.json": "c54c63c667baca52604519c5ac0d0d053210e3a3231dfb626d4758b1b6f8655e"
+  },
+  "speculative_config": {
+    "method": "dflash",
+    "model": "/draft",
+    "num_speculative_tokens": 5,
+    "kv_cache_dtype": "auto",
+    "num_speculative_tokens_per_batch_size": [
+      [
+        1,
+        1,
+        5
+      ],
+      [
+        2,
+        2,
+        5
+      ],
+      [
+        3,
+        16,
+        3
+      ]
+    ],
+    "rejection_sample_method": "standard"
+  },
+  "speculative_config_sha256": "800523fa31a1b4d1d7bc0af8268572256c60c02933a5b778fae4bccb95dadd16",
+  "native_startup_evidence": "drafter-modal-native-v1/original_a-startup.json",
+  "completed_reference_requests": 96,
+  "depth_screen_evidence": "ct-draft-length-v1",
+  "measured_scope": "C1, short development prompts; five drafts versus seven on CT + Modal FP8",
+  "production_service": "Original ModelOpt/Inco 500k service restored separately; this selection does not edit it",
+  "limits": [
+    "C2 five drafts and C3-C16 three drafts retain the existing policy; no new concurrency qualification.",
+    "Target output invariance, full-stack quality and long-context replacement remain unqualified.",
+    "The CT trial serving settings remain distinct from production settings."
+  ]
+}

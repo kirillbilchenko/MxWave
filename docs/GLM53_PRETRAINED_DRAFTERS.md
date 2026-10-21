@@ -1,5 +1,82 @@
 # Pretrained drafter screen before further training
 
+**21 October 2026, 12:49 UTC: training abandoned at user request; original 500k production healthy.**
+CT's selected configuration is **pretrained Modal FP8, five drafts at C1/C2,
+three at C3–C16**. The unmodified checkpoint and config verify on both Sparks;
+`full-model-v1/ct-serving-current.json` records the choice. Repository vLLM config:
+`integrations/glm53_mxfp4/ct_dflash_speculative_config.json`. **This is the CT default
+for its next launch, not a production switch.** Live ModelOpt/Inco production keeps
+its own existing configuration. No training, capture, benchmark or promotion queued;
+sealed test remains closed.
+
+The user-cancelled adaptation comparison stops after **96 baseline + 32 adapted
+requests**. The controller restores original identities and 500k context at
+**12:46:51 UTC**; an independent authenticated check passes at **12:48:05 UTC**.
+All **143 retained payloads** independently verify on Mac and Spark2. Archive
+39,362,729 bytes, SHA256 `c07b7222bd792e4d8e1d079653ecbe988cbbdc50fbe140664810772f57434d4b`.
+Within each arm, all completed repeats have exact outputs/counters, and all 16
+cross-arm output sequences match. Native loaded FC bytes and FP8 configuration
+verify on both ranks. The controller labels the cancellation `failed_restored`;
+it was an explicit user stop, not a kernel/load failure.
+
+| Native five-draft development bucket | Pretrained accepted/round | Adapted accepted/round | Rounds per full prompt cycle, pretrained → adapted |
+| --- | ---: | ---: | ---: |
+| Code, 8 prompts | 2.7083 | 2.7151 | 552 → 551 |
+| Chat, 4 prompts | 1.7641 | 1.7567 | 373 → 374 |
+| Explanation, 4 prompts | 2.1341 | 2.1152 | 328 → 330 |
+
+These partial results add no compelling training benefit. **The final baseline
+reload was cancelled**, so no completed speed qualification or generalization
+claim is made. The selected checkpoint had used these validation prompts for
+selection. The earlier completed depth screen supports the pragmatic change:
+five versus seven drafts gained 6.48% code / 6.91% chat / 7.72% explanation domain
+median throughput on its eight-prompt C1 development set. Those results belong
+to CT + Modal, not production's different Inco drafter; changed-depth outputs
+were different, so that screen was not a quality/zero-loss qualification.
+
+Retained evidence: local `out/drafter-modal-native-v1`; Spark
+`full-model-v1/drafter-modal-native-v1`; independent Spark2 backup
+`full-model-v1/drafter-modal-native-v1-retained-backup`. The cancelled adaptation
+checkpoint remains archived and is not selected. Next CT serving work should use
+the unmodified five-draft profile; production tuning, concurrency and long-context
+qualification remain separate unfinished replacement requirements.
+
+
+**21 October 2026, 12:46 UTC: user ends adaptation work; pretrained Modal FP8 at five drafts selected for CT.**
+The user requests no further training and chooses the draft-length change. The
+native comparison was cancelled via its controller at **12:44:11 UTC**, after
+**96 original + 32 adapted requests** (two complete adapted cycles). The final
+original reload was not run, so this is **not a completed speed qualification**.
+All retained partial evidence will be kept. The first cycle showed essentially
+flat code acceptance and slightly worse chat/explanation, with all 16 output
+sequences equal; this does not justify scaling the pilot.
+
+The CT selection now points to **unmodified pretrained Modal FP8**, SHA256
+`45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46`.
+Native draft policy is **C1:5 / C2:5 / C3–C16:3**. The higher-batch policy is retained;
+only the previously seven-draft C1 default changes. Configuration:
+`integrations/glm53_mxfp4/ct_dflash_speculative_config.json`. On both Sparks,
+`full-model-v1/ct-serving-current.json` records this selection and its pinned
+checkpoint; it is a **selected CT configuration, not a production deployment**.
+The five-draft original arm already passed native startup and all 96 repeat checks.
+
+Original ModelOpt/Inco **500k production is restoring** through the existing
+controller. Its separate drafter/configuration has not been changed. The CT profile
+still needs the outstanding production-tuning and long-context qualification before
+a full replacement. No further training, capture, GPU experiment or automatic
+promotion is queued. Sealed test remains closed. Detached postprocessing only
+verifies/restores/backs up the cancelled run; it cannot launch another experiment.
+
+
+**21 October 2026, 12:23 UTC: native Modal pilot comparison running.**
+Original/adapted/original, matched five drafts, 16 development prompts and six
+cycles per arm. Production is temporarily paused under the restoration watchdog;
+no candidate result or promotion yet. This checks native transfer on the validation
+set used for checkpoint selection, **not generalization**. Full training remains
+held, sealed test closed; original 500k service restores automatically.
+[Live status and frozen criteria](GLM53_HANDOFF.md).
+
+
 **21 October 2026, 12:05 UTC: short Modal pilot complete; production restored.**
 64 updates take **4m 20s**. Selected step 16 raises offline code prefix from
 4.1875 to 4.375 (+4.48%); chat/explanation prefixes are unchanged. The gain comes

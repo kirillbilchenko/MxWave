@@ -1,5 +1,128 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 12:49 UTC: training abandoned at user request; original 500k production healthy.**
+CT's selected configuration is **pretrained Modal FP8, five drafts at C1/C2,
+three at C3–C16**. The unmodified checkpoint and config verify on both Sparks;
+`full-model-v1/ct-serving-current.json` records the choice. Repository vLLM config:
+`integrations/glm53_mxfp4/ct_dflash_speculative_config.json`. **This is the CT default
+for its next launch, not a production switch.** Live ModelOpt/Inco production keeps
+its own existing configuration. No training, capture, benchmark or promotion queued;
+sealed test remains closed.
+
+The user-cancelled adaptation comparison stops after **96 baseline + 32 adapted
+requests**. The controller restores original identities and 500k context at
+**12:46:51 UTC**; an independent authenticated check passes at **12:48:05 UTC**.
+All **143 retained payloads** independently verify on Mac and Spark2. Archive
+39,362,729 bytes, SHA256 `c07b7222bd792e4d8e1d079653ecbe988cbbdc50fbe140664810772f57434d4b`.
+Within each arm, all completed repeats have exact outputs/counters, and all 16
+cross-arm output sequences match. Native loaded FC bytes and FP8 configuration
+verify on both ranks. The controller labels the cancellation `failed_restored`;
+it was an explicit user stop, not a kernel/load failure.
+
+| Native five-draft development bucket | Pretrained accepted/round | Adapted accepted/round | Rounds per full prompt cycle, pretrained → adapted |
+| --- | ---: | ---: | ---: |
+| Code, 8 prompts | 2.7083 | 2.7151 | 552 → 551 |
+| Chat, 4 prompts | 1.7641 | 1.7567 | 373 → 374 |
+| Explanation, 4 prompts | 2.1341 | 2.1152 | 328 → 330 |
+
+These partial results add no compelling training benefit. **The final baseline
+reload was cancelled**, so no completed speed qualification or generalization
+claim is made. The selected checkpoint had used these validation prompts for
+selection. The earlier completed depth screen supports the pragmatic change:
+five versus seven drafts gained 6.48% code / 6.91% chat / 7.72% explanation domain
+median throughput on its eight-prompt C1 development set. Those results belong
+to CT + Modal, not production's different Inco drafter; changed-depth outputs
+were different, so that screen was not a quality/zero-loss qualification.
+
+Retained evidence: local `out/drafter-modal-native-v1`; Spark
+`full-model-v1/drafter-modal-native-v1`; independent Spark2 backup
+`full-model-v1/drafter-modal-native-v1-retained-backup`. The cancelled adaptation
+checkpoint remains archived and is not selected. Next CT serving work should use
+the unmodified five-draft profile; production tuning, concurrency and long-context
+qualification remain separate unfinished replacement requirements.
+
+
+**21 October 2026, 12:46 UTC: user ends adaptation work; pretrained Modal FP8 at five drafts selected for CT.**
+The user requests no further training and chooses the draft-length change. The
+native comparison was cancelled via its controller at **12:44:11 UTC**, after
+**96 original + 32 adapted requests** (two complete adapted cycles). The final
+original reload was not run, so this is **not a completed speed qualification**.
+All retained partial evidence will be kept. The first cycle showed essentially
+flat code acceptance and slightly worse chat/explanation, with all 16 output
+sequences equal; this does not justify scaling the pilot.
+
+The CT selection now points to **unmodified pretrained Modal FP8**, SHA256
+`45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46`.
+Native draft policy is **C1:5 / C2:5 / C3–C16:3**. The higher-batch policy is retained;
+only the previously seven-draft C1 default changes. Configuration:
+`integrations/glm53_mxfp4/ct_dflash_speculative_config.json`. On both Sparks,
+`full-model-v1/ct-serving-current.json` records this selection and its pinned
+checkpoint; it is a **selected CT configuration, not a production deployment**.
+The five-draft original arm already passed native startup and all 96 repeat checks.
+
+Original ModelOpt/Inco **500k production is restoring** through the existing
+controller. Its separate drafter/configuration has not been changed. The CT profile
+still needs the outstanding production-tuning and long-context qualification before
+a full replacement. No further training, capture, GPU experiment or automatic
+promotion is queued. Sealed test remains closed. Detached postprocessing only
+verifies/restores/backs up the cancelled run; it cannot launch another experiment.
+
+
+**21 October 2026, 12:43 UTC: first adapted cycle has no useful native gain; provisional only.**
+All 16 first-cycle outputs equal original-a. Code accepted tokens per round change
+2.70833 → 2.71506; chat 1.76408 → 1.75668; explanation 2.13415 → 2.11515.
+Code uses 551 rather than 552 total verification rounds across its eight prompts:
+one prompt saves two rounds, another adds one. The offline-improved prompt
+`opencoder-evol-56582` remains at 65 native rounds. Chat adds one round and
+explanation adds two across their respective four prompts. First-cycle timings
+are roughly 0.7–1.2% lower throughput, but repeats/reload control are incomplete:
+**no speed conclusion or qualification yet**. This weak signal does not support
+scaling training. The frozen run continues, with no additional experiments queued.
+
+
+**21 October 2026, 12:41 UTC: selected Modal step 16 passes native loading on both ranks.**
+Both workers independently verify checkpoint SHA256 `6dca2af520c6df5105eca783a07d1b170ea16ddbcefe31aba6ece54cec741925`,
+bit-identical loaded `fc.weight`, six FP8 drafter layers, context width 24,576 and
+five native draft tokens. Target graph rows are [4,6,8,12,16] on both ranks.
+The adapted arm is measuring its 96 requests; no complete acceptance/speed
+comparison yet. No model promotion, further training or sealed test. Original
+production is still temporarily paused and will restore after the final original
+reload. The detached controller, watchdog and evidence-backup continuation remain active.
+
+
+**21 October 2026, 12:35 UTC: baseline complete; adapted Modal checkpoint loading.**
+Original-a completes all **96/96 requests**, with exact within-arm outputs and
+speculative counters. On the expanded 16-prompt development set, baseline domain
+medians are **42.433 code / 31.880 chat / 36.011 explanation tok/s**; native accepted
+prefix per round is **2.708 / 1.764 / 2.134** at five drafts. These are baseline
+numbers only, not a training gain, and should not be directly compared with the
+older eight-prompt domain medians. Adapted startup and its 96 requests follow;
+original-b reload then checks drift. Original production remains temporarily paused
+under the same 13:32:04 UTC outage deadline and automatic restoration controller.
+
+
+**21 October 2026, 12:23 UTC: first native original arm is measuring.**
+CT startup completed normally; the first unmodified Modal FP8 load is executing
+its 96 requests at five drafts. Adapted and original-reload arms follow automatically.
+No adapted speed or acceptance result yet. Detached postprocessing PID 3835576
+waits for original-500k restoration, then verifies the retained evidence and copies
+it to Spark2 for an independent payload audit. Local launch audit confirms identical
+commands and serving settings across arms. Training/validation have no exact text,
+ID or token-hash overlap, but validation selected the checkpoint: generalization
+remains unproven. All earlier timing/quality limitations remain in force.
+
+
+**21 October 2026, 12:17 UTC: native Modal pilot comparison running detached.**
+CPU preflight passed on both ranks with 211 runtime bindings. Launcher 3788307 /
+controller 3788308 / independent watchdog 3788394 are active. Production is
+**temporarily paused** for the original/adapted/original trial; the watchdog outage
+deadline is **13:32:04 UTC**, followed by bounded original-500k restoration if needed.
+No native result yet. The experiment survives laptop disconnection. Frozen source
+commit `3f1b2d7` is verified in the Spark2 backup repository; full pytest, Ruff and
+strict core mypy pass. This remains a development-transfer test on the 16 prompts
+used for checkpoint selection, not a generalization or sealed-quality claim.
+
+
 **21 October 2026, 12:16 UTC: native Modal pilot comparison authorized and preparing.**
 The selected step-16 drafter will be compared with its unmodified Modal FP8 source
 on the same CT target, with **five drafts in every arm**, original/adapted/original

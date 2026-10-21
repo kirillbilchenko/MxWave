@@ -1,5 +1,13 @@
 # GLM serving replacement: verified DFlash comparison
 
+**21 October 2026, 12:49 UTC: original 500k production is healthy.** The user ends drafter training.
+CT's next-launch profile selects unmodified Modal FP8 with C1:5 / C2:5 / C3–C16:3.
+This is not a change to the live ModelOpt/Inco service. Use the selected
+[speculative configuration](../integrations/glm53_mxfp4/ct_dflash_speculative_config.json)
+with the pinned pretrained Modal checkpoint recorded in `full-model-v1/ct-serving-current.json`
+on both Sparks. [Current evidence and remaining replacement gates](GLM53_HANDOFF.md).
+
+
 **20 October 2026, 05:39 UTC:** the [matched MXFP4 comparison](GLM53_MXFP4_SERVING_V3.md)
 is complete and independently verified. Original production was restored at
 05:37:55 UTC. The separately authorized
