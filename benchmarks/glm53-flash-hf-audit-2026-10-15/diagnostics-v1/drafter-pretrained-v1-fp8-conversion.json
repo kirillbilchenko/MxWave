@@ -1,0 +1,922 @@
+{
+  "status": "export_verified_quality_and_speed_pending",
+  "cpu_only": true,
+  "source_sha256": "3860c574465b7c7523896a22a3cc83dc4b9c14e019a6755061de2b8a4b061539",
+  "source_code_sha256": "2427e6d8e0006ceccf383c7df0a69234f2195bac2ce90a4d00aa907bdc388f2d",
+  "exported_sha256": "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46",
+  "source_bytes": 2778461544,
+  "exported_bytes": 1621120728,
+  "quantized_tensors": 42,
+  "copied_tensors": 54,
+  "training_performed": false,
+  "target_weights_changed": false,
+  "fc_selector_convolutions_norms_bitwise_preserved": true,
+  "seconds": 6.606345375068486,
+  "tensors": [
+    {
+      "name": "candidate_selector.hidden_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "4f84cc9bdaf3f3e00b82081086b3c5fc8a714bd3a0d122a6856c6becc366214c"
+    },
+    {
+      "name": "candidate_selector.predecessor_codebook",
+      "operation": "bitwise_copy",
+      "sha256": "44b357a77278be4cf46445ae40db032e5bbe1168673f008857ef128f769a5a29"
+    },
+    {
+      "name": "candidate_selector.successor_codebook",
+      "operation": "bitwise_copy",
+      "sha256": "3203de4a414974f81e767293114609054b04cfd7e1a03a5c0d667ae3dcc25b08"
+    },
+    {
+      "name": "fc.weight",
+      "operation": "bitwise_copy",
+      "sha256": "025c34c1c3b3a5e2da00e77855a9017e091cd79040c077754b93b44129226b9f"
+    },
+    {
+      "name": "hidden_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.0.attention_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "eb671c51393124019fe5f247bc4d22bb1e3717c45d5eafe17de8ddbb5837f854"
+    },
+    {
+      "name": "layers.0.attention_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "b2b0756ff1bdaba7bc49315b12c5fabe86d689eba04f9a90eacc599580bb13a5"
+    },
+    {
+      "name": "layers.0.input_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.0.mlp.down_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        12288
+      ],
+      "source_sha256": "cda75e7cfa384aff305e728e3fc4d8a6562bf6942f2ff350232277dee1991488",
+      "scale_shape": [
+        32,
+        96
+      ],
+      "relative_l2": 0.02649659849703312,
+      "max_abs_error": 0.032924115657806396
+    },
+    {
+      "name": "layers.0.mlp.gate_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "27eaa01cb50a526e2068538accc2687322339bb783af4aa95297909b9613eb9f",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.025271955877542496,
+      "max_abs_error": 0.015206485986709595
+    },
+    {
+      "name": "layers.0.mlp.up_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "1bf7a943b78eeea706b6be4a183e16ca3bc90c12fea33dec8b56c4f0a3bcad7c",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.025419769808650017,
+      "max_abs_error": 0.017020106315612793
+    },
+    {
+      "name": "layers.0.mlp_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "c8a467351d96fd7f1f38bedce8c76339d2759b5988b2840cdac7d5e9d3c92587"
+    },
+    {
+      "name": "layers.0.mlp_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "53bfad0c213a2166690f6accac456168c971054760dd9aaf827eff8fbd4536aa"
+    },
+    {
+      "name": "layers.0.post_attention_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.0.self_attn.k_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.0.self_attn.k_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "0b05bb8925e0835a8aff9fbf600d3a6f2c3e730cc94cfe243240ef19067cf3a0",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.0264433640986681,
+      "max_abs_error": 0.017578125
+    },
+    {
+      "name": "layers.0.self_attn.o_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "1b192a560555a31caa5c9cd5238a211cac18d6e5a5a80a745872c65cb4a964d8",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.02683602087199688,
+      "max_abs_error": 0.009626120328903198
+    },
+    {
+      "name": "layers.0.self_attn.q_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.0.self_attn.q_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "8c5d401f62b2fb9234f992a34a73b2f888df5a6b6534a642364a3ba04a4f6a4f",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.02628881298005581,
+      "max_abs_error": 0.017578125
+    },
+    {
+      "name": "layers.0.self_attn.v_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "33c02d4b0ae92fdedd8af44a2352cb6d5ebcab5afef7c2726bf06f9a4969b8c8",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026493195444345474,
+      "max_abs_error": 0.009207576513290405
+    },
+    {
+      "name": "layers.1.attention_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "99795f8776dbdf1a33f658d93c10cd703556ac1e67c0d7915ec234c76ccaba61"
+    },
+    {
+      "name": "layers.1.attention_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "7452015270fe7cebc365a56e07f1d07ee6c0b9f15b68244bc5e1d5efc404e4d4"
+    },
+    {
+      "name": "layers.1.input_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.1.mlp.down_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        12288
+      ],
+      "source_sha256": "45a5d7a9ffabdfa39bb85fb12a05f7d7629f0e599e1c0245e165de09a53e7265",
+      "scale_shape": [
+        32,
+        96
+      ],
+      "relative_l2": 0.026307351887226105,
+      "max_abs_error": 0.03459823131561279
+    },
+    {
+      "name": "layers.1.mlp.gate_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "071d7826bc625d88d9f0470cf93e186f5726b0685f86e5cec29a17768706b24e",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.025756970047950745,
+      "max_abs_error": 0.015066951513290405
+    },
+    {
+      "name": "layers.1.mlp.up_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "badb34313815a3dc153c8c18c50bcaf835b8e4027187f2b599ada4492766b407",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.02539018914103508,
+      "max_abs_error": 0.012276783585548401
+    },
+    {
+      "name": "layers.1.mlp_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "160cafef3f196f5bbafd3d4e8d75b7acdb84e6948bd9814d9d0e21206a217693"
+    },
+    {
+      "name": "layers.1.mlp_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "21ada933fd2ecce567c8de96f1fcb5c8f1dbca4e3f1b4ab4a7714b361269549d"
+    },
+    {
+      "name": "layers.1.post_attention_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.1.self_attn.k_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.1.self_attn.k_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "eea53c7f18ef62a4e9c61e53ec88a8978a3cbad86a1a058a08e1351d5a9e156a",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026333438232541084,
+      "max_abs_error": 0.010463178157806396
+    },
+    {
+      "name": "layers.1.self_attn.o_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "38059f4e7ba9a09f8436e7b014a939d64995322749f5931bb48872435a0ad93e",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027438048273324966,
+      "max_abs_error": 0.008928567171096802
+    },
+    {
+      "name": "layers.1.self_attn.q_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.1.self_attn.q_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "b2e7f67339f49a420ee9f367017ebe2c90b3fe7756b7b4753d4ae6b418a7e2af",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027349477633833885,
+      "max_abs_error": 0.009068086743354797
+    },
+    {
+      "name": "layers.1.self_attn.v_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "32f4073622a16e86e7cf989f5c33f8dba213cae9d0015208d89b2a3e2268db9f",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026607858017086983,
+      "max_abs_error": 0.009765625
+    },
+    {
+      "name": "layers.2.attention_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "74b5f6678c197f099b429c67ca696f6fb26eddeb03c45054483e661422ed416d"
+    },
+    {
+      "name": "layers.2.attention_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "2ee60051cb14cf4c1488f448a99a7ea5afef95941c894ff8f556efcebf9d4308"
+    },
+    {
+      "name": "layers.2.input_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.2.mlp.down_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        12288
+      ],
+      "source_sha256": "08e4cd9f681ec1ab79bc285f82716c08a876657091c80d371ddb858c49e67a23",
+      "scale_shape": [
+        32,
+        96
+      ],
+      "relative_l2": 0.02638092078268528,
+      "max_abs_error": 0.017578125
+    },
+    {
+      "name": "layers.2.mlp.gate_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "53d4712b13c4502e835ecd8721a9a72cfe78fde6116e0f18dfafbe5bfcea84ca",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.02606300078332424,
+      "max_abs_error": 0.014229908585548401
+    },
+    {
+      "name": "layers.2.mlp.up_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "04acc24bfad9f4e7388e78a7bc29e5db9e49ad61d643c3797124c2a6f1428d79",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.025820981711149216,
+      "max_abs_error": 0.012276798486709595
+    },
+    {
+      "name": "layers.2.mlp_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "1adba8b99b0d1bf01cbd2a3390df8369bbb4af29df7de9562c9e51a2f808e0b8"
+    },
+    {
+      "name": "layers.2.mlp_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "10ca084f1e4700b43cf4f05387810dc84481aa425990a48dfeae43e6622b0a0f"
+    },
+    {
+      "name": "layers.2.post_attention_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.2.self_attn.k_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.2.self_attn.k_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "8d222428f9d5a60fe88f17c76743b39c86f4931c90351163c4091505e8759ee8",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026469962671399117,
+      "max_abs_error": 0.011439725756645203
+    },
+    {
+      "name": "layers.2.self_attn.o_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "e0a992941dd36a5b4f5e9ca0d51dcbf797193100b977383c4aa94731e7986f86",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027318106964230537,
+      "max_abs_error": 0.008928567171096802
+    },
+    {
+      "name": "layers.2.self_attn.q_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.2.self_attn.q_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "1a198e325e0bfa35fd873326113831c458a6f93cae92c9ad3a5da19c744ee124",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027330197393894196,
+      "max_abs_error": 0.009347110986709595
+    },
+    {
+      "name": "layers.2.self_attn.v_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "df268def4401976052c6ca8c6335542e74351fabf43ca4f054e3790e2f934ee8",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.02652355283498764,
+      "max_abs_error": 0.010184139013290405
+    },
+    {
+      "name": "layers.3.attention_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "cfcdb9a7cf1bc32b61d8e10d459a471c4a1d62bb1b226577f4c0b7715158c3b2"
+    },
+    {
+      "name": "layers.3.attention_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "ec467f57b58da49d2910329cf0bdc8cd43db1c70f2d2dc86a79b091b7ce1804b"
+    },
+    {
+      "name": "layers.3.input_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.3.mlp.down_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        12288
+      ],
+      "source_sha256": "81783b7c09072d5590417899b9addae077bf6914935249471b63db85d8a70fff",
+      "scale_shape": [
+        32,
+        96
+      ],
+      "relative_l2": 0.026333386078476906,
+      "max_abs_error": 0.016043543815612793
+    },
+    {
+      "name": "layers.3.mlp.gate_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "b02f08f4dc37b2cbec40525c2c40c722fa788cf5ebcc953e01e430c56ef385cc",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.026160717010498047,
+      "max_abs_error": 0.01674109697341919
+    },
+    {
+      "name": "layers.3.mlp.up_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "fbddc98a40145ef1686d669b7a8cfa5b4f654fda7a7bf11b723fb65f25c2ec89",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.025843527168035507,
+      "max_abs_error": 0.015345990657806396
+    },
+    {
+      "name": "layers.3.mlp_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "b19163ebf180adf7988071e336ece8efc46e41095b7d056767a866e29405de3d"
+    },
+    {
+      "name": "layers.3.mlp_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "41123a81bb45a9ce102850a54abb8cc735d20524ad13cc7c48b5906212d94f46"
+    },
+    {
+      "name": "layers.3.post_attention_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.3.self_attn.k_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.3.self_attn.k_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "aee092df8fabd7af814c40abb6defdaff326d42f48992a42f56c9a99771ce7ce",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.02607334591448307,
+      "max_abs_error": 0.009765625
+    },
+    {
+      "name": "layers.3.self_attn.o_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "ec19f322bd5c8462040620c36da02440a15cb8df5a9c69d2576998b7c67a1f72",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027592316269874573,
+      "max_abs_error": 0.008928567171096802
+    },
+    {
+      "name": "layers.3.self_attn.q_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.3.self_attn.q_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "0eb10378e88ac144f908e59c6e2a9db6222300047afbbb6a3c0c6ee098bdd444",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.02667582593858242,
+      "max_abs_error": 0.009347110986709595
+    },
+    {
+      "name": "layers.3.self_attn.v_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "5a4d3da72d15b0869af6161084a90ec24a436d3125916d508b9e6ccc003a3cca",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026837965473532677,
+      "max_abs_error": 0.0107421875
+    },
+    {
+      "name": "layers.4.attention_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "e56d3f4a8ad725c984a4ee24f76e46ac3eefe904a1fc191c1b7ca1cff1a0a2cf"
+    },
+    {
+      "name": "layers.4.attention_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "a72b502afe8dd00cbd4d9d79e43819b6ddb313a0cd0be0b4ed005d85848c1909"
+    },
+    {
+      "name": "layers.4.input_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.4.mlp.down_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        12288
+      ],
+      "source_sha256": "2d1758fc98574eda8b31446bc490c34c9ac58d8f6e3f6d499cc9db32f9487c24",
+      "scale_shape": [
+        32,
+        96
+      ],
+      "relative_l2": 0.026400407776236534,
+      "max_abs_error": 0.017020106315612793
+    },
+    {
+      "name": "layers.4.mlp.gate_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "7f92fa7c32a32ee4672463cb283c3f51b062ba05c737f07a3b39c1f1f9a15dbb",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.02645505592226982,
+      "max_abs_error": 0.01743859052658081
+    },
+    {
+      "name": "layers.4.mlp.up_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "c8588cf5280cc9a762cb3a6350359bbc3cd8ae37add048c2d9d8eb067529dcdb",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.025776999071240425,
+      "max_abs_error": 0.014787942171096802
+    },
+    {
+      "name": "layers.4.mlp_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "3ae9dfabb4b1f3eb50369286ea1977fccb4347ee8c31efa6b285a5829ff68a2e"
+    },
+    {
+      "name": "layers.4.mlp_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "6e6884d7e93d21603b67456bb53b123d88ceb8183ffa68534e1efb04d42c0681"
+    },
+    {
+      "name": "layers.4.post_attention_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.4.self_attn.k_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.4.self_attn.k_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "318a111fddc162083bad5858d41096d9a43bb29d4bb1f61bdf497bf1f8b0a71e",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026248091831803322,
+      "max_abs_error": 0.010881692171096802
+    },
+    {
+      "name": "layers.4.self_attn.o_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "f6d66cd66297a7265e81a8ed8e6286897fd350402eef6020d5ed64869c4dd8a0",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027700524777173996,
+      "max_abs_error": 0.008928567171096802
+    },
+    {
+      "name": "layers.4.self_attn.q_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.4.self_attn.q_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "22749c2c9d567fed2fd75d12d7ecd059b72cd39912e7e7e52df13f472d9f8160",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.026230977848172188,
+      "max_abs_error": 0.009068086743354797
+    },
+    {
+      "name": "layers.4.self_attn.v_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "b192d29015207794af8ae667574ded85f8dd30787ab1e4241b6c7e0f563d79be",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026769205927848816,
+      "max_abs_error": 0.009486615657806396
+    },
+    {
+      "name": "layers.5.attention_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "c641d8986cb9ca224304413536188e1a6096a362db7657b8cb3a6511bc562fed"
+    },
+    {
+      "name": "layers.5.attention_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "4d76ef60790b567c915928426ab410adc13a4ad93df94de570a53030eb459066"
+    },
+    {
+      "name": "layers.5.input_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.5.mlp.down_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        12288
+      ],
+      "source_sha256": "08a0459d6dd3e7dd7481e00f8f764311c1503d41670b236d106d41d3d0b507b1",
+      "scale_shape": [
+        32,
+        96
+      ],
+      "relative_l2": 0.026297442615032196,
+      "max_abs_error": 0.017020076513290405
+    },
+    {
+      "name": "layers.5.mlp.gate_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "3a1c4c6b5854a7f45dc8aee8c91ac2e392088601fc60bcbcf1a506ea08b82019",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.0265053603798151,
+      "max_abs_error": 0.01771765947341919
+    },
+    {
+      "name": "layers.5.mlp.up_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        12288,
+        4096
+      ],
+      "source_sha256": "5fb462c504a274fa601c37cf063040d720a876cca28a4e616bfac8316e00fc81",
+      "scale_shape": [
+        96,
+        32
+      ],
+      "relative_l2": 0.026292750611901283,
+      "max_abs_error": 0.017857134342193604
+    },
+    {
+      "name": "layers.5.mlp_conv.base_kernel",
+      "operation": "bitwise_copy",
+      "sha256": "4b43f523249370f7108934b10b97f0c163bf9cc72244e2fe0b04f5b6b71674c8"
+    },
+    {
+      "name": "layers.5.mlp_conv.kernel_projection.weight",
+      "operation": "bitwise_copy",
+      "sha256": "c44c287faee97dece5c7e46a16bee83061dc19faa9f5668049437b2c127e60df"
+    },
+    {
+      "name": "layers.5.post_attention_layernorm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    },
+    {
+      "name": "layers.5.self_attn.k_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.5.self_attn.k_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "9b5187ae46021736e74242d036028bed668a54bf3ea7863f71a0323cfbbb5aa6",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026279320940375328,
+      "max_abs_error": 0.009486600756645203
+    },
+    {
+      "name": "layers.5.self_attn.o_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "cd08d0c602f1de127884fc226a17895fc4e0014d7052a97731b97f4ebb93d91c",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.027696073055267334,
+      "max_abs_error": 0.008928567171096802
+    },
+    {
+      "name": "layers.5.self_attn.q_norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "1ede9ebfa1ad011b89a3e3df648a958674d64afa0726d98858a68b8a4da14ee0"
+    },
+    {
+      "name": "layers.5.self_attn.q_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        4096,
+        4096
+      ],
+      "source_sha256": "439a9e4438546f5c2690299055bc284fb2cbea5678ccd38ba6793927a1ef4e27",
+      "scale_shape": [
+        32,
+        32
+      ],
+      "relative_l2": 0.026228375732898712,
+      "max_abs_error": 0.009207576513290405
+    },
+    {
+      "name": "layers.5.self_attn.v_proj.weight",
+      "operation": "lossy_block_fp8",
+      "shape": [
+        1024,
+        4096
+      ],
+      "source_sha256": "4ba84cbbd3c09e6559003021fb237fd69c042d1637ded9162bcb33e845fe68ce",
+      "scale_shape": [
+        8,
+        32
+      ],
+      "relative_l2": 0.026605436578392982,
+      "max_abs_error": 0.014229908585548401
+    },
+    {
+      "name": "norm.weight",
+      "operation": "bitwise_copy",
+      "sha256": "8676bed4ca36c6e3328f5eaebc71b2f1a6c760c56f7139942239a033fe776c5e"
+    }
+  ],
+  "limits": [
+    "Lossy drafter conversion; acceptance and native reload must be measured.",
+    "The CT target checkpoint and verifier are unchanged.",
+    "Smaller drafter storage is not an end-to-end speed result."
+  ]
+}

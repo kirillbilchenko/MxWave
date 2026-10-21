@@ -1,0 +1,187 @@
+{
+  "schema": "mxwave-pretrained-drafter-preflight-v1",
+  "created_utc": "2026-10-21T05:39:06.876432+00:00",
+  "status": "cpu_preflight_pass_gpu_comparison_pending",
+  "repo": "modal-labs/GLM-5.3-Flash-DFlash",
+  "revision": "dae6d319510889a7f1ac5242d5b7fb2d5d95eb05",
+  "pretrained_parameters": 1389225472,
+  "strict_cpu_load": {
+    "passed": true,
+    "tensors": 96,
+    "missing": [],
+    "unexpected": []
+  },
+  "installed_helper_checks": [
+    {
+      "status": "installed_configuration_helpers_pass",
+      "gpu_used": false,
+      "source_sha256": {
+        "model_executor/models/registry.py": "4ec20f260e4c9b47d2e25c196b9ae4d0f792bb6efcfa9e8c608471d7b0298b64",
+        "config/speculative.py": "eaf52a03351398f72d3e85f0d1ce3bf80d1f92e0fddc8f28bdb11738aeab7875",
+        "model_executor/models/qwen3_dflash.py": "89c0d80c60d1fcde839a088e0a997a233e656d1e296c5505b5f2631478ddbfa5",
+        "model_executor/models/qwen3_dflash2.py": "c141daa4b2059c0098224ac36471c2197b7052c100bef0a4dbc2ca79b627053f",
+        "v1/worker/gpu/spec_decode/eagle/eagle3_utils.py": "43e5ba8d3997712878ead63e9d5d5bc7c3e656650b8aa6a41b3e19f84d2f6487"
+      },
+      "registry": {
+        "DFlashDraftModel": [
+          "qwen3_dflash",
+          "DFlashQwen3ForCausalLM"
+        ],
+        "DFlash2DraftModel": [
+          "qwen3_dflash2",
+          "DFlash2Qwen3ForCausalLM"
+        ],
+        "Glm5NextMTPModel": [
+          "vllm.models.glm5next",
+          "Glm5NextMTP"
+        ]
+      },
+      "resolved_aux_layers": [
+        24,
+        28,
+        32,
+        36,
+        40,
+        44
+      ],
+      "attention_window_and_causal": [
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ]
+      ],
+      "context_input_width": 24576,
+      "limits": [
+        "AST-isolated unmodified helper functions only; no model construction.",
+        "No CUDA forward, acceptance, serving speed or native BF16 loader test."
+      ]
+    },
+    {
+      "status": "installed_configuration_helpers_pass",
+      "gpu_used": false,
+      "source_sha256": {
+        "model_executor/models/registry.py": "4ec20f260e4c9b47d2e25c196b9ae4d0f792bb6efcfa9e8c608471d7b0298b64",
+        "config/speculative.py": "eaf52a03351398f72d3e85f0d1ce3bf80d1f92e0fddc8f28bdb11738aeab7875",
+        "model_executor/models/qwen3_dflash.py": "89c0d80c60d1fcde839a088e0a997a233e656d1e296c5505b5f2631478ddbfa5",
+        "model_executor/models/qwen3_dflash2.py": "c141daa4b2059c0098224ac36471c2197b7052c100bef0a4dbc2ca79b627053f",
+        "v1/worker/gpu/spec_decode/eagle/eagle3_utils.py": "43e5ba8d3997712878ead63e9d5d5bc7c3e656650b8aa6a41b3e19f84d2f6487"
+      },
+      "registry": {
+        "DFlashDraftModel": [
+          "qwen3_dflash",
+          "DFlashQwen3ForCausalLM"
+        ],
+        "DFlash2DraftModel": [
+          "qwen3_dflash2",
+          "DFlash2Qwen3ForCausalLM"
+        ],
+        "Glm5NextMTPModel": [
+          "vllm.models.glm5next",
+          "Glm5NextMTP"
+        ]
+      },
+      "resolved_aux_layers": [
+        24,
+        28,
+        32,
+        36,
+        40,
+        44
+      ],
+      "attention_window_and_causal": [
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ],
+        [
+          4096,
+          true
+        ]
+      ],
+      "context_input_width": 24576,
+      "limits": [
+        "AST-isolated unmodified helper functions only; no model construction.",
+        "No CUDA forward, acceptance, serving speed or native BF16 loader test."
+      ]
+    }
+  ],
+  "fp8": {
+    "status": "export_verified_quality_and_speed_pending",
+    "cpu_only": true,
+    "source_sha256": "3860c574465b7c7523896a22a3cc83dc4b9c14e019a6755061de2b8a4b061539",
+    "source_code_sha256": "2427e6d8e0006ceccf383c7df0a69234f2195bac2ce90a4d00aa907bdc388f2d",
+    "exported_sha256": "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46",
+    "source_bytes": 2778461544,
+    "exported_bytes": 1621120728,
+    "quantized_tensors": 42,
+    "copied_tensors": 54,
+    "training_performed": false,
+    "target_weights_changed": false,
+    "fc_selector_convolutions_norms_bitwise_preserved": true,
+    "seconds": 6.606345375068486,
+    "limits": [
+      "Lossy drafter conversion; acceptance and native reload must be measured.",
+      "The CT target checkpoint and verifier are unchanged.",
+      "Smaller drafter storage is not an end-to-end speed result."
+    ]
+  },
+  "independent_numpy": {
+    "status": "verified",
+    "copied_tensors_bitwise_equal": 54,
+    "quantized_tensors_finite_and_scales_positive": 42,
+    "numpy_independent_sampled_fp8_codes": 6881280,
+    "different_codes": 0,
+    "full_fp8_rounding_audit": false,
+    "script_sha256": "ba936d6e7e2769a674fda5e65ad134ffbee57d683fbb8a44a62499b4cf5e69c0",
+    "training_performed": false,
+    "native_reload_or_acceptance_tested": false
+  },
+  "automatic_training_held": true,
+  "capture_interrupted": false,
+  "sealed_test_opened": false,
+  "mtp_gpu_run_queued": false,
+  "gpu_plan_sha256": "52ed3ed2ad97f0de5b05c06342ce04ccc9c866ff82f069d519a6d054a4b8c1e8",
+  "limits": [
+    "Strict CPU loading uses the pinned SpecForge class; it is not native vLLM GPU execution.",
+    "The reusable strict-load report includes original-drafter boilerplate limits about 35 FP8 scales; those do not describe this BF16 Modal checkpoint.",
+    "Only configuration helpers have run in the installed vLLM images. Native reload, acceptance, cross-arm token identity and serving speed remain unmeasured.",
+    "Existing captures use five Inco feature taps and cannot evaluate the six Modal taps.",
+    "One candidate load per precision is a development screen; no final speed qualification."
+  ]
+}

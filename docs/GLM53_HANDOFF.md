@@ -1,5 +1,48 @@
 # GLM compression experiment handoff
 
+<!-- PRETRAINED_DRAFTER_BEGIN -->
+**21 October 2026, 05:39 UTC: check pretrained drafters before further adaptation.**
+The user requests a cheaper pretrained route and clarifies **FP8**, not FP6.
+Automatic CPU training is held: waiting continuation v2 PID **80216** received
+SIGTERM at 05:30:51 UTC before any optimizer update; its keep-awake ends with it.
+`out/drafter-full-training-v1/continuation-v2/held-for-alternatives.json` is the
+current continuation state; the previous `continuation-status.json` is stale.
+The original capture controller **3702964** continues unchanged with no error.
+Latest read: 1,047 total requests, three completed controls and 16 paired chunks.
+Production remains temporarily paused under its original restoration watchdog.
+
+Modal’s pinned pretrained DFlash2 strictly loads all 96 BF16 tensors on CPU.
+Both installed images resolve its six causal layers, 4,096 sliding window and
+24,576-wide context projection correctly. Its feature taps differ from Inco’s;
+the existing capture cannot provide an offline acceptance comparison.
+The separately exported block-FP8 version takes 6.606 seconds on CPU and shrinks
+checkpoint bytes **2,778,461,544 → 1,621,120,728**. All 54 unquantized tensors
+remain exact; 42 backbone matrices are quantized. Independent NumPy validation
+checks 6,881,280 sampled rounding decisions with zero differences. This is
+lossy drafter conversion, not a target change or a serving-speed result.
+
+Prepared comparison: `out/drafter-alternatives-v1/prepared-fp8/`, revision
+`drafter-pretrained-modal-v1`, private API **8040**, master **29713**. Plan SHA
+`52ed3ed2ad97f0de5b05c06342ce04ccc9c866ff82f069d519a6d054a4b8c1e8`.
+Arms: current Inco FP8 / Modal BF16 / Modal FP8 / current Inco FP8. Eight
+development prompts × six repetitions per arm; two excluded warmups; C1,
+256 outputs, fixed seven drafts, seed 42, unchanged target/numerical policy.
+The queue may start only after complete verified capture and healthy original
+restoration; failed capture stops the queue. The new controller has a
+60-minute restoring watchdog. No sealed test, auto-training or deployment.
+See [pretrained alternatives](GLM53_PRETRAINED_DRAFTERS.md) for measured CPU
+evidence, remaining gates and all artifact paths. All required repo checks pass.
+At **05:41:53 UTC**, queue PID **677064** is started on Spark and verified in
+`waiting_for_verified_capture_and_restoration`. All 44 frozen source files and
+all four checkpoint/config files independently hash-verify on **both Sparks**.
+Remote run root is `full-model-v1/drafter-pretrained-modal-v1`; read `queue.json`
+until the restoring controller starts. Both old CPU PIDs 80216/80217 are absent.
+Latest capture read at 05:40:44 UTC: **1,060/4,200 prompts** plus six controls,
+no error, 16 paired chunks. Approximately 5–6 hours remain at this pace.
+The pretrained screen needs none of this capture; it is waiting to preserve
+the originally authorized full dataset as a training fallback.
+<!-- PRETRAINED_DRAFTER_END -->
+
 <!-- FULL_CAPTURE_PROGRESS_BEGIN -->
 **21 October 2026, 05:23 UTC: capture continues unchanged; queued CPU training accelerated.**
 The original controller PID 3702964 and client PID 3763665 remain running under

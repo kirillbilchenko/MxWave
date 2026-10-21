@@ -1,0 +1,120 @@
+"""Convert a pinned BF16 DFlash2 backbone to the existing block-FP8 serving format."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import time
+from pathlib import Path
+from typing import Any
+
+import torch
+from safetensors import safe_open
+from safetensors.torch import save_file
+
+from .drafter_fp8_roundtrip import digest, raw
+
+PROJECTIONS = (
+    "self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj",
+    "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj",
+)
+
+
+def quantize_blocks(weight: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """Round finite BF16 128x128 blocks to E4M3FN with FP32 dequantization scales."""
+    if (weight.device.type != "cpu" or weight.dtype != torch.bfloat16
+            or weight.ndim != 2 or any(size % 128 for size in weight.shape)):
+        raise ValueError("Require a CPU BF16 matrix with complete 128x128 blocks")
+    rows, columns = weight.shape
+    blocks = weight.float().reshape(rows // 128, 128, columns // 128, 128)
+    if not torch.isfinite(blocks).all():
+        raise ValueError("Nonfinite source weight")
+    maximum = blocks.abs().amax(dim=(1, 3))
+    scales = torch.where(maximum == 0, 1.0, maximum / 448.0).to(torch.float32)
+    if not torch.isfinite(scales).all() or not (scales > 0).all():
+        raise ValueError("Invalid block scale")
+    quantized = (blocks / scales[:, None, :, None]).clamp(-448, 448).reshape(
+        rows, columns,
+    ).to(torch.float8_e4m3fn).contiguous()
+    if not torch.isfinite(quantized.float()).all():
+        raise ValueError("Nonfinite quantized weight")
+    return quantized, scales.contiguous()
+
+
+def convert(source: Path, output: Path, expected_sha256: str) -> dict[str, Any]:
+    """Quantize seven backbone projections per layer; preserve every other tensor exactly."""
+    started = time.monotonic()
+    if digest(source / "model.safetensors") != expected_sha256:
+        raise ValueError("Source checkpoint differs from the pinned pretrained model")
+    config = json.loads((source / "config.json").read_bytes())
+    if config["architectures"] != ["DFlash2DraftModel"] or "quantization_config" in config:
+        raise ValueError("Expected an unquantized DFlash2 checkpoint")
+    names = {f"layers.{layer}.{projection}.weight"
+             for layer in range(config["num_hidden_layers"]) for projection in PROJECTIONS}
+    weights, reviews = {}, []
+    torch.set_num_threads(12)
+    output.mkdir(parents=True, exist_ok=False)
+    with safe_open(source / "model.safetensors", framework="pt", device="cpu") as original:
+        if not names <= set(original.keys()):
+            raise ValueError("DFlash2 backbone coverage incomplete")
+        for name in original.keys():
+            value = original.get_tensor(name)
+            source_sha = hashlib.sha256(raw(value)).hexdigest()
+            if name not in names:
+                weights[name] = value
+                reviews.append({"name": name, "operation": "bitwise_copy", "sha256": source_sha})
+                continue
+            quantized, scales = quantize_blocks(value)
+            scale_name = name.removesuffix(".weight") + ".weight_scale_inv"
+            weights[name], weights[scale_name] = quantized, scales
+            rows, columns = value.shape
+            reconstructed = (quantized.float().reshape(rows // 128, 128, columns // 128, 128)
+                             * scales[:, None, :, None]).reshape(rows, columns)
+            error = reconstructed - value.float()
+            relative = (error.square().sum() / value.float().square().sum().clamp_min(1e-30)).sqrt()
+            reviews.append({"name": name, "operation": "lossy_block_fp8", "shape": list(value.shape),
+                            "source_sha256": source_sha, "scale_shape": list(scales.shape),
+                            "relative_l2": relative.item(), "max_abs_error": error.abs().max().item()})
+    save_file(weights, str(output / "model.safetensors"), metadata={"format": "pt"})
+    config["quantization_config"] = {
+        "quant_method": "fp8", "fmt": "e4m3", "activation_scheme": "dynamic",
+        "weight_block_size": [128, 128], "ignored_layers": ["model.fc", "fc"],
+    }
+    (output / "config.json").write_text(json.dumps(config, indent=2) + "\n")
+    with safe_open(output / "model.safetensors", framework="pt", device="cpu") as exported:
+        if set(exported.keys()) != set(weights):
+            raise ValueError("Serialized tensor inventory differs")
+        for name, value in weights.items():
+            if raw(exported.get_tensor(name)) != raw(value):
+                raise ValueError(f"Serialized tensor differs: {name}")
+    review = {
+        "status": "export_verified_quality_and_speed_pending", "cpu_only": True,
+        "source_sha256": expected_sha256, "source_code_sha256": digest(Path(__file__)),
+        "exported_sha256": digest(output / "model.safetensors"),
+        "source_bytes": (source / "model.safetensors").stat().st_size,
+        "exported_bytes": (output / "model.safetensors").stat().st_size,
+        "quantized_tensors": len(names), "copied_tensors": len(reviews) - len(names),
+        "training_performed": False, "target_weights_changed": False,
+        "fc_selector_convolutions_norms_bitwise_preserved": True,
+        "seconds": time.monotonic() - started, "tensors": reviews,
+        "limits": ["Lossy drafter conversion; acceptance and native reload must be measured.",
+                   "The CT target checkpoint and verifier are unchanged.",
+                   "Smaller drafter storage is not an end-to-end speed result."],
+    }
+    (output / "conversion-review.json").write_text(json.dumps(review, indent=2) + "\n")
+    return review
+
+
+def main() -> None:
+    """Create one separate candidate without changing the pretrained checkpoint or serving."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--expected-sha256", required=True)
+    args = parser.parse_args()
+    result = convert(args.source, args.output, args.expected_sha256)
+    print(json.dumps({key: value for key, value in result.items() if key != "tensors"}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

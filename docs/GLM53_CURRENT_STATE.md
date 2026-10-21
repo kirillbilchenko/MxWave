@@ -1,5 +1,14 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 05:42 UTC: automatic training held; pretrained BF16/FP8 comparison queued.**
+The user prefers avoiding adaptation if an existing drafter performs well. Modal’s
+six-layer DFlash2 passes strict CPU loading and both installed vLLM helper checks.
+A separate FP8 conversion takes 6.606 seconds: 2.78 → 1.62 GB checkpoint bytes,
+42 quantized matrices and 54 bit-identical tensors; independent NumPy checks pass.
+No acceptance or speed result yet. The GPU capture continues unchanged; the idle
+CPU training launcher is stopped before any update. The bounded pretrained
+comparison waits for capture verification/restoration. [Details and limits](GLM53_PRETRAINED_DRAFTERS.md).
+
 **21 October 2026, 05:23 UTC: capture continues without restart; CPU training queued at 12 threads.**
 Latest capture read: 892/4,200 prompts, 13 paired chunks, two passing repeat controls,
 no error. The 12-thread CPU replay preserves all 32 update metrics and four saved
