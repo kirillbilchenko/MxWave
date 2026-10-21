@@ -1,5 +1,25 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 19:47:56 UTC: metadata-only correction test launched.**
+V1 restored exact production at **19:45:42 UTC**. V2 controller **3054345** now
+runs under a fresh 25-minute watchdog lease, root `stock-draft-trace-v2`, plan
+SHA256 `a16f58dd37f0152e3b5e69aad228333d16b784d226c0e666253832f8cd940119`,
+source commit **14c5c81**. Both CPU preflights instantiate all twelve native
+`DFlashGroupedConv` projections as BF16 with `UnquantizedLinearMethod`, while
+the main attention projections remain selected for FP8. Initial CPU-fixture
+failures lacked simulated TP metadata; the corrected no-GPU fixture supplies
+only rank/world-size metadata, without replacing quantization or weight loading.
+V2 must verify the same twelve dtype/method pairs on both GPUs before requests.
+No causal fix or new speed/quality pass is claimed until the native traces return.
+
+V1's 45 evidence payloads independently verify on Mac; archive SHA256
+`e9033efdc8d41b67089b253352e78c2173a8b08629c78aea45cdd044ce8c9d01`.
+All 64 observed proposal frames across both ranks have entirely NaN scores;
+all 64 combined context tensors are finite. All 32 eager frames have entirely
+NaN draft hidden states/logits. The stopped comparison's 96 payloads also verify:
+`dc1c0009f0665728df77d391204d29a9c1f9c6303ae6bc7e866dcdcb30c5717f`.
+Both archives are copied to Spark2; no benchmark repetition or GSM8K has resumed.
+
 **21 October 2026, 19:45 UTC: invalid draft computation reproduced; concrete loader mismatch.**
 `stock-draft-trace-v1` completes all four requests. Native replay and draft-eager
 both accept **0 / 155 proposals per request (0 / 620 total)**. All 80 retained
