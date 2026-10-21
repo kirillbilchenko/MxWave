@@ -1,5 +1,30 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 19:22 UTC: first production pass complete; CT is slower.**
+`timing-A-0` completes all 24 cells. `timing-B-0` has completed five cells with
+zero API errors and zero unexpected cold-prefix hits. Every completed CT cell
+records zero accepted draft tokens. Both controller **2545114** and watchdog
+**2545780** remain alive; no stage errors are reported. Full GSM8K has not started;
+both speculation-off 1,319-question stages remain scheduled after the six timing pairs.
+
+First-trial code throughput (aggregate output tokens/second; repeats pending):
+
+| Cell | Production | Stock CT | CT difference |
+| --- | ---: | ---: | ---: |
+| Short C1 | 54.90 | 12.50 | −77.2% |
+| Short C4 | 76.23 | 29.51 | −61.3% |
+| Short C8 | 83.58 | 42.41 | −49.3% |
+| Short C16 | 82.83 | 43.62 | −47.3% |
+| Long C1 | 36.38 | 11.63 | −68.0% |
+
+These are current complete-deployment measurements, not compression-only effects
+or final medians. Short-C16 CT reaches eight running requests and eight waiting.
+Both arms pass the same-salt reuse/fresh-salt miss control; observed reused tokens
+are 9,216 for production and 4,608 for CT, exposing an implementation difference
+while measured cohorts remain cold. CT rank-0 startup allocates 93,584,163,840 bytes
+with the dense BF16 head. No matched production Torch-allocation delta is claimed.
+The unchanged run continues; no drafter tuning or promotion occurs between arms.
+
 **21 October 2026, 18:59 UTC: comparison healthy; full GSM8K remains queued.**
 The first production timing block has completed **15 / 24 cells**, with **zero
 API errors and zero unexpected prefix hits** in those measured cells. The controller,
