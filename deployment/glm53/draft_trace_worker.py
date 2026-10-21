@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -145,7 +146,19 @@ class DraftTraceWorker(ProfileWorker):
         path = Path("/reports") / f"draft-trace-{label}-r{rank}.jsonl"
         path.touch(exist_ok=False)
         tracer = DraftTrace(runner, path, mode, frames)
+        conv = [
+            {"layer": i, "side": side, "dtype": str(proj.weight.dtype),
+             "method": type(proj.quant_method).__name__}
+            for i, layer in enumerate(spec.model.model.layers)
+            for side in ("attention_conv", "mlp_conv")
+            for proj in (getattr(layer, side).kernel_projection,)
+        ]
+        if os.environ.get("MXWAVE_DRAFT_REQUIRE_BF16_CONV") == "1" and (
+                len(conv) != 12 or any(x["dtype"] != "torch.bfloat16" or
+                                      x["method"] != "UnquantizedLinearMethod" for x in conv)):
+            raise RuntimeError("BF16 convolution-projection correction did not survive loading")
         tracer.write({"event": "start", "rank": rank,
+                      "conv_projections": conv,
                       "target_layers": list(runner.model.language_model.model.aux_hidden_state_layers),
                       "fc_weight": tensor_report(spec.model.model.fc.weight, 8),
                       "draft_logits_present": spec.draft_logits is not None,

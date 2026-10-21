@@ -1,5 +1,32 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 19:45 UTC: invalid draft computation reproduced; concrete loader mismatch.**
+`stock-draft-trace-v1` completes all four requests. Native replay and draft-eager
+both accept **0 / 155 proposals per request (0 / 620 total)**. All 80 retained
+candidate scores in each observed step are NaN; eager final draft hidden states
+and candidate logits are also entirely NaN. Target auxiliary features and their
+combined context projection are finite. Proposals repeatedly contain token 15360.
+Eight trace files (four requests x two ranks) are retained. This rules out graph
+replay alone, and establishes invalid drafter computation rather than ordinary
+low acceptance. Production restoration is in progress; consult the V1 controller.
+
+Source and checkpoint audit identifies a specific incompatibility: all twelve
+`layers.{0..5}.{attention_conv,mlp_conv}.kernel_projection.weight` tensors are
+BF16 [1024,4096], with no scale tensors. The old runtime constructs these linears
+with `quant_config=None`; vLLM 0.32 passes the FP8 quantization configuration.
+The checkpoint excludes only `model.fc`/`fc`; startup explicitly warns about loading
+these BF16 tensors into FP8 parameters. This is the leading cause, not yet a
+causally verified fix. The zero-acceptance symptoms are independent of the earlier
+stock target-repeat KL failures; no existing numerical gate is cleared.
+
+Preparing V2 with a **separate metadata-corrected drafter directory**: add explicit
+BF16 exclusions for local layer IDs and native global IDs 45..50. Original config
+and weights remain untouched; the weight file is hard-linked and SHA256-verified.
+Both CPU preflights must instantiate all twelve native convolution projections as
+BF16, and the GPU observer must confirm dtype/method before generation. Same two
+prompts, modes, 32-token budgets, target weights and draft KV dtype; no training,
+new quantization, vLLM source replacement or performance claim.
+
 **21 October 2026, 19:38 UTC: short native drafter trace launched.**
 Root `stock-draft-trace-v1`, controller **2973511**, independent watchdog **2974159**;
 plan SHA256 `a06e81f1e76d47cf4878048b0954e40ee994bd0ebd917c3bc206e18f4a593af5`,

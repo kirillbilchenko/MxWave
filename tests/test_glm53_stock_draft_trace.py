@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
 import torch
 
 
@@ -63,3 +64,24 @@ def test_tensor_health_catches_nonfinite_outside_preview():
     assert report["finite"] == 2
     assert report["count"] == 3
     assert "rms" not in report
+
+
+def test_config_preserves_weight_precision_and_declares_native_layer_aliases():
+    """Only existing BF16 conv projections may be excluded from FP8 loading."""
+    folder = Path(__file__).parents[1] / "deployment/glm53"
+    spec = importlib.util.spec_from_file_location("drafter_compat", folder / "prepare_drafter_compat.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    config = {"num_hidden_layers": 6,
+              "quantization_config": {"quant_method": "fp8", "ignored_layers": ["model.fc", "fc"]}}
+    header = {f"layers.{i}.{s}.kernel_projection.weight": {"dtype": "BF16"}
+              for i in range(6) for s in ("attention_conv", "mlp_conv")}
+    result, added = module.corrected_config(config, header, 45)
+    assert config["quantization_config"]["ignored_layers"] == ["model.fc", "fc"]
+    assert len(added) == 24
+    assert "model.layers.50.mlp_conv.kernel_projection" in added
+    assert len(result["quantization_config"]["ignored_layers"]) == 26
+    header["layers.0.attention_conv.kernel_projection.weight_scale_inv"] = {"dtype": "F32"}
+    with pytest.raises(ValueError, match="Unexpected quantization scales"):
+        module.corrected_config(config, header, 45)
