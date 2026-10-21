@@ -1,5 +1,50 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 16:37 UTC: corrected V7 prefix check launched.**
+V6's exact production restoration is verified at 16:34:17 UTC. V7 uses the same
+v8 images and all serving settings, changing only the test client and frozen
+real-source fixture. Offline tokenizer count: **12,449**; prompt SHA256
+`ea047183899d58965c1e609805c71a61ba5de34f8c2988b7de3cae9a93d40ff7`.
+The client handles nullable usage, excludes timestamp counters and requires both
+actual prefix reuse and identical repeated messages. The earlier three differing
+uncached messages are retained as a failed repeatability control.
+
+Launch 16:36:59 UTC, plan SHA256
+`353d7ea251d9cf2f13f1c9778b1c707652f6e2732a2dffd4aff4e5663e24da4e`.
+Production is temporarily paused under the same independent watchdog. No model,
+backend, capacity, draft policy or quality threshold changed. Local full pytest
+passes 1,085 tests / 1 skipped; Ruff passes. CPU cache audit and source through
+`bad7911` are hash-verified on Spark2 (212 retained evidence payloads).
+
+**21 October 2026, 16:34 UTC: stock V6 serves; prefix/repeatability gate remains unqualified.**
+The engine reaches API readiness with 500k context, native Triton draft attention,
+and all requested capacity settings. Graph capture completes in 4 seconds using
+0.41 GiB; rank-0 startup receipt records 93,584,163,840 CUDA allocated bytes
+(about 87.16 GiB) after model/drafter/cache/graphs. No matched production memory
+snapshot was taken, so this does not establish a fresh memory-saving delta.
+
+All three 64-token greedy requests complete, but their reasoning text differs.
+The smoke client then crashes on `prompt_tokens_details: null`. Its frozen prompt
+is only 4,435 tokens, below the resolved 4,608-token cache block, so this run cannot
+qualify prefix reuse. Retain both the actual output-repeat failure and test defects;
+do not attribute the differences to prefix caching or compression without controls.
+Exact original production restores at **16:34:17 UTC** (`failed_restored`).
+
+The client is corrected for nullable usage, actual prefix counters (excluding
+counter-created timestamps), and prompt coverage of at least 9,280 tokens. Its
+identity/reuse requirements are unchanged. A longer frozen real-source fixture
+is being tokenized on CPU before a V7 retry; no promotion, timing or quality claim.
+
+**21 October 2026, 16:30 UTC: V6 passes actual GPU cache capacity.**
+At 16:29:59 stock vLLM reports **640,287 tokens / 1.28x at 500k** with the
+unchanged 6 GiB cache budget. Resolved group sizes are
+`(4608, 4608, 4608, 4608, 16, 4608)`, scheduler LCM 4608. The native Triton
+backend remedy has now passed the real planner, not only the CPU fixture.
+Rank-0 model loading logs 123.878 seconds and 81.71 GiB before final cache/graphs;
+this is not final serving allocation. JIT warm-up is active. DFlash group warning
+persists, prefix smoke and API readiness remain pending. Production is paused
+under the V6 restoration watchdog; use its controller for current availability.
+
 **21 October 2026, 16:26 UTC: V6 native-Triton startup trial launched.**
 Both v8 images pass CPU installation/CLI checks. `stock-trial-v6` uses the same
 500k / 32-slot / 6-GiB / 6,919 / prefix-on / dense-head profile with explicit native
