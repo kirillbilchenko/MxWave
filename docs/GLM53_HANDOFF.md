@@ -1,5 +1,91 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 18:14:28 UTC: exact original production restored.**
+Both original container identities/configuration hashes match and the authenticated
+endpoint reports `glm-5.3-flash`, 500,000-token context. `complete_restored` means
+the diagnostic and restoration completed, not that speculation or quality passed.
+No further GPU experiment is queued. The two profile trials and native MTP CPU
+audit are retained in `out/glm53-package-v1/stock-profile-v1-v2-evidence.tar.gz`:
+**82 payloads / 4,472,098 bytes**, independently SHA-verified on Mac and Spark2,
+archive SHA256 `faa76f88fc593c3c192b9572953dad3668bcaf3d88eec10360830fee26655545`.
+The independent Mac review rechecks allocations, all six counter deltas, token-ID
+repeat failures, selector mismatches and both restoration receipts. Ruff, core
+mypy and the full 1,087-test suite / 1 skipped pass.
+
+**21 October 2026: selected-CT V2 completes all six requests; acceptance fails.**
+The native `DFlash2Speculator` and FP8 drafter load with shared compressed head
+and embedding, five proposals at C1 and the configured 5/5/3 policy. All six
+128-token code/chat/explanation requests complete. Each records 127 draft calls,
+635 proposals and **zero accepted tokens**: **0 / 3,810 accepted overall**.
+Every per-position counter is zero. Raw elapsed times are 9.933–10.445 seconds;
+these are smoke diagnostics, not a qualified speed comparison. Code and
+explanation repeats differ; chat repeats match. Existing target numerical
+failures remain open. No promotion or MTP GPU run is queued.
+
+The actual native-worker observer measures **172.495512 GiB across TP2** at
+startup, **0.750561 GiB above** the previous selected Modal CT profile. Both ranks
+confirm whole-module vocabulary sharing. Registered drafter-exclusive tensor
+storage is 1,269,951,584 bytes per rank, which excludes KV and graph pools.
+Functional generation and retained memory savings do not establish useful
+speculative execution. Diagnose feature taps, loaded draft parameters, KV and
+proposal/verification alignment before claiming DFlash2 works on stock.
+
+The CPU-only `stock-mtp-audit-v1` also finds a native compatibility blocker:
+all 1,756 checkpoint draft tensor headers exist, but **870 / 872** native draft
+quantization selectors disagree with the source policy, for both a fresh CT
+config and an inherited mapped target config. The stock draft class has no
+namespace mapper or fused aliases. Installed loader source still configures the
+provided CT object in place. The old namespace/policy isolation repair is relevant,
+but must be revalidated for this image and scoped to the draft; do not run an MTP
+GPU comparison with the known wrong policy or silently expand scale-compression
+coverage to its extra expert layer. Restoration status remains in the controller.
+
+**21 October 2026, 18:06:13 UTC: selected-CT profile V2 launched.**
+V1 reaches API readiness and measures **86.248634 / 86.246878 GiB**, or
+**172.495512 GiB across TP2** after drafter, KV and graphs. This is **0.750561 GiB
+more** than the historical selected Modal profile's 171.744951 GiB; it is not a
+new production-memory comparison. V1 then fails before client inference because
+our observer reads the legacy `runner.drafter` attribute instead of native
+`runner.speculator`. Exact original production is restored at **18:05:35 UTC**.
+The failure remains retained.
+
+V2 changes only that observer and adds a CPU regression check using the actual
+native runner/speculator/model classes. Both CPU preflights pass. Controller PID
+2204242 owns `stock-profile-v2`, plan SHA256
+`fcd5f0aa12b935f47771b1de2715eabdfab9b75e8671afe909022f4a5f2aad05`.
+The same independent 25-minute watchdog and exact-container restoration apply.
+No weights, kernel, gate or serving setting changes. Consult the live controller
+for availability; no speculative inference result is claimed at launch.
+
+User now requests **DFlash2 versus native MTP**. This supersedes the earlier MTP
+deferral, but does not qualify the old overlays on vLLM 0.32.0. A CPU-only audit
+checks the actual stock MTP selector/loader against the CT checkpoint's 1,756
+draft tensors before preparing a GPU comparison. Current DFlash2 policy remains
+**C1/C2: 5 proposed tokens; C3–C16: 3**. The running diagnostic exercises C1 only;
+configured lengths are not accepted-token counts or concurrency qualification.
+
+**21 October 2026, 17:58:20 UTC: selected-CT profile check launched.**
+Both CPU preflights pass. Controller PID 2135666 owns `stock-profile-v1`, plan
+SHA256 `147b5088945068cee5f18d967bb5a2199b98213222e30b7c21cf4379a6cec492`.
+The independent 1,500-second watchdog and exact original-container restoration
+are required. The reused compilation caches come from V7; no new image/kernel
+build is needed. Consult its controller for actual production availability.
+This collects memory and actual drafter counters on the previous selected 8k
+Modal configuration; it cannot clear the separate stock numerical failures or
+establish a production speed advantage. Local Ruff/core mypy/full pytest pass.
+
+**21 October 2026: preparing a matched selected-CT profile check.**
+User asks whether stock vLLM runs CT with its drafter and whether the recipe can
+match the previous CT. `stock-profile-v1` uses the same selected Modal FP8 weights,
+5/5/3 drafts, 8k context, 16 slots, 4,096 prefill, 6 GiB KV/rank, prefix off and
+compressed head plus embedding. The historical selected-Modal startup is
+**171.744951 GiB total**, not the earlier Inco-based 170.844 GiB. Native backend and
+missing old overlays remain explicit differences. See the frozen
+[profile comparison](GLM53_STOCK_CT_PROFILE.md). Six short development requests
+check actual speculative execution and memory; no performance or quality gate
+is relaxed. Production remains unchanged during CPU preparation; launch requires
+both CPU preflights, the independent 25-minute watchdog and exact restoration.
+
 **21 October 2026: memory answer, separated by what was measured.**
 
 | Measurement | Across both GPUs | Per GPU | Meaning |

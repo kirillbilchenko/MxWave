@@ -1,5 +1,23 @@
 # Native MTP: compatibility and C1 pilot
 
+**21 October 2026: comparison reopened at the user's request.**
+The requested next comparison is selected CT with Modal DFlash2 versus the same
+CT target with native MTP on official vLLM 0.32.0. The existing DFlash2 C1 check
+uses five proposals. Before another GPU experiment, `stock-mtp-audit-v1` checks
+the installed native MTP quantization selectors and source tensor coverage on
+CPU. Older namespace/loader bridges are historical evidence, not automatically
+valid on this newer runtime. No MTP inference, acceptance or speed result exists
+yet; the separate stock target repeatability failure remains open.
+
+The stock CPU audit completes without CUDA or a model allocation. All **1,756**
+draft tensor headers are present, but **870 of 872** draft selectors disagree
+with the source quantization policy, whether the CT object is fresh or inherited
+from the target. Native `Glm5NextMTP` has no namespace mapper or fused aliases.
+The installed loader still configures its CT policy object in place. Revalidate
+the namespace/fused-alias metadata and isolated draft policy before GPU loading;
+keep the extra draft expert layer outside the target's 42-layer compression
+scope. This is a compatibility failure, not an MTP speed or acceptance result.
+
 **18 October 08:24 UTC: MTP deferred by the user until compression has a working
 outcome.** The repaired `mtppilotv3` preparer/verifier is frozen around eighteen
 source checks and actual zero-rope geometry. Native CPU CLI/config/loader

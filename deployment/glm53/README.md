@@ -5,6 +5,12 @@ wheel installed through vLLM's plugin mechanism. No vLLM source files are replac
 The extension wraps version-pinned internal APIs and requires the verified bundle.
 
 **Status, 21 October 2026: GPU startup and generation work; qualification is incomplete.**
+The selected 8k Modal profile subsequently completes six C1 requests but accepts
+**zero of 3,810 DFlash2 proposals**. It allocates 172.496 GiB across TP2, about
+0.751 GiB above the previous selected CT profile. Speculative execution must be
+diagnosed before this recipe is recommended for performance. Native MTP also
+needs a CT namespace/quantization-policy repair before comparison.
+
 V6 starts at 500k context with 32 slots, 6 GiB KV per rank, a 6,919-token prefill
 budget, prefix caching enabled and a dense target head. It uses native
 `TRITON_ATTN` draft attention to avoid the default backend's small-page cache waste.

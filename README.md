@@ -1,5 +1,13 @@
 # MxWave
 
+**Selected CT stock-profile diagnostic, 21 October 2026.** The matched 8k Modal
+profile runs with compressed head/embedding at **172.496 GiB across TP2**, only
+**0.751 GiB above** the earlier selected CT profile. However, all six C1 requests
+accept **zero of 3,810 DFlash2 proposals** despite correctly proposing five per
+call. Stock speculative serving is not qualified. Native MTP also has 870/872
+quantization-selector mismatches in a CPU-only audit. Exact original 500k
+production is restored at 18:14:28 UTC. [Results](docs/GLM53_STOCK_CT_PROFILE.md).
+
 **GLM stock-vLLM checkpoint, 21 October 2026.** The official vLLM 0.32.0 image
 plus the installed MxWave plugin now reaches API readiness and generates responses
 at 500k context / 32 slots / 6 GiB KV per GPU / prefix caching on. Selecting native

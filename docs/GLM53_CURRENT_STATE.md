@@ -1,5 +1,20 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October: matched selected-CT stock profile runs, but DFlash acceptance fails.**
+The 8k / 16-slot / 6 GiB KV / compressed-vocabulary Modal profile allocates
+**172.495512 GiB across TP2**, **0.750561 GiB more** than the historical selected
+Modal CT profile (171.744951 GiB). This is not a fresh production-memory delta.
+All six C1 requests complete with five proposals per call, shared head/embedding
+and **0 accepted out of 3,810 proposals**. Stock startup is functional; useful
+speculative execution is not qualified. Code/explanation repeats also differ.
+V1's observer failure is retained; V2 fixes only that observer. See the
+[profile results](GLM53_STOCK_CT_PROFILE.md) and live restoration state in the
+[handoff](GLM53_HANDOFF.md). The CPU MTP audit finds 870/872 quantization-selector
+mismatches despite complete source weights, blocking an unmodified MTP comparison.
+Exact original 500k production is restored at **18:14:28 UTC**; no further GPU
+experiment is queued. All 82 retained evidence payloads independently verify on
+Mac and Spark2. Local Ruff, core mypy and full pytest pass.
+
 **GLM stock-vLLM checkpoint, 21 October 2026.** The official vLLM 0.32.0 image
 plus the installed MxWave plugin now reaches API readiness and generates responses
 at 500k context / 32 slots / 6 GiB KV per GPU / prefix caching on. Selecting native
