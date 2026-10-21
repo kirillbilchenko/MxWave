@@ -1,5 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 20:57 UTC:** the final reduced screen is running in
+`deployment-quick-v1` (controller 3571821, watchdog 3572508). The single deployed
+production repeat screen differs in both output IDs and top-20 log probabilities;
+it is not a full-KL measurement and does not clear CT's earlier failures. A0 has
+completed 3/4 cells. Both the frozen preparation and interrupted broad-run evidence
+verify on Mac, with copies on Spark2. [Live handoff](GLM53_HANDOFF.md).
+
 **21 October, 20:54 UTC: final scope reduced by the user.** Broad comparison stopped;
 exact production restored at **20:52:44 UTC**. Its 24 A0 cells and compatibility evidence
 are retained. Preparing one final screen: **C1/C8 short code/chat, three A/B pairs,

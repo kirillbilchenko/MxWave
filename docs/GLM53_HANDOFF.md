@@ -1,5 +1,45 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 21:04 UTC: first reduced A/B pair completes; preliminary trade-off.**
+All four cells complete without API errors. These are **one-pair observations**,
+not medians of the planned three pairs:
+
+| Short workload | Production A tok/s | Stock CT B tok/s | B vs A |
+|---|---:|---:|---:|
+| Code C1 | 51.04 | 40.13 | −21.4% |
+| Chat C1 | 44.73 | 35.11 | −21.5% |
+| Code C8 | 84.12 | 90.70 | +7.8% |
+| Chat C8 | 78.59 | 95.33 | +21.3% |
+
+Observed C8 running/waiting maxima are **6/2 for A**, **8/0 for B**, with the same
+6 GiB KV budget per rank. Peak cache occupancy is 90.5% versus 94.9%. Mean C8 TTFT
+is **4.757 → 1.861 s** for code and **5.072 → 1.518 s** for chat; production's two
+queued requests wait ~15–17 s before their first token. This is a whole-deployment
+capacity/draft-policy result, not an isolated compression gain. C1 TTFT is similar
+(code 0.523 → 0.512 s; chat 0.474 → 0.493 s). Remaining two pairs and both frozen
+300-question arms continue unchanged. Do not retune in response to this first pair.
+
+**21 October 2026, 20:57 UTC: final reduced screen is running.**
+`deployment-quick-v1` launched **20:55:09 UTC**, controller **3571821**, independent
+watchdog **3572508**, source **8515c36**. Plan SHA256
+`741338ee4edc0ea19684c2e700ed77e52bf8c5fe9fc22b3597b7f3b5130b0368`.
+The one production repeat screen completes: **output token IDs differ and top-20
+log probabilities differ** across the two cold 4,435-token requests under its
+deployed speculation policy. This demonstrates production repeat noise; it does
+not measure full KL or clear any CT failure. A0 has completed three of four cells.
+No candidate timing result is available at this checkpoint.
+
+All **26 preparation payloads** independently verify on Mac and Spark2; archive
+`deployment-quick-v1-preparation-evidence.tar.gz`, SHA256
+`6bcf762ea1d4c7284976364ef0c539dc6f0d485bb1cb016d6e5f57831c675f44`.
+All **86 interrupted broad-run payloads**, including 24 A0 cells and both-rank
+reports/logs, independently verify on Mac and are copied with identical archive hash
+to Spark2: `deployment-compare-v2-interrupted-evidence.tar.gz`, SHA256
+`ae7ad18f36bd74e3694dd307e200f07c5b307e534c242a00b9363f16256b8509`.
+Original broad inputs remain unchanged. The source bundle and deferred CPU-only
+sparse draft are also backed up on Spark2. Final shutdown waits for the reduced
+results, exact restoration and verified final backups.
+
 **21 October 2026, 20:54 UTC: user closes the scope; final reduced comparison being prepared.**
 The broad `deployment-compare-v2` is intentionally interrupted after compatibility
 and all **24 A0 timing cells**, before B0 timing. Its exact-production restoration
