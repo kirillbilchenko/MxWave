@@ -1,5 +1,37 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 12:05 UTC: short Modal pilot complete; production restored.**
+64 updates take **4m 20s**. Selected step 16 raises offline code prefix from
+4.1875 to 4.375 (+4.48%); chat/explanation prefixes are unchanged. The gain comes
+from one of eight code prompts, one anchor, so no native speed benefit is proven.
+All 84 requests/control checks and 878 million independent feature-bit comparisons
+pass. Native FP8 export changes only `fc.weight` and is not deployed. Original
+500k production is healthy; no GPU trial or further training queued, sealed test
+closed. [Full evidence, limitations and capture-concurrency audit](GLM53_HANDOFF.md).
+
+**21 October 2026, 11:53 UTC: Modal pilot capture completes; original production restoring.**
+All **84/84 requests** complete, including 64 train and 16 validation captures.
+Both before/capture/after controls have exact output tokens and speculative counters.
+The trial is stopped; original 500k containers are restarting under the restoration
+controller. Data export/independent bit audit and CPU training have not begun yet.
+No training benefit or serving gain is claimed. The captured run remains frozen;
+source commit `2d6ce3e` is backed up on Spark2. Capture uses C1; the installed API
+has request IDs and row boundaries needed for a future C2/C4 recorder, but that
+concurrent recorder is not implemented or qualified in this pilot.
+
+**21 October 2026, 11:40 UTC: bounded Modal capture running detached.**
+Launcher 3495096 / controller 3495097 started the frozen 84-request capture.
+Original production is **temporarily paused**; CT is loading normally. The watchdog
+outage deadline is **12:13:14 UTC**, followed by bounded restoration if needed.
+No training update yet. CPU continuation waits for successful capture, original
+500k restoration, all payload hashes, accepted-prefix export and independent
+NumPy verification. Training is capped at 64 updates / 20 minutes. Source commit
+`2d6ce3e` is backed up in Spark2 Git. Live controller:
+`full-model-v1/drafter-modal-pilot-v1/controller.json`; local continuation:
+`out/drafter-modal-pilot-v1/pilot-status.json`. The capture survives laptop
+disconnection; the queued CPU pilot currently runs from the Mac. No sealed test
+or automatic promotion. This supersedes the preceding prelaunch status.
+
 **21 October 2026, 11:37 UTC: bounded Modal pilot preparing.** The user authorizes a short
 64-train/16-validation, FC-only pilot; full training remains held. Both image CPU
 checks and Modal round-trip/mask/gradient checks pass. Production is still online;

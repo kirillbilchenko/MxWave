@@ -1,5 +1,15 @@
 # MxWave
 
+**21 October 2026, 12:05 UTC: short Modal pilot complete; production restored.**
+64 updates take **4m 20s**. Selected step 16 raises offline code prefix from
+4.1875 to 4.375 (+4.48%); chat/explanation prefixes are unchanged. The gain comes
+from one of eight code prompts, one anchor, so no native speed benefit is proven.
+All 84 requests/control checks and 878 million independent feature-bit comparisons
+pass. Native FP8 export changes only `fc.weight` and is not deployed. Original
+500k production is healthy; no GPU trial or further training queued, sealed test
+closed. [Full evidence, limitations and capture-concurrency audit](docs/GLM53_HANDOFF.md).
+
+
 **21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
 Original production restores healthy at **08:32:34 UTC**, with its exact original
 container/configuration identities and **500,000-token context**. All 240 measured

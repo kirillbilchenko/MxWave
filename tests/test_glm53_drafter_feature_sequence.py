@@ -10,6 +10,7 @@ import pytest
 import torch
 from safetensors.torch import load_file, save_file
 
+from integrations.glm53_mxfp4.audit_drafter_feature_export_numpy import audit
 from integrations.glm53_mxfp4.drafter_capture_pairing import compare_ranks
 from integrations.glm53_mxfp4.drafter_feature_sequence import LAYERS, AcceptedHistory
 from integrations.glm53_mxfp4.drafter_fp8_roundtrip import digest
@@ -72,6 +73,48 @@ def test_modal_features_keep_all_six_taps_in_checkpoint_order() -> None:
         AcceptedHistory((23, 23))
     with pytest.raises(KeyError):
         AcceptedHistory(layers).append(*frame(0))
+
+
+def test_independent_numpy_audit_checks_modal_sixth_tap(tmp_path: Path) -> None:
+    layers = [23, 27, 31, 35, 39, 43]
+    case = {"id": "modal", "prompt_ids": [10, 11, 12]}
+    (tmp_path / "plan.json").write_text(json.dumps({
+        "calibration_cases": [case], "target_feature_layers": layers,
+    }))
+    (tmp_path / "ct-measurement.json").write_text(json.dumps({"cases": [
+        {"case": "modal", "policy": "capture", "result": {"token_ids": [20, 21]}},
+    ]}))
+    export = tmp_path / "accepted"
+    export.mkdir()
+    for rank in (0, 1):
+        directory = tmp_path / f"ct-r{rank}"
+        directory.mkdir()
+        for index in (0, 1):
+            data, _ = frame(index)
+            data = {k: v for k, v in data.items() if not k.startswith("aux_layer_")}
+            data.update({f"aux_layer_{layer}": torch.full(
+                (len(data["target_input_ids"]), 4096), layer, dtype=torch.bfloat16,
+            ) for layer in layers})
+            save_file(data, directory / f"context-modal-{index:04d}-r{rank}.safetensors")
+    data = {"input_ids": torch.tensor([10, 11, 12, 20, 21]), "target_features": torch.cat([
+        torch.full((4, 4096), layer, dtype=torch.bfloat16) for layer in layers
+    ], dim=1)}
+    path = export / "modal.safetensors"
+    save_file(data, path)
+
+    def manifest() -> None:
+        (export / "manifest.json").write_text(json.dumps({"rows": [
+            {"id": "modal", "path": path.name, "sha256": digest(path)},
+        ]}))
+
+    manifest()
+    result = audit(tmp_path, export, tmp_path / "pass.json")
+    assert result["bf16_elements_compared"] == 2 * 4 * 6 * 4096
+    data["target_features"][0, -1] += 1
+    save_file(data, path)
+    manifest()
+    with pytest.raises(ValueError, match="feature bits"):
+        audit(tmp_path, export, tmp_path / "fail.json")
 
 
 @pytest.mark.parametrize("fault", ["position", "accepted_token", "anchor", "rejected_count"])

@@ -84,7 +84,9 @@ def patch_native(
     }
 
 
-def export_selected(source: Path, run: Path, output: Path) -> dict[str, Any]:
+def export_selected(
+    source: Path, run: Path, output: Path, *, expected_sha256: str = SOURCE_SHA256,
+) -> dict[str, Any]:
     """Require the completed frozen offline screen before writing a native candidate."""
     report = json.loads((run / "report.json").read_bytes())
     if (report["status"] != "complete" or not report.get("offline_screen_pass")
@@ -98,7 +100,7 @@ def export_selected(source: Path, run: Path, output: Path) -> dict[str, Any]:
     patch = run / selected["path"]
     if digest(patch) != selected["sha256"]:
         raise ValueError("Selected checkpoint hash differs")
-    result = patch_native(source, patch, output)
+    result = patch_native(source, patch, output, expected_sha256=expected_sha256)
     result.update(
         source_code_sha256=digest(Path(__file__)), run_report_sha256=digest(run / "report.json"),
         protocol_sha256=report["protocol_sha256"], selected_step=selected["step"],

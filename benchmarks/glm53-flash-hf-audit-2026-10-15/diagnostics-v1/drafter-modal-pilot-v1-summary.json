@@ -1,0 +1,105 @@
+{
+  "status": "complete_offline_reviewed",
+  "training_seconds": 259.9019959999714,
+  "updates": 64,
+  "train_prompts": 64,
+  "validation_prompts": 16,
+  "selected_step": 16,
+  "baseline": {
+    "chat": {
+      "prompts": 4,
+      "mean_prefix": 2.4375,
+      "unary_ce": 3.3343952894210815,
+      "coverage": 0.8125000149011612
+    },
+    "code": {
+      "prompts": 8,
+      "mean_prefix": 4.1875,
+      "unary_ce": 1.5605098456144333,
+      "coverage": 0.9151785746216774
+    },
+    "explanation": {
+      "prompts": 4,
+      "mean_prefix": 3.5,
+      "unary_ce": 2.69062203168869,
+      "coverage": 0.7946428507566452
+    }
+  },
+  "selected": {
+    "chat": {
+      "prompts": 4,
+      "mean_prefix": 2.4375,
+      "unary_ce": 3.3357698917388916,
+      "coverage": 0.8125000149011612
+    },
+    "code": {
+      "prompts": 8,
+      "mean_prefix": 4.375,
+      "unary_ce": 1.5565635338425636,
+      "coverage": 0.9151785746216774
+    },
+    "explanation": {
+      "prompts": 4,
+      "mean_prefix": 3.5,
+      "unary_ce": 2.685560941696167,
+      "coverage": 0.7946428507566452
+    }
+  },
+  "code_prefix_relative_gain_pct": 4.477611940298498,
+  "changed_validation_prefixes": [
+    {
+      "id": "opencoder-evol-56582",
+      "domain": "code",
+      "before": [
+        4,
+        7,
+        1,
+        5
+      ],
+      "after": [
+        4,
+        7,
+        7,
+        5
+      ]
+    }
+  ],
+  "five_position_truncation": {
+    "0": {
+      "code": 3.5625,
+      "chat": 2.1875,
+      "explanation": 3.1875
+    },
+    "16": {
+      "code": 3.6875,
+      "chat": 2.1875,
+      "explanation": 3.1875
+    }
+  },
+  "native_export": {
+    "status": "verified",
+    "original_sha256": "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46",
+    "patch_sha256": "fe066544b4b5851a8232a0115d6229052f5f740b50d36559ad5b001f4f0f60c9",
+    "exported_sha256": "6dca2af520c6df5105eca783a07d1b170ea16ddbcefe31aba6ece54cec741925",
+    "config_bytes_identical": true,
+    "only_changed_tensor": "fc.weight",
+    "relative_l2": 9.134130010712842e-05,
+    "tensor_count": 138,
+    "native_reload_performed": false,
+    "source_code_sha256": "f4bad3c1589eb8f3c24c382c95be8111ec6e4bc89ab4ef945bbd763ef729bcba",
+    "run_report_sha256": "3f52129709ca6b8611f53a83ced34c145196fe0c65a41e337beb7d6767c19823",
+    "protocol_sha256": "de87332723d6d5f51deb5f6cc31a99748b9c77675fb0fded996d396b5d6b6e0b",
+    "selected_step": 16,
+    "sealed_test_opened": false,
+    "speed_gain_proven": false
+  },
+  "limits": [
+    "Offline teacher-forced prefixes on four frozen anchors per validation prompt, not native acceptance or throughput.",
+    "Code gain comes from one of eight code prompts, one of 32 code anchors; no broad speed claim.",
+    "Five-position truncation is exploratory, not a native five-draft execution or changed selection rule.",
+    "Native CPU/FP8 arithmetic differs; output-invariance issue remains open.",
+    "No full training, sealed test, native serving trial or automatic promotion."
+  ],
+  "production_restored": true,
+  "sealed_test_opened": false
+}

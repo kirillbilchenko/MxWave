@@ -1,5 +1,101 @@
 # CT drafter: verified features and context-projection pilot
 
+**21 October 2026, 12:05 UTC: small Modal training pilot complete; original production restored.**
+The user-authorized bounded run completes **64 updates on 64 training prompts** in
+**259.902 seconds (4m 20s)**, with 16 development-validation prompts and no skipped
+examples. All 84 capture/control requests completed. Original production restored
+at **11:55:08 UTC**, with original container identities and **500,000 context**;
+a fresh independent health/identity/context check passes at **12:04:14 UTC**.
+No experiment/training is running, no full 4,000-prompt run or native candidate
+serving trial is queued, no checkpoint is promoted, and sealed test stays closed.
+
+Offline mean matching prefix, **seven proposed tokens**, four fixed CT-history
+anchors per validation prompt (this is not native acceptance or end-to-end speed):
+
+| Domain | Validation prompts | Pretrained Modal | Selected step 16 | Change |
+| --- | ---: | ---: | ---: | ---: |
+| Code | 8 | 4.1875 | 4.3750 | +4.4776% |
+| Chat | 4 | 2.4375 | 2.4375 | unchanged |
+| Explanation | 4 | 3.5000 | 3.5000 | unchanged |
+
+**The code gain comes from one prompt and one of 32 code anchors.**
+`opencoder-evol-56582` changes prefixes `[4,7,1,5]` → `[4,7,7,5]`.
+Steps 32 and 64 give the same prefix metrics; the frozen lower-code-CE tie-break
+selects step 16. Later unary CE does not improve consistently. Exploratory capping
+of these seven-position prefixes at five gives code 3.5625 → 3.6875 (+3.51%);
+this is not an actual five-draft forward or a changed checkpoint-selection rule.
+This is a modest, localized offline signal, insufficient to justify full training
+or claim the ≥8% native code-throughput goal. A matched native five-draft comparison
+would still be required before deployment or broader training; known target
+output-invariance limits remain open.
+
+All **10,569 capture payloads** independently verify on Mac and Spark2. Capture
+archive **3,267,567,485 bytes**, SHA256:
+`a42e20dd40deb674ac1cb0be5ee5a8e0b26b22e26ae28316bfff03efee62d663`.
+Accepted export: **80 prompts / 17,871 feature rows / 878,726,159 bytes**. A separate
+NumPy audit compares **878,395,392 BF16 elements** across both native rank traces,
+with zero differences. Independent training review recomputes 204 acceptance
+fields, 1,792 proposal-token comparisons, all three checkpoint distances and the
+selected step. All original training-model parameters remain unchanged; only the
+FP32 master and separately exported BF16 `fc.weight` are adapted.
+
+The native FP8 candidate is exported but **not loaded or qualified**. All **137
+other tensor payloads**, all FP8 scales and configuration bytes remain identical;
+checkpoint serialized size is unchanged. Selected patch SHA256:
+`fe066544b4b5851a8232a0115d6229052f5f740b50d36559ad5b001f4f0f60c9`.
+Export SHA256:
+`6dca2af520c6df5105eca783a07d1b170ea16ddbcefe31aba6ece54cec741925`.
+Context relative L2 is 0.0000913413; 3,910,948 BF16 entries change. Target weights,
+compression policies, drafter architecture and frozen backbone/selector do not
+change. Native acceptance, speed, quality and GPU memory have not been remeasured.
+
+**Capture acceleration audit:** request execution totals 290.53 seconds, while
+first-request start to last-request end is 490.13 seconds. Gaps total **199.60
+seconds**, including **166 seconds of programmed idle-confirmation sleeps**. The
+next cheap experiment is shorter idle confirmations with the same repeat controls,
+before C2/C4 request-keyed collection. Neither faster policy was run. Current
+recorder uses one marker and asserts C1; installed vLLM exposes request IDs, slot
+maps and row boundaries needed to replace it. Both Sparks form one TP=2 target,
+so independent target replicas are not available on these two GPUs. Bulk evidence
+transfer is implemented and replaces serial per-file SCP; no measured speedup
+factor is claimed for that change.
+
+Local evidence: `out/drafter-modal-pilot-v1`; native candidate:
+`out/drafter-modal-pilot-v1/native-step16`. Capture and its independent backup:
+`full-model-v1/drafter-modal-pilot-v1` / `drafter-modal-pilot-v1-retained-backup`.
+Selected native candidate is independently verified on Spark2 at
+`full-model-v1/drafter-modal-pilot-v1-step16` (only FC changed, 137 payloads and
+config exact). All three checkpoints and 28 training-evidence payloads also verify
+in the Spark2 retained backup: 470,203,322-byte archive, SHA256
+`69704329ad9cebc598a37ac115d53637d3900f4d80fe5a79c2e727f2ca662693`.
+Full pytest, Ruff and strict core mypy pass. Preserve the earlier failed and neutral
+runs. **Recommendation: do not restart full training on this evidence.** Keep this
+small candidate for a matched native check; serving-overhead profiling remains
+another independent, promising route.
+
+**21 October 2026, 11:53 UTC: Modal pilot capture completes; original production restoring.**
+All **84/84 requests** complete, including 64 train and 16 validation captures.
+Both before/capture/after controls have exact output tokens and speculative counters.
+The trial is stopped; original 500k containers are restarting under the restoration
+controller. Data export/independent bit audit and CPU training have not begun yet.
+No training benefit or serving gain is claimed. The captured run remains frozen;
+source commit `2d6ce3e` is backed up on Spark2. Capture uses C1; the installed API
+has request IDs and row boundaries needed for a future C2/C4 recorder, but that
+concurrent recorder is not implemented or qualified in this pilot.
+
+**21 October 2026, 11:40 UTC: bounded Modal capture running detached.**
+Launcher 3495096 / controller 3495097 started the frozen 84-request capture.
+Original production is **temporarily paused**; CT is loading normally. The watchdog
+outage deadline is **12:13:14 UTC**, followed by bounded restoration if needed.
+No training update yet. CPU continuation waits for successful capture, original
+500k restoration, all payload hashes, accepted-prefix export and independent
+NumPy verification. Training is capped at 64 updates / 20 minutes. Source commit
+`2d6ce3e` is backed up in Spark2 Git. Live controller:
+`full-model-v1/drafter-modal-pilot-v1/controller.json`; local continuation:
+`out/drafter-modal-pilot-v1/pilot-status.json`. The capture survives laptop
+disconnection; the queued CPU pilot currently runs from the Mac. No sealed test
+or automatic promotion. This supersedes the preceding prelaunch status.
+
 **21 October 2026, 11:37 UTC: short Modal-specific training pilot authorized; CPU checks pass.**
 The user requests a small training run and asks about parallel capture. Full training
 remains out of scope. Freeze **64 training / 16 validation prompts**, 128 output tokens,
