@@ -1,6 +1,33 @@
 # GLM compression experiment handoff
 
 <!-- CORRECTED_CAPTURE_BEGIN -->
+**21 October 2026, 04:02 UTC: full capture running; first 64-prompt chunk independently verified.**
+Both ranks export identical 791,123,554-byte accepted datasets (19,306 feature
+rows). Independent NumPy audits compare **790,773,760 BF16 elements in total,
+zero differences**. Host checks rehash all 64 exported payloads on each node.
+Both rank receipts and the paired receipt agree. Each node releases 1,944 raw
+staging files (1,643,602,712 bytes) only after verification; accepted exports and
+all raw metadata remain. Later prompts are now capturing. First repeat control
+passes exact tokens and counters. No controller error has appeared.
+
+The actual full-run startup independently verifies both qualified ordering
+policies, the existing expert policy through 16 target rows and all 39 startup
+specializations on both GPUs. The first chunk takes **386.3 seconds (6.44 minutes)**,
+including capture/export/audit. Capture estimate is **7–8 hours**, then **4–5 hours
+CPU training**; later domain mix can change it. Production remains temporarily
+paused during GPU capture and automatically restores before CPU training.
+
+Launch checkpoint `90f05d2` is verified in Spark2's Git backup; bundle SHA
+`421860ab67eb7839f9350ea19204da44d805c0c412c85259c27b3b65c99f70f7`.
+All 15 frozen continuation files also independently verify on Spark2; archive SHA
+`0e73bf33cd72d0d230cdc2b3edf80cce0b078317daf591d9479d3c3a15fc85b8`,
+at `drafter-full-capture-v1/continuation-sources-v1.tar.gz`.
+First-chunk and startup reviews are retained in `out/drafter-full-capture-v1/runtime/`
+and `benchmarks/.../diagnostics-v1/`. The CPU continuation remains waiting for
+complete verified capture/restoration. Native acceptance and speed remain unproven;
+sealed test closed.
+
+
 **21 October 2026, 03:49 UTC: fresh smoke passes; full 4,000/200 capture launched.**
 All 12 requests complete, including exact before/capture/after tokens and
 speculative counters for the 3,973-token train and 2,248-token validation controls.
@@ -52,8 +79,8 @@ against the frozen corpus and run up to 4,000 updates of **fc.weight only**.
 Protocol SHA `43d2261165f800e9e54e553a000495d84a36777ba73b21d284bee5992c2d11ed`.
 It conditionally exports an offline-selected projection into the original native
 FP8 checkpoint and verifies result retention on Spark2. It never switches serving.
-Approximate planning budget remains 8 hours GPU capture plus 4–5 hours CPU training;
-the first full chunk will refine capture time. The old pilot remains speed-neutral;
+First full chunk takes 386.3 seconds including export and audit: plan roughly
+7–8 hours GPU capture plus 4–5 hours CPU training, subject to later prompt mix. The old pilot remains speed-neutral;
 no new native acceptance or serving gain is claimed.
 <!-- CORRECTED_CAPTURE_END -->
 

@@ -1,11 +1,11 @@
 # CT drafter: verified features and context-projection pilot
 
-**21 October 2026, 03:49 UTC: full 4,000/200 feature capture launched after smoke passes.**
-All 1,203 smoke payloads verify on Mac/Spark2; both GPUs export identical features.
-NumPy compares 305.9 million BF16 elements with zero differences. Production is
-temporarily paused under the restoration watchdog. The conditional CPU training
-continuation is running and waits for verified capture plus restored production.
-No new drafter speed gain is claimed; the sealed test remains closed.
+**21 October 2026, 04:02 UTC: full 4,000/200 capture is running; first 64 prompts pass.**
+Both GPUs export identical accepted data; audits compare 790.8 million BF16
+elements with zero differences, and verified staging cleanup succeeds on both.
+Production is temporarily paused under its restoration watchdog. Plan roughly
+7–8 hours capture, then 4–5 hours conditional CPU training after production restores.
+Handoff and source/results backups are current; no drafter speed gain is claimed.
 [Current handoff](GLM53_HANDOFF.md).
 
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**
