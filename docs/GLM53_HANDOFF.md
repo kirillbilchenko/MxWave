@@ -1,5 +1,23 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 20:28 UTC: sparse-indexer source audit; active comparison unchanged.**
+The exact official-image Python sources match upstream revision `5df63a7203`.
+Prefill atomic emission explains order changes; cutoff ties can change membership,
+but membership changes remain unmeasured in our current stock workload. Its trace
+retains only whole-tensor hashes and last-row bytes. The older all-row diagnostic
+already found **zero membership changes in all twelve pairs**, despite widespread
+reordering and identical consumed scores. Do not infer ties from large KL alone.
+
+GB10 automatic decode dispatch is **persistent**, not DeepSelect. Upstream
+**#55122 already contains a GLM/GB10 report and prefill/decode tie reproducers**;
+#50365 concerns a different remapping helper. The batch-invariance limitation is
+also discussed in #57815. No duplicate issue or GPU fix is launched.
+The [source audit](GLM53_STOCK_SPARSE_INDEXER_AUDIT.md) records source hashes,
+prior-art links, evidence limits and the bounded all-row follow-up.
+At 20:28, `timing-A-0` has finished **5/24 cells**, running `code-long-c4`.
+Frozen images, workload, quality gates and restoration controls are unchanged;
+both full GSM8K arms remain scheduled after timing.
+
 **21 October 2026, 20:23 UTC: corrected 500k serving works; comparison advances.**
 `compatibility-B` completes and the controller advances to **`timing-A-0`**.
 The candidate retains 500k context, 32 slots, 6 GiB KV/rank, 6,919 prefill, prefix

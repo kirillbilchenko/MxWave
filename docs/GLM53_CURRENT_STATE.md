@@ -1,5 +1,11 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 20:28 UTC:** the read-only [sparse-indexer audit](GLM53_STOCK_SPARSE_INDEXER_AUDIT.md)
+confirms the ordering mechanism, corrects the GB10 decode dispatch to persistent,
+and identifies existing upstream GLM cutoff-tie evidence in #55122. Membership
+changes in our current stock workload remain untested. The frozen comparison
+continues unchanged: A0 has completed 5/24 cells; both GSM8K arms remain scheduled.
+
 **21 October, 20:23 UTC:** corrected stock CT starts at 500k with prefix caching
 and FP8 draft KV, accepts **22/60 code and 21/50 chat proposals** in two short probes,
 and allocates **87.20221 / 87.20218 GiB** after initialization. Actual prefix reuse
