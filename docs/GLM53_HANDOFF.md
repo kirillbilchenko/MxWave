@@ -1,5 +1,66 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 21:30 UTC: all timing complete; only the two quality screens remain.**
+Three interleaved A/B pairs, short real code/chat prompts, 256 outputs, seed 42,
+per-cell warm-up, controlled cold-prefix salts. **All 24 measured cells and their
+warm-ups complete without API errors.** Every trial is retained. Official vLLM
+0.32.0 plus the packaged plugin is operational; vLLM source is unchanged.
+
+| Workload | Production median tok/s [range] | CT median tok/s [range] | CT change |
+|---|---:|---:|---:|
+| Code C1 | 51.04 [50.24–52.71] | 39.95 [38.97–40.13] | −21.72% |
+| Chat C1 | 44.73 [38.66–45.73] | 35.11 [31.27–35.14] | −21.51% |
+| Code C8 | 83.29 [81.67–84.12] | 95.85 [90.70–96.17] | +15.08% |
+| Chat C8 | 78.59 [78.10–79.37] | 95.33 [94.20–95.38] | +21.31% |
+
+| Workload | Mean TTFT A → B | p95 TTFT A → B | Mean completion latency A → B |
+|---|---:|---:|---:|
+| Code C1 | 0.496 → 0.521 s | 0.527 → 0.529 s | 4.989 → 6.451 s |
+| Chat C1 | 0.447 → 0.502 s | 0.474 → 0.509 s | 5.980 → 7.587 s |
+| Code C8 | 4.774 → 1.643 s | 16.358 → 2.064 s | 18.214 → 20.143 s |
+| Chat C8 | 4.988 → 1.641 s | 16.758 → 2.076 s | 19.160 → 20.164 s |
+
+At C8, A runs **six and queues two**, B runs **eight with no observed queue**.
+Both use 6 GiB KV per rank. This helps B's aggregate throughput, TTFT and batch
+completion tail, while sharing resources across eight makes its **mean individual
+completion latency worse**. Do not simplify this to a universal latency win.
+The model, draft policy and runtime optimizations differ; no causal compression-only
+speed claim follows. Several observed ranges exceed 2%; no earlier repeat or quality
+gate is declared passed. The single production repeat also differs, as recorded below.
+
+Accepted/proposed totals across three measured trials: code C1 A **580/1,351**,
+B **569/1,010**; chat C1 A **495/1,918**, B **517/1,255**; code C8 A **4,291/13,195**,
+B **4,209/5,907**; chat C8 A **3,911/15,659**, B **4,101/6,230**. Shorter draft widths
+increase acceptance percentages without necessarily reducing verification calls or
+wall time. Per-position accepted counts, native draft-call counts (not measured
+target graph launches), every raw response, queue/KV samples and telemetry are retained.
+
+All three B starts reproduce exact post-init allocation **93,632,660,480 /
+93,632,627,712 bytes** (**87.202210 / 87.202180 GiB**, **174.404390 GiB TP2**).
+The startup receipts retain the **6.941 GiB TP2 lossless scale/embedding saving**
+after expert scratch space. This is not a fresh total-allocation delta versus A;
+the historical 14.877 GiB result used a different profile. Keep the lossy KDA
+conversion separate from lossless packing and from whole-deployment allocation.
+
+All **104 timing evidence payloads** independently verify on Mac; the archive also
+has an identical verified hash on Spark2. `deployment-quick-v1-timing-evidence.tar.gz`,
+SHA256 `12c9aa411d81af6120f5734514abbdd40df5f7ed4c09d0667e4f90b78ae5d097`.
+An independent Mac review rechecks frozen input hashes and recomputes the complete
+timing table from raw results. **GSM8K A is loading; neither 300-question arm has a
+score yet.** No extra runs are added. After quality: exact restoration, final
+report/source/evidence backups, then the user-requested poweroff of both Sparks.
+
+**21 October 2026, 21:17 UTC: two of three pairs complete; final pair loading.**
+No stage or API errors. Pair 1 (second pair) A/B tok/s: code C1 **52.71/38.97**,
+chat C1 **45.73/31.27**, code C8 **81.67/95.85**, chat C8 **79.37/95.38**.
+The C1 disadvantage and C8 advantage repeat, but C1 chat in B varies substantially;
+retain ranges and do not claim the old 2% repeat gate passed. First-pair timed
+telemetry shows P0 throughout sampled windows, SM clocks **2.463–2.509 GHz**,
+temperatures **61–71°C**, and no active throttle reasons. Sampling is sparse,
+not a proof that every instant was unthrottled. First-pair raw results and telemetry
+are additionally copied to Mac and independently recomputed there. Quality has
+not started. No extra trials, diagnosis or tuning are added.
+
 **21 October 2026, 21:04 UTC: first reduced A/B pair completes; preliminary trade-off.**
 All four cells complete without API errors. These are **one-pair observations**,
 not medians of the planned three pairs:

@@ -1,5 +1,29 @@
 # MxWave
 
+**21 October, 21:30 UTC: stock-vLLM deployment timing is complete.** Official
+vLLM 0.32.0 plus the MxWave plugin runs the selected CT profile at 500k configured
+context. Three interleaved pairs, short prompts, 256 output tokens, two DGX Sparks
+(SM121/TP2); values are median end-to-end output tok/s with every trial retained:
+
+| Workload | Production ModelOpt/Inco | CT MXFP4 + MXFP8 KDA / Modal | CT change |
+|---|---:|---:|---:|
+| Code C1 | 51.04 | 39.95 | −21.72% |
+| Chat C1 | 44.73 | 35.11 | −21.51% |
+| Code C8 | 83.29 | 95.85 | +15.08% |
+| Chat C8 | 78.59 | 95.33 | +21.31% |
+
+These compare complete deployments with different quantization, draft policy and
+runtime optimizations, not isolated lossless compression. C8 mean TTFT falls
+~4.8–5.0 → 1.64 s, but mean completion latency rises ~1–2 s as CT runs eight
+requests together instead of six plus two queued. All measured cells are error-free;
+several repeat ranges exceed 2%, so earlier qualification gates remain open/failed.
+The two 300-question speculation-off GSM8K screens are next; PPL/SQNR are not part
+of this screen. No promotion or further tuning. After reporting and verified backups,
+both Sparks will be powered off at the user's request.
+[Ranges, latency, memory and evidence](docs/GLM53_HANDOFF.md) ·
+[Working stock-vLLM recipe](deployment/glm53/README.md).
+**Earlier dated entries below are historical, not the current execution plan.**
+
 **21 October, 20:23 UTC:** the corrected packaged recipe starts at **500k context**
 with prefix caching and useful DFlash acceptance; allocation is **87.20 GiB/GPU**.
 Repeated-prefix output identity still fails. The full production-versus-CT timing

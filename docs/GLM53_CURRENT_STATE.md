@@ -1,5 +1,24 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 21:30 UTC: final speed screen complete.** Three A/B pairs show stock
+CT **−21.7% code / −21.5% chat at C1**, **+15.1% code / +21.3% chat at C8**, using
+median total output tok/s. At C8, mean TTFT improves ~4.8–5.0 → 1.64 s because CT
+runs all eight while production runs six and queues two. Mean per-request completion
+latency nevertheless increases by ~1–2 s. All timing cells are error-free; ranges,
+configuration differences and earlier failures remain explicit. This is not a
+compression-only speed comparison or a universal replacement win.
+The 104 timing payloads verify on Mac and have an identical archive on Spark2.
+Both 300-question speculation-off quality screens remain pending/loading.
+[Complete timing, memory and acceptance tables](GLM53_HANDOFF.md).
+
+**21 October, 21:17 UTC:** two final-screen pairs are complete without API errors;
+the last pair is loading. Both pairs show CT slower at C1 and faster at C8.
+At C8, CT runs eight requests while production runs six and queues two under the
+same 6 GiB KV budget. This is a deployment/drafter-policy comparison, not a pure
+compression attribution. C1 CT chat varies between 31.3 and 35.1 tok/s, so no
+repeatability gate is cleared. Both 300-question quality arms remain pending.
+[Exact preliminary values and retained scope](GLM53_HANDOFF.md).
+
 **21 October, 20:57 UTC:** the final reduced screen is running in
 `deployment-quick-v1` (controller 3571821, watchdog 3572508). The single deployed
 production repeat screen differs in both output IDs and top-20 log probabilities;
