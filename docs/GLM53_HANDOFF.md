@@ -1,5 +1,27 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 14:30 UTC: first controlled upstream GPU check found an API gap; production restored.**
+`stock-trial-v1` finished `failed_restored` at 14:28:16 UTC. Both original container
+identities and the authenticated 500k endpoint are verified. Full-model candidate
+servers never started. Expert scale decoding, BF16 fragments and raw-versus-packed
+MoE GEMMs/graph replays at M=1/6/12/16/48 passed before the MXFP8 component raised
+`AttributeError: layer.workspace`. The old failure report retains only the error;
+the completed checks are inferred from its sequential control flow, not a full pass.
+
+Upstream 0.32's repacker no longer creates per-layer Marlin workspaces. The adapter
+now passes `None` to the official consumer, which obtains stream/ubatch locks from
+vLLM's workspace manager. No upstream files or rounding policies change. GPU checks
+now retain completed stages on failure and exercise MXFP8 eager and graph execution
+at M=4/8/16/48. Local checks pass: 1,083 tests / 1 skipped, Ruff, strict core mypy.
+The first local pytest invocation used the main checkout's installed import path
+and failed collection; rerunning with `PYTHONPATH=.` tests this worktree correctly.
+
+Corrected wheel: 237,739 bytes, SHA256
+`694de3bbd0ab2c47b248ace66ecf991e13dc02d2575c293a7644083c53416047`.
+Images/CPU checks `vllm032-sm121-v4` are rebuilding on both nodes. The next bounded
+retry is `stock-trial-v2`, retaining all earlier failures; capacity and prefix-cache
+requirements remain unchanged. Stock vLLM full-model serving is still unqualified.
+
 **21 October 2026, 14:24 UTC: user confirms stock vLLM as the default recipe; GPU startup preflight prepared.**
 The deployment target is the **official vLLM 0.32.0 ARM64 image plus the installed
 MxWave extension**, with no modified vLLM files, old `/overlay` dependencies or

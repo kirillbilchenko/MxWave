@@ -85,6 +85,24 @@ def main() -> None:
             raise AssertionError(f"Unsupported call accepted: {key}")
     assert len(launches) == 2, "Rejected calls must not enter native dispatch"
 
+    # The 0.32 repacker leaves no layer.workspace; the official op owns its locks.
+    linear_name = "vllm.model_executor.layers.linear"
+    linear = ModuleType(linear_name)
+    linear.UnquantizedLinearMethod = type("UnquantizedLinearMethod", (), {})
+    sys.modules[linear_name] = linear
+    fp8_name = "vllm.model_executor.layers.quantization.utils.marlin_utils_fp8"
+    fp8 = ModuleType(fp8_name)
+    forwarded = []
+    fp8.apply_mxfp8_marlin_linear = lambda **kw: forwarded.append(kw) or output
+    sys.modules[fp8_name] = fp8
+    from mxwave_glm53._runtime.kda_mxfp8_runtime import method_type
+
+    layer = SimpleNamespace(weight=weight, weight_scale=scale,
+                            output_size_per_partition=128, input_size_per_partition=128)
+    assert method_type()().apply(layer, x) is output
+    assert forwarded[0]["workspace"] is None
+    assert forwarded[0]["weight"] is weight and forwarded[0]["weight_scale"] is scale
+
 
 if __name__ == "__main__":
     main()

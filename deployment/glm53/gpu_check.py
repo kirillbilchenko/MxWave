@@ -9,16 +9,17 @@ import time
 from pathlib import Path
 
 
-def check(bundle: Path) -> dict:
+def check(bundle: Path, report: dict) -> dict:
     """Verify native exact decoding, GEMM calls and graph replay on SM121."""
     import torch
 
     from mxwave_glm53.cli import doctor
 
-    report = {"started_epoch": time.time(), "scope": "synthetic GPU components only"}
+    report["stage"] = "installation"
     installation = doctor(bundle, gpu=True)
     if installation["status"] != "passed":
         raise RuntimeError(installation)
+    report["installation"] = installation
     from vllm import _custom_ops as ops
     from vllm.model_executor.layers.quantization.utils.marlin_utils_fp8 import (
         prepare_mxfp8_layer_for_marlin,
@@ -33,6 +34,7 @@ def check(bundle: Path) -> dict:
     generator = torch.Generator(device=device).manual_seed(42)
     raw = NativeMoe(bundle / "native/libmxwave_moe_raw.so")
     compressed = NativeMoe(bundle / "native/libmxwave_moe_sparse.so")
+    report["stage"] = "expert_scale_decode"
     # Include non-palette exceptions and a range crossing the nibble-base boundary.
     bits = torch.full((2, 8, 128), 125, dtype=torch.uint8, device=device)
     bits.reshape(-1)[::7] = 126
@@ -47,9 +49,11 @@ def check(bundle: Path) -> dict:
     bf16_bits = (reordered << 7).to(torch.int16).contiguous().view(torch.uint8)
     if not torch.equal(compressed.decode_bf16(packed).reshape(-1), bf16_bits.reshape(-1)):
         raise RuntimeError("Expert scale BF16 fragments differ")
+    report.update(exact_expert_scale_decode=True, exact_bf16_fragments=True)
     weight = torch.randint(-(2**31), 2**31 - 1, (2, 16, 256),
                            dtype=torch.int32, device=device, generator=generator)
     cases = []
+    report.update(stage="expert_gemm_graphs", expert_cases=cases)
     for rows in (1, 6, 12, 16, 48):
         padded_rows = (rows + 7) // 8 * 8
         ids = torch.arange(padded_rows, dtype=torch.int32, device=device).clamp_max(rows)
@@ -86,6 +90,7 @@ def check(bundle: Path) -> dict:
             raise RuntimeError(f"Expert graph replay differs at M={rows}")
         cases.append({"rows": rows, "raw_compressed_bitwise": True, "graph_replays": 4})
     # Exercise the upstream native repacker and MXFP8 helper with known rounded weights.
+    report["stage"] = "mxfp8_gemm_graphs"
     dense = torch.randn((128, 256), dtype=torch.float32, device=device,
                         generator=generator).bfloat16() * 0.125
     codes, exponents, rounded, _ = encode_weight(dense)
@@ -100,9 +105,31 @@ def check(bundle: Path) -> dict:
     columns = [0, 31, 128, 255]
     basis = torch.zeros((4, 256), device=device)
     basis[torch.arange(4, device=device), columns] = 1
-    if not torch.equal(method.apply(layer, basis), rounded[:, columns].T):
-        raise RuntimeError("Upstream MXFP8 native basis decode differs")
+    kda_cases = []
+    report["mxfp8_cases"] = kda_cases
+    for repeats in (1, 2, 4, 12):
+        inputs = basis.repeat(repeats, 1)
+        expected = rounded[:, columns].T.repeat(repeats, 1)
+        if not torch.equal(method.apply(layer, inputs), expected):
+            raise RuntimeError("Upstream MXFP8 native basis decode differs")
+        stream = torch.cuda.Stream()
+        stream.wait_stream(torch.cuda.current_stream())
+        with torch.cuda.stream(stream):
+            for _ in range(3):
+                method.apply(layer, inputs)
+        stream.synchronize()
+        graph = torch.cuda.CUDAGraph()
+        with torch.cuda.graph(graph, stream=stream):
+            result = method.apply(layer, inputs)
+        for _ in range(4):
+            graph.replay()
+        torch.cuda.synchronize()
+        if not torch.equal(result, expected):
+            raise RuntimeError("Upstream MXFP8 graph replay differs")
+        kda_cases.append({"rows": len(inputs), "basis_bits_exact": True, "graph_replays": 4})
+    report["exact_mxfp8_basis"] = True
     # The compressed head's CPU encoder and GPU decoder must preserve the BF16 payload.
+    report["stage"] = "vocabulary"
     os.environ["MXWAVE_ZIPSERV_LIBRARY"] = str(bundle / "native/libmxwave_kda_zipserv.so")
     packed_head = head.compress(dense.cpu()).to(device)
     if not torch.equal(head.decompress(packed_head).view(torch.uint8), dense.view(torch.uint8)):
@@ -112,7 +139,7 @@ def check(bundle: Path) -> dict:
         raise RuntimeError("Vocabulary GEMM basis decode differs")
     # Attribute access above must resolve a real vLLM GPU operation, not a CPU stub.
     assert callable(ops.gptq_marlin_repack)
-    report.update(status="passed", installation=installation, expert_cases=cases,
+    report.update(status="passed", stage="complete", installation=installation, expert_cases=cases,
                   exact_expert_scale_decode=True, exact_bf16_fragments=True,
                   exact_mxfp8_basis=True, exact_vocab_decode=True, exact_vocab_basis=True,
                   peak_allocated_bytes=torch.cuda.max_memory_allocated(),
@@ -128,10 +155,13 @@ def main() -> None:
     args = parser.parse_args()
     if args.output.exists():
         raise FileExistsError(args.output)
+    result = {"started_epoch": time.time(), "scope": "synthetic GPU components only",
+              "full_model_qualified": False}
     try:
-        result = check(args.bundle)
+        check(args.bundle, result)
     except Exception as exc:
-        args.output.write_text(json.dumps({"status": "failed", "error": repr(exc)}, indent=2))
+        result.update(status="failed", error=repr(exc), finished_epoch=time.time())
+        args.output.write_text(json.dumps(result, indent=2) + "\n")
         raise
     args.output.write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))

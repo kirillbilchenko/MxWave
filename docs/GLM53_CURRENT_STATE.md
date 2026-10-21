@@ -1,12 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
-**Packaging checkpoint, 21 October 2026, 14:07 UTC.** The extension and CLI are
-implemented, a relocatable runtime bundle is exported, and the initial wheel
-passes CPU import/plugin checks in the official ARM64 vLLM 0.32.0 image. Local
-checks pass: 1,082 tests / 1 skipped, Ruff and strict core mypy. The latest
-CLI-validation rerun, ready-image build and GPU/model qualification remain open;
-production and the stopped training state are unchanged. The previous audit below
-is historical. [Current packaging handoff, artifacts and exact next steps](GLM53_HANDOFF.md).
+**Packaging checkpoint, 21 October 2026, 14:30 UTC.** The official vLLM 0.32.0
+image plus the MxWave plugin is the default deployment target. Both-node CPU
+checks pass, including the 500k/prefix-cache capacity CLI. Expert GPU components
+passed before a KDA workspace API mismatch stopped the first controlled trial;
+production is restored. The adapter fix is being rechecked, with full-model stock
+serving still unqualified. Local checks pass: 1,083 tests / 1 skipped, Ruff and
+strict core mypy. Training remains stopped.
+[Current packaging handoff, artifacts and exact next steps](GLM53_HANDOFF.md).
 
 **21 October 2026: consolidated outcome and stock-vLLM deployment target.**
 The compression mechanism works: it preserves the encoded weight values, reduces

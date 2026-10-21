@@ -75,7 +75,8 @@ def method_type() -> type:
             """Run the same native W8A16 helper used by the installed MXFP8 route."""
             return apply_mxfp8_marlin_linear(
                 input=x, weight=layer.weight, weight_scale=layer.weight_scale,
-                workspace=layer.workspace, size_n=layer.output_size_per_partition,
+                # Upstream 0.32 owns locks per stream/ubatch through its workspace manager.
+                workspace=None, size_n=layer.output_size_per_partition,
                 size_k=layer.input_size_per_partition, bias=bias,
             )
 
@@ -202,7 +203,8 @@ def install(model: torch.nn.Module, reference_path: Path, output: Path) -> dict[
                 "scale_dtype": str(layer.weight_scale.dtype),
                 "weight_bytes": layer.weight.numel() * layer.weight.element_size(),
                 "scale_bytes": layer.weight_scale.numel() * layer.weight_scale.element_size(),
-                "workspace_bytes": layer.workspace.numel() * layer.workspace.element_size(),
+                "layer_owned_workspace_bytes": 0,
+                "workspace_policy": "upstream_vllm_stream_ubatch_manager",
             }
             del weight, codes, scales, decoded, decoded_fp32, actual, expected_output, delta, x, basis
             save()
