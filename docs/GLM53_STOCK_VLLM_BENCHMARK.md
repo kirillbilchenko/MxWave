@@ -21,6 +21,7 @@ comparison. Earlier gains must not be added to its results.
 | Prefix cache / chunked prefill | Enabled / enabled | Same |
 | Graph sizes | 1, 2, 4, 6, 8, 12, 16, 18, 24, 32 | Same requested sizes; actual captures/replays must be recorded |
 | Target KV | FP8, native sparse-MLA representation | Upstream FP8, actual sparse-MLA representation recorded |
+| Draft attention backend | Production custom path, retain effective backend in audit | Explicit native `TRITON_ATTN` under startup qualification; stock FlashInfer fails capacity through 64-token-page shared-pool waste |
 | Draft KV | Production FP8 adapter | Explicit upstream `fp8_e4m3`; compatibility must pass |
 | Draft head | Custom FP8 head | Native upstream implementation; custom optimization absent |
 | Admission | Environment says 4 ms; scheduler-control override needs live audit; implementation caps at 5 ms | No custom admission-window implementation |

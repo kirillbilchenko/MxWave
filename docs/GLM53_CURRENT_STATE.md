@@ -1,5 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 16:24 UTC: native cache configuration remedy passes CPU planning.**
+The V5 capacity failure is reproduced exactly. Selecting stock vLLM's
+`TRITON_ATTN` drafter backend reduces shared-pool waste and the 500k requirement
+from 13.9561 to 4.6632 GiB per rank, within the unchanged 6 GiB budget.
+This is an allocation calculation; GPU startup, prefix reuse and final memory
+remain unqualified. A bounded startup retry is being prepared. Production is
+running. Earlier V5 failure and restoration evidence below remains retained.
+
 **Packaging checkpoint, 21 October 2026, 15:26 UTC.** The official vLLM 0.32.0
 image plus the MxWave plugin is the default deployment target. Both-node CPU
 and all synthetic GPU component checks pass, including the corrected packed

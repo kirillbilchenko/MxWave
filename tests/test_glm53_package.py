@@ -118,6 +118,7 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
     spec = json.loads(command[command.index("--speculative-config") + 1])
     assert spec["num_speculative_tokens"] == 5
     assert spec["kv_cache_dtype"] == "fp8_e4m3"
+    assert "attention_backend" not in spec
     assert command[command.index("--gpu-memory-utilization") + 1] == "0.85"
     assert command[command.index("--block-size") + 1] == "2304"
     assert spec["num_speculative_tokens_per_batch_size"] == [[1, 1, 5], [2, 2, 5], [3, 16, 3]]
@@ -125,6 +126,17 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
     assert "PYTHONPATH" not in env
     assert not any("/audit/" in x or "/trial/" in x or "/overlay/" in x for x in command)
     assert not args.reports.exists(), "Building a launch must not start serving or create reports"
+    args.draft_attention_backend = "TRITON_ATTN"
+    triton_command, triton_env = cli.launch_command(args)
+    triton_spec = json.loads(triton_command[triton_command.index("--speculative-config") + 1])
+    assert triton_spec == {**spec, "attention_backend": "TRITON_ATTN"}
+    normalized = list(triton_command)
+    normalized[normalized.index("--speculative-config") + 1] = json.dumps(spec)
+    assert normalized == leader_command, "Backend choice must not lower any capacity settings"
+    assert triton_env == env
+    args.draft_attention_backend = "unsupported"
+    with pytest.raises(ValueError, match="Invalid serving"):
+        cli.launch_command(args)
 
 
 def test_doctor_requires_pinned_vllm(monkeypatch):

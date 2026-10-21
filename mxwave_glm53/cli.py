@@ -79,12 +79,14 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
     load_format = getattr(args, "load_format", "auto")
     loader_memory_mib = getattr(args, "loader_memory_mib", 2048)
     loader_concurrency = getattr(args, "loader_concurrency", 8)
+    draft_attention_backend = getattr(args, "draft_attention_backend", "auto")
     if (not 1 <= max_seqs <= 32 or prefill_budget < max_seqs
             or not graph_sizes or sorted(set(graph_sizes)) != graph_sizes
             or graph_sizes[0] < 1 or graph_sizes[-1] > 32
             or vocab_mode not in ("all", "embedding")
             or not 0 < utilization <= 1 or block_size < 1
             or load_format not in ("auto", "runai_streamer")
+            or draft_attention_backend not in ("auto", "TRITON_ATTN", "FLASHINFER")
             or loader_memory_mib < 1 or loader_concurrency < 1):
         raise ValueError("Invalid serving capacity, graph sizes or vocabulary mode")
     verify_bundle(args.bundle)
@@ -103,6 +105,8 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
         ],
         "rejection_sample_method": "standard",
     }
+    if draft_attention_backend != "auto":
+        spec["attention_backend"] = draft_attention_backend
     compile_config = {
         "mode": 0, "cudagraph_mode": "FULL_DECODE_ONLY",
         "cudagraph_capture_sizes": graph_sizes, "max_cudagraph_capture_size": graph_sizes[-1],
@@ -175,6 +179,9 @@ def main() -> None:
     serve.add_argument("--load-format", choices=("auto", "runai_streamer"), default="auto")
     serve.add_argument("--loader-memory-mib", type=int, default=2048)
     serve.add_argument("--loader-concurrency", type=int, default=8)
+    serve.add_argument("--draft-attention-backend", default="auto",
+                       choices=("auto", "TRITON_ATTN", "FLASHINFER"),
+                       help="Native drafter backend; Triton avoids small-page hybrid cache waste")
     serve.add_argument("--max-num-seqs", type=int, default=16)
     serve.add_argument("--max-num-batched-tokens", type=int, default=4096)
     serve.add_argument("--graph-sizes", type=int, nargs="+", default=[1, 2, 4, 8, 16])

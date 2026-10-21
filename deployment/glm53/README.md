@@ -1,5 +1,13 @@
 # GLM CT on upstream vLLM 0.32.0
 
+**21 October, 16:24 UTC: native cache configuration remedy passes CPU planning.**
+The V5 capacity failure is reproduced exactly. Selecting stock vLLM's
+`TRITON_ATTN` drafter backend reduces shared-pool waste and the 500k requirement
+from 13.9561 to 4.6632 GiB per rank, within the unchanged 6 GiB budget.
+This is an allocation calculation; GPU startup, prefix reuse and final memory
+remain unqualified. A bounded startup retry is being prepared. Production is
+running. Earlier V5 failure and restoration evidence below remains retained.
+
 This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
 The extension still wraps version-pinned internal APIs; it is not an unmodified

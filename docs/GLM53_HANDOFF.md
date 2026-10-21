@@ -1,5 +1,40 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 16:26 UTC: V6 native-Triton startup trial launched.**
+Both v8 images pass CPU installation/CLI checks. `stock-trial-v6` uses the same
+500k / 32-slot / 6-GiB / 6,919 / prefix-on / dense-head profile with explicit native
+`TRITON_ATTN` draft attention. Launch time 16:26:26 UTC; plan SHA256
+`55eb408a5ea450774653babdc04a42b48934b53c1a2429996fe294c57aba652c`.
+Production is temporarily paused under the independent 1,500-second watchdog;
+the controller restores the exact original containers afterwards. Derived V5
+compilation caches were copied into separate V6 directories; this is not a cold
+boot timing trial. Check `stock-trial-v6/controller.json` before assuming service
+availability. GPU startup/prefix correctness remain pending; no speed claim.
+
+**21 October 2026, 16:24 UTC: cache failure reproduced; native configuration remedy passes CPU planning.**
+The read-only audit reproduces V5 exactly using installed v0.32 methods: 13.9561 GiB
+required and a 9,472-token maximum with a 6 GiB budget. Default FlashInfer drafter
+attention chooses 64-token pages; each claims a 36,022,272-byte shared-pool block.
+The drafter reserves 282 blocks, versus 109 for target attention, 24 for KDA state
+and one for its indexer tail. This grouping waste explains the failure.
+
+Selecting the **native `TRITON_ATTN` drafter backend** makes its pages 4,608 tokens
+and its reservation five blocks. The same stock planner now requires **4.6632 GiB**
+for 500k, with all 500k / 32 slots / 6 GiB / 6,919 prefill / prefix-on settings
+retained. An Inco-geometry control still needs 12.8826 GiB with stock FlashInfer;
+the Modal/Inco size difference alone does not explain the rejection. These are
+CPU allocation results, not GPU startup, speed or long-context qualification.
+No production allocator implementation is ported and no vLLM source is replaced.
+
+`deployment/glm53/check_cache_capacity.py` retains config/source hashes and the
+negative control. Receipt: `out/glm53-package-v1/cache-audit-v1/stock-capacity.json`.
+The CLI gains an explicit `--draft-attention-backend TRITON_ATTN`; its default
+remains `auto` pending qualification. The separate unidentified-DFlash-group
+warning remains unresolved. V6 startup/prefix retry is being prepared under the
+existing watchdog; production remains running until its launch. Local full tests,
+Ruff and strict core mypy pass; v8 wheel SHA256
+`8ede5b783cd9a683cea5bb250edf38ef7a06b2c502586eb2c6061045d7dd149b`.
+
 **21 October 2026, 15:26 UTC: stock capacity gate blocks the requested comparison.**
 `stock-trial-v5` passes all GPU components, including the real compressed-embedding
 forward and exact TP shard masks. Both models/drafters load, the corrected embedding

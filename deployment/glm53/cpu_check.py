@@ -64,11 +64,13 @@ def main() -> None:
     launch.prefix_caching = True
     launch.graph_sizes = [1, 2, 4, 6, 8, 12, 16, 18, 24, 32]
     launch.vocab_mode = "embedding"
+    launch.draft_attention_backend = "TRITON_ATTN"
     capacity_command, capacity_environment = launch_command(launch)
     capacity_args = parser.parse_args(capacity_command[3:])
     next(item for item in commands if item.name == capacity_args.subparser).validate(capacity_args)
     assert capacity_args.enable_prefix_caching and capacity_args.max_model_len == 500000
     assert capacity_args.max_num_seqs == 32 and capacity_args.max_num_batched_tokens == 6919
+    assert capacity_args.speculative_config["attention_backend"] == "TRITON_ATTN"
     assert capacity_environment["MXWAVE_GLM53_VOCAB_MODE"] == "embedding"
     assert not capacity_args.headless
     launch.node_rank = 1
