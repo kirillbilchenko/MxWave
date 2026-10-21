@@ -6,6 +6,7 @@ import argparse
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -140,3 +141,12 @@ def test_packaged_mxfp8_recipe_matches_original():
     assert torch.equal(codes, actual_codes)
     assert torch.equal(scales, actual_scales)
     assert torch.equal(decoded, actual_decoded.float())
+
+
+def test_marlin_032_dispatch_boundary_in_isolated_process():
+    fixture = Path(__file__).with_name("glm53_package_dispatch_fixture.py")
+    # The historical integration registers the same torch op namespace in other tests.
+    subprocess.run([
+        sys.executable, "-c",
+        "import runpy,sys; runpy.run_path(sys.argv[1], run_name='__main__')", str(fixture),
+    ], check=True)

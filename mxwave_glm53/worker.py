@@ -16,6 +16,7 @@ def snapshot(worker: Any) -> dict[str, Any]:
 
     from ._runtime import model_plugin, vocab_runtime
 
+    head = worker.model_runner.model.language_model.lm_head
     return {
         "rank": get_tensor_model_parallel_rank(), "vllm": "0.32.0",
         "cuda_allocated_bytes": torch.cuda.memory_allocated(),
@@ -25,6 +26,10 @@ def snapshot(worker: Any) -> dict[str, Any]:
         "kda": worker._mxwave_kda_report,
         "max_model_len": worker.vllm_config.model_config.max_model_len,
         "kv_cache_memory_bytes": worker.vllm_config.cache_config.kv_cache_memory_bytes,
+        "vocab_mode": os.environ.get("MXWAVE_GLM53_VOCAB_MODE", "all"),
+        "head_weight_dtype": str(head.weight.dtype) if getattr(head, "weight", None)
+        is not None else None,
+        "head_method": type(head.quant_method).__name__,
         "full_model_quality_qualified": False,
         "upstream_serving_performance_qualified": False,
     }
@@ -76,9 +81,13 @@ def install_worker() -> None:
         report = snapshot(worker)
         experts, vocab = report["experts"], report["vocabulary"]
         scales = [s for layer in experts["layers"] for s in layer["scales"]]
+        expected_vocab = 2 if report["vocab_mode"] == "all" else 1
         if (experts["layers_seen"] != 42 or len(scales) != 84
                 or any(not s.get("gpu_bytes_exact") for s in scales)
-                or vocab["resident_layers"] != 2 or vocab["dense_parameter_references_alive"]):
+                or vocab["resident_layers"] != expected_vocab
+                or vocab["dense_parameter_references_alive"]
+                or report["vocab_mode"] == "embedding"
+                and report["head_weight_dtype"] != "torch.bfloat16"):
             raise RuntimeError("Incomplete compression coverage or retained dense vocabulary")
         target = Path(os.environ["MXWAVE_GLM53_REPORTS"]) / f"startup-rank{report['rank']}.json"
         target.write_text(json.dumps(report, indent=2) + "\n")

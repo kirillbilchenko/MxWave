@@ -69,6 +69,16 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
         raise ValueError("Require rank 0/1 and a positive KV budget")
     if args.max_model_len < 1 or not 1 <= args.port <= 65535:
         raise ValueError("Require a positive context limit and a valid API port")
+    max_seqs = getattr(args, "max_num_seqs", 16)
+    prefill_budget = getattr(args, "max_num_batched_tokens", 4096)
+    graph_sizes = getattr(args, "graph_sizes", [1, 2, 4, 8, 16])
+    prefix_caching = getattr(args, "prefix_caching", False)
+    vocab_mode = getattr(args, "vocab_mode", "all")
+    if (not 1 <= max_seqs <= 32 or prefill_budget < max_seqs
+            or not graph_sizes or sorted(set(graph_sizes)) != graph_sizes
+            or graph_sizes[0] < 1 or graph_sizes[-1] > 32
+            or vocab_mode not in ("all", "embedding")):
+        raise ValueError("Invalid serving capacity, graph sizes or vocabulary mode")
     verify_bundle(args.bundle)
     verify_files(args.model, MODEL_FILES)
     verify_files(args.drafter, DRAFTER_FILES)
@@ -79,12 +89,15 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
     spec = {
         "method": "dflash", "model": str(args.drafter.resolve()),
         "num_speculative_tokens": 5, "kv_cache_dtype": "auto",
-        "num_speculative_tokens_per_batch_size": [[1, 1, 5], [2, 2, 5], [3, 16, 3]],
+        "num_speculative_tokens_per_batch_size": [
+            [lo, min(hi, max_seqs), depth]
+            for lo, hi, depth in ((1, 1, 5), (2, 2, 5), (3, 32, 3)) if lo <= max_seqs
+        ],
         "rejection_sample_method": "standard",
     }
     compile_config = {
         "mode": 0, "cudagraph_mode": "FULL_DECODE_ONLY",
-        "cudagraph_capture_sizes": [1, 2, 4, 8, 16], "max_cudagraph_capture_size": 16,
+        "cudagraph_capture_sizes": graph_sizes, "max_cudagraph_capture_size": graph_sizes[-1],
     }
     command = [
         sys.executable, "-m", "vllm.entrypoints.cli.main", "serve", str(args.model.resolve()),
@@ -94,9 +107,10 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
         "--distributed-executor-backend", "mp", "--max-model-len", str(args.max_model_len),
         "--kv-cache-dtype", "fp8_e4m3",
         "--kv-cache-memory-bytes", str(int(args.kv_cache_gib * 1024**3)),
-        "--max-num-seqs", "16", "--max-num-batched-tokens", "4096",
+        "--max-num-seqs", str(max_seqs), "--max-num-batched-tokens", str(prefill_budget),
         "--moe-backend", "marlin", "--linear-backend", "marlin",
-        "--no-enable-prefix-caching", "--enable-chunked-prefill",
+        "--enable-prefix-caching" if prefix_caching else "--no-enable-prefix-caching",
+        "--enable-chunked-prefill",
         "--disable-custom-all-reduce", "--seed", "42",
         "--compilation-config", json.dumps(compile_config),
         "--speculative-config", json.dumps(spec),
@@ -113,6 +127,7 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
         "MXWAVE_GLM53_MODEL": str(args.model.resolve()),
         "MXWAVE_GLM53_DRAFTER": str(args.drafter.resolve()),
         "MXWAVE_GLM53_REPORTS": str(args.reports.resolve()),
+        "MXWAVE_GLM53_VOCAB_MODE": vocab_mode,
         "VLLM_WORKER_MULTIPROC_METHOD": "spawn", "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
     }
     return command, env
@@ -138,6 +153,12 @@ def main() -> None:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--max-model-len", type=int, default=8192)
     serve.add_argument("--kv-cache-gib", type=float, default=6)
+    serve.add_argument("--max-num-seqs", type=int, default=16)
+    serve.add_argument("--max-num-batched-tokens", type=int, default=4096)
+    serve.add_argument("--graph-sizes", type=int, nargs="+", default=[1, 2, 4, 8, 16])
+    serve.add_argument("--prefix-caching", action=argparse.BooleanOptionalAction, default=False)
+    serve.add_argument("--vocab-mode", choices=("all", "embedding"), default="all",
+                       help="Compress both vocabulary matrices, or keep the LM head dense")
     serve.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     try:

@@ -1,5 +1,65 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 14:24 UTC: user confirms stock vLLM as the default recipe; GPU startup preflight prepared.**
+The deployment target is the **official vLLM 0.32.0 ARM64 image plus the installed
+MxWave extension**, with no modified vLLM files, old `/overlay` dependencies or
+production image requirement. A subsequent comparison with unchanged production
+is a deployment comparison: engine and optimization differences must be disclosed.
+Do not revert to the custom production runtime just to improve comparability.
+
+The ready image builds on both Sparks. The latest wheel is 237,672 bytes, SHA256
+`f6731ce1b28877b1e5b51c4ce416ac83463a78d0025a22750b0a351a11f92d99`.
+Both official-image CPU checks pass the entry point, source/asset integrity and
+actual native CLI for the original development profile **and** the requested
+500k / 32 slots / 6 GiB KV / 6,919 prefill / prefix-cache-on / dense-head profile.
+The focused Marlin argument-boundary check now passes, including positional and
+keyword routing, unowned-scale passthrough, and rejected incompatible calls.
+Source provenance now includes the promoted `model_plugin.py`.
+
+An initial small GPU check beside production failed on its first allocation,
+before kernel execution: Spark2 had about 8 GiB host memory available and the
+container was capped at 4 GiB. Retain `gpu-check-v1.json`; this is not a measured
+kernel correctness failure. The follow-up is prepared with a 12 GiB component
+container after a controlled production pause, followed only on success by a TP2
+500k-configured model startup and repeated-prefix correctness smoke. Maximum trial
+lease is 1,500 seconds, with a separate restoration watchdog and exact original
+container identities. No timing/GSM8K or automatic promotion is part of this
+startup preflight. Status/plan are under `glm53-package-v1/stock-trial-v1`.
+
+Image IDs for this prepared trial:
+
+- Spark1: `sha256:306173a51992b93a0d878e1bd90be6f6e311e84b1f80ce5c7a40aedcdb1f5641`.
+- Spark2: `sha256:53bbcf12ad61a9629eacb4d92c9c4991d237fdade8f6774e2f8555424188bb1d`.
+- Plan SHA256: `f68b186a771cd42bc1890d0ffdf1274d4bdaea46a8a133378ae6b10f055fe8d6`.
+
+The user proposes a later full deployment benchmark: C1/C4/C8/C16, realistic
+code/chat/explanation prompts around 256/2,048 tokens, 256 outputs, six A/B pairs,
+fixed seeds, identical prefix-cache reset/warm-up policy, clocks/thermals/power,
+actual running/queued requests and KV usage, per-position acceptance/rounds and
+per-rank allocation. Follow with 32k/128k retrieval/latency probes and full 1,319
+GSM8K questions on each target with speculation off. Preserve prior gates and all
+failed trials; restore production, never promote automatically. Timing must not
+start if the required capacity or prefix-cache correctness checks fail.
+
+The live audit corrects the proposed baseline description: production has seven
+drafts at C1, five at C2 and three at C4/C8/C16, plus adaptive/truncation hooks;
+it is not seven drafts at every concurrency. `GLM_IDLE_COALESCE_MS=4` exists, but
+the scheduler-control layer may override it. Its implementation permits only
+0–5 ms; a live 10 ms production window is **not established**. Do not silently
+change A to satisfy that assumption. Audit retained as `production-settings-audit.json`.
+Certified target argmax, custom FP8 draft head, admission/truncation and custom
+RoCE/model overlays are absent from the stock recipe. Native upstream DFlash FP8
+loading is used and still needs model-level verification. Dense head means only
+the embedding is vocabulary-compressed, so previous all-vocabulary memory numbers
+cannot be reused for this trial.
+
+Publication framing: verified mechanisms and scoped measurements support an
+engineering case study plus reproducible code/assets. Novelty and general
+20–50% drafter acceptance are not established by these local development samples.
+Retain the failed strict KL result and distinguish original AutoRound quantization,
+MxWave's lossless codecs, and the separate lossy MXFP8 KDA conversion. No public
+release, article, upstream message or model promotion has been published here.
+
 **21 October 2026, 14:07 UTC / 16:07 Berlin: packaging implementation checkpoint; official vLLM 0.32.0 CPU import check passes.**
 The user requests an easily consumable package and asks that all information be
 kept in this handoff. No GPU model trial, production stop, promotion or further

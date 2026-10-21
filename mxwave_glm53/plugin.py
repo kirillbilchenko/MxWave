@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .bundle import PINNED_ASSETS, VLLM_VERSION, digest, verify_bundle
 
-_ACTIVE: tuple[str, str, str] | None = None
+_ACTIVE: tuple[str, ...] | None = None
 
 
 def check_upstream() -> dict[str, str]:
@@ -37,6 +37,7 @@ def register() -> None:
         return
     identity = tuple(os.environ[key] for key in (
         "MXWAVE_GLM53_BUNDLE", "MXWAVE_GLM53_MODEL", "MXWAVE_GLM53_REPORTS"))
+    identity += (os.environ.get("MXWAVE_GLM53_VOCAB_MODE", "all"),)
     if _ACTIVE is not None:
         if _ACTIVE != identity:
             raise RuntimeError("Cannot change an active runtime bundle within one process")

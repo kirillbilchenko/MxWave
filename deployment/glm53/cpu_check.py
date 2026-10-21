@@ -58,6 +58,18 @@ def main() -> None:
     next(item for item in commands if item.name == parsed.subparser).validate(parsed)
     if parsed.speculative_config["num_speculative_tokens"] != 5:
         raise RuntimeError("Selected native draft depth changed")
+    launch.max_model_len = 500000
+    launch.max_num_seqs = 32
+    launch.max_num_batched_tokens = 6919
+    launch.prefix_caching = True
+    launch.graph_sizes = [1, 2, 4, 6, 8, 12, 16, 18, 24, 32]
+    launch.vocab_mode = "embedding"
+    capacity_command, capacity_environment = launch_command(launch)
+    capacity_args = parser.parse_args(capacity_command[3:])
+    next(item for item in commands if item.name == capacity_args.subparser).validate(capacity_args)
+    assert capacity_args.enable_prefix_caching and capacity_args.max_model_len == 500000
+    assert capacity_args.max_num_seqs == 32 and capacity_args.max_num_batched_tokens == 6919
+    assert capacity_environment["MXWAVE_GLM53_VOCAB_MODE"] == "embedding"
     from vllm.v1.worker.gpu_worker import Worker
 
     from mxwave_glm53._runtime.kda_mxfp8_runtime import method_type
@@ -71,6 +83,8 @@ def main() -> None:
         "gpu_used": False, "installation": checked, "upstream_source_hashes": source_hashes,
         "kda_method": method_type().__name__, "vocabulary_method": VocabMethod.__name__,
         "cli_validated": True, "launch_command": command, "launch_environment": environment,
+        "capacity_cli_validated": True, "capacity_command": capacity_command,
+        "capacity_environment": capacity_environment,
         "gpu_model_qualification": "pending",
     }
     Path("/release/cpu-check.json").write_text(json.dumps(result, indent=2) + "\n")

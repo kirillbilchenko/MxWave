@@ -95,6 +95,11 @@ def install() -> None:
     if os.environ.get("MXWAVE_GLM53_ATTENTION_MAPPING") != "1":
         raise ValueError("The combined vocabulary adapter requires corrected attention mapping")
     targets = load_targets(Path(os.environ.get("MXWAVE_GLM53_KDA_SOURCE", "/model")))
+    mode = os.environ.get("MXWAVE_GLM53_VOCAB_MODE", "all")
+    if mode not in ("all", "embedding"):
+        raise ValueError("Vocabulary mode must be all or embedding")
+    if mode == "embedding":
+        targets = {name: target for name, target in targets.items() if target.kind == "embedding"}
     original = CompressedTensorsConfig.get_quant_method
 
     @functools.wraps(original)
