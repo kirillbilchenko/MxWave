@@ -1,5 +1,11 @@
 # MxWave
 
+**21 October, 20:10 UTC:** the stock-vLLM package now includes `prepare-drafter`
+for the verified metadata correction and rejects the incompatible original config
+at launch. Weight bytes remain unchanged. Local tests and checks pass; official-image
+validation and the corrected deployment comparison are next.
+[Updated recipe](deployment/glm53/README.md) · [Live handoff](docs/GLM53_HANDOFF.md).
+
 **Latest GLM result, 21 October, 19:56 UTC:** the stock-vLLM drafter loading failure
 is identified and corrected in a short GPU test. Metadata exclusions keep twelve
 existing BF16 convolution matrices out of FP8 loading; weights are unchanged.

@@ -1,5 +1,46 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 20:15 UTC: corrected package and comparison pass both CPU preflights.**
+The real-checkpoint `prepare-drafter` command produces the exact GPU-tested config
+hash on both Sparks. Both official-image installation checks pass, as do native
+CPU construction checks for all twelve BF16 convolution projections. Wheel SHA256:
+`eef48091e1a094a32a44a7d511df8f88b661314ccb60748100265a7636814368`.
+Images are recorded in `glm53-package-v1/package-v9/images.json`; original
+checkpoints and production remain unchanged during preparation. Full local pytest,
+Ruff, core mypy and the new module's strict type check pass. Added compatibility
+tests reject zero acceptance and preserve output-identity failures as failures.
+
+Fresh root `deployment-compare-v2` reuses byte-identical frozen workload, tokenizer
+and full 1,319-question GSM8K inputs from the stopped V1; no sealed data or training.
+Its 15 stages are corrected-B compatibility, six A/B timing pairs, then full
+speculation-off GSM8K A and B. Compatibility verifies 500k context, both-rank
+allocation/6 GiB KV/dense head, positive native draft acceptance and prefix-cache
+reuse; it also retains three 64-token repeated-prefix outputs and their identity
+gate. A failed execution check skips timing but still attempts independent target
+quality. Known target KL and any output-repeat failures remain failed, even when
+diagnostic timing proceeds. No promotion or gate relaxation.
+
+Both candidate commands retain 500k / 32 slots / 6 GiB KV / 6,919 prefill / prefix
+on / production graph sizes / dense BF16 target head; native Triton draft attention
+uses FP8 KV and the selected 5/5/3 policy. Stock lacks production's certified argmax
+head, custom FP8 draft head, admission/adaptive-truncation, RoCE/model overlays,
+fast loader and custom cache sharing. These are explicit deployment differences,
+so the comparison cannot isolate compression alone. The detached controller and
+independent watchdog retain exact-production restoration with a ten-hour lease;
+that lease is a safety bound, not a predicted runtime. GPU launch is next.
+
+**21 October 2026, 20:10 UTC: correction integrated into the package; CPU validation.**
+The user authorized continuing with the corrected recipe and measurements.
+`mxwave-glm53 prepare-drafter --source ORIGINAL --output PREPARED` now verifies
+the pinned checkpoint, prepares the exact GPU-tested config, preserves weight
+bytes, and supports hard links or byte-for-byte cross-filesystem copies. `serve`
+requires the corrected config hash and rejects the original with an actionable
+preparation instruction. Original checkpoints and existing destinations are preserved.
+The deployment README includes this step and selects the prepared directory.
+Full pytest, Ruff, strict core mypy and strict checking of the new module pass.
+Official-image installation and real-checkpoint CPU preparation are next, before
+any GPU pause. Production remains restored; no new performance/quality result yet.
+
 **21 October 2026, 19:56 UTC: drafter loading fix verified; exact production restored.**
 The metadata-only V2 correction restores useful native DFlash2 acceptance on the
 two short development prompts. Both native graph replay and draft-eager give the

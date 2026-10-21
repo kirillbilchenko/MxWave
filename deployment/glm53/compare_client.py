@@ -155,6 +155,58 @@ def cache_probe(client: Client, prompts: list[int], salt: str) -> dict[str, Any]
             and not any(row["api_errors"] for row in rows)}
 
 
+def compatibility(root: Path, client: Client) -> None:
+    """Check corrected serving before timing, keeping numerical failures explicitly failed."""
+    plan = json.loads((root / "workloads.json").read_bytes())
+    output = root / "compatibility-B"
+    output.mkdir()
+    result: dict[str, Any] = {"status": "running", "quality_qualified": False,
+                             "speed_qualified": False, "draft_checks": []}
+    write(output / "progress.json", result)
+    result["models"] = json.loads(client.request("/v1/models"))
+    if not any(m.get("max_model_len") == 500000 for m in result["models"]["data"]):
+        raise RuntimeError("500k context did not survive corrected startup")
+    result["memory"] = json.loads(client.request("/collective_rpc", {
+        "method": "mxwave_memory_report", "timeout": 120, "args": [], "kwargs": {}}))
+    write(output / "progress.json", result)
+    memory = result["memory"]["results"]
+    if (len(memory) != 2 or {row["rank"] for row in memory} != {0, 1}
+            or any(row["max_model_len"] != 500000 or row["kv_cache_memory_bytes"] != 6 * 1024**3
+                   or row["head_weight_dtype"] != "torch.bfloat16"
+                   or row["vocab_mode"] != "embedding" for row in memory)):
+        raise RuntimeError("Both ranks must retain 500k, 6 GiB KV and the dense BF16 head")
+    for domain in ("code", "chat"):
+        row = cohort(client, [plan["banks"][domain]["short"][0]["prompt_ids"]], 32,
+                     salt=f"{plan['salt']}-compatibility-{domain}")
+        accepted = sum(v for k, v in row["counters_delta"].items()
+                       if k.split("{")[0] == "vllm:spec_decode_num_accepted_tokens_total")
+        result["draft_checks"].append({"domain": domain, "accepted": accepted, "result": row})
+        write(output / "progress.json", result)
+        if row["api_errors"] or accepted <= 0:
+            raise RuntimeError("Corrected serving still has API errors or zero draft acceptance")
+    result["cache_control"] = cache_probe(
+        client, plan["cache_probe_ids"], f"{plan['salt']}-compatibility-control")
+    write(output / "progress.json", result)
+    if not result["cache_control"]["passed"]:
+        raise RuntimeError("Prefix caching is unavailable or cannot be controlled; do not time")
+    result["prefix_repeats"] = []
+    for _ in range(3):
+        row = cohort(client, [plan["cache_probe_ids"]], 64,
+                     salt=f"{plan['salt']}-compatibility-repeat")
+        result["prefix_repeats"].append(row)
+        write(output / "progress.json", result)
+        if row["api_errors"]:
+            raise RuntimeError("Repeated-prefix request failed")
+    tokens = [r["requests"][0]["token_ids"] for r in result["prefix_repeats"]]
+    result["prefix_output_identity_passed"] = tokens[0] == tokens[1] == tokens[2]
+    result["existing_target_kl_gate_passed"] = False
+    result["note"] = ("Execution-ready diagnostic only; target KL and any prefix-output "
+                      "identity failure remain failed. Timing cannot imply quality qualification.")
+    result["status"] = "execution_ready"
+    write(output / "result.json", result)
+    write(output / "progress.json", result)
+
+
 def timing(root: Path, arm: str, trial: int, client: Client) -> None:
     """Measure one immutable block; all outcomes remain diagnostic until gates pass."""
     plan = json.loads((root / "workloads.json").read_bytes())
@@ -316,10 +368,13 @@ def main() -> None:
     parser.add_argument("--arm", choices=("A", "B"))
     parser.add_argument("--trial", type=int)
     parser.add_argument("--port", type=int)
-    parser.add_argument("--mode", choices=("timing", "gsm8k", "summary"), required=True)
+    parser.add_argument("--mode", choices=("compatibility", "timing", "gsm8k", "summary"),
+                        required=True)
     args = parser.parse_args()
     if args.mode == "summary":
         summarize(args.root)
+    elif args.mode == "compatibility":
+        compatibility(args.root, Client(args.port))
     elif args.mode == "timing":
         timing(args.root, args.arm, args.trial, Client(args.port))
     else:

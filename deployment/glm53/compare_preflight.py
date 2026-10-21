@@ -39,6 +39,31 @@ def preflight(rank: int) -> None:
         load_format="runai_streamer", loader_memory_mib=3072, loader_concurrency=8,
         draft_attention_backend="TRITON_ATTN")
     command, env = launch_command(args)
+    # Exercise the actual native constructor with the corrected checkpoint metadata.
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from vllm.model_executor.layers.quantization.fp8 import Fp8Config
+    from vllm.model_executor.layers.quantization.utils.quant_utils import is_layer_skipped
+    from vllm.model_executor.models.qwen3_dflash2 import DFlashGroupedConv
+
+    draft_config = json.loads(Path("/drafter/config.json").read_bytes())
+    quant = Fp8Config.from_config(draft_config["quantization_config"])
+    conv_checks = []
+    for layer in range(45, 51):
+        for side in ("attention_conv", "mlp_conv"):
+            prefix = f"model.layers.{layer}.{side}"
+            with patch("vllm.distributed.parallel_state._TP",
+                       SimpleNamespace(rank_in_group=rank, world_size=2)):
+                module = DFlashGroupedConv(4096, 2, 16, 6, torch.bfloat16, prefix, quant)
+            projection = module.kernel_projection
+            if (projection.weight.dtype != torch.bfloat16
+                    or type(projection.quant_method).__name__ != "UnquantizedLinearMethod"):
+                raise RuntimeError("Native BF16 convolution exclusion failed")
+            conv_checks.append(prefix + ".kernel_projection")
+            del module, projection
+        if is_layer_skipped(f"model.layers.{layer}.self_attn.q_proj", quant.ignored_layers):
+            raise RuntimeError("Main draft attention must retain FP8 quantization")
     command += ["--chat-template", "/model/chat_template.jinja", "--enable-prompt-tokens-details"]
     env["VLLM_SERVER_DEV_MODE"] = "1"
     launches = {}
@@ -70,7 +95,10 @@ def preflight(rank: int) -> None:
             or "request.cache_salt" not in inspect.getsource(kv_cache_utils)):
         raise RuntimeError("Native cache-salt protocol/hash contract is unavailable")
     receipt = {"status": "passed", "gpu_used": False, "rank": rank, "launches": launches,
-               "installation": installation, "cache_salt_protocol_and_hashing_verified": True}
+               "installation": installation, "cache_salt_protocol_and_hashing_verified": True,
+               "native_bf16_conv_checks": conv_checks,
+               "drafter_config_sha256": hashlib.sha256(Path("/drafter/config.json").read_bytes())
+               .hexdigest()}
     (Path("/trial") / f"cpu-preflight-rank{rank}.json").write_text(
         json.dumps(receipt, indent=2) + "\n")
     print(json.dumps({"status": "passed", "rank": rank, "gpu_used": False}))

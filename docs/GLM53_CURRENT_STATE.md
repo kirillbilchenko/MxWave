@@ -1,5 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 20:15 UTC:** the drafter fix is integrated into the package.
+`prepare-drafter` and both official-image CPU checks pass on the real checkpoint;
+`serve` requires the corrected metadata and unchanged pinned weight bytes.
+The fresh `deployment-compare-v2` plan starts with corrected 500k/prefix-on
+compatibility, then six timing pairs and full speculation-off GSM8K on both arms.
+No new GPU measurement is claimed yet. Known numerical failures and unavailable
+production optimizations are recorded in the [handoff](GLM53_HANDOFF.md).
+
 **Latest, 21 October, 19:56 UTC:** the native DFlash2 zero-acceptance failure is
 fixed in a bounded GPU diagnostic. Twelve existing BF16 convolution weights were
 being loaded as FP8 without scales; correcting only their quantization exclusions

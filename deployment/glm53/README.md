@@ -4,14 +4,14 @@ This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
 The extension wraps version-pinned internal APIs and requires the verified bundle.
 
-**Status, 21 October 2026, 19:56 UTC: a drafter metadata correction is GPU-verified;
-the package CLI still needs integration.** Native 0.32 applies FP8 loading to
+**Status, 21 October 2026: the package now includes the GPU-tested drafter metadata
+correction; full deployment qualification remains pending.** Native 0.32 applies FP8 loading to
 twelve BF16 convolution weights with missing scales, producing NaN draft output.
 A separate config with explicit BF16 exclusions restores 50–67.5% acceptance on
 two short diagnostic prompts, with byte-identical weights and no vLLM source edits.
-The current CLI still pins the original config; **the launch example below does
-not yet include this correction** and must not be presented as a working performance
-recipe. The isolated experiment used
+Run the new **`prepare-drafter`** step below before serving. `serve` rejects the
+original incompatible config and verifies the corrected config and unchanged
+weight hashes. Full timing and quality qualification remain pending; the isolated experiment used
 [prepare_drafter_compat.py](prepare_drafter_compat.py) and a separately frozen launch.
 [Diagnosis, settings and retained evidence](../../docs/GLM53_STOCK_DRAFTER_LOADING.md).
 
@@ -89,7 +89,24 @@ docker run --rm --gpus all --network none \
 
 ## Launch on both nodes
 
-The following reproduces the **500k profile that reaches API readiness in V6**.
+Prepare a separate drafter directory once on each node, without GPU access:
+
+```bash
+docker run --rm --network none \
+  -v /absolute/path/to/original-modal-fp8-checkpoint:/source:ro \
+  -v /absolute/path/to/prepared-parent:/export:rw \
+  mxwave-glm53:vllm032 prepare-drafter \
+  --source /source --output /export/modal-fp8-vllm032
+```
+
+This checks the pinned source hashes and changes only `config.json`, preserving
+twelve existing BF16 convolution matrices. Weight files are hard-linked when
+possible, copied byte-for-byte across filesystems, and reverified. Existing output
+directories are never overwritten. No model training or weight quantization occurs.
+Keep the original and prepared files read-only when serving; hard links share data.
+
+The following uses the **500k capacity settings that reached API readiness in V6**,
+now with the corrected drafter metadata. The combined profile must be rechecked.
 Prefix correctness, output repeatability, the 32k/128k probes and the matched
 performance/quality comparison remain required before replacing production.
 
@@ -103,7 +120,7 @@ export GLM_NODE_RANK=0
 export GLM_MASTER_ADDR=192.168.192.1
 export GLM_NODE_IP=192.168.192.1
 export GLM_MODEL_DIR=/absolute/path/to/ct-checkpoint
-export GLM_DRAFTER_DIR=/absolute/path/to/modal-fp8-checkpoint
+export GLM_DRAFTER_DIR=/absolute/path/to/prepared-parent/modal-fp8-vllm032
 export GLM_RUNTIME_DIR=/absolute/path/to/runtime
 export GLM_REPORTS_DIR=/absolute/path/to/new-reports
 export GLM_CACHE_DIR=/absolute/path/to/cuda-cache

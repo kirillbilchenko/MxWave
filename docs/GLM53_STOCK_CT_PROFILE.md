@@ -1,5 +1,11 @@
 # Selected CT profile on stock vLLM
 
+**21 October, 20:15 UTC:** the correction is now packaged as `prepare-drafter`,
+with pinned config/weight validation in `serve`. Both official-image CPU preflights
+and real-checkpoint preparation pass. The fresh production-setting comparison
+is prepared, including a compatibility stage before timing and both full GSM8K
+arms. Consult the [handoff](GLM53_HANDOFF.md) for launch/restoration status.
+
 **Latest, 21 October 2026, 19:56 UTC: zero acceptance has a verified loading fix.**
 Native 0.32 incorrectly selected twelve existing BF16 drafter convolution matrices
 for FP8 loading without scales. A separate config adds explicit BF16 exclusions;

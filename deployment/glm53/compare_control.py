@@ -209,7 +209,7 @@ def control(root: Path) -> None:
                 state.setdefault("stage_errors", []).append(
                     {"stage": stage["name"], "error": repr(exc), "epoch": time.time()})
                 state["error"] = "One or more comparison stages failed; see retained stage_errors"
-                if stage["mode"] == "timing":
+                if stage["mode"] in ("timing", "compatibility"):
                     timing_blocked = True
                 write(path, state)
             finally:

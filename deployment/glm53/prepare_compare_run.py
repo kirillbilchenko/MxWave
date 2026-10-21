@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -18,11 +19,22 @@ def remove_pair(arguments: list[str], flag: str) -> None:
     del arguments[index:index + 2]
 
 
-def prepare(root: Path) -> None:
+def prepare(root: Path, *, images_path: Path | None = None, drafter: Path | None = None) -> None:
     """Freeze CPU-validated commands, private quality clones and every input hash."""
     if (root / "prepared.json").exists():
         raise FileExistsError("Never replace an existing comparison preparation")
     predecessor = json.loads((RELEASE / "stock-trial-v7/prepared.json").read_bytes())
+    selected_images = predecessor["images"]
+    if images_path is not None:
+        image_record = json.loads(images_path.read_bytes())
+        selected_images = image_record["images"]
+        if (len(selected_images) != 2
+                or any(not image.startswith("sha256:") for image in selected_images)):
+            raise ValueError("Require two immutable candidate image IDs")
+        shutil.copyfile(images_path, root / "image-selection.json")
+    if not root.name or any(c not in "abcdefghijklmnopqrstuvwxyz0123456789-" for c in root.name):
+        raise ValueError("Experiment directory needs a Docker-safe lowercase name")
+    container_prefix = "mxwave-glm53-" + root.name
     originals = [identity(inspect(rank, ORIGINAL[rank])) for rank in (0, 1)]
     for rank in (0, 1):
         if originals[rank] != predecessor["originals"][rank]:
@@ -34,12 +46,17 @@ def prepare(root: Path) -> None:
     (root / "reports").mkdir(exist_ok=True)
     templates = []
     for rank, server in enumerate(predecessor["servers"]):
-        image = predecessor["images"][rank]
+        old_image, image = predecessor["images"][rank], selected_images[rank]
         argv = list(server["argv"])
-        image_index = argv.index(image)
+        image_index = argv.index(old_image)
         prefix = [part.replace(str(RELEASE / "stock-trial-v7"), str(root))
                   for part in argv[:image_index]]
         remove_pair(prefix, "--name")
+        if drafter is not None:
+            mounts = [i for i, part in enumerate(prefix) if part.endswith(":/drafter:ro")]
+            if len(mounts) != 1:
+                raise RuntimeError("Require exactly one read-only drafter mount")
+            prefix[mounts[0]] = str(drafter) + ":/drafter:ro"
         prefix += ["-v", str(root) + ":/trial:ro", "--entrypoint", "python3"]
         templates.append((prefix, image))
         # Caches are isolated from prior retained trials and reused only sequentially.
@@ -66,7 +83,7 @@ def prepare(root: Path) -> None:
                 (root / name).write_text(run(1, ["cat", str(root / name)]))
     clones = []
     for rank in (0, 1):
-        name = f"mxwave-glm53-deployment-v1-quality-a-r{rank}"
+        name = f"{container_prefix}-quality-a-r{rank}"
         result = json.loads(run(rank, ["python3", "-S", str(root / "prepare_quality_clone.py"),
                                       "--original", ORIGINAL[rank], "--name", name]))
         write(root / f"quality-clone-rank{rank}.json", result)
@@ -75,7 +92,7 @@ def prepare(root: Path) -> None:
     def candidate(stage: str, mode: str) -> list[dict[str, Any]]:
         result = []
         for rank, (prefix, image) in enumerate(templates):
-            name = f"mxwave-glm53-deployment-v1-{stage}-r{rank}"
+            name = f"{container_prefix}-{stage}-r{rank}"
             result.append({"rank": rank, "name": name,
                            "argv": [*prefix, "--name", name, image,
                                     "/trial/compare_boot.py", mode, str(rank), stage]})
@@ -85,6 +102,11 @@ def prepare(root: Path) -> None:
                   for rank in (0, 1)]
     stages = []
     owned = list(clones)
+    compatibility = candidate("compatibility", "timing")
+    owned += compatibility
+    stages.append({"name": "compatibility-B", "mode": "compatibility", "arm": "B",
+                   "kind": "candidate", "port": 8046, "servers": compatibility,
+                   "client_timeout_seconds": 600})
     for trial in range(6):
         for arm in ("A", "B"):
             name = f"timing-{arm}-{trial}"
@@ -111,7 +133,8 @@ def prepare(root: Path) -> None:
         if check["status"] != "passed" or check["gpu_used"]:
             raise RuntimeError("Both no-GPU preflights must pass")
     selected = [*root.glob("*.py"), *(root / name for name in inputs),
-                *root.glob("launch-*.json"), *root.glob("cpu-preflight-*.json")]
+                *root.glob("launch-*.json"), *root.glob("cpu-preflight-*.json"),
+                *root.glob("image-selection.json")]
     files = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(selected)}
     plan = {"status": "passed", "originals": originals, "stages": stages, "owned": owned,
             "outage_seconds": 36000, "files": files, "speculative_quality": False,
@@ -120,8 +143,11 @@ def prepare(root: Path) -> None:
                                      "attempt both independent full GSM8K arms, restore originals",
             "cache_control": "Unique per-request salts; same salts in both arms, warmup separate; "
                              "verify positive same-salt reuse and zero fresh-salt hits on GPU",
-            "known_failures": ["stock self-repeat KL", "prefix output identity",
-                               "zero draft acceptance in six-request C1 profile"],
+            "known_failures": ["stock self-repeat KL", "prefix output identity"],
+            "drafter_correction": "Pinned config-only BF16 conv exclusions; weight bytes unchanged",
+            "compatibility_policy": "Check 500k, actual allocation, positive draft acceptance and "
+                "prefix reuse before timing; retain output identity failures as failed quality gates",
+            "missing_production_optimizations": predecessor["missing_production_optimizations"],
             "comparison": "Complete deployments; unavailable production optimizations disclosed"}
     write(root / "prepared.json", plan)
     print(json.dumps({"status": "prepared", "stages": len(stages), "lease_hours": 10,
@@ -133,8 +159,10 @@ def main() -> None:
     """Prepare one explicitly named private experiment directory on Spark1."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", required=True, type=Path)
+    parser.add_argument("--images", type=Path)
+    parser.add_argument("--drafter", type=Path)
     args = parser.parse_args()
-    prepare(args.root)
+    prepare(args.root, images_path=args.images, drafter=args.drafter)
 
 
 if __name__ == "__main__":

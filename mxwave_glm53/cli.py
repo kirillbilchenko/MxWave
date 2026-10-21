@@ -12,13 +12,13 @@ from pathlib import Path
 from typing import Any
 
 from .bundle import (
-    DRAFTER_FILES,
     MODEL_FILES,
     VLLM_VERSION,
     prepare_bundle,
     verify_bundle,
     verify_files,
 )
+from .drafter import prepare_drafter, verify_drafter
 
 
 def doctor(bundle: Path | None = None, *, gpu: bool = False) -> dict[str, Any]:
@@ -91,7 +91,7 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
         raise ValueError("Invalid serving capacity, graph sizes or vocabulary mode")
     verify_bundle(args.bundle)
     verify_files(args.model, MODEL_FILES)
-    verify_files(args.drafter, DRAFTER_FILES)
+    verify_drafter(args.drafter)
     shards = json.loads((args.model / "model.safetensors.index.json").read_bytes())["weight_map"]
     for name in set(shards.values()):
         if Path(name).name != name or not (args.model / name).is_file():
@@ -161,6 +161,9 @@ def main() -> None:
     prepare = commands.add_parser("prepare-bundle", help="Export existing verified runtime assets")
     prepare.add_argument("--from-experiment", type=Path, required=True)
     prepare.add_argument("--output", type=Path, required=True)
+    draft = commands.add_parser("prepare-drafter", help="Correct pinned Modal FP8 metadata for vLLM")
+    draft.add_argument("--source", type=Path, required=True)
+    draft.add_argument("--output", type=Path, required=True)
     check = commands.add_parser("doctor", help="Check installation; GPU inspection is optional")
     check.add_argument("--bundle", type=Path)
     check.add_argument("--gpu", action="store_true")
@@ -193,6 +196,8 @@ def main() -> None:
     try:
         if args.action == "prepare-bundle":
             result = prepare_bundle(args.from_experiment, args.output)
+        elif args.action == "prepare-drafter":
+            result = prepare_drafter(args.source, args.output)
         elif args.action == "doctor":
             result = doctor(args.bundle, gpu=args.gpu)
         else:

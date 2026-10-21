@@ -96,3 +96,43 @@ def test_watchdog_stops_orphaned_client_before_production_restore(
     module.watch(tmp_path, 100, "parent")
     assert events == [("stop", 200), ("restore", tmp_path)]
     assert "disappeared" in json.loads((tmp_path / "controller.json").read_bytes())["error"]
+
+
+@pytest.mark.parametrize("accepted", [0, 2])
+def test_corrected_compatibility_rejects_zero_acceptance_and_retains_quality_failure(
+    client: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, accepted: int,
+) -> None:
+    """Useful speculation must return, while a prefix-output failure cannot become a pass."""
+    plan = {"salt": "frozen", "cache_probe_ids": [1, 2], "banks": {
+        domain: {"short": [{"prompt_ids": [1, 2]}]} for domain in ("code", "chat")}}
+    (tmp_path / "workloads.json").write_text(json.dumps(plan))
+
+    class FakeClient:
+        def request(self, path: str, *args: Any) -> bytes:
+            if path == "/v1/models":
+                return json.dumps({"data": [{"max_model_len": 500000}]}).encode()
+            return json.dumps({"results": [{
+                "rank": rank, "max_model_len": 500000, "kv_cache_memory_bytes": 6 * 1024**3,
+                "head_weight_dtype": "torch.bfloat16", "vocab_mode": "embedding",
+            } for rank in (0, 1)]}).encode()
+
+    outputs = iter([[10], [11], [12], [13], [13]])
+
+    def fake_cohort(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        return {"api_errors": 0, "counters_delta": {
+            'vllm:spec_decode_num_accepted_tokens_total{engine="0"}': accepted},
+            "requests": [{"token_ids": next(outputs)}]}
+
+    monkeypatch.setattr(client, "cohort", fake_cohort)
+    monkeypatch.setattr(client, "cache_probe", lambda *args: {"passed": True})
+    if accepted == 0:
+        with pytest.raises(RuntimeError, match="zero draft acceptance"):
+            client.compatibility(tmp_path, FakeClient())
+        assert not (tmp_path / "compatibility-B/result.json").exists()
+    else:
+        client.compatibility(tmp_path, FakeClient())
+        result = json.loads((tmp_path / "compatibility-B/result.json").read_bytes())
+        assert result["status"] == "execution_ready"
+        assert not result["prefix_output_identity_passed"]
+        assert not result["existing_target_kl_gate_passed"]
+        assert not result["quality_qualified"] and not result["speed_qualified"]

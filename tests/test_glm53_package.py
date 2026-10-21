@@ -103,12 +103,15 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
     draft.mkdir()
     (model / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {}}))
     monkeypatch.setattr(cli, "verify_files", lambda root, files: None)
+    checked_drafters = []
+    monkeypatch.setattr(cli, "verify_drafter", checked_drafters.append)
     args = argparse.Namespace(
         bundle=target, model=model, drafter=draft, reports=tmp_path / "reports",
         node_rank=1, master_addr="10.0.0.1", master_port=29719,
         port=8046, host="127.0.0.1", max_model_len=32768, kv_cache_gib=10,
     )
     command, env = cli.launch_command(args)
+    assert checked_drafters == [draft], "Serving must validate the corrected drafter metadata"
     assert "--headless" in command, "The TP follower must not start another engine/API server"
     args.node_rank = 0
     leader_command, _ = cli.launch_command(args)
