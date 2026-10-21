@@ -1,5 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
+**Final — 21 October, 21:58 UTC: both Sparks are offline after accepted poweroff.**
+All measurements are finished; original production was restored and verified before
+shutdown. Complete experiment/source/report backups independently verify on Mac and
+both Sparks. No further jobs or automatic promotion are queued. CT is retained as
+experimental opt-in; original production remains the default configuration.
+The post-shutdown observation is recorded locally in the [handoff](GLM53_HANDOFF.md).
+
 **21 October, 21:54 UTC: finished and verified.** The final reduced comparison ends
 `complete_restored` at **21:53:12 UTC** after **57.94 minutes**. All eight stages
 complete, all 733 evidence payloads independently verify on Mac and Spark2, and exact

@@ -17,7 +17,9 @@ are complete deployments with different draft policies and runtime optimizations
 The final 300-question speculation-off GSM8K screen is complete: production
 **289/300 (96.33%)**, CT **287/300 (95.67%)**, zero API errors or truncations in
 both arms. This small subset does not establish equivalence or a meaningful gap.
-This is an **experimental opt-in recipe**, with no promotion.
+This is an **experimental opt-in recipe**, with no promotion. Original production
+was restored before both Sparks were powered off; complete source and evidence
+backups were independently verified first. No more experiments are queued.
 The original strict KL and output-repeat failures remain recorded. A 500k startup
 is not a 32k/128k retrieval or long-context quality qualification; those probes
 were deliberately omitted from the final bounded screen.

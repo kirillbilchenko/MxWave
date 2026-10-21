@@ -1,5 +1,30 @@
 # GLM compression experiment handoff
 
+**Final closeout — 21 October 2026, 21:58 UTC: both Sparks shut down; work stopped.**
+Both machines accepted the requested scheduled poweroff: Spark1 **21:57:33 UTC**,
+Spark2 **21:57:36 UTC**. Direct SSH connections to both time out at **21:58:44 UTC**.
+No experiments or controllers remain queued. Original production was restored and
+verified healthy/idle before shutdown; its configuration remains unchanged for a
+future restart. No candidate promotion occurred.
+
+Before poweroff, both nodes independently verified the **733 raw evidence payloads**
+and all **8 closeout files**, including the complete source-history bundle at
+**`7d487b93c4062312cdf55a9e52091ccdfd13e7f3`**, final report, working recipe and
+independent review. Source bundle SHA256:
+`79165e42a2458ff4fa7394091db3924c2e15c418b8401176f53b6a2b3ed5fa76`.
+Closeout archive `deployment-quick-v1-closeout.tar.gz`, SHA256
+`ec71ffb973068f0ec46a37c388cfd65f4727b561420e02c1eb29d9efd4310627`.
+Both archives and the source bundle are also retained on Mac under `out/`.
+
+The post-command receipt copy was refused by **PAM nologin on both hosts** after
+shutdown had been scheduled. This affects only that new receipt; complete source
+and experiment backups were already verified. Post-shutdown observations and this
+final bookkeeping update are retained on Mac:
+`out/glm53-package-v1/shutdown-requests.json` and `shutdown-observation.json`.
+Do not restart the experiments automatically. The final outcome is **experimental
+opt-in CT**, with the original production configuration retained as default.
+The measurements, limitations and publication status below are the completed record.
+
 **21 October 2026, 21:54 UTC: final screen complete, exact production restored, evidence verified.**
 The controller ends **`complete_restored` at 21:53:12 UTC**, with all eight stages
 complete and no stage errors. Both original container/image/config/mount identities
