@@ -1,0 +1,39 @@
+"""Independently verify retained completed chunks without publishing a training dataset."""
+from __future__ import annotations
+import argparse, collections, hashlib, json, pathlib, sys, time
+
+parser=argparse.ArgumentParser();parser.add_argument('--rank',type=int,choices=[0,1],required=True)
+args=parser.parse_args()
+root=pathlib.Path('/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/drafter-full-capture-v1')
+sys.path.insert(0,str(root/'export_lib'))
+from integrations.glm53_mxfp4.drafter_capture_pairing import compare_ranks,file_digest
+plan=json.loads((root/'plan.json').read_bytes());plan_sha=file_digest(root/'plan.json')
+assert plan_sha=='4d97fd7c23e359c0f76fa95f08bf7da2a5323dddcfd3bccb5b7294058411aacd'
+rows=[];receipts={};next_start=0
+for path in sorted(root.glob('paired-*.json')):
+    paired=json.loads(path.read_bytes());start,stop=paired['start'],paired['stop']
+    assert start==next_start and stop-start==64 and paired['plan_sha256']==plan_sha
+    rank_files=[root/f'export-{start:04d}-{stop:04d}-r{rank}.json' for rank in [0,1]]
+    for other in rank_files:assert file_digest(other)==paired['rank_receipts'][other.name]
+    expected=compare_ranks(*[json.loads(other.read_bytes()) for other in rank_files])
+    assert all(paired[key]==value for key,value in expected.items())
+    for row,case in zip(paired['rows'],plan['calibration_cases'][start:stop],strict=True):
+        assert row['id']==case['id'] and row['split']==case['split']
+        assert row['different_elements']==0
+        payload=root/'accepted'/row['path']
+        assert payload.is_file() and not payload.is_symlink()
+        assert payload.stat().st_size==row['bytes'] and file_digest(payload)==row['sha256']
+    rows.extend(paired['rows']);receipts[path.name]=file_digest(path);next_start=stop
+assert rows and not (root/'accepted/manifest.json').exists()
+raw=list((root/f'ct-r{args.rank}').glob('context-*.safetensors'))
+report={'status':'partial_chunks_independently_verified','rank':args.rank,'epoch':time.time(),
+        'plan_sha256':plan_sha,'paired_receipts':receipts,'verified_prompts':len(rows),
+        'accepted_bytes':sum(row['bytes'] for row in rows),
+        'feature_rows':sum(row['feature_rows'] for row in rows),
+        'numpy_bf16_elements_compared':sum(row['numpy_bf16_elements_compared'] for row in rows),
+        'different_elements':0,'unexported_raw_files_preserved':len(raw),
+        'unexported_raw_bytes_preserved':sum(path.stat().st_size for path in raw),
+        'training_dataset_complete':False,'training_started':False,'sealed_test_opened':False,
+        'verified_rows':rows}
+(root/f'user-stop-preservation-r{args.rank}.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps({key:value for key,value in report.items() if key!='verified_rows'}))

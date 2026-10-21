@@ -1,5 +1,14 @@
 # CT drafter: verified features and context-projection pilot
 
+**21 October 2026: full capture stopped at the user’s request; pretrained test moved forward.**
+Capture ends at 1,095 prompts; original production restores healthy at 05:46:55 UTC,
+with its original 500,000-token context. Both Sparks independently rehash all
+1,088 prompts in 17 completed chunks: 13.10 GB retained per node, zero differences.
+Unexported raw files remain. Training stays stopped; the incomplete capture is
+not published as a full training dataset. All eight CPU preflights pass; the shorter
+BF16/FP8 comparison now starts under its own restoration watchdog. Production
+is temporarily paused for this new comparison. [Current details](GLM53_PRETRAINED_DRAFTERS.md).
+
 **21 October 2026, 05:42 UTC: automatic training held; pretrained BF16/FP8 comparison queued.**
 The user prefers avoiding adaptation if an existing drafter performs well. Modal’s
 six-layer DFlash2 passes strict CPU loading and both installed vLLM helper checks.

@@ -1,5 +1,48 @@
 # GLM compression experiment handoff
 
+<!-- CAPTURE_USER_STOP_BEGIN -->
+**21 October 2026: user stops the long capture to prioritize pretrained BF16/FP8.**
+At **05:44:17 UTC**, verified waiting queue PID 677064 is stopped, then the
+capture controller PID 3702964 receives SIGTERM through its restoration handler.
+Capture stops after **1,095 prompts** (plus six before/after control requests).
+All three completed controls pass output tokens and speculative counters.
+Original production restores at **05:46:55 UTC**, healthy with exact original
+identities and **500,000 context**. `failed_restored` and the signal-15 error
+are expected cancellation records, not a new model failure. Finalizer exits 0
+and records `partial-capture.json`; no complete training manifest is published.
+
+Both hosts independently rehash all **1,088 accepted payloads / 17 paired chunks**.
+They retain identical **13,097,763,612 bytes** and **319,628 feature rows** each.
+Paired NumPy audits cover **13,091,962,880 BF16 elements across both ranks**, zero
+differences. All 233 remaining raw files / 157,500,812 bytes per node are left
+in place. The seven captured but unexported prompts are not claimed verified.
+CPU training remains held; future partial-data use requires its own valid plan.
+
+New launcher **PID 716651** (`launch_after_capture_stop.py`) validates the explicit
+stop receipt, expected cancellation, healthy 500k restoration, both complete
+partial-data audits and unchanged pretrained source/plan hashes. It then starts
+the existing preparation and bounded restoring controller. Current state file:
+`full-model-v1/drafter-pretrained-modal-v1/after-stop-status.json`. The old
+`queue.json` is stale; its waiter has been stopped. The initial phase is `prepare`;
+there is no remaining dependency on completion of the 4,200-prompt capture.
+Original/Inco FP8 → Modal BF16 → Modal FP8 → original/Inco FP8, unchanged
+eight development prompts and six trials/load, same target and seed. Plan SHA
+`52ed3ed2ad97f0de5b05c06342ce04ccc9c866ff82f069d519a6d054a4b8c1e8` remains fixed.
+The comparison has its own 60-minute restoration watchdog; no training or
+candidate promotion is authorized by this launcher. Sealed test stays closed.
+
+Local evidence: `out/drafter-alternatives-v1/user-stop/`; committed summary
+`diagnostics-v1/drafter-capture-user-stop-v1-review.json`. Ruff, strict core mypy
+and the full pytest suite pass, including cancellation/restoration guard tests.
+
+**05:48 UTC:** all eight CLI/config CPU preflights pass, with **211 runtime
+bindings per rank**. New comparison controller **728927**, restoration watchdog
+**728928**; launcher 716651 is `run-prepared`. The controller has begun stopping
+original production for the shorter comparison. Thus the 05:46:55 restoration
+was verified, and production is temporarily paused again for the new authorized
+bounded test. No pretrained inference/acceptance/speed result is available yet.
+<!-- CAPTURE_USER_STOP_END -->
+
 <!-- PRETRAINED_DRAFTER_BEGIN -->
 **21 October 2026, 05:39 UTC: check pretrained drafters before further adaptation.**
 The user requests a cheaper pretrained route and clarifies **FP8**, not FP6.

@@ -4,8 +4,11 @@ Updated **21 October 2026, 05:42 UTC**. The user prefers checking a pretrained
 FP8 drafter before paying for adaptation. Automatic CPU training is held:
 the idle continuation v2 PID 80216 was stopped before any optimizer update.
 Its frozen files and status remain; `held-for-alternatives.json` records the
-supersession. The original GPU capture continues with its existing watchdog,
-verification and restoration policy. No capture data was restarted or discarded.
+supersession. At the user’s request, GPU capture stopped at 1,095 prompts. Its handler restored
+original production healthy at 05:46:55 UTC with 500,000 context. All 1,088
+accepted exports in 17 completed chunks independently rehash on both Sparks
+(13,097,763,612 bytes per node); unexported raw files remain. The incomplete
+dataset is not published for full training.
 
 ## Verified CPU results
 
@@ -65,8 +68,10 @@ precision differs between Modal BF16 and its FP8 derivative. Startup verifies
 checkpoint hashes and the actual replicated context weight against its source.
 No feature-copy instrumentation remains in the timed run.
 
-The queue must wait for complete verified capture and restored production.
-It must not start if capture fails or its plan changes. The existing restoring
+The original full-capture waiter was stopped. A replacement launcher accepts
+only the explicit user-stop receipt, expected signal-15 cancellation, healthy
+original restoration and independently matching retained chunks. Arbitrary
+capture failures or changed source/plan hashes still prevent launch. The existing restoring
 controller bounds the new outage to 60 minutes and restores the original
 500,000-context service on success or failure. Allow approximately 30–50 minutes
 for this screen after capture/restoration, subject to compilation and warmup.
@@ -97,3 +102,14 @@ checkpoint/config files hash-verify independently on both Sparks. The run root
 is `full-model-v1/drafter-pretrained-modal-v1`; read `queue.json`, then
 `controller.json` and the per-arm measurement files. The two candidate model
 directories are siblings suffixed `-modal-checkpoint` and `-modal_fp8-checkpoint`.
+
+**User-stop continuation:** the active launcher is PID **716651**, with state
+`after-stop-status.json`, initially `prepare`. The old PID 677064 and its
+`queue.json` are superseded. `after-stop-readiness.json` binds restoration and
+partial-data preservation to the unchanged benchmark plan. All required checks
+pass; there is no pretrained acceptance or speed result at this checkpoint.
+
+All **eight CPU preflights pass**, with 211 runtime bindings per rank. At
+05:48 UTC the new controller **728927** and watchdog **728928** start the
+bounded comparison; production is temporarily paused again. Read
+`controller.json` for arm progress and `after-stop-status.json` for the launcher.
