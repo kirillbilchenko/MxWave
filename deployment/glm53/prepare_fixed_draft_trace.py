@@ -39,13 +39,17 @@ env['MXWAVE_DRAFT_REQUIRE_BF16_CONV'] = '1'
 from vllm.model_executor.layers.quantization.fp8 import Fp8Config
 from vllm.model_executor.layers.quantization.utils.quant_utils import is_layer_skipped
 from vllm.model_executor.models.qwen3_dflash2 import DFlashGroupedConv
+from unittest.mock import patch
+from types import SimpleNamespace
 fixed_config = json.loads(Path('/drafter-fixed/config.json').read_text())
 fixed_quant = Fp8Config.from_config(fixed_config['quantization_config'])
 cpu_conv_checks = []
 for layer_id in range(45, 51):
     for side in ('attention_conv', 'mlp_conv'):
         prefix = f'model.layers.{layer_id}.{side}'
-        module = DFlashGroupedConv(4096, 2, 16, 6, torch.bfloat16, prefix, fixed_quant)
+        with patch('vllm.distributed.parallel_state._TP',
+                   SimpleNamespace(rank_in_group=0, world_size=2)):
+            module = DFlashGroupedConv(4096, 2, 16, 6, torch.bfloat16, prefix, fixed_quant)
         proj = module.kernel_projection
         assert proj.weight.dtype == torch.bfloat16
         assert type(proj.quant_method).__name__ == 'UnquantizedLinearMethod'
@@ -90,7 +94,13 @@ for layer_id in range(45, 51):
         cpu = [v.replace(":/profile:ro", ":/profile:rw").replace(
             "/profile/profile_boot.py", "/profile/cpu_preflight.py") for v in cpu]
         cpu[2:2] = ["--rm", "--cpus", "4"]
-        (root / f"cpu-preflight-rank{rank}.log").write_text(run(rank, cpu, timeout=240))
+        try:
+            cpu_output = run(rank, cpu, timeout=240)
+        except RuntimeError as exc:
+            with (root / f"cpu-preflight-rank{rank}-failure.log").open("a") as failure:
+                failure.write(str(exc) + "\n")
+            raise
+        (root / f"cpu-preflight-rank{rank}.log").write_text(cpu_output)
         if rank == 1:
             for name in ("cpu-preflight-rank1.json", "launch-rank1.json", "conv-cpu-rank1.json"):
                 (root / name).write_text(run(1, ["cat", str(root / name)]))

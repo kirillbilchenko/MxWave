@@ -51,15 +51,23 @@ def main() -> None:
         size = struct.unpack("<Q", stream.read(8))[0]
         header = json.loads(stream.read(size))
     fixed, exclusions = corrected_config(config, header, 45)
+    with weight.open("rb") as stream:
+        weight_hash = hashlib.file_digest(stream, "sha256").hexdigest()
+    if weight_hash != "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46":
+        raise ValueError("Unrecognized drafter weights; do not launch")
+    if output.exists():
+        existing = json.loads((output / "compatibility.json").read_bytes())
+        if (json.loads((output / "config.json").read_bytes()) != fixed
+                or not os.path.samefile(weight, output / weight.name)
+                or existing["weights_sha256"] != weight_hash):
+            raise ValueError("Existing corrected drafter does not match; preserve it")
+        print(json.dumps(existing))
+        return
     output.mkdir(exist_ok=False)
     for path in source.iterdir():
         if path.is_file() and path.name != "config.json":
             os.link(path, output / path.name)
     (output / "config.json").write_text(json.dumps(fixed, indent=2) + "\n")
-    with weight.open("rb") as stream:
-        weight_hash = hashlib.file_digest(stream, "sha256").hexdigest()
-    if weight_hash != "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46":
-        raise ValueError("Unrecognized drafter weights; do not launch")
     receipt = {
         "source": str(source), "output": str(output), "weights_sha256": weight_hash,
         "weights_same_inode": os.path.samefile(weight, output / weight.name),
