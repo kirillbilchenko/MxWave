@@ -70,6 +70,17 @@ def main() -> None:
     assert capacity_args.enable_prefix_caching and capacity_args.max_model_len == 500000
     assert capacity_args.max_num_seqs == 32 and capacity_args.max_num_batched_tokens == 6919
     assert capacity_environment["MXWAVE_GLM53_VOCAB_MODE"] == "embedding"
+    assert not capacity_args.headless
+    launch.node_rank = 1
+    launch.load_format = "runai_streamer"
+    follower_command, _ = launch_command(launch)
+    follower_args = parser.parse_args(follower_command[3:])
+    next(item for item in commands if item.name == follower_args.subparser).validate(follower_args)
+    assert follower_args.headless and follower_args.node_rank == 1
+    assert follower_args.load_format == "runai_streamer"
+    assert follower_args.model_loader_extra_config == {
+        "memory_limit": 2 * 1024**3, "concurrency": 8,
+    }
     from vllm.v1.worker.gpu_worker import Worker
 
     from mxwave_glm53._runtime.kda_mxfp8_runtime import method_type
@@ -85,6 +96,7 @@ def main() -> None:
         "cli_validated": True, "launch_command": command, "launch_environment": environment,
         "capacity_cli_validated": True, "capacity_command": capacity_command,
         "capacity_environment": capacity_environment,
+        "follower_cli_validated": True, "follower_command": follower_command,
         "gpu_model_qualification": "pending",
     }
     Path("/release/cpu-check.json").write_text(json.dumps(result, indent=2) + "\n")

@@ -109,6 +109,10 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
         port=8046, host="127.0.0.1", max_model_len=32768, kv_cache_gib=10,
     )
     command, env = cli.launch_command(args)
+    assert "--headless" in command, "The TP follower must not start another engine/API server"
+    args.node_rank = 0
+    leader_command, _ = cli.launch_command(args)
+    assert "--headless" not in leader_command
     assert command[command.index("--max-model-len") + 1] == "32768"
     assert command[command.index("--kv-cache-memory-bytes") + 1] == str(10 * 1024**3)
     spec = json.loads(command[command.index("--speculative-config") + 1])

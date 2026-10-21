@@ -74,6 +74,7 @@ The following is the explicit **500k capacity qualification profile**. A configu
 Run on node 1 and then node 0, setting `GLM_NODE_RANK` to 1 and 0 respectively.
 Use node 0's reachable private address for `GLM_MASTER_ADDR`, and each node's own
 address for `GLM_NODE_IP`. Set checkpoint and writable paths for each host.
+The wrapper adds upstream `--headless` on rank 1; only rank 0 runs the API server.
 
 ```bash
 export GLM_NODE_RANK=0

@@ -1,5 +1,80 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 15:00 UTC: isolated full-K GPU comparison active; fast-loader failures retained.**
+`marlin-full-k-v1` started at 14:58:19 UTC under the retained independent
+restoration controller, with a 900-second experiment bound. It compares native,
+bounded padding and the #46639 full-K tail specialization on both TP fixtures,
+holding row blocks and thread configurations fixed. The first negative-control
+numerical checks pass; the changed-proposal case and all timing controls still
+need completion. Production is temporarily stopped for this component run.
+
+Stock-loader CPU screen V1: lazy passes 1,601 tensors / 7,424,963,848 bytes from
+three complete representative shards, fingerprint inventory SHA256
+`bf782d34a78fcf9b41037d91fcd4d4d6a140fb31e32ce09878955ae4fc3e0bcb`.
+Eager is OOM-killed at the 8 GiB process cap. Run:ai with a 1 GiB buffer rejects
+the 1,268,776,960-byte largest tensor. V2 with 2 GiB is aborted after over 150 s
+without a result; memory was about 2.2 GiB and process I/O evidence is retained.
+It is unqualified, not selected as a faster loader. Instrumented V3 (3 GiB,
+180-second bound, phase logs/stack dumps) waits for full-K restoration.
+
+The corrected wheel includes follower `--headless` and an explicit optional
+upstream Run:ai loader configuration; the default remains `auto` until qualification.
+Wheel SHA256: `21ea8f76aa28464a0bb17e0688707e82ac42c3932ff2165ddb127b8d445e81c7`
+(238,073 bytes). Both-node image/CLI checks are queued after the GPU run so they
+do not perturb its timings. Upstream evidence/full-K preparation is committed as
+`007d79f`; no package kernel default or quality gate changes.
+
+**21 October 2026, 14:53 UTC: exact production restored after follower launch failure.**
+`stock-trial-v3` is `failed_restored` at **14:53:15 UTC**. The original container
+identities and authenticated 500k model endpoint are verified. Both candidate
+ranks loaded: logged model-loading time 794.378 s on rank 0 / 254.556 s on rank 1,
+with 81.71 GiB logged on each before final KV/graph allocation. Rank 1 then hit
+`collective_rpc should not be called on follower node`. Our wrapper omitted
+upstream's required `--headless` on the follower; this is a launch-recipe defect,
+not an upstream bug or a failed compression kernel. The flag and leader/follower
+CPU checks are corrected. API/prefix-cache and 500k capacity remain unqualified.
+
+A CPU-only stock-loader screen is queued after restoration, with three complete
+representative shards, exact tensor fingerprints and bounded process memory.
+It checks native lazy, eager and Run:ai streaming (1 GiB buffer, eight readers).
+Timing includes hashing and warmed file cache: it cannot establish cold-start
+speed. No production fast-loader implementation is copied into the package.
+
+The isolated full-K raw/packed libraries compile successfully; the first attempt
+failed because the production image has no CMake, and the retained retry uses
+equivalent explicit NVCC commands. Frozen replay plan SHA256:
+`442aad18caae5f09fd5b65750a478ae82ae078ead2bee8f05ae849b3b8159093`.
+CPU preflight passes six artifact bindings. GPU replay has not started. Existing
+production settings, gates and package kernel defaults remain unchanged.
+
+**21 October 2026, 14:49 UTC: stock trial loading; upstream evidence posted; fast boot gap identified.**
+`stock-trial-v3` is running on both official-image-plus-plugin containers under
+the independent 25-minute watchdog (deadline 15:00:34 UTC). Production is
+temporarily stopped. The component checks pass. Rank 1 finished model loading
+at 14:41 with a logged 81.71 GiB allocation; rank 0 is completing the 120-shard
+load. These are not final allocation measurements after KV and graphs, and API
+readiness/prefix-cache smoke have not passed yet. Capacity flags remain
+500k context / 32 slots / 6 GiB KV / 6,919 prefill / prefix on / dense LM head.
+Upstream automatically raises the attention block size from requested 2304 to
+4608 for hybrid-state page alignment; retain this mismatch in any comparison.
+
+Production's fast boot is the custom `GLM_FAST_LOAD=1` overlay: bounded pinned
+slabs, 16 read threads and 1 GiB read-ahead by default. It was omitted from the
+stock recipe. The default native safetensors loader reads 120 shards lazily;
+rank 0 averages about six seconds/shard, while rank 1 completed much sooner.
+The log reports 170.83 GiB of checkpoint files and 25.3 GiB available RAM, with
+automatic prefetch disabled on EXT4. Do not force whole-checkpoint prefetch.
+Audit stock eager-per-shard / bounded Run:ai loading next, verify tensor bytes
+and memory before selecting a faster default. This is a startup gap, not an
+inference-speed result or a reason to restore production overlays silently.
+
+[Upstream report and attribution record](GLM53_UPSTREAM_REPORTS.md) now links
+the posted GLM/DFlash evidence on #46639 and mHC evidence on existing #59929.
+Sparse compaction already has merged #50365 and the v0.32 helper explicitly
+handles GLM's 2176 columns; no duplicate report was filed. #60524 concerns dense
+WNA16 linears. The isolated #46639 full-K adaptation is staged/hash-verified,
+with provenance recorded; no GPU result or serving-default change yet.
+
 **21 October 2026, 14:35 UTC: upstream GPU components pass; explicit serving defaults corrected.**
 `gpu-check-v3.json` passes on the official image: exact expert U8/BF16 decode,
 raw/packed expert GEMMs with four graph replays at M=1/6/12/16/48, native MXFP8
