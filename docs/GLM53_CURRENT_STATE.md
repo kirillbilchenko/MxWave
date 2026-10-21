@@ -1,11 +1,10 @@
 # GLM lossless experiment: current state and next steps
 
-**21 October 2026, 04:02 UTC: full 4,000/200 capture is running; first 64 prompts pass.**
-Both GPUs export identical accepted data; audits compare 790.8 million BF16
-elements with zero differences, and verified staging cleanup succeeds on both.
-Production is temporarily paused under its restoration watchdog. Plan roughly
-7–8 hours capture, then 4–5 hours conditional CPU training after production restores.
-Handoff and source/results backups are current; no drafter speed gain is claimed.
+**21 October 2026, 04:53 UTC: full capture continues; 576 prompts independently verified.**
+Nine completed batches have identical accepted payloads on both GPUs; NumPy
+checks cover 7.05 billion BF16 elements with zero differences. Both repeat controls
+so far pass. Production is temporarily paused; CPU training waits for verified
+completion and restoration. No new drafter speed gain is established.
 [Current handoff](GLM53_HANDOFF.md).
 
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**

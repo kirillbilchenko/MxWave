@@ -1,5 +1,30 @@
 # GLM compression experiment handoff
 
+<!-- FULL_CAPTURE_PROGRESS_BEGIN -->
+**21 October 2026, 04:53 UTC: capture continues; nine chunks / 576 prompts independently verified on both Sparks.**
+Both nodes retain identical accepted exports: 7,052,377,021 bytes per node and
+172,101 feature rows. Independent NumPy audits cover **7,049,256,960 BF16 elements
+across both ranks, zero differences**. Host verification rehashes all 576 payloads
+per node and all paired receipts; the nine paired-receipt hashes match across nodes.
+Verified cleanup releases 14,804,804,308 raw staging bytes per node while retaining
+accepted exports and raw metadata. About 90 GiB remains free on Spark and 1,020 GiB
+on Spark2. Both before/capture/after controls encountered so far pass exact output
+tokens and speculative counters. Controller remains `measuring_ct`, no error.
+
+Production remains temporarily paused under the restoration watchdog. The local
+CPU continuation is alive in `waiting_for_verified_capture`; it will start only
+after complete verification and restored production. At the observed pace, allow
+roughly **6–7 more hours capture**, followed by **4–5 hours CPU training**; prompt
+mix can change this estimate. Sealed test remains closed. Review:
+`benchmarks/.../diagnostics-v1/drafter-full-capture-v1-progress-0576-review.json`.
+
+Adaptation scope: DFlash2's **4096 × 20480 context projection (`fc.weight`),
+83,886,080 parameters**, is the only trained weight. It maps the five CT feature
+taps into the existing drafter. The resulting checkpoint is specific to this
+CT MXFP4-expert / MXFP8-KDA target; its architecture remains DFlash2. Training,
+native reload, output identity and acceptance/speed qualification are still pending.
+<!-- FULL_CAPTURE_PROGRESS_END -->
+
 <!-- CORRECTED_CAPTURE_BEGIN -->
 **21 October 2026, 04:02 UTC: full capture running; first 64-prompt chunk independently verified.**
 Both ranks export identical 791,123,554-byte accepted datasets (19,306 feature
