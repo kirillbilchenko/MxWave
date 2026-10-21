@@ -148,6 +148,9 @@ def prepare(template: Path, output: Path) -> dict[str, Any]:
     (output / "measure_features.py").write_text(
         (output / "measure_features.py").read_text().replace("from .mtp_metrics", "from mtp_metrics"))
     shutil.copyfile(Path(__file__).with_name("mtp_metrics.py"), output / "mtp_metrics.py")
+    # The launcher updates this status after finalization; it cannot be an immutable payload.
+    replace_one(output / "finalize.py", '"queue.log", "finalize-queue.log"):',
+                '"queue.log", "finalize-queue.log", "run-prepared-status.json"):')
     for path in output.glob("*.py"):
         compile(path.read_bytes(), str(path), "exec")
     frozen = {p.name: digest(p) for p in sorted(output.iterdir())

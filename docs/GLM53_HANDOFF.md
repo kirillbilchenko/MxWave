@@ -1,5 +1,34 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 07:29 UTC: CT-only draft-length comparison running detached.**
+All ten CPU preflights pass, with 211 frozen runtime source bindings per node.
+Launcher **1622309**, controller **1622330**, watchdog **1622434** start the
+7/3/5/off/7 screen; current phase is `starting_s7a`. Original production is
+**temporarily paused**. API 8042 and master 29715 are private to the experiment;
+original 500k containers and configurations are retained for automatic restoration.
+The outage deadline is **08:43:36 UTC**, followed by bounded restoration if needed.
+The run survives laptop disconnection. No result yet; training held and sealed
+closed. Read `full-model-v1/ct-draft-length-v1/controller.json` and per-arm
+`*-measurement.json`; detached launch record is in sibling
+`ct-draft-length-v1-launch/launch.json`.
+
+A prelaunch evidence-retention amendment excludes `run-prepared-status.json`
+from the immutable archive because the launcher updates it after finalization.
+Only `finalize.py` changes; the plan, model/runtime and ten CPU checks remain
+unchanged. Both hosts reverify all 45 sources. Original source/manifest copies and
+`finalizer-amendment.json` retain this amendment. New finalizer SHA256:
+`94f1cd53aad2c804c6a9b34e9a8d84bbdbf373d581697a8311fada36d5d3f6df`.
+
+The prior measurements also show why acceptance is insufficient: median observed
+code decode elapsed time per native draft round is about **68.3 ms production
+versus 96.6 ms CT + Modal FP8**, despite CT needing fewer rounds (71.5 versus60.5
+median rounds per 256 tokens). This ratio includes the whole draft/verify/host
+path, not isolated target GPU kernels, and the setups/outputs differ. A read-only
+public-environment audit finds many production tuning settings absent from the
+CT launch specification; defaults/effective dispatch and their speed impact are
+not established. Keep the running comparison unchanged; its purpose is to
+measure draft depth on CT, not to mix in serving-policy changes.
+
 **21 October 2026, 07:26 UTC: CT draft-length screen frozen; CPU checks in progress.**
 The user redirects the proposed production depth comparison to CT, then authorizes
 continued unattended work. No production depth experiment was launched. Use the

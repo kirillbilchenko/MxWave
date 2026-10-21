@@ -1,5 +1,11 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 07:29 UTC: CT draft-length comparison running.**
+All ten CPU preflights pass. Detached controller 1622330 starts CT + Modal FP8
+at seven drafts; 3/5/off/7 follow. Production is temporarily paused under
+watchdog 1622434; original 500k containers restore automatically. No result yet,
+training held and sealed test closed. [Live status and limits](GLM53_HANDOFF.md).
+
 **21 October 2026, 07:26 UTC: CT-only draft-length screen preparing.**
 The user redirects the next test from production to CT and authorizes unattended
 work. Same CT + Modal FP8 at 7/3/5/off/7 drafts, eight development prompts and six
