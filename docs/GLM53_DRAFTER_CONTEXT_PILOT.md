@@ -1,9 +1,11 @@
 # CT drafter: verified features and context-projection pilot
 
-**21 October 2026, 03:39 UTC: the eight-prompt smoke completes all 12 requests.**
-Both longest-prompt controls pass exact output/counter repeats under the verified
-ordering fixes. Production is restoring; evidence retention and independent
-accepted-feature checks remain pending. Full capture/training has not started.
+**21 October 2026, 03:49 UTC: full 4,000/200 feature capture launched after smoke passes.**
+All 1,203 smoke payloads verify on Mac/Spark2; both GPUs export identical features.
+NumPy compares 305.9 million BF16 elements with zero differences. Production is
+temporarily paused under the restoration watchdog. The conditional CPU training
+continuation is running and waits for verified capture plus restored production.
+No new drafter speed gain is claimed; the sealed test remains closed.
 [Current handoff](GLM53_HANDOFF.md).
 
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**

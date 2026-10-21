@@ -1,51 +1,60 @@
 # GLM compression experiment handoff
 
 <!-- CORRECTED_CAPTURE_BEGIN -->
-**21 October 2026, 03:30 UTC: corrected eight-prompt capture smoke prepared; CPU preflight starting.**
-User authorized the next smoke and full 4,000/200 capture/training continuation.
-`drafter-fresh-capture-smoke-v4` preserves the original eight frozen prompts,
-including 3,973-token training and 2,248-token validation controls, each with
-before/capture/after output and speculative-counter checks. Twelve requests total,
-128 output tokens, original drafter, seven drafts, prefill budget 4,096.
-Both numerical ordering fixes and the existing expert/mHC policies are inherited
-from the independently verified `drafter-canonical-decode-v1` run. No operation
-observers or full-logit retention; component timing qualification is inherited.
+**21 October 2026, 03:49 UTC: fresh smoke passes; full 4,000/200 capture launched.**
+All 12 requests complete, including exact before/capture/after tokens and
+speculative counters for the 3,973-token train and 2,248-token validation controls.
+Original production is restored and healthy with 500,000 context. All **1,203**
+archived payloads independently verify on Mac and Spark2. The accepted export
+contains 7,468 feature rows (306,018,956 bytes); both GPUs are bit-identical.
+An independent NumPy audit compares **305,889,280 BF16 elements with zero
+differences**. Replaying the incremental full-capture exporter on both ranks
+produces exactly the same eight payload hashes and passes its independent audit.
 
-Plan SHA `ddebc9515d29877255cfcd6aa3432fea6260f734bebafd825777adfaea344405`,
-43 frozen files, private port 8036 / master 29709. Full local ruff, strict mypy
-and pytest checks pass. Source upload and two-node CPU preflights are in progress;
-production is still running. The controller/watchdog will restore original
-500,000-context production on every GPU-run exit.
+Smoke plan SHA `ddebc9515d29877255cfcd6aa3432fea6260f734bebafd825777adfaea344405`.
+Archive: 892,749,347 bytes, SHA
+`53e3df7f3854f5f9e060717038035adfcc2b9a1bc2d31f61930b7d1677fbfd5f`.
+Spark2 backup: `full-model-v1/drafter-fresh-capture-smoke-v4-retained-backup/`.
+Reviews and receipts are retained in `out/drafter-fresh-capture-smoke-v4/` and
+`benchmarks/.../diagnostics-v1/`. Source commits `d943a89` and `db25233` are
+verified in Spark2's Git backup.
 
-Full capture remains conditional on successful smoke, complete retained evidence,
-bit-identical accepted-feature exports across both GPUs, and independent NumPy
-review. No sealed-test access or training has occurred. The full-capture preparer
-now derives source ports/revision from the passing smoke instead of assuming v3.
-Incremental exports explicitly use 0644 for host readers; accepted directories
-are created by the host before root-owned container writes. A new verifier binds
-both installed ordering policies and source hashes to the prior qualification.
+The frozen full capture is `drafter-full-capture-v1`: **4,000 train / 200 validation**,
+12 before/capture/after controls, **4,224 requests**, original fixed-seven drafter,
+128 output tokens, same qualified sparse-prefill/decode and expert/mHC policies.
+Plan SHA `4d97fd7c23e359c0f76fa95f08bf7da2a5323dddcfd3bccb5b7294058411aacd`,
+52 source files; private 8037 / master 29710. Both CPU preflights pass; the full GPU capture is launched.
+Sealed test stays closed. Launcher PID 3702963; controller PID 3702964;
+restoration watchdog PID 3702965. Original production is temporarily paused.
+Run root on both Sparks:
+`/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1/drafter-full-capture-v1`.
+Read `controller.json`, `ct-measurement.json` and `ct-client.log` there for progress.
+Emergency restoration is the run's `python3 -S -B control.py --restore`;
+normal completion/failure automatically restores original 500,000-context service.
 
-**21 October 2026, 03:31 UTC: smoke GPU run launched after both CPU preflights pass.**
-Controller launcher PID 3565172; original production is temporarily paused under
-its restoration watchdog. Source checkpoint `d943a89`, bundle SHA
-`ed6ede6741409d7276659ead5253840ad9ecec308e47d38fbdd05144067d38bc`,
-verified in Spark2's Git backup. Captured results are pending.
+Accepted features are exported and independently NumPy-audited every 64 prompts
+on each GPU. Raw staging is released only after both payload hashes and history
+statistics match; accepted copies, raw metadata and receipts remain on both Sparks.
+Estimated accepted data is 41.53 GiB per node; free space before launch is about
+97 GiB on Spark and over 1 TiB on Spark2, with a 20 GiB guard. The controller has
+a 12-hour client deadline plus startup/restoration allowance and a separate
+restoration watchdog.
 
-**21 October 2026, 03:39 UTC: all 12 smoke requests complete; both repeat controls pass.**
-The 3,973-token train and 2,248-token validation prompts have identical
-before/capture/after output tokens and speculative counters. All eight prompts
-are captured. Original production restoration is in progress; archive retention,
-paired feature export and independent NumPy audit remain pending.
-
-The full continuation is now implemented and locally tested. It waits for the
-frozen full-capture plan to finish, restore original production and publish
-identical verified manifests on both Sparks. Only then does it transfer accepted
-features to Mac, verify every payload against the frozen 4,000/200 corpus, and
-run the frozen CPU trainer. It conditionally exports only an offline-selected
-`fc.weight` into a copy of the original native checkpoint and backs up results
-to Spark2. It never switches serving or opens the sealed test. Tests reject
-failed captures/finalization, changed plans and missing restoration before any
-transfer or training subprocess. Full capture/training has not started.
+The conditional CPU continuation is frozen at
+`out/drafter-full-training-v1/continuation-v1/` (15 files; running since 03:48 UTC).
+Mac PID **19984**, keep-awake PID **19985**; current phase
+`waiting_for_verified_capture`. Local machine-readable progress is
+`out/drafter-full-training-v1/continuation-v1/continuation-status.json`;
+`continuation.log` records transitions and `training.log` will contain CPU updates.
+Only after complete capture, restored production and identical verified manifests
+on both Sparks does it transfer accepted features to Mac, verify every payload
+against the frozen corpus and run up to 4,000 updates of **fc.weight only**.
+Protocol SHA `43d2261165f800e9e54e553a000495d84a36777ba73b21d284bee5992c2d11ed`.
+It conditionally exports an offline-selected projection into the original native
+FP8 checkpoint and verifies result retention on Spark2. It never switches serving.
+Approximate planning budget remains 8 hours GPU capture plus 4–5 hours CPU training;
+the first full chunk will refine capture time. The old pilot remains speed-neutral;
+no new native acceptance or serving gain is claimed.
 <!-- CORRECTED_CAPTURE_END -->
 
 <!-- LONG_DECODE_BEGIN -->
