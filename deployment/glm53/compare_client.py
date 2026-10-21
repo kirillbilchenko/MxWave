@@ -215,6 +215,8 @@ def timing(root: Path, arm: str, trial: int, client: Client) -> None:
     state: dict[str, Any] = {"arm": arm, "trial": trial, "status": "running",
                             "qualification_passed": False, "completed_cells": []}
     write(output / "progress.json", state)
+    if arm == "A" and trial == 0 and "production_repeat_prompt_ids" in plan:
+        production_repeat(root, client, plan["production_repeat_prompt_ids"])
     probe = cache_probe(client, plan["cache_probe_ids"], f"{plan['salt']}-probe-{trial}")
     write(output / "cache-probe.json", probe)
     if not probe["passed"]:
@@ -277,14 +279,62 @@ def gsm_case(client: Client, case: dict[str, Any], protocol: dict[str, Any],
     return row
 
 
+def validate_quality_protocol(protocol: dict[str, Any]) -> None:
+    """Require either the full benchmark or the explicitly frozen 300-question screen."""
+    count = protocol["questions_per_arm"]
+    indices = [case["source_index"] for case in protocol["cases"]]
+    if (count not in (300, 1319) or len(indices) != count or len(set(indices)) != count
+            or any(not isinstance(i, int) or not 0 <= i < 1319 for i in indices)
+            or protocol["speculative_decoding"] or protocol["retries"] != 0):
+        raise RuntimeError("Require a complete frozen speculation-off, no-retry quality protocol")
+    if count == 300:
+        expected = sorted(sorted(range(1319), key=lambda i: hashlib.sha256(
+            f"glm53-quick-quality-v1:{i}".encode()).digest())[:300])
+        if (indices != expected or protocol.get("selection") != "sha256-source-index-v1"
+                or protocol.get("selected_source_indices") != expected):
+            raise RuntimeError("The 300-question screen must use the frozen answer-independent sample")
+
+
+def production_repeat(root: Path, client: Client, prompt: list[int]) -> None:
+    """Record one two-request noise-floor screen on production as actually served."""
+    result: dict[str, Any] = {"scope": "Two cold 4k-class requests, deployed speculation policy",
+                             "full_vocabulary_kl_measured": False, "runs": []}
+    for index in range(2):
+        body = {"model": "glm-5.3-flash", "prompt": prompt, "max_tokens": 32,
+                "min_tokens": 32, "ignore_eos": True, "temperature": 0, "seed": 42,
+                "logprobs": 20, "return_tokens_as_token_ids": True, "return_token_ids": True,
+                "add_special_tokens": False, "cache_salt": f"glm53-quick-repeat-{index}"}
+        try:
+            response = json.loads(client.request("/v1/completions", body, timeout=180))
+            result["runs"].append({"response": response})
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
+            result["runs"].append({"error": repr(exc)})
+        write(root / "production-self-repeat.json", result)
+    try:
+        choices = []
+        for row in result["runs"]:
+            response = row["response"]
+            choice = response["choices"][0]
+            if (len(choice["token_ids"]) != 32 or not choice["logprobs"]
+                    or len(choice["logprobs"]["top_logprobs"]) != 32
+                    or response["usage"]["prompt_tokens"] != len(prompt)):
+                raise ValueError("Incomplete repeat response; cannot claim identity")
+            choices.append(choice)
+        a, b = choices
+        result.update(status="complete", output_token_ids_equal=a["token_ids"] == b["token_ids"],
+                      top20_logprobs_equal=a["logprobs"] == b["logprobs"])
+    except (KeyError, IndexError, TypeError, ValueError) as exc:
+        result["status"] = "unavailable; errors retained, no retry"
+        result["comparison_error"] = repr(exc)
+    write(root / "production-self-repeat.json", result)
+
+
 def gsm8k(root: Path, arm: str, client: Client) -> None:
-    """Run all 1,319 questions at C4, preserving the previously frozen grading policy."""
+    """Run the declared frozen full benchmark or subset, preserving the grading policy."""
     import gsm8k_benchmark as gsm
 
     protocol = json.loads((root / "gsm8k-protocol.json").read_bytes())
-    if (len(protocol["cases"]) != 1319 or protocol["speculative_decoding"]
-            or protocol["retries"] != 0):
-        raise RuntimeError("Require full frozen speculation-off, no-retry GSM8K")
+    validate_quality_protocol(protocol)
     output = root / f"gsm8k-{arm}"
     output.mkdir()
     before = client.request("/metrics").decode()
@@ -301,6 +351,8 @@ def gsm8k(root: Path, arm: str, client: Client) -> None:
     if any(v != 0 for v in spec.values()):
         raise RuntimeError("Speculation counters changed during speculation-off quality")
     write(output / "summary.json", {"arm": arm, "status": "complete",
+          "requested_questions": protocol["questions_per_arm"],
+          "full_benchmark": protocol["questions_per_arm"] == 1319,
           "protocol_sha256": hashlib.sha256((root / "gsm8k-protocol.json").read_bytes()).hexdigest(),
           "metrics_before": before, "metrics_after": after, "speculative_counter_deltas": spec,
           **gsm.summarize(rows)})
@@ -351,7 +403,10 @@ def summarize(root: Path) -> dict[str, Any]:
             result["quality"][arm] = json.loads(summary.read_bytes())
     if len(result["quality"]) == 2:
         paired = {}
-        for index in range(1319):
+        protocol = json.loads((root / "gsm8k-protocol.json").read_bytes())
+        validate_quality_protocol(protocol)
+        for case in protocol["cases"]:
+            index = case["source_index"]
             a, b = [json.loads((root / f"gsm8k-{arm}/{index:04d}.json").read_bytes())
                     for arm in ("A", "B")]
             key = f"A_{int(a['answer_exact_match'])}_B_{int(b['answer_exact_match'])}"

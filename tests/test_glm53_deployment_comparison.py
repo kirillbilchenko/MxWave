@@ -136,3 +136,73 @@ def test_corrected_compatibility_rejects_zero_acceptance_and_retains_quality_fai
         assert not result["prefix_output_identity_passed"]
         assert not result["existing_target_kl_gate_passed"]
         assert not result["quality_qualified"] and not result["speed_qualified"]
+
+
+def test_reduced_screen_is_frozen_and_preserves_question_identity(client: ModuleType) -> None:
+    """The same answer-independent subset is used in both arms without touching source inputs."""
+    module = importlib.import_module("prepare_quick_compare")
+    workload = {"cells": [{"name": f"{domain}-{length}-c{c}"}
+                          for domain in ("code", "chat", "explanation")
+                          for length in ("short", "long") for c in (1, 4, 8, 16)],
+                "banks": {domain: {"short": [], "long": []}
+                          for domain in ("code", "chat", "explanation")}}
+    protocol = {"questions_per_arm": 1319, "speculative_decoding": False, "retries": 0,
+                "cases": [{"source_index": i, "expected": str(i)} for i in range(1319)]}
+    client.validate_quality_protocol(protocol)
+    inputs, reduced = module.reduced_inputs(workload, protocol, [1] * 4435)
+    assert len(inputs["cells"]) == 4 and not inputs["long_context"]
+    assert len(reduced["cases"]) == 300
+    assert all(case["expected"] == str(case["source_index"]) for case in reduced["cases"])
+    assert len(protocol["cases"]) == 1319 and len(workload["cells"]) == 24
+    client.validate_quality_protocol(reduced)
+    reduced["cases"][0]["source_index"] = reduced["cases"][1]["source_index"]
+    with pytest.raises(RuntimeError):
+        client.validate_quality_protocol(reduced)
+
+
+@pytest.mark.parametrize("change", ["arbitrary_subset", "speculation", "retry", "missing"])
+def test_quality_protocol_rejects_relaxed_or_cherry_picked_screen(
+    client: ModuleType, change: str,
+) -> None:
+    """A truncated, unpaired or retried benchmark cannot become the declared screen."""
+    protocol = {"questions_per_arm": 1319, "speculative_decoding": False, "retries": 0,
+                "cases": [{"source_index": i} for i in range(1319)]}
+    if change == "arbitrary_subset":
+        protocol.update(questions_per_arm=300, cases=protocol["cases"][:300],
+                        selection="sha256-source-index-v1", selected_source_indices=list(range(300)))
+    elif change == "speculation":
+        protocol["speculative_decoding"] = True
+    elif change == "retry":
+        protocol["retries"] = 1
+    else:
+        protocol["cases"].pop()
+    with pytest.raises(RuntimeError):
+        client.validate_quality_protocol(protocol)
+
+
+@pytest.mark.parametrize("mode", ["complete", "missing", "error"])
+def test_production_repeat_never_claims_identity_from_missing_fields(
+    client: ModuleType, tmp_path: Path, mode: str,
+) -> None:
+    """Retain exactly two attempts, and distinguish absent evidence from equal outputs."""
+    calls = []
+
+    class FakeClient:
+        def request(self, path: str, body: dict[str, Any], **kwargs: Any) -> bytes:
+            calls.append(body)
+            if mode == "error":
+                raise TimeoutError("fixture")
+            choice = {"token_ids": [1] * 32, "logprobs": {"top_logprobs": [{}] * 32}}
+            if mode == "missing":
+                choice = {}
+            return json.dumps({"choices": [choice], "usage": {"prompt_tokens": 4435}}).encode()
+
+    client.production_repeat(tmp_path, FakeClient(), [1] * 4435)
+    result = json.loads((tmp_path / "production-self-repeat.json").read_bytes())
+    assert len(calls) == 2 and calls[0]["cache_salt"] != calls[1]["cache_salt"]
+    assert not result["full_vocabulary_kl_measured"]
+    if mode == "complete":
+        assert result["output_token_ids_equal"] and result["top20_logprobs_equal"]
+    else:
+        assert result["status"].startswith("unavailable")
+        assert "output_token_ids_equal" not in result

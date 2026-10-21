@@ -1,5 +1,35 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 20:54 UTC: user closes the scope; final reduced comparison being prepared.**
+The broad `deployment-compare-v2` is intentionally interrupted after compatibility
+and all **24 A0 timing cells**, before B0 timing. Its exact-production restoration
+completes at **20:52:44 UTC** (`failed_restored`; interruption retained, not a model failure).
+The new `deployment-quick-v1` will use the same verified v9 images and commands:
+**three interleaved A/B pairs, short code/chat, C1/C8, 256 output tokens**, followed
+by **the same 300 GSM8K questions in both arms, speculation off**. Selection uses
+the lowest SHA256 values of `glm53-quick-quality-v1:{source_index}`, then source order;
+answers and previous failures do not influence selection. Seed, grader and no-retry
+policy are unchanged. This is a screening subset, not full GSM8K qualification.
+
+One two-request production repeat screen uses the frozen **4,435-token** prompt,
+separate cold cache salts and the deployed speculation policy. It retains output
+IDs and top-20 log probabilities; **it does not measure full-vocabulary KL**.
+C4/C16 timing, long prompts, 32k/128k probes, full production GSM8K and further
+sparse/determinism investigations are **cancelled by the latest user scope**.
+The CPU-only sparse draft was never launched or queued; its eight files are archived
+outside active source in `out/glm53-package-v1/deferred-sparse-cpu-only.tar.gz`, SHA256
+`baa3eda15b46d8f32bc8bf2e508fbddfaaf4d76ef0111ba40a3f6ec91e2f29d3`.
+Do not reopen this work during the final screen.
+
+The reduced controller retains an independent restoration watchdog and a **three-hour
+lease**. The endpoint is a report, verified backups and **power off both Sparks**, as
+explicitly requested by the user. No automatic promotion, no gate relaxation, no new
+training or package/kernel tuning. The historical **95.5%** GSM8K result is not a
+result for this exact stock-vLLM deployment. All earlier failed gates remain recorded.
+Unavailable production optimizations remain explicit deployment differences.
+Local full pytest, Ruff and core mypy pass; the reduced-run guard suite has 17 tests.
+No reduced GPU run has started at this checkpoint.
+
 **21 October 2026, 20:28 UTC: sparse-indexer source audit; active comparison unchanged.**
 The exact official-image Python sources match upstream revision `5df63a7203`.
 Prefill atomic emission explains order changes; cutoff ties can change membership,

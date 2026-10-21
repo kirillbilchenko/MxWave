@@ -1,5 +1,15 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, 20:54 UTC: final scope reduced by the user.** Broad comparison stopped;
+exact production restored at **20:52:44 UTC**. Its 24 A0 cells and compatibility evidence
+are retained. Preparing one final screen: **C1/C8 short code/chat, three A/B pairs,
+300 fixed GSM8K questions per arm without speculation**, plus one production 4k
+self-repeat (output IDs/top-20 probabilities, not full KL). No further nondeterminism
+work, long-context probes or full GSM8K. Existing v9 package and verified 500k commands
+are reused; known failed gates remain. After reporting and verified backups,
+**shut down both Sparks** under the user's explicit instruction. No promotion.
+[Live handoff](GLM53_HANDOFF.md). Earlier entries below are historical.
+
 **21 October, 20:28 UTC:** the read-only [sparse-indexer audit](GLM53_STOCK_SPARSE_INDEXER_AUDIT.md)
 confirms the ordering mechanism, corrects the GB10 decode dispatch to persistent,
 and identifies existing upstream GLM cutoff-tie evidence in #55122. Membership
