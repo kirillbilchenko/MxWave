@@ -1,5 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October, latest:** full production-versus-stock-CT timing and **all 1,319 GSM8K
+questions per arm, speculation off**, are being prepared under independent restoration
+controls. The isolated BF16 draft-cache check still accepts **0/3,810** proposals;
+FP8 cache dtype alone is not the cause. Original 500k production was exactly restored
+at 18:29:47 UTC. No new quality or speed result is claimed.
+See [the live handoff](GLM53_HANDOFF.md).
+
+
 **21 October: matched selected-CT stock profile runs, but DFlash acceptance fails.**
 The 8k / 16-slot / 6 GiB KV / compressed-vocabulary Modal profile allocates
 **172.495512 GiB across TP2**, **0.750561 GiB more** than the historical selected

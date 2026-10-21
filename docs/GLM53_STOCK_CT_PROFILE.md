@@ -1,5 +1,12 @@
 # Selected CT profile on stock vLLM
 
+**V3 cache isolation result:** actual BF16 cache on all six drafter layers still gives
+**0 accepted / 3,810 proposed tokens** across the same six requests. Startup allocation
+is 172.490866 GiB TP2. FP8 draft cache alone is not the cause. Exact original production
+was restored at 18:29:47 UTC. Evidence: `stock-profile-v3-evidence.tar.gz`, 31 payloads,
+SHA256 `0d2c6ea3610c6f4b303acdbbd1df44ad2ab1c84e4d60c830d6746714029d3cc4`.
+
+
 Prepared 21 October 2026. This check matches the **last selected Modal CT profile**,
 not the older Inco-based CT/ModelOpt comparison that saved 14.877 GiB. Its purpose
 is to establish the complete CT model with its drafter and compressed vocabulary
@@ -38,6 +45,18 @@ Local review: `out/glm53-package-v1/stock-profile-v1-v2-independent-review.json`
 | Repeat identity | Code differs; chat matches; explanation differs |
 | Raw request times | 9.933–10.445 seconds; no controlled throughput claim |
 
+The retained stage receipts locate the extra **0.750561 GiB**: **0.149785 GiB**
+is already present immediately after KDA conversion/model loading; **0.600776 GiB**
+appears during later initialization. Individual KV layouts, CUDA graphs and
+runtime workspaces are not separately measured, so this is a stage breakdown,
+not attribution to one subsystem. Both configured KV budgets remain 6 GiB/rank.
+Expert-scale and vocabulary retained bytes are identical on both ranks. All 68
+KDA weight/scale shapes, dtypes, storage sizes and rounded hashes match the old
+receipts. Expert scratch actually falls by **24 MiB total**; this is already
+included in the allocation difference. Reserved-but-unallocated allocator space
+increases separately by **0.142017 GiB**, excluded from the 0.750561 GiB figure.
+Independent arithmetic: `out/glm53-package-v1/stock-profile-memory-breakdown.json`.
+
 This is a failed speculative-execution diagnostic despite successful generation.
 The same pinned drafter previously had useful acceptance in the old runtime;
 zero across all positions requires a native-path investigation, not retraining
@@ -60,10 +79,20 @@ head alone is not established as the cause. The separate target KL failure remai
 | Target and draft vocabulary | Shared compressed head and embedding | Must verify sharing after startup |
 
 Explicit differences: old patched runtime versus official vLLM 0.32.0; native
-Triton draft attention/FP8 cache versus the old custom FP8 KV adapter; old sparse
+Triton draft attention/FP8 cache versus the old FLASH_ATTN/`auto` draft cache; old sparse
 ordering, expert dispatch, RoCE and admission overlays are absent. Run:ai loads
 weights on stock; loader time is not a speed comparison. This checks how close
 the complete deployment is, without claiming an isolated vLLM-version effect.
+
+**Draft-cache correction:** the old selected Modal plan and launch log explicitly
+set `speculative_config.kv_cache_dtype=auto`. Its `GLM_LV_DRAFT_FP8_KV` helper
+builds BF16 context-projection buffers from FP8 weight values and scales; that
+name does not establish an FP8 cache. The earlier description conflated FP8
+projection weights with KV storage. Stock V2 explicitly uses `fp8_e4m3` and logs
+default cache scales of 1.0. This is a concrete configuration difference, not yet
+a proven cause of zero acceptance. V3 retains V2's six frozen requests, weights,
+backend, policy and graph settings, changing only the draft cache to `auto`,
+with an untimed report of actual per-layer cache dtype and shape.
 
 The historical baseline is the unmodified `original_a` arm of
 `full-model-v1/drafter-modal-native-v1`, independently retained on Mac. After

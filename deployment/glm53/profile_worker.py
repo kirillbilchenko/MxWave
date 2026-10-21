@@ -41,6 +41,11 @@ class ProfileWorker:
             "draft_head_method": type(draft.lm_head.quant_method).__name__,
             "draft_quantization": spec.draft_model_config.quantization,
             "draft_kv_cache_dtype": spec.kv_cache_dtype,
+            "draft_cache_layers": [
+                {"layer": i, "dtype": str(layer.self_attn.attn.kv_cache.dtype),
+                 "shape": list(layer.self_attn.attn.kv_cache.shape)}
+                for i, layer in enumerate(getattr(draft.model, "layers", []))
+            ],
             "draft_depth": spec.num_speculative_tokens,
             "draft_policy": spec.num_speculative_tokens_per_batch_size,
             "max_num_seqs": self.vllm_config.scheduler_config.max_num_seqs,

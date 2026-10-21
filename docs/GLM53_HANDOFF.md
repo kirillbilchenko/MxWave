@@ -1,5 +1,67 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 18:40 UTC: bounded comparison and full GSM8K preparation.**
+Latest user priority is a usable stock-vLLM recipe and concrete end-to-end results,
+including **all 1,319 GSM8K questions on both production and CT, speculation off**.
+Stop adding drafter/MTP/kernel tuning ahead of these deliverables. Preparation is
+CPU-only under `glm53-package-v1/deployment-compare-v1`; production remains available.
+The frozen sequence is six A/B timing pairs, then separate A/B quality launches.
+If timing cannot be collected, retain the blocker and still attempt both full
+quality arms. Existing numerical/output-identity gates remain failed; diagnostic
+timing and answer accuracy cannot clear them. No promotion.
+
+Production's original authenticated 500k service was exactly restored at
+**18:29:47 UTC**, with both original identity/configuration hashes verified.
+V3's BF16 draft cache is observed on all six layers, but acceptance remains
+**0 / 3,810** across all six requests. Therefore FP8 draft-cache dtype alone does
+not explain zero acceptance. Startup allocation is **172.490866 GiB TP2**.
+The completed V3 evidence archive has 31 payloads / 3,382,149 bytes, SHA256
+`0d2c6ea3610c6f4b303acdbbd1df44ad2ab1c84e4d60c830d6746714029d3cc4`.
+
+Timing uses identical frozen token IDs; production and CT tokenizer JSON, tokenizer
+configuration and chat-template file hashes all match. Production has no exposed
+prefix-reset route. Use native per-request cache salts in both arms, separately
+for warm-up and measurement, and require a same-salt reuse/fresh-salt miss control
+before timing. Prefix caching stays enabled. The production quality clone preserves
+the original image, overlays, mounts, private environment and capacity; only
+speculation and private API/collective ports change. Originals are never edited.
+The same existing GSM8K grader is now dependency-free; API failures and truncations
+remain in the denominator, with no retries. See
+[comparison protocol](GLM53_STOCK_VLLM_BENCHMARK.md) and
+`deployment/glm53/compare_control.py`. Consult its controller for actual launch state;
+CPU preparation is not a GPU benchmark result.
+
+**21 October 2026, 18:21:32 UTC: draft-cache isolation check launched.**
+Both CPU preflights pass; V3's frozen native commands differ from V2 only in
+`speculative_config.kv_cache_dtype` (`fp8_e4m3` → `auto`). An untimed observer
+also records actual per-layer draft-cache dtype/shape. Controller PID **2320510**,
+independent watchdog **2321179**, root `stock-profile-v3`, plan SHA256
+`9d4a2ddb760ab8ab898e2458fddc19a1d36cde073994aa66e9057d46900b4c8e`.
+The same six prompts and 25-minute lease/exact restoration apply. Production is
+temporarily paused; consult this controller for current status. This tests the
+cache hypothesis without changing target weights, drafter weights, draft length,
+TRITON_ATTN backend, target precision or any quality gate.
+
+**21 October 2026: zero-acceptance follow-up and memory accounting.**
+The old selected Modal launch used `speculative_config.kv_cache_dtype=auto` with
+FLASH_ATTN; stock V2 uses `fp8_e4m3` with TRITON_ATTN. The old helper named
+`GLM_LV_DRAFT_FP8_KV` dequantizes FP8 projection weights into BF16 context-projection
+buffers. Earlier text calling it an FP8-cache adapter was imprecise. The native
+FP8 draft cache logs default scale 1.0; this is a suspect, not causal proof.
+Preparing `stock-profile-v3` to change only the draft cache to `auto`, retain the
+six fixed code/chat/explanation requests and inspect actual cache tensor dtypes.
+Both CPU preflights, idle admission, the independent watchdog and exact production
+restoration must precede/cover the GPU run. No training, MTP launch or promotion.
+
+Independent retained-receipt accounting locates the +0.750561 GiB total allocation:
+**+0.149785 GiB after model loading/KDA conversion**, **+0.600776 GiB during later
+initialization**. Exact KV/graph/workspace attribution is not available. Both
+expert-scale/vocabulary storage and all 68 KDA weight/scale sizes/dtypes/rounded
+hashes match the earlier selected CT. Expert scratch is 24 MiB smaller across
+TP2, already included in the total. Separate reserved-but-unallocated space grows
+0.142017 GiB; do not add it to Torch allocated or call it lost compression.
+See `out/glm53-package-v1/stock-profile-memory-breakdown.json`.
+
 **21 October 2026, 18:14:28 UTC: exact original production restored.**
 Both original container identities/configuration hashes match and the authenticated
 endpoint reports `glm-5.3-flash`, 500,000-token context. `complete_restored` means

@@ -1,5 +1,13 @@
 # MxWave
 
+**21 October, latest:** full production-versus-stock-CT timing and **all 1,319 GSM8K
+questions per arm, speculation off**, are being prepared under independent restoration
+controls. The isolated BF16 draft-cache check still accepts **0/3,810** proposals;
+FP8 cache dtype alone is not the cause. Original 500k production was exactly restored
+at 18:29:47 UTC. No new quality or speed result is claimed.
+See [the live handoff](docs/GLM53_HANDOFF.md).
+
+
 **Selected CT stock-profile diagnostic, 21 October 2026.** The matched 8k Modal
 profile runs with compressed head/embedding at **172.496 GiB across TP2**, only
 **0.751 GiB above** the earlier selected CT profile. However, all six C1 requests

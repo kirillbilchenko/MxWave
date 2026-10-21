@@ -7,24 +7,15 @@ import hashlib
 import json
 import math
 import random
-import re
-from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from benchmark_full_model import request, write
 from measure_palette_model import final_text
+from numeric_scoring import numeric_answer
 
 BASE = "http://127.0.0.1:18784"
-
-
-def numeric_answer(text: str) -> Decimal | None:
-    """Accept an explicit final numeric answer, never a number inside unfinished reasoning."""
-    value = text.rsplit("####", 1)[-1].strip() if "####" in text else text.strip()
-    if not re.fullmatch(r"[-+]?\$?\d[\d,]*(?:\.\d+)?\.?", value):
-        return None
-    return Decimal(value.replace("$", "").replace(",", "").rstrip("."))
 
 
 def practical_cases() -> list[dict[str, Any]]:

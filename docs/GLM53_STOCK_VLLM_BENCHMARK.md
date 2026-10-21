@@ -1,7 +1,9 @@
 # Prospective stock-vLLM deployment comparison
 
-Prepared 21 October 2026. **Not run.** The upstream startup and prefix-cache
-correctness checks must pass first. The user's latest requirement makes upstream
+Prepared 21 October 2026. **GPU comparison not yet started.** The user now requests
+concrete outcomes and full GSM8K without further tuning beforehand. Collection is
+diagnostic while numerical/output-identity gates remain failed; it cannot qualify
+or promote the candidate. The user's latest requirement makes upstream
 vLLM the candidate's default runtime. Consequently this is a comparison of two
 complete deployments, not a compression-only experiment or an identical-runtime
 comparison. Earlier gains must not be added to its results.
@@ -9,8 +11,8 @@ comparison. Earlier gains must not be added to its results.
 **Startup evidence, 21 October:** V6/V7 reach API readiness with the requested
 capacity and native Triton draft attention. V7 observes real prefix reuse, but
 cold/warm and warm/warm greedy output identity both fail. V6 also differs without
-a reusable prefix. This blocks the frozen correctness gate; timing, long-context
-probes and GSM8K have not started. Diagnose with matched fixed-input replays;
+a reusable prefix. This fails the frozen correctness gate; timing, long-context
+probes and GSM8K have not started. Retain the matched fixed-input replays;
 do not reinterpret prefix hits as a numerical correctness pass.
 Exact original production was verified restored at 16:44:58 UTC. The candidate's
 87.157 GiB/rank startup allocation has no fresh matched production counterpart;
@@ -32,7 +34,7 @@ Exact original production was verified restored at 16:44:58 UTC. The candidate's
 | Graph sizes | 1, 2, 4, 6, 8, 12, 16, 18, 24, 32 | Same requested sizes; actual captures/replays must be recorded |
 | Target KV | FP8, native sparse-MLA representation | Upstream FP8, actual sparse-MLA representation recorded |
 | Draft attention backend | Production custom path, retain effective backend in audit | Explicit native `TRITON_ATTN` under startup qualification; stock FlashInfer fails capacity through 64-token-page shared-pool waste |
-| Draft KV | Production FP8 adapter | Explicit upstream `fp8_e4m3`; compatibility must pass |
+| Draft KV | Actual speculative config is `auto`; the old FP8 helper converts projection weights | Packaged upstream `fp8_e4m3`; isolated BF16-cache V3 also accepted zero proposals |
 | Draft head | Custom FP8 head | Native upstream implementation; custom optimization absent |
 | Admission | Environment says 4 ms; scheduler-control override needs live audit; implementation caps at 5 ms | No custom admission-window implementation |
 | Other custom kernels | Production retains its current model and RoCE overlays | None of those overlays |
@@ -53,8 +55,9 @@ chat template, cache layout, graph padding and collective backend.
    6 GiB cache and captured graphs. Do not reduce context, slots, KV, graph sizes
    or turn off prefix caching to make the benchmark start.
 3. Exercise repeated real prompts; retain outputs and evidence of prefix reuse.
-   If output identity or reuse fails, diagnose it before timing. Do not silently
-   replace the check with a weaker criterion.
+   Output identity already fails and remains a failed qualification gate. Requested
+   diagnostic measurements must carry that failure. Actual prefix reuse and cold-state
+   control must work; do not disable caching to obtain timings.
 4. Record actual allocation per rank after initialization. B exposes Torch
    allocated/reserved bytes in its startup report. Establish a comparable source
    for A before claiming a memory delta. On Spark, host RSS or cgroup totals include
@@ -77,10 +80,12 @@ probes below establish only those tested lengths, not complete 500k qualificatio
 - Six interleaved **pairs**, A/B/A/B, totaling six trials per arm and cell. Each
   arm block covers the 24 domain/length/concurrency cells. Request seeds stay fixed;
   scheduler/grouping changes remain observable and are not hidden by seed claims.
-- Warm up each cell. Use cold prefix-cache state for the timed cohort by resetting
-  after warm-up, while leaving prefix caching enabled. Validate reset behavior on
-  both engines and record before/after hit counters. If reset cannot be made
-  equivalent, report a blocker; do not mix warm and cold measurements.
+- Warm up each cell. Production exposes no cache-reset API, so use native per-request
+  cache salts: identical between arms, distinct for each trial/cell/request and for
+  warm-ups. Verify request-protocol and KV-hash support on CPU, then prove same-salt
+  reuse and fresh-salt misses on GPU before timing. Prefix caching stays enabled.
+  If this control fails, retain the timing blocker and continue with independent
+  speculation-off GSM8K. Retain hit counters for every measured cohort.
 - Use the same fixed client machine and synchronized cohort launch. Poll running,
   waiting, KV and speculation counters throughout each cohort; retain raw timestamps.
   Poll GPU clocks, temperature, power and throttle/state reasons on both ranks.
@@ -120,3 +125,22 @@ validated reservation. Timing alone contains 288 measured cohorts and 534,528
 requested output tokens, before warm-ups, model reloads and long-context probes.
 Estimate the actual outage from the first measured cells and observed upstream
 load time before launching the full sequence; use an explicit watchdog bound.
+
+## Prepared operational sequence
+
+Remote root: `glm53-package-v1/deployment-compare-v1`. The implementation lives in
+`deployment/glm53/compare_client.py`, `compare_control.py`, `prepare_compare_run.py`,
+`prepare_quality_clone.py` and `compare_preflight.py`. CPU preparation validates
+native CT CLI commands and creates stopped production quality clones.
+
+The controller freezes 12 timing blocks followed by two full quality arms. A timing
+failure skips remaining timing blocks, retains partial data and still attempts both
+quality arms. It changes no quality gate. Its independent watchdog bounds the full
+sequence at **10 hours** and restores the exact original containers on completion,
+failure or laptop disconnection. This is a restoration limit, not a predicted runtime.
+
+GSM8K uses distinct per-question salts, identical in both arms, the unchanged
+existing grader, natural stops, no retries and all errors/truncations in the denominator.
+Tokenizer JSON, tokenizer configuration and chat-template bytes match between arms.
+Long timing inputs include disclosed combinations of distinct real training prompts
+where natural inputs are too short; no repetitive diagnostics or sealed tests are used.

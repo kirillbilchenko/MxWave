@@ -9,7 +9,7 @@ import re
 from decimal import Decimal
 from typing import Any
 
-from quality_suite import numeric_answer
+from numeric_scoring import numeric_answer
 
 
 def freeze(raw: bytes, manifest: dict[str, Any]) -> dict[str, Any]:
