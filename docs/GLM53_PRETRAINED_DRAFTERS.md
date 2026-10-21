@@ -1,5 +1,12 @@
 # Pretrained drafter screen before further training
 
+**21 October 2026, 07:26 UTC: CT-only draft-length screen preparing.**
+The user redirects the next test from production to CT and authorizes unattended
+work. Same CT + Modal FP8 at 7/3/5/off/7 drafts, eight development prompts and six
+cycles per load. CPU checks run on both nodes; production is still online. The
+GPU comparison will use the existing independent restoration watchdog. No
+training, sealed test or promotion. [Current plan and status](GLM53_HANDOFF.md).
+
 **21 October 2026, 07:16 UTC: production comparison does not show a CT acceptance deficit.**
 A live, unchanged-production screen uses the same eight development prompts,
 C1, 256 output tokens, seed 42, temperature 0 and seven drafts, twice. Results:

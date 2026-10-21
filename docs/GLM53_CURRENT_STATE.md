@@ -1,5 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
+**21 October 2026, 07:26 UTC: CT-only draft-length screen preparing.**
+The user redirects the next test from production to CT and authorizes unattended
+work. Same CT + Modal FP8 at 7/3/5/off/7 drafts, eight development prompts and six
+cycles per load. CPU checks run on both nodes; production is still online. The
+GPU comparison will use the existing independent restoration watchdog. No
+training, sealed test or promotion. [Current plan and status](GLM53_HANDOFF.md).
+
 **21 October 2026, 07:16 UTC: current production has similarly modest acceptance.**
 Same eight development prompts, C1/256 tokens/seven drafts, two production cycles:
 code/chat/explanation accepted-proposal rates **34.82%/23.36%/27.51%**; CT + Modal

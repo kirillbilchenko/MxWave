@@ -1,5 +1,30 @@
 # GLM compression experiment handoff
 
+**21 October 2026, 07:26 UTC: CT draft-length screen frozen; CPU checks in progress.**
+The user redirects the proposed production depth comparison to CT, then authorizes
+continued unattended work. No production depth experiment was launched. Use the
+same CT target and Modal FP8 checkpoint at **7 → 3 → 5 → off → 7** drafts; the
+final 7-draft load checks drift. Same eight development prompts, six seed-42
+shuffled cycles per load, C1, 256 output tokens, temperature 0. Retain timing,
+TTFT, TPOT, native round/proposal/position counters, all output tokens, graphs at
+startup and clock/thermal telemetry. Different outputs are recorded rather than
+hidden or assumed equal. No training, sealed-test access or automatic promotion.
+
+Frozen revision `ct-draft-length-v1`, private API **8042**, master **29715**.
+Plan SHA256 `2ac2443f63ea259d31d4b1802d9284b48c9fd9aea47bf07d599377f254c41f72`;
+45 source payloads verify on Spark/Spark2. Target settings stay at the prior CT
+screen: 8k context, prefix caching off, 4096 prefill budget, 16 slots, 6 GiB KV per
+rank, the same canonical sparse/mHC/expert policies and lossless vocab/scales.
+Depth 0 removes the speculative config and confirms no loaded drafter or native
+speculative work. Depths 3/5/7 use the native configured width and assert actual
+proposal counts, not post-hoc discarded tokens. The original 500k production
+configuration is retained for automatic restoration. Bounded outage is 75 minutes
+plus restoration, with the existing independent watchdog; estimated full screen
+40–60 minutes. CPU preflight PID **1564948** is running; production remains online.
+Ruff, strict core mypy and the full pytest suite pass. No GPU experiment has
+started at this checkpoint. Read `full-model-v1/ct-draft-length-v1/prepare-launch.log`,
+then `prepared.json` and `controller.json` when they exist.
+
 **21 October 2026, 07:16 UTC: production acceptance screen and CPU cache audit complete.**
 Production stays online throughout: same container identity, image, 500,000-token
 context and serving settings; final health is 200. Run the same eight frozen
