@@ -1,5 +1,56 @@
 # GLM compression experiment handoff
 
+**22 October: final comparison stopped; exact production restored at 06:51:39 UTC.**
+Controller `384218` ends **`failed_restored`** after **9.69 minutes**. Only
+`timing-A-0` completes (all four C1/C8 code/chat cells, no API errors). CT fails
+during its first load on both ranks, before candidate timing. Later pairs and
+both 300-question GSM8K passes do **not** run. No retry is active or queued.
+Independent follow-up verifies both original container/image/config/mount
+identities, healthy 500k production, and all 16 owned trial containers stopped.
+
+**Cause: an error in the new launcher, not an established overlay incompatibility.**
+`same_runtime_plugin.py` calls `model_plugin.install()` directly, and the copied
+environment omits `MXWAVE_PALETTE_MODEL=1`. The earlier working recipe also imported
+`palette_model_worker`, which replaces the scale packer with the sparse-palette
+registration. Without it, the new launch packs `aligned_nibbles` but loads
+`quality-best-v1-native/libmxwave_moe_sparse.so`, whose encoding is `sparse_palette`.
+The guard correctly raises **`ValueError: Native library and scale encoding differ`**
+in `moe_runtime.NativeMoe.decode`, before inference. Both-rank stack traces agree.
+CPU preflight checked imports/CLI capacity but failed to bind the selected packer
+to the native library; the assistant should have caught this before the outage.
+
+This run establishes **no CT speed result, no new quality result, and no verdict
+on full production-overlay compatibility**. The completed A0 rates are single
+retained observations: code C1 **42.623**, chat C1 **37.188**, code C8 **80.499**,
+chat C8 **80.552 tok/s**. They have no paired candidate and are not a new baseline
+qualification. The frozen stop-on-error policy was honored; no serving flag,
+kernel or quality gate was relaxed. Both Sparks remain powered on.
+
+Evidence is retained under `glm53-package-v1/same-runtime-final-v2`, including
+`failure-review.json`, both-rank startup logs, `final-verification.json`, original
+source snapshots showing the registration mismatch, A0 payloads and telemetry.
+The follow-up fix would restore the existing palette registration/environment and
+add a CPU library-encoding contract check; it has **not** been applied or rerun.
+
+Failure archive: **66 payloads**, **829,991 bytes**, SHA256
+`de697bf80c88b01bdd2b356c506e35c66274ba51ae5b30601edd55382a820ac8`.
+All payload hashes independently verify on Mac and Spark2; the original archive
+is retained on Spark1. Local copy and verification:
+`out/glm53-package-v1/same-runtime-final-v2-closeout/`.
+
+**22 October, 06:42 UTC: final same-runtime GPU controller is running detached.**
+All timing/quality CPU checks pass for **both arms on both ranks**. Preparation
+finished at epoch **1792651312.2623432**. Controller **384218**, independent
+watchdog **384877**, root `glm53-package-v1/same-runtime-final-v2`, phase `loading`,
+stage `timing-A-0`. Production is now paused for the authorized comparison.
+Eight stages, two-hour outage lease, stop on any stage error, exact restoration;
+no tuning or promotion. This runs independently of the laptop. Source **`b3f3c11`**
+is backed up on both Sparks in `glm53-same-runtime-final-v2.bundle`, SHA256
+`397ee981135c03e7e5427988ae77fbeae0939f73a26dcdc17722bc8a345be464`.
+Progress: `controller.json`, `timing-A-0/progress.json`, and corresponding later
+stage directories. Results are pending; the latest user-facing confirmation is
+that setup is complete and the baseline is loading.
+
 **22 October, 06:40 UTC: detached final preparation running, v2.**
 Spark1 preparer **376651** runs independently of the laptop. Root:
 `glm53-package-v1/same-runtime-final-v2`. It proceeds to the two-hour watchdog

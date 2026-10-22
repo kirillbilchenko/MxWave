@@ -1,5 +1,23 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October: final test stopped; exact original production restored at 06:51:39 UTC.**
+Only the first production timing pass completed. CT startup failed because the
+new launcher selected a sparse-palette decoder without registering the matching
+packer. This is a launcher integration error; it does not establish production
+overlay incompatibility. No CT timing or GSM8K ran. All remaining stages stopped
+under the frozen policy, and all trial containers are stopped. Production is
+healthy at 500k with exact original identities verified. No retry is running.
+[Cause and retained evidence](GLM53_HANDOFF.md),
+[protocol and outcome](GLM53_SAME_RUNTIME_FINAL.md).
+
+**22 October, 06:42 UTC: final test running detached; baseline loading.**
+Both arms and both modes pass CPU validation on both Sparks. Controller **384218**
+and independent watchdog **384877** are active in `same-runtime-final-v2`.
+Production is paused under the two-hour restoration lease. Eight frozen stages,
+no tuning/promotion, abort and restore on errors. Laptop connectivity is not
+required. Source `b3f3c11` is backed up on both nodes; results are pending.
+[Frozen protocol](GLM53_SAME_RUNTIME_FINAL.md), [live handoff](GLM53_HANDOFF.md).
+
 **22 October, 06:40 UTC: final preparation runs detached as PID 376651.**
 `same-runtime-final-v2` corrects a missing cross-node metadata copy in v1; the first
 attempt stopped before any outage. No serving/overlay/protocol change. CPU checks

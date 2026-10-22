@@ -1,5 +1,19 @@
 # Final same-production-runtime comparison
 
+**Outcome: stopped on launcher error; production restored at 06:51:39 UTC, 22 October.**
+Only A0's four timing cells completed. B0 failed during loading on both ranks with
+`Native library and scale encoding differ`: the new launcher omitted the existing
+`palette_model_worker` registration and `MXWAVE_PALETTE_MODEL=1`, leaving an
+aligned-nibble packer paired with a sparse-palette native decoder. CPU checks
+covered imports and flags, but did not check this binding. This was an error in
+the comparison launcher; full overlay compatibility remains untested.
+
+No candidate timings or GSM8K results exist from this run. The controller stopped
+the remaining stages and restored exact original 500k production in 9.69 minutes
+total. Follow-up verification confirms all original identities and all 16 trial
+containers stopped. No automatic retry, workaround or promotion occurred.
+The protocol below remains the frozen intent, not a claim that it completed.
+
 Authorized 22 October 2026. One bounded session; no automatic promotion or further
 tuning. User requests detached operation while commuting. Preparation is CPU-only;
 the GPU controller starts only if both-rank, both-arm CPU checks pass. Any startup
