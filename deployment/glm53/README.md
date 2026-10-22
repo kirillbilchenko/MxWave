@@ -1,221 +1,170 @@
-# GLM CT on upstream vLLM 0.32.0
+# GLM-5.3 Flash CT on stock vLLM 0.32.0
 
-This is the default deployment target: the official vLLM image with the MxWave
-wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
-The extension wraps version-pinned internal APIs and requires the verified bundle.
+**Experimental release `glm53-v0.1.1`.** The pinned official vLLM image runs with
+the MxWave plugin; no vLLM source files are replaced. Supported hardware:
+**two Linux ARM64 DGX Sparks, SM121, TP2**. This is a specific checkpoint recipe,
+not a general compressor or a promise of compatibility with later vLLM versions.
 
-**22 October follow-up:** the same-production-runtime comparison is complete.
-After exact restoration, the user explicitly selected its CT/Inco profile for
-live use; that separate handover completed at 10:00 UTC. Its favorable CT medians use the custom runtime and Inco
-drafter; they do not replace the official-image results below. Both repeatability
-and the observed quality screen fail. Stock-vLLM compatibility remains mandatory;
-no fast-path or KV change is applied to this recipe.
-[Separate final report](../../docs/GLM53_SAME_RUNTIME_RESULTS.md).
-[Live custom-runtime service and rollback](../../docs/GLM53_CT_LIVE.md).
+[Release downloads](https://github.com/kirillbilchenko/MxWave/releases/tag/glm53-v0.1.1)
+· [Results and limitations](../../docs/GLM53_RELEASE.md)
+· [Native sources](native/README.md)
+· [Separate live setup and rollback](../../docs/GLM53_CT_LIVE.md)
 
-**GPU-tested status, 21 October 2026:** the corrected recipe starts at **500k
-configured context**, with prefix caching and useful DFlash acceptance. All three
-paired timing blocks complete without API errors. Against the existing tuned
-ModelOpt/Inco production deployment, this stock CT recipe measures **about 22%
-lower C1 throughput**, **15% higher code / 21% higher chat aggregate throughput at
-C8**, on the frozen short prompts. C8 first-token time improves substantially,
-while mean individual completion latency increases by about 1–2 seconds. These
-are complete deployments with different draft policies and runtime optimizations.
-[Full ranges, latency, acceptance and retained evidence](../../docs/GLM53_HANDOFF.md).
+The stock profile was GPU-screened on 21 October: 500k configured context starts,
+prefix reuse works, DFlash accepts tokens, and three C1/C8 code/chat timing pairs
+and a 300-question GSM8K subset complete. Against tuned custom production it is
+about **22% slower at C1, 15–21% faster in aggregate at C8**. The owner's currently
+live custom-runtime CT setup has different results. Numerical/repeatability
+failures remain; 500k startup does not establish long-context answer quality.
 
-The final 300-question speculation-off GSM8K screen is complete: production
-**289/300 (96.33%)**, CT **287/300 (95.67%)**, zero API errors or truncations in
-both arms. This small subset does not establish equivalence or a meaningful gap.
-This is an **experimental opt-in recipe**, with no promotion. Original production
-was restored before both Sparks were powered off; complete source and evidence
-backups were independently verified first. No more experiments are queued.
-The original strict KL and output-repeat failures remain recorded. A 500k startup
-is not a 32k/128k retrieval or long-context quality qualification; those probes
-were deliberately omitted from the final bounded screen.
+## Selected profile
 
-Run **`prepare-drafter`** before serving. Native 0.32 otherwise applies FP8 loading
-to twelve existing BF16 convolution matrices without scales. The config-only
-correction preserves all weight bytes; `serve` verifies the corrected metadata
-and pinned weights. No training is needed.
-[Diagnosis and evidence](../../docs/GLM53_STOCK_DRAFTER_LOADING.md).
+| Component | Setting |
+|---|---|
+| Target | Public Intel AutoRound CT MXFP4 experts, pinned revision |
+| KDA projections | MXFP8 conversion during loading; **lossy** |
+| Expert scales / embedding | Lossless packing; dense BF16 output head |
+| Drafter | Public Modal BF16 DFlash converted to block FP8 on CPU; no training |
+| Draft policy | 5 tokens at C1/C2, 3 at larger batches |
+| Capacity | 500,000 context, 32 slots, 6 GiB KV/rank, 6,919 prefill budget |
+| Cache / graphs | Prefix caching on; explicit tested graph sizes |
+| Loader / draft attention | Run:ai streamer, 3 GiB buffer, concurrency 8; Triton |
 
-All three timing starts reproduce **87.202210 / 87.202180 GiB** allocated per rank,
-including drafter, KV and graphs (**174.404390 GiB TP2**). Lossless scale/embedding
-packing saves **6.941 GiB TP2** after expert scratch space. This is resident storage
-accounting, not a newly measured total-allocation delta against production; the
-historical 14.877 GiB result used a different profile.
+Allow at least 200 GB free storage per node for target, drafter and packed assets,
+plus Docker image/cache space. Both nodes need identical inputs. CPU preparation
+was checked with an 8 GiB container memory limit and needs no GPU.
 
-## Supported profile
+## 1. Download and build
 
-- Two DGX Sparks, Linux ARM64, SM121, one GPU per node, TP2.
-- Official vLLM 0.32.0 ARM64 image, pinned by digest in [Dockerfile](Dockerfile).
-- Audited AutoRound CT checkpoint: MXFP4 experts, with the measured MXFP8 KDA
-  conversion at load time. KDA conversion is lossy; it failed the original 1e-5 KL
-  gate. Expert-scale and vocabulary packing are lossless.
-- Pretrained Modal FP8 DFlash2: five drafts at C1/C2, three at higher concurrency.
-  No further drafter training is required for this profile.
-- Separate model, drafter and verified runtime-bundle directories on both nodes.
-  These are mounted read-only. Reports and CUDA caches are writable and unique
-  to each launch.
-
-The upstream recipe does not include production's certified argmax head, custom
-FP8 draft head, admission/truncation hooks or custom RoCE all-reduce overlay.
-Comparisons against that deployment must disclose those differences.
-
-## Build and inspect
-
-From the repository root, build the wheel using Python 3.12 or later:
+Run from a clean directory on a Spark. `gh` is a download convenience; assets are
+also available from the release page. Keep the release tag pinned.
 
 ```bash
-python -m pip wheel . --no-deps --no-build-isolation -w dist
+gh release download glm53-v0.1.1 --repo kirillbilchenko/MxWave --dir release
+cd release
+sha256sum --check SHA256SUMS
+tar -xzf mxwave-glm53-native-sm121-v0.1.1.tar.gz
+docker build -f Dockerfile -t mxwave-glm53:0.1.1 .
 ```
 
-Build on each Spark using the same wheel:
+The Dockerfile pins the official ARM64 vLLM 0.32.0 image by digest and installs
+the wheel with `--no-deps`. It does not upgrade Torch or vLLM. The native archive
+contains three pinned libraries, licenses and build sources, without model weights.
+Library hashes are checked again before native loading.
+
+## 2. Download public inputs
+
+Using the Hugging Face CLI, download these exact revisions on each node, or
+download once and copy with verification. Run from the release directory:
 
 ```bash
-docker build -f deployment/glm53/Dockerfile -t mxwave-glm53:vllm032 dist
+hf download INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound \
+  --revision 35d1b0d5cb4a0db075fd2749c897e970dc15bfa5 --local-dir ct-model
+hf download modal-labs/GLM-5.3-Flash-DFlash \
+  --revision dae6d319510889a7f1ac5242d5b7fb2d5d95eb05 --local-dir modal-bf16
 ```
 
-The current exporter packages existing verified assets. It does not yet download
-or generate all release assets from scratch. A public runtime-bundle distribution
-and reproducible asset-build instructions remain release work; do not substitute
-arbitrary libraries or model revisions to bypass the pinned hashes.
+Retain downloaded licenses. MxWave did not create the AutoRound checkpoint or
+train Modal's drafter. Origins and all 120 target shard hashes are in the wheel's
+`checkpoints.json`.
 
-For the existing experiment owner, export once on each node:
+## 3. Prepare and verify on CPU
 
 ```bash
-docker run --rm --network none \
-  -v /absolute/path/to/verified-experiment:/source:ro \
-  -v /absolute/path/to/export-parent:/export:rw \
-  mxwave-glm53:vllm032 prepare-bundle \
-  --from-experiment /source --output /export/runtime
+mkdir prepared
+docker run --rm --network none --cpus 2 --memory 8g \
+  -e NVIDIA_VISIBLE_DEVICES=void -v "$PWD/ct-model:/model:ro" \
+  mxwave-glm53:0.1.1 verify-model --model /model
+
+docker run --rm --network none --cpus 2 --memory 8g \
+  -e NVIDIA_VISIBLE_DEVICES=void -v "$PWD/ct-model:/model:ro" \
+  -v "$PWD/native:/native:ro" -v "$PWD/prepared:/export:rw" \
+  mxwave-glm53:0.1.1 build-bundle \
+  --model /model --native /native --output /export/runtime
+
+docker run --rm --network none --cpus 2 --memory 8g \
+  -e NVIDIA_VISIBLE_DEVICES=void -v "$PWD/modal-bf16:/source:ro" \
+  -v "$PWD/prepared:/export:rw" mxwave-glm53:0.1.1 \
+  prepare-pretrained-drafter --source /source --output /export/modal-fp8
+
+docker run --rm --network none -e NVIDIA_VISIBLE_DEVICES=void \
+  -v "$PWD/prepared/runtime:/runtime:ro" mxwave-glm53:0.1.1 \
+  doctor --bundle /runtime
 ```
 
-Copying the resulting `runtime` directory preserves its relocatable manifest.
-Existing export destinations are never overwritten. Check installation and GPU:
+All four vocabulary files must reproduce the GPU-tested hashes exactly. The
+drafter command converts 42 backbone tensors to block FP8, preserves 54 other
+tensors, verifies the exact weight hash, then corrects twelve BF16 convolution
+projections' metadata. Without that correction the earlier native 0.32 trial
+accepted zero drafts. Existing output directories are never overwritten.
 
-```bash
-docker run --rm --gpus all --network none \
-  -v /absolute/path/to/runtime:/runtime:ro \
-  mxwave-glm53:vllm032 doctor --bundle /runtime --gpu
-```
+Copy `prepared/runtime` and `prepared/modal-fp8` to the other Spark, retaining
+licenses. `doctor` and `serve` recheck packed assets and drafter. Run `verify-model`
+once on each target copy before serving. No private experiment directory or
+training set is required. Legacy `prepare-bundle` and `prepare-drafter` commands
+remain available for already prepared owner assets.
 
-## Launch on both nodes
+## 4. Launch TP2
 
-Prepare a separate drafter directory once on each node, without GPU access:
-
-```bash
-docker run --rm --network none \
-  -v /absolute/path/to/original-modal-fp8-checkpoint:/source:ro \
-  -v /absolute/path/to/prepared-parent:/export:rw \
-  mxwave-glm53:vllm032 prepare-drafter \
-  --source /source --output /export/modal-fp8-vllm032
-```
-
-This checks the pinned source hashes and changes only `config.json`, preserving
-twelve existing BF16 convolution matrices. Weight files are hard-linked when
-possible, copied byte-for-byte across filesystems, and reverified. Existing output
-directories are never overwritten. No model training or weight quantization occurs.
-Keep the original and prepared files read-only when serving; hard links share data.
-
-The following uses the **500k capacity settings from the final three-pair screen**,
-with the corrected drafter metadata. Startup, positive draft acceptance and actual
-prefix reuse pass. Earlier repeated-output identity and strict KL failures remain;
-the recipe is not promoted to production. Long-context retrieval probes were not run.
-
-Run on node 1 and then node 0, setting `GLM_NODE_RANK` to 1 and 0 respectively.
-Use node 0's reachable private address for `GLM_MASTER_ADDR`, and each node's own
-address for `GLM_NODE_IP`. Set checkpoint and writable paths for each host.
-The wrapper adds upstream `--headless` on rank 1; only rank 0 runs the API server.
+Run rank 1 first, then rank 0. Set the master to rank 0's reachable private address
+and each node's own `GLM_NODE_IP`. Configure NCCL/GLOO/RoCE interfaces for your
+network; interface names are not hardcoded. Use a separate port while another
+service is running. This command does not stop or replace that service.
+Export `NCCL_SOCKET_IFNAME`, `GLOO_SOCKET_IFNAME`, `NCCL_IB_HCA` and
+`NCCL_IB_GID_INDEX` if your network requires explicit selection; the command
+passes through whichever of these variables are set.
 
 ```bash
 export GLM_NODE_RANK=0
 export GLM_MASTER_ADDR=192.168.192.1
 export GLM_NODE_IP=192.168.192.1
-export GLM_MODEL_DIR=/absolute/path/to/ct-checkpoint
-export GLM_DRAFTER_DIR=/absolute/path/to/prepared-parent/modal-fp8-vllm032
-export GLM_RUNTIME_DIR=/absolute/path/to/runtime
-export GLM_REPORTS_DIR=/absolute/path/to/new-reports
-export GLM_CACHE_DIR=/absolute/path/to/cuda-cache
+export GLM_MODEL_DIR="$PWD/ct-model"
+export GLM_DRAFTER_DIR="$PWD/prepared/modal-fp8"
+export GLM_RUNTIME_DIR="$PWD/prepared/runtime"
+export GLM_REPORTS_DIR="$PWD/reports-r$GLM_NODE_RANK"
+export GLM_CACHE_DIR="$PWD/cache-r$GLM_NODE_RANK"
 mkdir -p "$GLM_REPORTS_DIR" "$GLM_CACHE_DIR"
 
-docker run --rm --gpus all --network host --ipc host \
+docker run --rm --name "mxwave-glm53-r$GLM_NODE_RANK" \
+  --gpus all --network host --ipc host \
   --ulimit memlock=-1 --ulimit stack=67108864 \
   --cap-add IPC_LOCK --device /dev/infiniband \
-  -e VLLM_HOST_IP="$GLM_NODE_IP" \
-  -e OMP_NUM_THREADS=4 \
+  -e VLLM_HOST_IP="$GLM_NODE_IP" -e OMP_NUM_THREADS=4 \
+  -e NCCL_SOCKET_IFNAME -e GLOO_SOCKET_IFNAME -e NCCL_IB_HCA -e NCCL_IB_GID_INDEX \
   -e HF_HUB_OFFLINE=1 -e TRANSFORMERS_OFFLINE=1 \
-  -v "$GLM_MODEL_DIR:/model:ro" \
-  -v "$GLM_DRAFTER_DIR:/drafter:ro" \
-  -v "$GLM_RUNTIME_DIR:/runtime:ro" \
-  -v "$GLM_REPORTS_DIR:/reports:rw" \
+  -v "$GLM_MODEL_DIR:/model:ro" -v "$GLM_DRAFTER_DIR:/drafter:ro" \
+  -v "$GLM_RUNTIME_DIR:/runtime:ro" -v "$GLM_REPORTS_DIR:/reports:rw" \
   -v "$GLM_CACHE_DIR:/root/.cache:rw" \
-  mxwave-glm53:vllm032 serve \
+  mxwave-glm53:0.1.1 serve \
   --bundle /runtime --model /model --drafter /drafter --reports /reports \
   --node-rank "$GLM_NODE_RANK" --master-addr "$GLM_MASTER_ADDR" \
-  --master-port 29719 --host 127.0.0.1 --port 8046 \
-  --max-model-len 500000 --max-num-seqs 32 \
-  --max-num-batched-tokens 6919 --kv-cache-gib 6 \
-  --gpu-memory-utilization 0.85 --block-size 2304 \
-  --draft-attention-backend TRITON_ATTN \
-  --load-format runai_streamer --loader-memory-mib 3072 --loader-concurrency 8 \
-  --prefix-caching --vocab-mode embedding \
-  --graph-sizes 1 2 4 6 8 12 16 18 24 32
+  --host 127.0.0.1 --port 8046
 ```
 
-Provide NCCL/GLOO interface settings appropriate to the host's RoCE network.
-The tested settings and image identities are retained with each operational trial;
-interface names are not hardcoded in the package. Add `--dry-run` to the serving
-command to verify assets and inspect arguments without launching a model.
+Defaults match the tested profile above. Use `serve --help` for explicit options,
+or append `--dry-run` to verify assets and inspect arguments without loading a
+model. Rank 1 gets upstream `--headless`. The listener is loopback-only by default;
+use your protected API access path when exposing it. Reports record actual
+allocations after drafter, KV and graph loading.
 
-Target and drafter KV use native `fp8_e4m3` settings. The 0.85 reservation fraction
-matches production; the explicit 6 GiB KV budget remains independent of that
-fraction. FlashInfer autotuning is disabled, matching the baseline configuration.
+Stop this recipe with `docker stop mxwave-glm53-r0` on rank 0 and
+`docker stop mxwave-glm53-r1` on rank 1. The owner's existing live service has a
+separate [exact-production rollback](../../docs/GLM53_CT_LIVE.md).
 
-The example explicitly uses the tested native streaming loader:
-`--load-format runai_streamer --loader-memory-mib 3072 --loader-concurrency 8`.
-This exact 3 GiB buffer passes CPU byte checks on three complete representative
-shards and loads the full target/drafter in the latest trials. Rank-0 logged model
-loading is 123–126 seconds; controlled cold-start speed is not established. A 1 GiB buffer rejects
-the largest tensor, and the 2 GiB screen stalls. Retain the explicit 3 GiB setting
-when testing this loader. The default remains `auto`; production's custom fast
-loader is not included in this upstream recipe.
+## Memory and limits
 
-`--vocab-mode embedding` keeps the target LM head dense. `--vocab-mode all` also
-packs it and has different memory/performance characteristics. Explicit flags
-above override the CLI's smaller development defaults (8k context, 16 slots,
-prefix caching off). No failed capacity check silently reduces these settings.
+Stock CT allocates **87.202210 / 87.202180 GiB per rank**, including drafter, KV
+and graphs. Lossless scale/embedding packing saves **6.94113 GiB TP2** after expert
+scratch space. This is storage accounting, not a matched whole-service allocation
+delta against production. The live custom-runtime comparison's **14.465825 GiB**
+saving includes checkpoint/MXFP8 differences; do not add or substitute these numbers.
 
-Startup reports verify all 68 KDA projections, all 84 expert-scale tensors and
-selected vocabulary consumers. They record actual allocated/reserved memory
-following drafter, cache and graph initialization. Use those measurements for the
-new recipe; the earlier 14.877 GiB saving against ModelOpt is not a measurement of
-this dense-head, upstream-vLLM deployment.
+The recipe excludes production's certified argmax head, FP8 draft-head overlay,
+admission hooks and custom RoCE all-reduce. Its hooks wrap version-pinned internal
+vLLM APIs; source hash checks fail closed if those APIs change. New versions or
+native libraries need separate qualification. The 500k capacity check is a startup
+test; 32k/128k retrieval was not tested. Prefix reuse passes, but output identity
+and the original strict KL gate do not. KDA and drafter conversion are lossy.
 
-V6/V7 receipts account for **3.47044 / 3.47069 GiB per rank** of lossless
-scale/embedding storage savings after the reported expert workspace, **6.94113 GiB
-across TP2**. These are resident tensor bytes, not a matched total CUDA allocation
-comparison. The lossy KDA conversion separately reduces allocation by 2.10890 GiB
-per rank during loading. Neither observation is a new saving-versus-production
-measurement. Restoration and final shutdown status are recorded in the handoff.
-
-## Qualification and release
-
-The included `gpu_check.py` exercises native codecs, GEMMs and CUDA graph replay.
-`smoke_client.py` checks the configured context, repeated-prefix reuse and output
-identity. `control_stock_trial.py` is an operational harness for the owner's two
-Sparks, with exact-container restoration and an independent watchdog; it is not
-needed by consumers and must not be reused against another production deployment.
-
-The owner's final screen is deliberately limited to three short C1/C8 code/chat
-pairs and a fixed 300-question GSM8K subset per arm, with speculation off for
-quality. It retains earlier numerical failures and every observed result; it does
-not certify general quality or long-context serving. No further experiments are
-queued after that screen and the authorized shutdown.
-
-The wheel and working owner recipe are retained. A self-contained public asset
-release and reproducible asset-build instructions are still unavailable. Any future
-publication should include source, notices, asset manifests and reproduction commands,
-and distinguish lossless packing from lossy KDA conversion and measured gains from
-estimates. The current recipe must not be advertised as a universally faster or
-fully lossless replacement for the tuned production deployment.
+This release adds reproducible CPU preparation around the existing GPU-tested
+runtime. It does not rerun benchmarks, relax gates or change the live service.

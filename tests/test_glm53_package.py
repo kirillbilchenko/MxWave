@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 
 import pytest
 
-from mxwave_glm53 import bundle, cli
+from mxwave_glm53 import assets, bundle, cli
 
 
 @pytest.fixture
@@ -109,6 +111,7 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
         bundle=target, model=model, drafter=draft, reports=tmp_path / "reports",
         node_rank=1, master_addr="10.0.0.1", master_port=29719,
         port=8046, host="127.0.0.1", max_model_len=32768, kv_cache_gib=10,
+        draft_attention_backend="auto",
     )
     command, env = cli.launch_command(args)
     assert checked_drafters == [draft], "Serving must validate the corrected drafter metadata"
@@ -124,11 +127,17 @@ def test_launch_pins_profile_and_has_no_experiment_paths(asset_source, tmp_path,
     assert "attention_backend" not in spec
     assert command[command.index("--gpu-memory-utilization") + 1] == "0.85"
     assert command[command.index("--block-size") + 1] == "2304"
-    assert spec["num_speculative_tokens_per_batch_size"] == [[1, 1, 5], [2, 2, 5], [3, 16, 3]]
+    assert spec["num_speculative_tokens_per_batch_size"] == [[1, 1, 5], [2, 2, 5], [3, 32, 3]]
     assert env["VLLM_PLUGINS"] == "mxwave_glm53"
     assert "PYTHONPATH" not in env
     assert not any("/audit/" in x or "/trial/" in x or "/overlay/" in x for x in command)
     assert not args.reports.exists(), "Building a launch must not start serving or create reports"
+    assert "--enable-prefix-caching" in command
+    assert command[command.index("--max-num-batched-tokens") + 1] == "6919"
+    assert command[command.index("--load-format") + 1] == "runai_streamer"
+    loader = json.loads(command[command.index("--model-loader-extra-config") + 1])
+    assert loader == {"memory_limit": 3072 * 1024**2, "concurrency": 8}
+    assert env["MXWAVE_GLM53_VOCAB_MODE"] == "embedding"
     args.draft_attention_backend = "TRITON_ATTN"
     triton_command, triton_env = cli.launch_command(args)
     triton_spec = json.loads(triton_command[triton_command.index("--speculative-config") + 1])
@@ -172,3 +181,57 @@ def test_marlin_032_dispatch_boundary_in_isolated_process():
         sys.executable, "-c",
         "import runpy,sys; runpy.run_path(sys.argv[1], run_name='__main__')", str(fixture),
     ], check=True)
+
+
+def test_release_archive_installs_atomically_and_verifies_all_files(asset_source, tmp_path):
+    source = tmp_path / "built"
+    bundle.prepare_bundle(asset_source, source)
+    archive = tmp_path / "runtime.tar.gz"
+    with tarfile.open(archive, "w:gz") as stream:
+        for path in source.rglob("*"):
+            if path.is_file():
+                stream.add(path, arcname=str(path.relative_to(source)))
+    output = tmp_path / "installed"
+    with pytest.raises(ValueError, match="archive SHA256"):
+        assets.install_bundle(archive, output, "0" * 64)
+    assert not output.exists()
+    result = assets.install_bundle(archive, output, bundle.digest(archive))
+    assert result["status"] == "passed"
+    assert bundle.verify_bundle(output) == bundle.verify_bundle(source)
+    with pytest.raises(FileExistsError):
+        assets.install_bundle(archive, output, bundle.digest(archive))
+
+
+@pytest.mark.parametrize("kind", ["traversal", "symlink", "duplicate", "oversize"])
+def test_release_archive_rejects_unsafe_members_before_install(tmp_path, kind):
+    archive = tmp_path / "unsafe.tar"
+    with tarfile.open(archive, "w") as stream:
+        entry = tarfile.TarInfo("../escape" if kind == "traversal" else "file")
+        if kind == "symlink":
+            entry.type, entry.linkname = tarfile.SYMTYPE, "/tmp/escape"
+        elif kind == "oversize":
+            entry.size = 1024**3 + 1
+        if kind == "oversize":
+            stream.fileobj.write(entry.tobuf())
+        else:
+            stream.addfile(entry, io.BytesIO(b""))
+        if kind == "duplicate":
+            stream.addfile(entry, io.BytesIO(b""))
+    output = tmp_path / "installed"
+    with pytest.raises(ValueError, match="Unsafe|exceeds"):
+        assets.install_bundle(archive, output, bundle.digest(archive))
+    assert not output.exists()
+    assert not (tmp_path / "escape").exists()
+
+
+def test_packaged_drafter_quantizer_matches_measured_conversion():
+    import torch
+
+    from integrations.glm53_mxfp4.quantize_pretrained_drafter_fp8 import quantize_blocks
+    from mxwave_glm53.drafter_quantize import quantize_blocks as packaged
+
+    value = torch.randn((256, 256), generator=torch.Generator().manual_seed(73)).bfloat16()
+    expected, scales = quantize_blocks(value)
+    actual, actual_scales = packaged(value)
+    assert torch.equal(actual.view(torch.uint8), expected.view(torch.uint8))
+    assert torch.equal(actual_scales, scales)

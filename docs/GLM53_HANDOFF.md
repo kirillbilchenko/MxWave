@@ -1,5 +1,28 @@
 # GLM compression experiment handoff
 
+**22 October: portable release v0.1.1 and live freeze.**
+The work branch is now pushed to `upstream/feat/glm53-flash-mxfp4`.
+[Versioned experimental release](https://github.com/kirillbilchenko/MxWave/releases/tag/glm53-v0.1.1)
+contains the wheel, qualified native binaries/build sources/licenses, pinned
+Dockerfile, checksums and [public-input recipe](../deployment/glm53/README.md).
+`build-bundle` reconstructs all four vocabulary artifacts exactly on CPU;
+`prepare-pretrained-drafter` converts the pinned public Modal BF16 checkpoint to
+the exact measured FP8 weights and corrected 0.32 config. No training/private
+experiment path is needed. CLI defaults now match the tested 500k/32-slot/6-GiB,
+6919-budget, prefix-enabled, dense-head stock profile. This packaging does not
+import production's custom overlays or claim its speed for stock vLLM.
+
+The live CT/Inco custom setup remains unchanged. Both target copies pass all 120
+shard hashes. Frozen inputs cover 774/581 files on ranks 0/1, with 648/456 unique
+small payload snapshots; archives independently verify on Mac. Large checkpoint,
+drafter and vocabulary payloads are hash-verified in place on both nodes.
+Snapshots are under `ct-live-20261022/frozen-v1`, with `frozen-r0.tar.gz` and
+`frozen-r1.tar.gz` retained separately from public release assets. The actual
+custom image/containers and original rollback containers are preserved.
+[Freeze receipt](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/ct-live-freeze-20261022.json).
+No GPU experiment, KV increase, projection tuning or service restart accompanies
+this release. [Release claims and limits](GLM53_RELEASE.md).
+
 **22 October, 10:00:06 UTC: CT is live at the user's explicit request.**
 Authenticated `http://127.0.0.1:8000/v1` serves `glm-5.3-flash`, 500k configured
 context. This is the exact successful custom-runtime B profile: CT MXFP4 experts,

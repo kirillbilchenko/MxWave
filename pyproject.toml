@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxwave"
-version = "0.1.0"
+version = "0.1.1"
 description = "Calibration-aware, bounded-memory MXFP4 quantization for large language models"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -63,7 +63,7 @@ include = ["mxwave*"]
 
 [tool.setuptools.package-data]
 mxwave = ["py.typed"]
-mxwave_glm53 = ["*.json", "licenses/*"]
+mxwave_glm53 = ["*.json", "licenses/*", "metadata/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

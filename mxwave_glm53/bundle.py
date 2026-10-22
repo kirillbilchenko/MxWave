@@ -127,7 +127,7 @@ def prepare_bundle(experiment: Path, output: Path) -> dict[str, Any]:
             "platform": "linux-aarch64", "compute_capability": [12, 1],
             "tensor_parallel_size": 2, "files": expected,
             "quality": "MXFP8 KDA is lossy; original 1e-5 KL gate failed",
-            "qualification": "upstream_0.32_gpu_qualification_pending",
+            "qualification": "GPU screen complete; quality/repeatability gates not passed",
         }
         (staged / "bundle.json").write_text(json.dumps(manifest, indent=2) + "\n")
         verify_bundle(staged)

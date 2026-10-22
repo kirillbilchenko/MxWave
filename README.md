@@ -1,5 +1,14 @@
 # MxWave
 
+**GLM portable release v0.1.1:** [downloads](https://github.com/kirillbilchenko/MxWave/releases/tag/glm53-v0.1.1),
+[stock-vLLM installation](deployment/glm53/README.md),
+[results and limitations](docs/GLM53_RELEASE.md).
+The experimental recipe uses the pinned official vLLM 0.32.0 image plus a plugin,
+with public-checkpoint CPU preparation and hash-verified native assets. It retains
+the existing GPU-screened profile; this is not a new benchmark or live migration.
+Stock and custom-runtime results below remain separate. Live CT is frozen, with
+all 120 target shards verified on each Spark and runtime snapshots verified on Mac.
+
 **22 October, 10:00 UTC: CT is live at the user's request.** The measured
 custom-runtime CT/Inco profile now serves the existing 8000 endpoint with 500k
 configured context. Startup reports, authenticated generation and unchanged

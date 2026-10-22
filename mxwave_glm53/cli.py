@@ -8,9 +8,11 @@ import json
 import os
 import platform
 import sys
+import tarfile
 from pathlib import Path
 from typing import Any
 
+from .assets import build_bundle, install_bundle, prepare_pretrained_drafter, verify_model
 from .bundle import (
     MODEL_FILES,
     VLLM_VERSION,
@@ -69,17 +71,17 @@ def launch_command(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]
         raise ValueError("Require rank 0/1 and a positive KV budget")
     if args.max_model_len < 1 or not 1 <= args.port <= 65535:
         raise ValueError("Require a positive context limit and a valid API port")
-    max_seqs = getattr(args, "max_num_seqs", 16)
-    prefill_budget = getattr(args, "max_num_batched_tokens", 4096)
-    graph_sizes = getattr(args, "graph_sizes", [1, 2, 4, 8, 16])
-    prefix_caching = getattr(args, "prefix_caching", False)
-    vocab_mode = getattr(args, "vocab_mode", "all")
+    max_seqs = getattr(args, "max_num_seqs", 32)
+    prefill_budget = getattr(args, "max_num_batched_tokens", 6919)
+    graph_sizes = getattr(args, "graph_sizes", [1, 2, 4, 6, 8, 12, 16, 18, 24, 32])
+    prefix_caching = getattr(args, "prefix_caching", True)
+    vocab_mode = getattr(args, "vocab_mode", "embedding")
     utilization = getattr(args, "gpu_memory_utilization", 0.85)
     block_size = getattr(args, "block_size", 2304)
-    load_format = getattr(args, "load_format", "auto")
-    loader_memory_mib = getattr(args, "loader_memory_mib", 2048)
+    load_format = getattr(args, "load_format", "runai_streamer")
+    loader_memory_mib = getattr(args, "loader_memory_mib", 3072)
     loader_concurrency = getattr(args, "loader_concurrency", 8)
-    draft_attention_backend = getattr(args, "draft_attention_backend", "auto")
+    draft_attention_backend = getattr(args, "draft_attention_backend", "TRITON_ATTN")
     if (not 1 <= max_seqs <= 32 or prefill_budget < max_seqs
             or not graph_sizes or sorted(set(graph_sizes)) != graph_sizes
             or graph_sizes[0] < 1 or graph_sizes[-1] > 32
@@ -161,6 +163,20 @@ def main() -> None:
     prepare = commands.add_parser("prepare-bundle", help="Export existing verified runtime assets")
     prepare.add_argument("--from-experiment", type=Path, required=True)
     prepare.add_argument("--output", type=Path, required=True)
+    build = commands.add_parser("build-bundle", help="Reproduce runtime assets from the CT checkpoint")
+    build.add_argument("--model", type=Path, required=True)
+    build.add_argument("--native", type=Path, required=True)
+    build.add_argument("--output", type=Path, required=True)
+    unpack = commands.add_parser("install-bundle", help="Verify and install a complete runtime archive")
+    unpack.add_argument("--archive", type=Path, required=True)
+    unpack.add_argument("--sha256", required=True)
+    unpack.add_argument("--output", type=Path, required=True)
+    model = commands.add_parser("verify-model", help="Hash all 120 pinned target checkpoint shards")
+    model.add_argument("--model", type=Path, required=True)
+    pretrained = commands.add_parser("prepare-pretrained-drafter",
+        help="Convert the pinned public Modal BF16 drafter to the measured FP8 profile on CPU")
+    pretrained.add_argument("--source", type=Path, required=True)
+    pretrained.add_argument("--output", type=Path, required=True)
     draft = commands.add_parser("prepare-drafter", help="Correct pinned Modal FP8 metadata for vLLM")
     draft.add_argument("--source", type=Path, required=True)
     draft.add_argument("--output", type=Path, required=True)
@@ -175,27 +191,35 @@ def main() -> None:
     serve.add_argument("--master-port", type=int, default=29719)
     serve.add_argument("--port", type=int, default=8046)
     serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--max-model-len", type=int, default=8192)
+    serve.add_argument("--max-model-len", type=int, default=500000)
     serve.add_argument("--kv-cache-gib", type=float, default=6)
     serve.add_argument("--gpu-memory-utilization", type=float, default=0.85)
     serve.add_argument("--block-size", type=int, default=2304)
-    serve.add_argument("--load-format", choices=("auto", "runai_streamer"), default="auto")
-    serve.add_argument("--loader-memory-mib", type=int, default=2048)
+    serve.add_argument("--load-format", choices=("auto", "runai_streamer"), default="runai_streamer")
+    serve.add_argument("--loader-memory-mib", type=int, default=3072)
     serve.add_argument("--loader-concurrency", type=int, default=8)
-    serve.add_argument("--draft-attention-backend", default="auto",
+    serve.add_argument("--draft-attention-backend", default="TRITON_ATTN",
                        choices=("auto", "TRITON_ATTN", "FLASHINFER"),
                        help="Native drafter backend; Triton avoids small-page hybrid cache waste")
-    serve.add_argument("--max-num-seqs", type=int, default=16)
-    serve.add_argument("--max-num-batched-tokens", type=int, default=4096)
-    serve.add_argument("--graph-sizes", type=int, nargs="+", default=[1, 2, 4, 8, 16])
-    serve.add_argument("--prefix-caching", action=argparse.BooleanOptionalAction, default=False)
-    serve.add_argument("--vocab-mode", choices=("all", "embedding"), default="all",
+    serve.add_argument("--max-num-seqs", type=int, default=32)
+    serve.add_argument("--max-num-batched-tokens", type=int, default=6919)
+    serve.add_argument("--graph-sizes", type=int, nargs="+", default=[1, 2, 4, 6, 8, 12, 16, 18, 24, 32])
+    serve.add_argument("--prefix-caching", action=argparse.BooleanOptionalAction, default=True)
+    serve.add_argument("--vocab-mode", choices=("all", "embedding"), default="embedding",
                        help="Compress both vocabulary matrices, or keep the LM head dense")
     serve.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     try:
         if args.action == "prepare-bundle":
             result = prepare_bundle(args.from_experiment, args.output)
+        elif args.action == "build-bundle":
+            result = build_bundle(args.model, args.native, args.output)
+        elif args.action == "install-bundle":
+            result = install_bundle(args.archive, args.output, args.sha256)
+        elif args.action == "verify-model":
+            result = verify_model(args.model)
+        elif args.action == "prepare-pretrained-drafter":
+            result = prepare_pretrained_drafter(args.source, args.output)
         elif args.action == "prepare-drafter":
             result = prepare_drafter(args.source, args.output)
         elif args.action == "doctor":
@@ -214,7 +238,7 @@ def main() -> None:
         print(json.dumps(result, indent=2))
         if result.get("status") == "failed":
             raise SystemExit(1)
-    except (ValueError, OSError, KeyError) as exc:
+    except (ValueError, OSError, KeyError, tarfile.TarError) as exc:
         parser.exit(2, f"mxwave-glm53: {exc}\n")
 
 

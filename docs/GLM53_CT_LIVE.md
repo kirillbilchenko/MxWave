@@ -1,5 +1,20 @@
 # CT serving handover, 22 October 2026
 
+**Frozen on 22 October without restart.** The active setup is preserved at source
+commit `018cf9d`, independently of portable release `glm53-v0.1.1`. Both nodes pass
+all 120 target shard hashes. Content-addressed snapshots retain 648/456 unique
+small payloads covering the runtime/overlay/config inputs; complete inventories
+cover 774/581 files. Large target/drafter/vocabulary payloads are hash-verified in
+place, with existing copies on both Sparks. Both snapshot archives independently
+verify on Mac. [Public freeze receipt](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/ct-live-freeze-20261022.json).
+
+On each node the snapshot is `ct-live-20261022/frozen-v1`; the coordinator archives
+are `frozen-r0.tar.gz` and `frozen-r1.tar.gz`. Mac copies live under
+`out/glm53-release-v0.1.1/frozen-live/`. These operational snapshots are retained
+privately, separately from the public source/release assets. The exact custom
+image and stopped original containers remain available for the rollback below.
+No KV, kernel, graph, drafter or container setting changes during freezing.
+
 **22 October, 10:00:06 UTC: CT is live; handover complete.** Independent
 verification at 10:01:17 UTC confirms both CT ranks running, both original
 containers stopped with unchanged identities, and the authenticated 500k API.

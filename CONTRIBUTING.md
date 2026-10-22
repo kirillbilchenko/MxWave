@@ -486,3 +486,19 @@ The wider expert fixture builder is independently authored. It reconstructs
 route assignments from retained metadata and appends deterministic synthetic
 rows while preserving the real causal prefix; it incorporates no third-party
 kernel implementation.
+
+The GLM portable release packages MxWave's existing independently authored
+`quantize_pretrained_drafter_fp8.py` as `mxwave_glm53/drafter_quantize.py`, changing
+imports and CPU thread count only. It converts Modal's public BF16 DFlash weights
+to the measured block-FP8 profile; no Modal model implementation is copied.
+The public GLM/AutoRound and Modal checkpoint licenses and revisions are retained
+in `mxwave_glm53/licenses` and `checkpoints.json`. The AutoRound checkpoint and
+pretrained drafter are credited to their authors, not presented as MxWave training.
+
+`deployment/glm53/native/zipserv` brings MxWave's own bridge/build script from its
+`lossless-mxfp4` worktree into this release. It stages the already documented
+Apache-2.0 ZipServ adaptations from the same pinned external revision; it does
+not vendor upstream code. The release includes the exact qualified native
+binaries, corresponding build scripts, source pins and upstream license copies.
+The CPU asset builder, bounded archive installer, release packager and read-only
+live freeze are independently authored. No DeepInfer code is included.

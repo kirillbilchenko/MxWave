@@ -1,5 +1,17 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October: portable v0.1.1 recipe and frozen live CT.**
+Source is pushed to `upstream/feat/glm53-flash-mxfp4`.
+[Experimental release](https://github.com/kirillbilchenko/MxWave/releases/tag/glm53-v0.1.1)
+provides a wheel, native assets/sources/licenses, pinned official-image Dockerfile
+and [public-checkpoint setup](../deployment/glm53/README.md). CPU rebuilds reproduce
+the four vocabulary files and Modal FP8 drafter exactly. No private experiment
+directory or further training is required. The stock CLI defaults match the
+GPU-tested profile. This does not migrate or retune the live custom CT/Inco service.
+Both live model copies and small runtime snapshots are hash-verified and retained
+on the Sparks/Mac; original production rollback remains intact.
+[Claims and limitations](GLM53_RELEASE.md), [live freeze](GLM53_CT_LIVE.md).
+
 **22 October, 10:00:06 UTC: CT is live at user request.**
 The exact successful custom-runtime B configuration serves the existing 8000
 listener with 500k configured context, Inco drafter and 6 GiB KV/rank. Both rank

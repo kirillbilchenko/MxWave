@@ -1,0 +1,64 @@
+{
+  "status": "passed",
+  "cpu_only": true,
+  "gpu_devices_exposed": false,
+  "checks": {
+    "final-model": {
+      "passed": true,
+      "seconds": 179.44310903549194
+    },
+    "final-bundle": {
+      "passed": true,
+      "seconds": 29.598060369491577
+    },
+    "final-doctor": {
+      "passed": true,
+      "seconds": 1.1223790645599365
+    },
+    "final-dry-run-r0": {
+      "passed": true,
+      "seconds": 2.39139986038208
+    },
+    "final-dry-run-r1": {
+      "passed": true,
+      "seconds": 1.7361383438110352
+    }
+  },
+  "wheel_sha256": "8f4148f0915fefecf7ed98a6ff3912638534f9eed7c8a1efb0cbc7cd51a7bc38",
+  "image_id": "sha256:2564c0551c36f08d5b2bbbf54e043beb17f8909027958ac4b949fc6bd62e66ca",
+  "official_base": "vllm/vllm-openai@sha256:6ff5ff0ddf3658d2c2d677dac5ca2d4726ce0156b4371166d918181b210bd4bc",
+  "limits": {
+    "cpus": 2,
+    "memory_gib": 8
+  },
+  "mac_checks": {
+    "pytest": "passed, one existing skip",
+    "ruff": "passed",
+    "mypy_mxwave": "passed"
+  },
+  "drafter_reproduction": {
+    "public_bf16_source_revision": "dae6d319510889a7f1ac5242d5b7fb2d5d95eb05",
+    "fp8_weights_sha256": "45f34ef126aa258d8e16bd605a3a05c36eb3fef3ed0f57aef20191db49f1ef46",
+    "prepared_config_sha256": "28df83230b06fb5460eed2105357e81f09560124b0b4d65366d7afcd70dfa089",
+    "exact_hashes_passed": true,
+    "quantized_tensors": 42,
+    "training_performed": false
+  },
+  "live_service_unchanged": true,
+  "doctor": {
+    "status": "passed",
+    "versions": {
+      "mxwave": "0.1.1",
+      "vllm": "0.32.0",
+      "torch": "2.13.0+cu130",
+      "transformers": "5.19.0",
+      "compressed-tensors": "0.17.0"
+    },
+    "bundle_verified": true,
+    "device": null,
+    "errors": [],
+    "upstream_contract_verified": true,
+    "scope": "installation preflight; no full-model speed or quality qualification"
+  },
+  "default_profile_verified_on_both_ranks": true
+}

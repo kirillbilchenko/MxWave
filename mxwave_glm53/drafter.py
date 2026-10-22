@@ -88,7 +88,7 @@ def prepare_drafter(source: Path, output: Path) -> dict[str, Any]:
             "source_files": DRAFTER_FILES, "prepared_files": PREPARED_DRAFTER_FILES,
             "transfers": transfers,
             "change": "Quantization metadata only; twelve existing BF16 conv projections",
-            "qualification": "Two-prompt C1 diagnostic passed; deployment qualification pending",
+            "qualification": "GPU deployment screen complete; quality/repeatability gates not passed",
         }
         (staged / "mxwave-drafter.json").write_text(json.dumps(receipt, indent=2) + "\n")
         if output.exists():
