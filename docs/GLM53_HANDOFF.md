@@ -1,5 +1,93 @@
 # GLM compression experiment handoff
 
+**22 October 2026, 06:07 UTC: C1 trace preparation frozen and validated; production healthy.**
+All repository tests pass (one skipped) with the worktree on `PYTHONPATH`; Ruff,
+strict core mypy and 22 focused operational tests pass. Both candidate images
+accept the native profiler configuration on CPU. The stopped production clones
+preserve all private environment/settings and original mounts; only private ports,
+native profiler configuration, trace mount and container hostname differ.
+All **17 frozen preparation files** and both original identities reverify.
+Plan SHA256: `70ea5c756624d5a0ed595bf9e0556334073bf79ec8b31457c87f8b419bde0768`.
+The production API confirms 500k context. Profiling has not started yet; the
+following launch will pause production under the existing independent watchdog.
+
+**22 October 2026, 06:06 UTC: user powers on both Sparks; bounded C1 profiling resumes.**
+Both nodes are reachable and were GPU-idle after reboot. Original production did
+not auto-start. Before starting it, both saved identities were checked: Docker had
+serialized `HostConfig.Dns` as `[]` instead of `null`; reversing only that field
+reproduces both prior identity hashes exactly. No serving setting changed. Original
+production is now healthy, with the existing 500k configuration.
+
+Preparing `glm53-package-v1/c1-runtime-profile-v1`: two trace-enabled copies of the
+final A/B deployments, native PyTorch profiling, both ranks, the same frozen short
+code/chat C1 prompts and draft policies. Each cell has one warmup, three ordinary
+256-token controls, one separately labeled profiled request and two ordinary
+post-profile controls. Prefix salts remain cold and matched; clocks, thermals and
+power are retained. The existing independent watchdog restores the exact original
+containers; the lease is capped at 90 minutes. No tuning, training, promotion,
+quality rerun or vLLM source replacement is included. Afterward production remains
+the default and nodes stay powered on. Profile preparation is CPU-only so far.
+
+The new collector retains failed requests and stops profiling even after a request
+failure. The controller accepts only a frozen local client script. All 22 focused
+tests, repository Ruff and strict core mypy pass. The first full pytest invocation
+used the parent checkout's editable import path and failed collection; it is being
+rerun with this worktree explicitly on `PYTHONPATH`. The earlier shutdown/closeout
+entries below describe the completed prior session, not the resumed operational state.
+
+**22 October 2026, 05:51 UTC: offline C1 improvement review; no new GPU run.**
+The user asks whether C1 can improve. Recomputed from the retained final
+`deployment-quick-v1-final-evidence/independent-review.json`:
+
+| C1 workload | Mean draft calls/request, A / B | Decode wall time per draft call, A / B |
+|---|---:|---:|
+| Code | 64.33 / 67.33 | 69.84 / 88.08 ms |
+| Chat | 91.33 / 83.67 | 60.59 / 84.68 ms |
+
+The latter is `(mean request latency - mean TTFT) / mean draft calls`, with
+three requests per cell. It includes host, drafter, target and communication work;
+it is not a measured GPU kernel duration or a target graph-launch count. Different
+draft widths and output trajectories remain confounders. Chat already uses fewer
+calls in CT but takes longer, so acceptance alone cannot explain the C1 deficit.
+Matching production's measured throughput requires **27.74% code / 27.41% chat**
+more throughput from the current CT baseline, not merely a 22% gain.
+
+Bounded options, not queued experiments:
+- Earlier custom-stack CT data supports testing three drafts for chat: **34.91
+  versus 32.80 tok/s** at five drafts (+6.43%). Code favors five: **44.37 versus
+  41.06 tok/s** at three. Those are earlier 8k-context development results,
+  not measurements on the final native-0.32 500k recipe; output trajectories
+  differ. The current CLI fixes the 5/5/3 policy, so a three-draft C1 comparison
+  needs an explicit opt-in configuration change rather than a silent default change.
+- For a larger gain, attribute the current per-cycle cost to vocabulary heads,
+  target/drafter kernels, graph replay, communication and host gaps before porting
+  one measured bottleneck. The final stock recipe lacks production's certified
+  argmax head, custom FP8 draft head and custom RoCE overlay. Their individual
+  costs and compatibility with the final plugin are unmeasured; none is a promised
+  recovery of the whole gap. Preserve the official-image/plugin requirement.
+- Increasing KV capacity does not address these unqueued C1 requests. Drafter
+  training remains stopped. No new GPU experiment or production restart occurred;
+  the shutdown and default-production disposition below remain unchanged. This
+  offline documentation update is local and postdates the verified node backups.
+
+**22 October: review of the proposed six-item C1 recovery plan (offline only).**
+Trace-first is supported, using a warmed block of rounds for code and chat on both
+ranks, including CPU gaps and communication overlap. A single round or summed
+kernel-category durations cannot establish the end-to-end critical path. The
+estimates above imply about **18 ms/code and 24 ms/chat** additional wall time per
+call, with different draft widths; neither is an isolated measured kernel cost.
+Seven drafts are not assumed free: the earlier CT + Modal screen favored five by
+6–8% across domains. The earlier Inco screen did not beat Modal FP8 and lacked its
+final repeat control. Inco on the stock recipe also needs explicit compatibility
+support: `verify_drafter` pins the corrected six-layer Modal assets, so changing a
+path alone is insufficient. A dense head removes the known packed-storage blocker
+for the certified argmax route; it does not establish native-0.32 hook, sampling or
+refinement compatibility. Communication, head and attention costs remain
+unattributed. Native Triton already solves the measured draft-cache page waste;
+changing attention is justified only by measured runtime cost. Any future port
+must retain official-image/plugin operation and check the existing C8 result,
+rather than assume that gain survives. No new experiment or restart is queued.
+
 **Final closeout — 21 October 2026, 21:58 UTC: both Sparks shut down; work stopped.**
 Both machines accepted the requested scheduled poweroff: Spark1 **21:57:33 UTC**,
 Spark2 **21:57:36 UTC**. Direct SSH connections to both time out at **21:58:44 UTC**.

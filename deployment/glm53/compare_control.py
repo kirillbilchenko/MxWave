@@ -128,6 +128,9 @@ def control(root: Path) -> None:
     path = root / "controller.json"
     if plan["status"] != "passed" or path.exists():
         raise RuntimeError("Require a fresh CPU-validated immutable preparation")
+    client_script = plan.get("client_script", "compare_client.py")
+    if Path(client_script).name != client_script or client_script not in plan["files"]:
+        raise RuntimeError("Require a frozen local benchmark client")
     for name, digest in plan["files"].items():
         if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest:
             raise RuntimeError(f"Frozen preparation changed: {name}")
@@ -184,7 +187,7 @@ def control(root: Path) -> None:
                 start_stage(root, stage, state)
                 state["phase"] = stage["mode"]
                 write(path, state)
-                command = ["python3", "-S", str(root / "compare_client.py"), "--root", str(root),
+                command = ["python3", "-S", str(root / client_script), "--root", str(root),
                            "--arm", stage["arm"], "--port", str(stage["port"]),
                            "--mode", stage["mode"]]
                 if stage["mode"] == "timing":
@@ -225,7 +228,7 @@ def control(root: Path) -> None:
                 logs = root / "logs" / stage["name"]
                 logs.mkdir(parents=True)
                 retain_logs(logs, stage["servers"])
-                subprocess.run(["python3", "-S", str(root / "compare_client.py"),
+                subprocess.run(["python3", "-S", str(root / client_script),
                                 "--root", str(root), "--mode", "summary"],
                                check=False, timeout=60)
         state["phase"] = "collection_complete"

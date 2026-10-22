@@ -1,5 +1,13 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October, 06:07 UTC: user restarts Sparks; bounded C1 profiling is prepared.**
+Original 500k production is healthy and unchanged. Two native-profiler copies of
+the final production/CT deployments are frozen for short code/chat C1 only, with
+ordinary timing controls, both-rank traces and automatic exact restoration. No
+optimization, training, quality rerun or promotion is included. Full tests, Ruff,
+core mypy and both-image profiler CPU checks pass. No GPU trace has started yet.
+The earlier shutdown entries below are historical. [Live handoff](GLM53_HANDOFF.md).
+
 **Final — 21 October, 21:58 UTC: both Sparks are offline after accepted poweroff.**
 All measurements are finished; original production was restored and verified before
 shutdown. Complete experiment/source/report backups independently verify on Mac and
