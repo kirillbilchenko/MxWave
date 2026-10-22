@@ -1,5 +1,16 @@
 # GLM compression experiment handoff
 
+**22 October, 06:40 UTC: detached final preparation running, v2.**
+Spark1 preparer **376651** runs independently of the laptop. Root:
+`glm53-package-v1/same-runtime-final-v2`. It proceeds to the two-hour watchdog
+controller only after CPU checks pass. V1 stopped before any outage because the
+coordinator-only historical `prepared.json` was absent on Spark2. Both arms passed
+CPU validation on Spark1 and production passed on Spark2 before that staging
+failure. V2 freezes the needed adapter environment in its own copied metadata;
+no overlay, serving flag, workload or decision rule changes. The failed v1 is
+retained. Full repository tests pass (one skip), plus Ruff/core mypy and the new
+policy-preservation tests. Source before the staging correction is `2cbf96c`.
+
 **22 October: final same-runtime test authorized; detached preparation starting.**
 The user requests one last CT-versus-production comparison with the **same
 production image, original overlays, Inco drafter and actual full serving flags**,

@@ -47,6 +47,11 @@ Decision rule, frozen before results:
 The independent watchdog has a **7,200-second outage lease**. Exact original
 containers are restored and verified afterward, including 500k API readiness.
 Both Sparks remain on. Logs and progress live on Spark1 under
-`full-model-v1/glm53-package-v1/same-runtime-final-v1`; each rank retains its own
+`full-model-v1/glm53-package-v1/same-runtime-final-v2`; each rank retains its own
 startup/CPU logs. The previous C1 diagnostic was committed as `fe13966` and backed
 up on both nodes before this new scope.
+
+The first preparation stopped without an outage: historical launch metadata was
+present only on the coordinator. V2 copies the required adapter environment as a
+frozen run input to both ranks. The protocol and serving settings are unchanged;
+the failed v1 remains retained. Detached v2 preparer PID: 376651.

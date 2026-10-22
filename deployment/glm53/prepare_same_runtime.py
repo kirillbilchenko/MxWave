@@ -69,8 +69,7 @@ def clone(root: Path, arm: str, mode: str, trial: int, rank: int) -> dict[str, A
                   str(BASE / "full-model-v1/kda-mxfp8-speed-v1") + ":/kda-runtime:ro",
                   str(BASE / "full-model-v1/full-c16admissionv1-src") + ":/ct-code:ro"])
     if arm == "B":
-        old = json.loads((BASE / "full-model-v1/kda-mxfp8-speed-v1/prepared.json").read_bytes())
-        candidate_env = old["launches"]["b1"][rank]["environment"]
+        candidate_env = json.loads((root / "adapter-environment.json").read_bytes())[str(rank)]
         required = {"MXWAVE_MOE_MODE", "MXWAVE_MOE_RAW_LIBRARY", "MXWAVE_MOE_ALIGNED_LIBRARY",
                     "MXWAVE_MOE_RECORD_CODEC", "MXWAVE_MOE_DISPATCH",
                     "MXWAVE_GLM53_ATTENTION_MAPPING", "MXWAVE_GLM53_KDA_MODE",
@@ -161,6 +160,11 @@ def prepare(root: Path) -> None:
     if {c["name"] for c in workloads["cells"]} != wanted:
         raise RuntimeError("Require exactly four final-screen cells")
     write(root / "workloads.json", workloads)
+    old_adapter = json.loads((BASE / "full-model-v1/kda-mxfp8-speed-v1/prepared.json").read_bytes())
+    write(root / "adapter-environment.json", {
+        str(rank): {key: value for key, value in
+                    old_adapter["launches"]["b1"][rank]["environment"].items()
+                    if key.startswith("MXWAVE_")} for rank in (0, 1)})
     for name in ("gsm8k-protocol.json", "gsm8k_benchmark.py", "tokenizer-identities.json"):
         (root / name).write_bytes((previous / name).read_bytes())
     from compare_client import validate_quality_protocol

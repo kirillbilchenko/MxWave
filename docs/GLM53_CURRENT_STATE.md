@@ -1,5 +1,11 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October, 06:40 UTC: final preparation runs detached as PID 376651.**
+`same-runtime-final-v2` corrects a missing cross-node metadata copy in v1; the first
+attempt stopped before any outage. No serving/overlay/protocol change. CPU checks
+precede the automatic bounded GPU launch and exact production restoration.
+[Protocol](GLM53_SAME_RUNTIME_FINAL.md), [live handoff](GLM53_HANDOFF.md).
+
 **22 October: final same-runtime comparison authorized; detached preparation starting.**
 CT and ModelOpt will share production's original image, overlays, Inco drafter and
 actual full settings. C1/C8 code/chat, three pairs, then the frozen 300-question
