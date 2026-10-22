@@ -1,5 +1,12 @@
 # MxWave
 
+**22 October, 10:00 UTC: CT is live at the user's request.** The measured
+custom-runtime CT/Inco profile now serves the existing 8000 endpoint with 500k
+configured context. Startup reports, authenticated generation and unchanged
+original-container rollback identities verify. Allocation reproduces the measured
+14.466 GiB TP2 advantage. [Live configuration and rollback](docs/GLM53_CT_LIVE.md).
+Benchmark qualification outcomes below are unchanged; this is an explicit opt-in.
+
 **22 October: same-production-runtime comparison complete; production restored.**
 Both arms share the custom production runtime, Inco drafter and serving settings.
 Three interleaved short-prompt trials, 256 output tokens, two DGX Sparks (SM121/TP2):
@@ -16,8 +23,9 @@ subset scores **291/300 production, 287/300 CT**, with no errors/truncations.
 Post-startup allocation saves **14.466 GiB across TP2**. These compare different
 quantized checkpoints, not isolated lossless packing, and are not stock-plugin
 performance numbers. PPL/SQNR and long-context retrieval are outside this screen.
-Production remains the default; both Sparks are on, exact production is healthy,
-and no further GPU run is queued. [Full report and ranges](docs/GLM53_SAME_RUNTIME_RESULTS.md).
+The benchmark recommended production as default. The user subsequently requested
+the CT deployment described above; original containers remain intact for rollback.
+No further benchmark is queued. [Full report and ranges](docs/GLM53_SAME_RUNTIME_RESULTS.md).
 The earlier dated entries below are historical.
 
 **21 October, 21:58 UTC: final stock-vLLM deployment screen is complete; both Sparks are offline.** Official

@@ -4,12 +4,14 @@ This is the default deployment target: the official vLLM image with the MxWave
 wheel installed through vLLM's plugin mechanism. No vLLM source files are replaced.
 The extension wraps version-pinned internal APIs and requires the verified bundle.
 
-**22 October follow-up:** the same-production-runtime comparison is complete and
-production is restored. Its favorable CT medians use the custom runtime and Inco
+**22 October follow-up:** the same-production-runtime comparison is complete.
+After exact restoration, the user explicitly selected its CT/Inco profile for
+live use; that separate handover completed at 10:00 UTC. Its favorable CT medians use the custom runtime and Inco
 drafter; they do not replace the official-image results below. Both repeatability
 and the observed quality screen fail. Stock-vLLM compatibility remains mandatory;
 no fast-path or KV change is applied to this recipe.
 [Separate final report](../../docs/GLM53_SAME_RUNTIME_RESULTS.md).
+[Live custom-runtime service and rollback](../../docs/GLM53_CT_LIVE.md).
 
 **GPU-tested status, 21 October 2026:** the corrected recipe starts at **500k
 configured context**, with prefix caching and useful DFlash acceptance. All three

@@ -1,12 +1,17 @@
 # GLM compression experiment handoff
 
-**22 October, 09:57 UTC: user requests CT for live use.** Preparing a detached
-handover to the exact successful same-runtime B profile, including Inco, dense
-head, 500k context and the unchanged 6 GiB KV budget. Both rank CPU checks pass;
-production remains running until the guarded handover starts. Original containers
-are retained with startup-failure restoration and explicit rollback. The user
-accepts the observed speed/quality tradeoff; benchmark gates/results remain
-unchanged. [Deployment state and rollback](GLM53_CT_LIVE.md).
+**22 October, 10:00:06 UTC: CT is live at the user's explicit request.**
+Authenticated `http://127.0.0.1:8000/v1` serves `glm-5.3-flash`, 500k configured
+context. This is the exact successful custom-runtime B profile: CT MXFP4 experts,
+MXFP8 KDA, packed scales/embedding, dense head, Inco drafter, unchanged 6 GiB KV.
+The smoke request completes normally; both startup reports verify all components.
+Allocation exactly matches the benchmark CT starts, preserving **14.465825 GiB
+TP2** advantage. Startup/handover takes 229.3 seconds. Independent 10:01:17 UTC
+check verifies both CT ranks running and both originals stopped with unchanged
+identities. Controller/watchdog have exited; CT survives laptop disconnect.
+The user accepts the observed speed/quality tradeoff; benchmark gates/results
+remain unchanged. This is not a stock-plugin speed claim or a KV/fast-path tuning
+change. [Deployment details and exact-production rollback](GLM53_CT_LIVE.md).
 
 **22 October: final evidence preservation complete.**
 Final evidence archive: **810 payloads**, **4,211,408 bytes**, SHA256

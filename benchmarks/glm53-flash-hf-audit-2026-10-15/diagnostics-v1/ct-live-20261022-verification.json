@@ -1,0 +1,134 @@
+{
+  "verified_utc": "2026-10-22T10:01:17.524707+00:00",
+  "phase": "complete_live",
+  "originals_unchanged_stopped": true,
+  "ct_running": true,
+  "ct_identities": [
+    {
+      "rank": 0,
+      "identity": {
+        "id": "7e100e572bbb0f26f3211577278cf90585ca1e3492dd3553935c3d945e79eb8f",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config": "1d1e1d9caacae3b19f0907f1cb5ccd2c8d3d20bf651de042e582d09ffd58ec91",
+        "host": "9cbdd6073e6b83b9ab3e799cf49342cc5f1a280ae44ad55c0db7421068258454",
+        "mounts": "e2dbce7942aac3e280b42819b8415bbdffeec3077499400ab5e450c99d764b30"
+      },
+      "matches_prepared_except_docker_OomKillDisable_false_to_null": true
+    },
+    {
+      "rank": 1,
+      "identity": {
+        "id": "8ada4423b67d340ce1958e929287091506048c972ec1285f65c0c8235d4180ca",
+        "image": "sha256:39a03677234ea74e35544d301bd14716c1ae9695ad8d91b16e2c76545e26e8d2",
+        "config": "e75a58d1072cde84d679a81985935814d8f089a4e30bd277944631e14600ac39",
+        "host": "d86558b4f0b763f869db90c40581947f927bc2788dffe13ce9e524ceb870c21a",
+        "mounts": "e2dbce7942aac3e280b42819b8415bbdffeec3077499400ab5e450c99d764b30"
+      },
+      "matches_prepared_except_docker_OomKillDisable_false_to_null": true
+    }
+  ],
+  "models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "glm-5.3-flash",
+        "object": "model",
+        "created": 1792663277,
+        "owned_by": "vllm",
+        "root": "/model",
+        "parent": null,
+        "max_model_len": 500000,
+        "permission": [
+          {
+            "id": "modelperm-a85fdb9c292e5a72",
+            "object": "model_permission",
+            "created": 1792663277,
+            "allow_create_engine": false,
+            "allow_sampling": true,
+            "allow_logprobs": true,
+            "allow_search_indices": false,
+            "allow_view": true,
+            "allow_fine_tuning": false,
+            "organization": "*",
+            "group": null,
+            "is_blocking": false
+          }
+        ]
+      }
+    ]
+  },
+  "cuda_allocated_bytes": [
+    96212982272,
+    96212712960
+  ],
+  "startup_seconds": 229.29970169067383,
+  "smoke": {
+    "id": "chatcmpl-8d4ff06c609490c9",
+    "object": "chat.completion",
+    "created": 1792663204,
+    "model": "glm-5.3-flash",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "2 + 2 = 4",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "reasoning": null
+        },
+        "logprobs": null,
+        "finish_reason": "stop",
+        "stop_reason": 154827,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.1.dev20051+g487ecf187-tp2-fcbea2fd",
+    "usage": {
+      "prompt_tokens": 23,
+      "total_tokens": 32,
+      "completion_tokens": 9,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "created_cache_tokens": 0,
+        "multimodal_tokens": null
+      }
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  },
+  "controller_pid_present": false,
+  "watchdog_pid_present": false,
+  "profile": [
+    {
+      "rank": 0,
+      "max_model_len": 500000,
+      "max_num_seqs": 32,
+      "max_num_batched_tokens": 6919,
+      "kv_cache_memory_bytes": 6442450944,
+      "enable_prefix_caching": true,
+      "draft_layers": 5,
+      "shared_head": true,
+      "head_weight_dtype": "torch.bfloat16"
+    },
+    {
+      "rank": 1,
+      "max_model_len": 500000,
+      "max_num_seqs": 32,
+      "max_num_batched_tokens": 6919,
+      "kv_cache_memory_bytes": 6442450944,
+      "enable_prefix_caching": true,
+      "draft_layers": 5,
+      "shared_head": true,
+      "head_weight_dtype": "torch.bfloat16"
+    }
+  ]
+}

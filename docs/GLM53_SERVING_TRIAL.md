@@ -1,5 +1,13 @@
 # GLM serving replacement: verified DFlash comparison
 
+**22 October 2026, 10:00:06 UTC: the user-selected CT profile is live at 500k.**
+`http://127.0.0.1:8000/v1`, alias `glm-5.3-flash`, now uses the final comparison's
+CT/Inco profile on production's custom runtime. Authenticated generation and both
+startup reports pass. Actual allocation retains the measured **14.465825 GiB TP2**
+advantage, with unchanged 6 GiB KV/rank. Original containers are stopped and intact;
+the detached handover is complete. [Current deployment and rollback](GLM53_CT_LIVE.md).
+The older live-trial descriptions and rollback commands below are historical.
+
 **21 October 2026, 12:49 UTC: original 500k production is healthy.** The user ends drafter training.
 CT's next-launch profile selects unmodified Modal FP8 with C1:5 / C2:5 / C3–C16:3.
 This is not a change to the live ModelOpt/Inco service. Use the selected
