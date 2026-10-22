@@ -1,5 +1,22 @@
 # GLM compression experiment handoff
 
+**22 October: final same-runtime test authorized; detached preparation starting.**
+The user requests one last CT-versus-production comparison with the **same
+production image, original overlays, Inco drafter and actual full serving flags**,
+then a decision and stop. Scope: C1/C8 code/chat, three interleaved pairs, the same
+300-question speculation-off quality subset. No workaround if startup fails.
+[Frozen protocol and decision rules](GLM53_SAME_RUNTIME_FINAL.md).
+
+Local preservation tests, Ruff and strict core mypy pass. The detached Spark1
+preparer validates both arms/ranks without GPUs, then starts the controller only
+on success. Outage lease: two hours, independent watchdog, exact restoration.
+Production stays healthy during preparation. Root: `glm53-package-v1/same-runtime-final-v1`.
+Actual production uses **4 ms admission and the full 7/5/3 draft policy**; those
+are preserved. Per-checkpoint hook dispatch eligibility will be recorded, not
+assumed from matching flags. This new user authorization supersedes the earlier
+"no further GPU run queued" state below. Prior profiling source is committed at
+`fe13966`, with its incremental bundle retained on both nodes.
+
 **22 October 2026, 06:31 UTC: C1 profiling complete; exact production restored.**
 The controller ends `complete_restored` at **06:21:40 UTC**, after **14.00 minutes**,
 with both stages complete and no errors. Independent restoration checks confirm

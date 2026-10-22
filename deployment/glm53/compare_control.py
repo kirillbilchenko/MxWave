@@ -215,6 +215,8 @@ def control(root: Path) -> None:
                 if stage["mode"] in ("timing", "compatibility"):
                     timing_blocked = True
                 write(path, state)
+                if plan.get("abort_on_stage_error", False):
+                    raise RuntimeError("Frozen stop-on-error policy: no workaround or later arm") from exc
             finally:
                 if child is not None and child.poll() is None:
                     child.terminate()

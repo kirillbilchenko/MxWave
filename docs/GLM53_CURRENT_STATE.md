@@ -1,5 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October: final same-runtime comparison authorized; detached preparation starting.**
+CT and ModelOpt will share production's original image, overlays, Inco drafter and
+actual full settings. C1/C8 code/chat, three pairs, then the frozen 300-question
+quality screen with speculation off. CPU checks precede any outage; an incompatible
+startup stops the run without workarounds. Two-hour watchdog lease and exact
+production restoration. [Frozen protocol](GLM53_SAME_RUNTIME_FINAL.md).
+
 **22 October, 06:31 UTC: profiling finished; exact original 500k production restored.**
 Both trace stages complete without errors; all profiling containers are stopped.
 No further GPU experiment, tuning or promotion is queued. Both Sparks stay on.
