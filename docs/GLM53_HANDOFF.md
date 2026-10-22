@@ -1,5 +1,41 @@
 # GLM compression experiment handoff
 
+**22 October, 09:10 UTC: quality-only continuation is running detached.**
+The isolated quality-client import/grading check and both-arm/rank CPU startup
+checks pass. Controller **1234052**, independent watchdog **1234695**, stage
+`gsm8k-A-0` loading. The absolute deadline is still **10:27:14 UTC**. No timing is
+repeated; no GSM8K question has been retried. Production is paused again only for
+the two missing quality passes, with exact restoration afterward. Quality results
+remain pending. Source bundle `glm53-quality-continuation.bundle` is retained on
+both nodes, SHA256 `a59fed12ffb1b2933924b4cd0e7d5d37be476e8d3f3c83ab7201c721b0a2d299`.
+
+**22 October, 09:09 UTC: speed complete; quality-only continuation preparing detached.**
+All six timing stages finish without API errors. V3 then stops before sending any
+GSM8K question because its staged benchmark imports a missing `numeric_scoring.py`.
+This is a second launcher staging error, not a model failure. Exact original 500k
+production is restored at **09:07:26 UTC**, independently reverified on both ranks,
+and all owned trial containers are stopped. V3 evidence stays unchanged.
+
+Final three-trial medians (production / CT): code C1 **46.01 / 49.35 (+7.3%)**;
+chat C1 **39.06 / 45.11 (+15.5%)**; code C8 **74.35 / 86.29 (+16.1%)**;
+chat C8 **72.89 / 83.71 (+14.8%)**. Every arm/cell exceeds the frozen 2% spread
+control; these observed gains do **not** pass speed qualification. Code C1 ranges
+39.48–51.96 / 46.68–55.75 tok/s. All trials are retained, with no timing rerun.
+
+Source **`2fde099`** stages the unchanged original numeric scorer and adds an
+isolated CPU import/request/scoring check before any outage. Regression tests
+reproduce the missing dependency and prove that an attempted question prevents
+continuation. Full tests (one skip), Ruff and core mypy pass.
+
+The already-authorized, unfinished quality scope continues in fresh root
+`glm53-package-v1/same-runtime-final-quality-v1`, detached preparer **1230449**.
+It schedules only A/B speculation-off GSM8K (same 300 questions, grading and
+settings), requires the completed timings and exact prior restoration, and refuses
+any quality-question retry. It preserves the original absolute watchdog deadline
+**10:27:14 UTC** instead of starting a new two-hour lease. No gate, model, kernel,
+overlay or serving setting changes. At this checkpoint CPU preparation is running;
+quality results remain pending. No promotion or further experiment is queued.
+
 **22 October, 08:52 UTC: two timing pairs complete; third pair loading.**
 V3 has completed A0/B0/A1/B1 without stage or API errors. Controller/watchdog
 remain active; `timing-A-2` is capturing graphs. GSM8K has not started.
