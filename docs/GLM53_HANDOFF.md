@@ -1,5 +1,13 @@
 # GLM compression experiment handoff
 
+**22 October, 09:57 UTC: user requests CT for live use.** Preparing a detached
+handover to the exact successful same-runtime B profile, including Inco, dense
+head, 500k context and the unchanged 6 GiB KV budget. Both rank CPU checks pass;
+production remains running until the guarded handover starts. Original containers
+are retained with startup-failure restoration and explicit rollback. The user
+accepts the observed speed/quality tradeoff; benchmark gates/results remain
+unchanged. [Deployment state and rollback](GLM53_CT_LIVE.md).
+
 **22 October: final evidence preservation complete.**
 Final evidence archive: **810 payloads**, **4,211,408 bytes**, SHA256
 `6c7eadf167eb4280165e7b272b7b8911356cd95f601f31826220070ae401db4e`.

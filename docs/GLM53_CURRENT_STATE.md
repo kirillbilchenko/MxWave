@@ -1,5 +1,12 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October, 09:57 UTC: CT live handover is being prepared at user request.**
+The exact successful custom-runtime B configuration will use the existing 8000
+listener, 500k context, Inco drafter and 6 GiB KV/rank. Both rank CPU checks pass;
+original production has not yet been stopped. No new benchmark or tuning is
+queued. [Live status and rollback](GLM53_CT_LIVE.md). Recorded acceptance gates
+remain unchanged; this is the user's explicit opt-in to the measured CT setup.
+
 **22 October, 09:34:54 UTC: final comparison complete; exact production restored.**
 All six speed passes and both 300-question speculation-off GSM8K arms complete.
 Production is healthy at 500k; both original identities and all 20 stopped trial
