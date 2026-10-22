@@ -1,5 +1,19 @@
 # GLM compression experiment handoff
 
+**22 October, 08:52 UTC: two timing pairs complete; third pair loading.**
+V3 has completed A0/B0/A1/B1 without stage or API errors. Controller/watchdog
+remain active; `timing-A-2` is capturing graphs. GSM8K has not started.
+Two-trial median tok/s (production / CT): code C1 **48.98 / 51.21 (+4.6%)**,
+chat C1 **38.20 / 45.94 (+20.3%)**, code C8 **76.54 / 88.54 (+15.7%)**,
+chat C8 **75.04 / 85.07 (+13.4%)**. These are interim observations only.
+
+Repeatability is materially weaker than the first pair suggested: code C1 ranges
+**46.01–51.96** for production and **46.68–55.75** for CT. CT's second code C1
+trial is slower than its paired production trial, despite the positive two-trial
+median. The observed spreads exceed the frozen 2% control; no stable speedup or
+qualification is established. Finish the scheduled third pair and both quality
+passes, retain every trial, and keep the decision rules unchanged.
+
 **22 October, 08:40 UTC: first full same-runtime pair completes without API errors.**
 Detached v3 controller advances to `timing-A-1`; A0 and B0 are complete, with no
 stage errors. CT starts with the required 500k configured context, 32 slots,
