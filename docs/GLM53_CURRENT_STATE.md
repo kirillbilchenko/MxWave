@@ -1,5 +1,31 @@
 # GLM lossless experiment: current state and next steps
 
+**22 October, 06:31 UTC: profiling finished; exact original 500k production restored.**
+Both trace stages complete without errors; all profiling containers are stopped.
+No further GPU experiment, tuning or promotion is queued. Both Sparks stay on.
+The captured target graph is about **12–16 ms slower in CT**, principally expert
+and other computation. Communication differs by only about **0.5–1.3 ms**;
+porting RoCE alone is unlikely to close the gap. This compares different models,
+draft widths and runtimes, so the cause is not isolated to lossless compression.
+
+Five ordinary controls per cell show code **47.78 / 42.86 tok/s**, chat **39.21 /
+36.08**, production / CT. Wide ranges and differing outputs prevent a new speed
+qualification; the earlier three-pair results remain. Cache probes pass; sampled
+telemetry has no active slowdown flags. Production traces cover an initial prefix
+of each request, explicitly limiting whole-request attribution. All 73 archived
+payloads hash-verify on both Sparks and are retained on Mac. Spark2 CPU recomputation
+matches all eight trace reviews and the control/telemetry review exactly. Final
+source is retained in the incremental `glm53-c1-profile-final.bundle` backup.
+[Full report](GLM53_C1_RUNTIME_PROFILE.md),
+[handoff and archive hash](GLM53_HANDOFF.md).
+
+**22 October, 06:08 UTC: bounded C1 trace session running detached.**
+Production is temporarily paused under independent restoration watchdog **127851**;
+controller **127253** loads the production profiling copy, then the unchanged CT
+profile. Short code/chat C1 only, native profiling and ordinary timing controls;
+no tuning, training or promotion. Source `65474a9` is backed up on both Sparks.
+Exact original 500k production restores afterward. [Live handoff](GLM53_HANDOFF.md).
+
 **22 October, 06:07 UTC: user restarts Sparks; bounded C1 profiling is prepared.**
 Original 500k production is healthy and unchanged. Two native-profiler copies of
 the final production/CT deployments are frozen for short code/chat C1 only, with

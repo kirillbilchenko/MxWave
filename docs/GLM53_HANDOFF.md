@@ -1,5 +1,64 @@
 # GLM compression experiment handoff
 
+**22 October 2026, 06:31 UTC: C1 profiling complete; exact production restored.**
+The controller ends `complete_restored` at **06:21:40 UTC**, after **14.00 minutes**,
+with both stages complete and no errors. Independent restoration checks confirm
+both original identities/configurations, the authenticated 500k API, and all four
+trial containers stopped. Both nodes stay on. No tuning, promotion or further GPU
+run is queued. The running-session entries below are historical.
+
+[Complete C1 trace report](GLM53_C1_RUNTIME_PROFILE.md): the captured target graph
+is **61.12 → 73.58 ms for code**, **53.13 → 69.47 ms for chat** on rank0; rank1
+corroborates the direction. Expert and other target compute account for most of
+the observed difference. Target communication differs by about **0.5–1.3 ms**;
+RoCE alone is not supported as a fix for the whole gap. Native draft head work is
+inside the draft graph, unlike production's separate FP8 head, so compare those
+categories together. These are profiled components, not causal isolated speedups.
+
+All five ordinary controls per arm/domain are retained: median code **47.78 / 42.86
+tok/s**, chat **39.21 / 36.08**, production / CT, with wide ranges. No change was
+made that explains a smaller gap than yesterday; this single-load diagnostic does
+not replace the final three-pair screen. Both prefix-cache probes pass. Sampled
+telemetry shows P0, 58–65°C and no active slowdown flags, with unlocked clocks.
+Production GPU coverage ends after a contiguous prefix (48/49 code and 51/51 chat
+target graphs); CT covers 69/69 and 81/81. Coverage limits remain explicit.
+
+The user's proposed same-production-runtime comparison would be a stronger
+diagnostic, subject to proving each CT hook is active. It would still compare
+different quantized checkpoints and would not deliver the official-image/plugin
+recipe by itself. The older speed report records **6 GiB KV and drafts 7/5/3**,
+not 4 GiB and seven drafts everywhere. No follow-up experiment has been launched.
+
+All **73 evidence payloads** and the archive independently hash-verify on both
+Sparks; the same archive is retained on Mac:
+`out/glm53-package-v1/c1-runtime-profile-v1-evidence.tar.gz`, **74,941,787 bytes**,
+SHA256 **`3bcd3363201e95b6746f42ba1e19da9f78377dba1a904704b38d69948e536c00`**.
+The tracked `diagnostics-v1/c1-runtime-profile-v1-summary.json` retains control
+ranges, per-rank trace coverage and summaries. Eight focused tests, repository
+Ruff and strict core mypy pass; the full suite passed before launch with one skip.
+Spark2 CPU recomputation reproduces **all eight trace reviews and the complete
+control/telemetry review exactly**, after JSON key normalization and omitting
+host-specific path strings. Host Python lacked NumPy, so this used a CPU-only
+container from the retained official image. No GPU or service change was needed.
+Receipt: `out/glm53-package-v1/c1-runtime-profile-v1/independent-recomputation.json`.
+Final source is saved in the `glm53-c1-profile-final.bundle` incremental backup;
+its receipt is alongside the archive receipt in the local and remote run root.
+
+**22 October 2026, 06:08 UTC: bounded C1 trace controller running detached.**
+Controller **127253**, independent watchdog **127851**, root
+`full-model-v1/glm53-package-v1/c1-runtime-profile-v1`. Production is temporarily
+paused while the trace-enabled production copy loads; CT follows, then exact
+original restoration. Both arms retain their final serving settings/draft policies.
+The 90-minute lease includes automatic restoration controls. No tuning is queued.
+
+Source commit **`65474a9`** is saved in
+`out/checkpoints/glm53-c1-profile.bundle`; SHA256
+`b989eee3415c046dee2c3be0cb275de89d4e029cfdd7976ab2c806ea6ab00050` verifies on Mac,
+Spark1 and Spark2. This incremental bundle requires the previously backed-up
+`7d487b93c4062312cdf55a9e52091ccdfd13e7f3` history; the earlier complete bundle is
+retained on both nodes. The session survives laptop disconnects. Progress is in
+`controller.json` and `profile-A/progress.json` / `profile-B/progress.json`.
+
 **22 October 2026, 06:07 UTC: C1 trace preparation frozen and validated; production healthy.**
 All repository tests pass (one skipped) with the worktree on `PYTHONPATH`; Ruff,
 strict core mypy and 22 focused operational tests pass. Both candidate images

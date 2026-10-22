@@ -1,0 +1,1714 @@
+{
+  "archive": {
+    "archive": "out/glm53-package-v1/c1-runtime-profile-v1-evidence.tar.gz",
+    "bytes": 74941787,
+    "sha256": "3bcd3363201e95b6746f42ba1e19da9f78377dba1a904704b38d69948e536c00",
+    "payload_count": 73
+  },
+  "profiles": [
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank0/traces-A/dp0_pp0_tp0_dcp0_ep0_rank0.1792649466306303368.pt.trace.json.gz",
+      "sha256": "cebd81701cf437a737c6f5316cc70ff57d21568faa03e179b155946e8b5512d3",
+      "kernel_count": 95295,
+      "graph_count": 96,
+      "native_cpu_generation_annotations": 65,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 47
+      },
+      "graph_role_counts": {
+        "draft": 48,
+        "target": 48
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 1
+      },
+      "central_summary": {
+        "cycles": 44,
+        "median_span_ms": 71.16028491210938,
+        "median_target_graph_ms": 61.11541748046875,
+        "median_gpu_kernel_union_ms": 66.41121911621094,
+        "median_no_traced_kernel_ms": 5.001657592773437,
+        "median_cross_group_overlap_ms": 2.9038636474609376,
+        "median_group_union_ms": {
+          "draft/communication": 0.6448341064453125,
+          "draft/other_compute": 3.014309326171875,
+          "head/certified_target": 1.6322271728515625,
+          "head/draft_fp8": 1.366033935546875,
+          "outside/communication": 0.341712158203125,
+          "outside/other_compute": 0.715953125,
+          "target/communication": 3.268419921875,
+          "target/expert_gemm": 31.132845092773437,
+          "target/other_compute": 25.331619873046876
+        },
+        "draft_graph_counts": {
+          "1": 44
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank0/traces-A/dp0_pp0_tp0_dcp0_ep0_rank0.1792649520923275626.pt.trace.json.gz",
+      "sha256": "68486945ec45ddc583d9ad578c258b6bd5e6ffaa160cf421d6cbf97a07d95fd2",
+      "kernel_count": 101050,
+      "graph_count": 102,
+      "native_cpu_generation_annotations": 97,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 50
+      },
+      "graph_role_counts": {
+        "target": 51,
+        "draft": 51
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 1
+      },
+      "central_summary": {
+        "cycles": 47,
+        "median_span_ms": 63.327044189453126,
+        "median_target_graph_ms": 53.12651806640625,
+        "median_gpu_kernel_union_ms": 57.2738330078125,
+        "median_no_traced_kernel_ms": 5.23810107421875,
+        "median_cross_group_overlap_ms": 2.819314697265625,
+        "median_group_union_ms": {
+          "draft/communication": 0.455042236328125,
+          "draft/other_compute": 2.994319580078125,
+          "head/certified_target": 1.633159912109375,
+          "head/draft_fp8": 1.340613037109375,
+          "outside/communication": 0.21312109375,
+          "outside/other_compute": 0.713923095703125,
+          "target/communication": 2.773829345703125,
+          "target/expert_gemm": 22.9383740234375,
+          "target/other_compute": 24.654256103515625
+        },
+        "draft_graph_counts": {
+          "1": 47
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank0/traces-B/dp0_pp0_tp0_dcp0_ep0_rank0.1792649859071233523.pt.trace.json.gz",
+      "sha256": "2f5bb8590ec0c7de1d72d5e21e7d991684aa6c43c10fc98d0f401a5843d60016",
+      "kernel_count": 119087,
+      "graph_count": 139,
+      "native_cpu_generation_annotations": 69,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 68
+      },
+      "graph_role_counts": {
+        "draft": 70,
+        "target": 69
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 70
+      },
+      "central_summary": {
+        "cycles": 65,
+        "median_span_ms": 86.02934912109374,
+        "median_target_graph_ms": 73.58393505859375,
+        "median_gpu_kernel_union_ms": 85.30202416992188,
+        "median_no_traced_kernel_ms": 0.939677978515625,
+        "median_cross_group_overlap_ms": 1.5171501464843686,
+        "median_group_union_ms": {
+          "draft/communication": 0.934272216796875,
+          "draft/other_compute": 6.556738037109375,
+          "head/dense_vocabulary": 2.64281689453125,
+          "outside/communication": 0.195552978515625,
+          "outside/other_compute": 1.0616328125,
+          "target/communication": 3.808159423828125,
+          "target/expert_gemm": 37.92939306640625,
+          "target/other_compute": 31.017612060546874
+        },
+        "draft_graph_counts": {
+          "1": 65
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank0/traces-B/dp0_pp0_tp0_dcp0_ep0_rank0.1792649917211712309.pt.trace.json.gz",
+      "sha256": "b6990eeb2dc400a6f0529950676eb21ec7cb611327b16b12c41871f61c19e481",
+      "kernel_count": 139585,
+      "graph_count": 163,
+      "native_cpu_generation_annotations": 81,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 80
+      },
+      "graph_role_counts": {
+        "draft": 82,
+        "target": 81
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 82
+      },
+      "central_summary": {
+        "cycles": 77,
+        "median_span_ms": 81.28739404296876,
+        "median_target_graph_ms": 69.46596215820313,
+        "median_gpu_kernel_union_ms": 80.42554638671875,
+        "median_no_traced_kernel_ms": 0.934438720703125,
+        "median_cross_group_overlap_ms": 1.5328322753906178,
+        "median_group_union_ms": {
+          "draft/communication": 0.896160888671875,
+          "draft/other_compute": 6.570796875,
+          "head/dense_vocabulary": 2.63552587890625,
+          "outside/communication": 0.2089921875,
+          "outside/other_compute": 1.06236767578125,
+          "target/communication": 4.0309248046875,
+          "target/expert_gemm": 33.680835205078125,
+          "target/other_compute": 31.209544189453126
+        },
+        "draft_graph_counts": {
+          "1": 77
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank1/traces-A/dp0_pp0_tp1_dcp0_ep1_rank1.1792649466359172301.pt.trace.json.gz",
+      "sha256": "5fb56b3bc4898f9cc00fdc0fd34df74269c01f436e25fd01d1414a449abb4e66",
+      "kernel_count": 97448,
+      "graph_count": 100,
+      "native_cpu_generation_annotations": 65,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 48
+      },
+      "graph_role_counts": {
+        "draft": 50,
+        "target": 49,
+        "unknown_graph": 1
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 1
+      },
+      "central_summary": {
+        "cycles": 45,
+        "median_span_ms": 71.61164990234376,
+        "median_target_graph_ms": 61.38993481445313,
+        "median_gpu_kernel_union_ms": 65.32016625976563,
+        "median_no_traced_kernel_ms": 6.4879287109375,
+        "median_cross_group_overlap_ms": 2.8560339355468756,
+        "median_group_union_ms": {
+          "draft/communication": 0.3536591796875,
+          "draft/other_compute": 3.014849365234375,
+          "head/certified_target": 1.601583251953125,
+          "head/draft_fp8": 1.31435400390625,
+          "outside/communication": 0.05756640625,
+          "outside/other_compute": 0.696760498046875,
+          "target/communication": 2.707169921875,
+          "target/expert_gemm": 31.503056884765623,
+          "target/other_compute": 25.449861328125
+        },
+        "draft_graph_counts": {
+          "1": 45
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank1/traces-A/dp0_pp0_tp1_dcp0_ep1_rank1.1792649520900850863.pt.trace.json.gz",
+      "sha256": "c10cd708e4c2c689e788d314eb41f07ecadfb8b26f560d9953b46e330186cad1",
+      "kernel_count": 101050,
+      "graph_count": 102,
+      "native_cpu_generation_annotations": 97,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 50
+      },
+      "graph_role_counts": {
+        "target": 51,
+        "draft": 51
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 1
+      },
+      "central_summary": {
+        "cycles": 47,
+        "median_span_ms": 62.89051000976563,
+        "median_target_graph_ms": 52.89868408203125,
+        "median_gpu_kernel_union_ms": 56.86762646484375,
+        "median_no_traced_kernel_ms": 5.43366748046875,
+        "median_cross_group_overlap_ms": 3.258936523437498,
+        "median_group_union_ms": {
+          "draft/communication": 0.409084716796875,
+          "draft/other_compute": 3.01718359375,
+          "head/certified_target": 1.607181884765625,
+          "head/draft_fp8": 1.3159541015625,
+          "outside/communication": 0.091197998046875,
+          "outside/other_compute": 0.696533447265625,
+          "target/communication": 2.671172119140625,
+          "target/expert_gemm": 23.045030029296875,
+          "target/other_compute": 25.67251708984375
+        },
+        "draft_graph_counts": {
+          "1": 47
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank1/traces-B/dp0_pp0_tp1_dcp0_ep1_rank1.1792649859032385279.pt.trace.json.gz",
+      "sha256": "08af483b06ac25a5d23f6db901d4cf7c2edd2844755958a8ee93f77ac1f4f9c7",
+      "kernel_count": 119087,
+      "graph_count": 139,
+      "native_cpu_generation_annotations": 69,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 68
+      },
+      "graph_role_counts": {
+        "draft": 70,
+        "target": 69
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 70
+      },
+      "central_summary": {
+        "cycles": 65,
+        "median_span_ms": 85.98119287109375,
+        "median_target_graph_ms": 73.49596020507812,
+        "median_gpu_kernel_union_ms": 84.89477075195313,
+        "median_no_traced_kernel_ms": 1.083159912109375,
+        "median_cross_group_overlap_ms": 1.530733642578113,
+        "median_group_union_ms": {
+          "draft/communication": 0.490811279296875,
+          "draft/other_compute": 6.684656982421875,
+          "head/dense_vocabulary": 2.68035400390625,
+          "outside/communication": 0.180701904296875,
+          "outside/other_compute": 1.05934716796875,
+          "target/communication": 3.217563720703125,
+          "target/expert_gemm": 38.29798803710938,
+          "target/other_compute": 31.6016240234375
+        },
+        "draft_graph_counts": {
+          "1": 65
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    },
+    {
+      "worker_trace": true,
+      "path": "out/glm53-package-v1/c1-runtime-profile-v1/rank1/traces-B/dp0_pp0_tp1_dcp0_ep1_rank1.1792649917189003461.pt.trace.json.gz",
+      "sha256": "61220e6f29462ba9fc8faf8e417dddef35f435e89955ad5ddf290c96a2d33e65",
+      "kernel_count": 139585,
+      "graph_count": 163,
+      "native_cpu_generation_annotations": 81,
+      "target_graph_native_cpu_ordinals": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "adjacent_graph_native_ordinal_gaps": {
+        "1": 80
+      },
+      "graph_role_counts": {
+        "draft": 82,
+        "target": 81
+      },
+      "attribution_evidence": {
+        "vocabulary_mm_from_launch_external_id_and_shape": 82
+      },
+      "central_summary": {
+        "cycles": 77,
+        "median_span_ms": 81.2991318359375,
+        "median_target_graph_ms": 69.45577978515625,
+        "median_gpu_kernel_union_ms": 80.33972314453125,
+        "median_no_traced_kernel_ms": 1.11358154296875,
+        "median_cross_group_overlap_ms": 1.5407475585937505,
+        "median_group_union_ms": {
+          "draft/communication": 0.524856689453125,
+          "draft/other_compute": 6.76002001953125,
+          "head/dense_vocabulary": 2.7125439453125,
+          "outside/communication": 0.17043017578125,
+          "outside/other_compute": 1.0566923828125,
+          "target/communication": 3.311383544921875,
+          "target/expert_gemm": 33.83279272460938,
+          "target/other_compute": 31.4081982421875
+        },
+        "draft_graph_counts": {
+          "1": 77
+        }
+      },
+      "limitations": [
+        "Profiled spans are not ordinary request throughput or latency.",
+        "Central summary omits the first two and final cycle, and any pair that skips a native CPU generation annotation; all cycles and coverage gaps are retained.",
+        "Target graphs require 84 expert GEMMs. Drafter labels require four grouped convolutions per layer: legacy 5/6 rotary calls, or native 5/6 unified attention calls with one extra rotary call and a selector walk. No expert GEMMs allowed.",
+        "Other graph types are retained as unknown; a single graph is not a whole cycle.",
+        "Kernel unions avoid overlap; group medians need not sum to the median span.",
+        "No-traced-kernel time is not proof of a CPU bottleneck: waits/copies/untraced work and profiler overhead can contribute.",
+        "Head attribution uses observed production kernel names or CPU GEMM shapes; unmatched head work may remain in other_compute.",
+        "GPU annotation fragments with a unique shared CPU invocation name are enveloped to locate graphs. This is not an estimate of active GPU time.",
+        "A contiguous captured prefix can be summarized even when later native generation annotations have no captured target graph. Coverage is explicit.",
+        "Different outputs, routing, draft widths and runtime policies remain confounders."
+      ]
+    }
+  ],
+  "controls": {
+    "controls": [
+      {
+        "arm": "A",
+        "domain": "code",
+        "all_five_controls": [
+          {
+            "tok_s": 52.62087658157947,
+            "ttft_s": 0.49593968199997107,
+            "latency_s": 4.864190374000032,
+            "draft_rounds": 63.0,
+            "proposed": 441.0,
+            "accepted": 195.0,
+            "acceptance": 0.4421768707482993,
+            "acceptance_by_position": {
+              "0": 0.8888888888888888,
+              "1": 0.6825396825396826,
+              "2": 0.5238095238095238,
+              "3": 0.3333333333333333,
+              "4": 0.2857142857142857,
+              "5": 0.25396825396825395,
+              "6": 0.12698412698412698
+            },
+            "output_ids_sha256": "42cbe3fe80a6e0dcf0c6c8caeba808c10d86fe2487b96751216b8a5eb3cb03ad",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 47.18334728693567,
+            "ttft_s": 0.44339305099993,
+            "latency_s": 5.424787746999982,
+            "draft_rounds": 76.0,
+            "proposed": 532.0,
+            "accepted": 182.0,
+            "acceptance": 0.34210526315789475,
+            "acceptance_by_position": {
+              "0": 0.8157894736842105,
+              "1": 0.5526315789473685,
+              "2": 0.35526315789473684,
+              "3": 0.23684210526315788,
+              "4": 0.18421052631578946,
+              "5": 0.15789473684210525,
+              "6": 0.09210526315789473
+            },
+            "output_ids_sha256": "da4ef2bf61b8d7200721062136d9db576b86d58f8039c72d579dc998907a46c0",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 47.77775797240396,
+            "ttft_s": 0.43265076800003044,
+            "latency_s": 5.357257193999999,
+            "draft_rounds": 58.0,
+            "proposed": 406.0,
+            "accepted": 199.0,
+            "acceptance": 0.49014778325123154,
+            "acceptance_by_position": {
+              "0": 0.8793103448275862,
+              "1": 0.7241379310344828,
+              "2": 0.6206896551724138,
+              "3": 0.46551724137931033,
+              "4": 0.3620689655172414,
+              "5": 0.2413793103448276,
+              "6": 0.13793103448275862
+            },
+            "output_ids_sha256": "e3dd10dacc7e4eb65b419977be4547954a50a7089582ff8b9a9018d4c8140d82",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 43.89439003447942,
+            "ttft_s": 0.44401251199997205,
+            "latency_s": 5.831178576999946,
+            "draft_rounds": 80.0,
+            "proposed": 560.0,
+            "accepted": 179.0,
+            "acceptance": 0.3196428571428571,
+            "acceptance_by_position": {
+              "0": 0.7125,
+              "1": 0.4875,
+              "2": 0.3625,
+              "3": 0.225,
+              "4": 0.2,
+              "5": 0.15,
+              "6": 0.1
+            },
+            "output_ids_sha256": "5070796eccab283af324291f471486a13ace74dd3b50ba30f7d8ded022c2fc44",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 47.94190164544417,
+            "ttft_s": 0.4306697559999293,
+            "latency_s": 5.338967261999983,
+            "draft_rounds": 72.0,
+            "proposed": 504.0,
+            "accepted": 185.0,
+            "acceptance": 0.36706349206349204,
+            "acceptance_by_position": {
+              "0": 0.8611111111111112,
+              "1": 0.5833333333333334,
+              "2": 0.4583333333333333,
+              "3": 0.25,
+              "4": 0.18055555555555555,
+              "5": 0.1527777777777778,
+              "6": 0.08333333333333333
+            },
+            "output_ids_sha256": "1f96e7103918254d6525e646bdf36dca1e9aff91a9d694e70d35a9dfe69126ec",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          }
+        ],
+        "profiled_request_excluded_from_timing": {
+          "tok_s": 44.52472266628205,
+          "ttft_s": 0.8814638389999345,
+          "latency_s": 5.748802490999992,
+          "draft_rounds": 64.0,
+          "proposed": 448.0,
+          "accepted": 196.0,
+          "acceptance": 0.4375,
+          "acceptance_by_position": {
+            "0": 0.8125,
+            "1": 0.640625,
+            "2": 0.515625,
+            "3": 0.375,
+            "4": 0.3125,
+            "5": 0.25,
+            "6": 0.15625
+          },
+          "output_ids_sha256": "14ab24e332b99bf34e365bd287f65f814caf2733ab13de9e0441e92db0cae13b",
+          "prefix_hits": 0.0,
+          "max_running": 1.0,
+          "max_waiting": 0.0,
+          "max_kv_fraction": 0.15086206896551724
+        },
+        "control_ranges": {
+          "tok_s": {
+            "median": 47.77775797240396,
+            "min": 43.89439003447942,
+            "max": 52.62087658157947
+          },
+          "ttft_s": {
+            "median": 0.44339305099993,
+            "min": 0.4306697559999293,
+            "max": 0.49593968199997107
+          },
+          "latency_s": {
+            "median": 5.357257193999999,
+            "min": 4.864190374000032,
+            "max": 5.831178576999946
+          },
+          "draft_rounds": {
+            "median": 72.0,
+            "min": 58.0,
+            "max": 80.0
+          }
+        }
+      },
+      {
+        "arm": "A",
+        "domain": "chat",
+        "all_five_controls": [
+          {
+            "tok_s": 38.74298669044544,
+            "ttft_s": 0.46225320200005626,
+            "latency_s": 6.60716676800007,
+            "draft_rounds": 100.0,
+            "proposed": 700.0,
+            "accepted": 158.0,
+            "acceptance": 0.2257142857142857,
+            "acceptance_by_position": {
+              "0": 0.68,
+              "1": 0.35,
+              "2": 0.23,
+              "3": 0.11,
+              "4": 0.09,
+              "5": 0.08,
+              "6": 0.04
+            },
+            "output_ids_sha256": "04bd085f7284d7a9c0b56ab8fd381bf2167e64cfe1f99acaafb739b7d5d022ca",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 43.27955328975283,
+            "ttft_s": 0.43778607299998384,
+            "latency_s": 5.914051993000044,
+            "draft_rounds": 88.0,
+            "proposed": 616.0,
+            "accepted": 170.0,
+            "acceptance": 0.275974025974026,
+            "acceptance_by_position": {
+              "0": 0.6931818181818182,
+              "1": 0.48863636363636365,
+              "2": 0.26136363636363635,
+              "3": 0.1590909090909091,
+              "4": 0.13636363636363635,
+              "5": 0.11363636363636363,
+              "6": 0.07954545454545454
+            },
+            "output_ids_sha256": "da3fd6432fe74f4e20066d2afffdf0ba749a9b6fdb182696d52b247286e6e96d",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 44.43292452992325,
+            "ttft_s": 0.40641434100007245,
+            "latency_s": 5.760506372000009,
+            "draft_rounds": 86.0,
+            "proposed": 602.0,
+            "accepted": 169.0,
+            "acceptance": 0.2807308970099668,
+            "acceptance_by_position": {
+              "0": 0.7325581395348837,
+              "1": 0.45348837209302323,
+              "2": 0.3023255813953488,
+              "3": 0.16279069767441862,
+              "4": 0.12790697674418605,
+              "5": 0.10465116279069768,
+              "6": 0.08139534883720931
+            },
+            "output_ids_sha256": "8a4120c44ba1d852d87048671d39e36380aeae35c0785f76ed0bc3611159131a",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 39.08439768147025,
+            "ttft_s": 0.40702803600004245,
+            "latency_s": 6.549539882999966,
+            "draft_rounds": 99.0,
+            "proposed": 693.0,
+            "accepted": 158.0,
+            "acceptance": 0.227994227994228,
+            "acceptance_by_position": {
+              "0": 0.696969696969697,
+              "1": 0.37373737373737376,
+              "2": 0.1919191919191919,
+              "3": 0.12121212121212122,
+              "4": 0.1111111111111111,
+              "5": 0.0707070707070707,
+              "6": 0.030303030303030304
+            },
+            "output_ids_sha256": "61fc91f725894f08f113b60a46204c9d61e42bf06725b867a08ca8d08c6836fe",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          },
+          {
+            "tok_s": 39.21490928106197,
+            "ttft_s": 0.47643369000002167,
+            "latency_s": 6.5271671149999975,
+            "draft_rounds": 98.0,
+            "proposed": 686.0,
+            "accepted": 158.0,
+            "acceptance": 0.2303206997084548,
+            "acceptance_by_position": {
+              "0": 0.7142857142857143,
+              "1": 0.3673469387755102,
+              "2": 0.20408163265306123,
+              "3": 0.12244897959183673,
+              "4": 0.11224489795918367,
+              "5": 0.07142857142857142,
+              "6": 0.02040816326530612
+            },
+            "output_ids_sha256": "ace2791c808c6ac9b48f6e1018a4aece74c48488b739f86c97189f01e01a53d5",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.15086206896551724
+          }
+        ],
+        "profiled_request_excluded_from_timing": {
+          "tok_s": 38.67442959295635,
+          "ttft_s": 0.4179723339999555,
+          "latency_s": 6.618782395000039,
+          "draft_rounds": 96.0,
+          "proposed": 672.0,
+          "accepted": 159.0,
+          "acceptance": 0.23660714285714285,
+          "acceptance_by_position": {
+            "0": 0.75,
+            "1": 0.4270833333333333,
+            "2": 0.22916666666666666,
+            "3": 0.09375,
+            "4": 0.07291666666666667,
+            "5": 0.0625,
+            "6": 0.020833333333333332
+          },
+          "output_ids_sha256": "7b99966173984a9a5cdd2aecf5cb9d5de6bd3b4392fe188f185d33aac78ecdad",
+          "prefix_hits": 0.0,
+          "max_running": 1.0,
+          "max_waiting": 0.0,
+          "max_kv_fraction": 0.15086206896551724
+        },
+        "control_ranges": {
+          "tok_s": {
+            "median": 39.21490928106197,
+            "min": 38.74298669044544,
+            "max": 44.43292452992325
+          },
+          "ttft_s": {
+            "median": 0.43778607299998384,
+            "min": 0.40641434100007245,
+            "max": 0.47643369000002167
+          },
+          "latency_s": {
+            "median": 6.5271671149999975,
+            "min": 5.760506372000009,
+            "max": 6.60716676800007
+          },
+          "draft_rounds": {
+            "median": 98.0,
+            "min": 86.0,
+            "max": 100.0
+          }
+        }
+      },
+      {
+        "arm": "B",
+        "domain": "code",
+        "all_five_controls": [
+          {
+            "tok_s": 42.31949921908343,
+            "ttft_s": 0.46009462200004236,
+            "latency_s": 6.04834520899999,
+            "draft_rounds": 65.0,
+            "proposed": 325.0,
+            "accepted": 192.0,
+            "acceptance": 0.5907692307692308,
+            "acceptance_by_position": {
+              "0": 0.8,
+              "1": 0.6461538461538462,
+              "2": 0.5692307692307692,
+              "3": 0.49230769230769234,
+              "4": 0.4461538461538462
+            },
+            "output_ids_sha256": "7203ebd0a5f2291632b3829b68cc01b1e60e74c61ac0f5712136e293cb2f0c86",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 39.19902444334492,
+            "ttft_s": 0.4985650319999877,
+            "latency_s": 6.5299236700000165,
+            "draft_rounds": 71.0,
+            "proposed": 355.0,
+            "accepted": 185.0,
+            "acceptance": 0.5211267605633803,
+            "acceptance_by_position": {
+              "0": 0.7887323943661971,
+              "1": 0.6056338028169014,
+              "2": 0.49295774647887325,
+              "3": 0.38028169014084506,
+              "4": 0.3380281690140845
+            },
+            "output_ids_sha256": "0ae58e2e2badb4bff0898c5da5b092c79cffede39d7c759aced39d38e09846a9",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 42.860750711060646,
+            "ttft_s": 0.5167148800001087,
+            "latency_s": 5.972398057000191,
+            "draft_rounds": 64.0,
+            "proposed": 320.0,
+            "accepted": 195.0,
+            "acceptance": 0.609375,
+            "acceptance_by_position": {
+              "0": 0.828125,
+              "1": 0.703125,
+              "2": 0.609375,
+              "3": 0.515625,
+              "4": 0.390625
+            },
+            "output_ids_sha256": "e795bd2ba26ee15e863039ae5fd2218c229a403e4a75528b48bf3d952ca44a9a",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 43.76001502536944,
+            "ttft_s": 0.45653103400013606,
+            "latency_s": 5.849371606999966,
+            "draft_rounds": 63.0,
+            "proposed": 315.0,
+            "accepted": 197.0,
+            "acceptance": 0.6253968253968254,
+            "acceptance_by_position": {
+              "0": 0.8253968253968254,
+              "1": 0.6984126984126984,
+              "2": 0.6031746031746031,
+              "3": 0.5079365079365079,
+              "4": 0.49206349206349204
+            },
+            "output_ids_sha256": "a2a9d4ff01521f267c65989266048b1a0ad2efefa478e5462b0269c6d802adf4",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 44.068601641752295,
+            "ttft_s": 0.4510585809998702,
+            "latency_s": 5.808689399999821,
+            "draft_rounds": 62.0,
+            "proposed": 310.0,
+            "accepted": 198.0,
+            "acceptance": 0.6387096774193548,
+            "acceptance_by_position": {
+              "0": 0.8387096774193549,
+              "1": 0.7258064516129032,
+              "2": 0.6290322580645161,
+              "3": 0.5161290322580645,
+              "4": 0.4838709677419355
+            },
+            "output_ids_sha256": "c5c4b023c26bb53f30572bdf199f1e650aea50da8090e78fd1c88de4dd9bafca",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          }
+        ],
+        "profiled_request_excluded_from_timing": {
+          "tok_s": 40.82453557535006,
+          "ttft_s": 0.45088963100010915,
+          "latency_s": 6.269903747000171,
+          "draft_rounds": 68.0,
+          "proposed": 340.0,
+          "accepted": 188.0,
+          "acceptance": 0.5529411764705883,
+          "acceptance_by_position": {
+            "0": 0.7941176470588235,
+            "1": 0.6470588235294118,
+            "2": 0.5294117647058824,
+            "3": 0.4264705882352941,
+            "4": 0.36764705882352944
+          },
+          "output_ids_sha256": "dcafb2a4f65f8228395545e7d34817d65c6570e2312e49b6baa7a2b83c9aa7db",
+          "prefix_hits": 0.0,
+          "max_running": 1.0,
+          "max_waiting": 0.0,
+          "max_kv_fraction": 0.11864406779661019
+        },
+        "control_ranges": {
+          "tok_s": {
+            "median": 42.860750711060646,
+            "min": 39.19902444334492,
+            "max": 44.068601641752295
+          },
+          "ttft_s": {
+            "median": 0.46009462200004236,
+            "min": 0.4510585809998702,
+            "max": 0.5167148800001087
+          },
+          "latency_s": {
+            "median": 5.972398057000191,
+            "min": 5.808689399999821,
+            "max": 6.5299236700000165
+          },
+          "draft_rounds": {
+            "median": 64.0,
+            "min": 62.0,
+            "max": 71.0
+          }
+        }
+      },
+      {
+        "arm": "B",
+        "domain": "chat",
+        "all_five_controls": [
+          {
+            "tok_s": 33.61457968042713,
+            "ttft_s": 0.48087345899989486,
+            "latency_s": 7.614777689999983,
+            "draft_rounds": 87.0,
+            "proposed": 435.0,
+            "accepted": 170.0,
+            "acceptance": 0.39080459770114945,
+            "acceptance_by_position": {
+              "0": 0.7011494252873564,
+              "1": 0.4827586206896552,
+              "2": 0.3333333333333333,
+              "3": 0.2413793103448276,
+              "4": 0.19540229885057472
+            },
+            "output_ids_sha256": "3a2b3138aa800f8cda9833f1224a666332cc0d09c1558c5815e9ee90a8b5e362",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 36.98682328267763,
+            "ttft_s": 0.4330859630001669,
+            "latency_s": 6.92081786100016,
+            "draft_rounds": 79.0,
+            "proposed": 395.0,
+            "accepted": 178.0,
+            "acceptance": 0.4506329113924051,
+            "acceptance_by_position": {
+              "0": 0.7721518987341772,
+              "1": 0.5316455696202531,
+              "2": 0.45569620253164556,
+              "3": 0.2911392405063291,
+              "4": 0.20253164556962025
+            },
+            "output_ids_sha256": "a09e3bab174acff2af7ccc1058d10278d2e57173e4c53980e1fb9638011adc3a",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 36.0803469022637,
+            "ttft_s": 0.47332443300001614,
+            "latency_s": 7.094709731999956,
+            "draft_rounds": 81.0,
+            "proposed": 405.0,
+            "accepted": 175.0,
+            "acceptance": 0.43209876543209874,
+            "acceptance_by_position": {
+              "0": 0.7407407407407407,
+              "1": 0.5308641975308642,
+              "2": 0.41975308641975306,
+              "3": 0.2716049382716049,
+              "4": 0.19753086419753085
+            },
+            "output_ids_sha256": "725526813b8845b258281dc83411d88dfdabd2c86ea3db20060cf262135a4b1e",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 38.086448253068035,
+            "ttft_s": 0.4148046989998875,
+            "latency_s": 6.720652883999946,
+            "draft_rounds": 77.0,
+            "proposed": 385.0,
+            "accepted": 178.0,
+            "acceptance": 0.4623376623376623,
+            "acceptance_by_position": {
+              "0": 0.7142857142857143,
+              "1": 0.5844155844155844,
+              "2": 0.45454545454545453,
+              "3": 0.3246753246753247,
+              "4": 0.23376623376623376
+            },
+            "output_ids_sha256": "5a4dce09d0a978a40a81f68a5600183362934e3eafb71bf3d152f4576c43d03a",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          },
+          {
+            "tok_s": 34.82082899323521,
+            "ttft_s": 0.41723667299993394,
+            "latency_s": 7.351204132000021,
+            "draft_rounds": 84.0,
+            "proposed": 420.0,
+            "accepted": 175.0,
+            "acceptance": 0.4166666666666667,
+            "acceptance_by_position": {
+              "0": 0.6666666666666666,
+              "1": 0.5,
+              "2": 0.4166666666666667,
+              "3": 0.2857142857142857,
+              "4": 0.21428571428571427
+            },
+            "output_ids_sha256": "a036640995ec6144a248ed51d636c63ad33320dd64d744784b8cd0bada3df106",
+            "prefix_hits": 0.0,
+            "max_running": 1.0,
+            "max_waiting": 0.0,
+            "max_kv_fraction": 0.11864406779661019
+          }
+        ],
+        "profiled_request_excluded_from_timing": {
+          "tok_s": 36.758283386942516,
+          "ttft_s": 0.4180391980000877,
+          "latency_s": 6.963881043000129,
+          "draft_rounds": 80.0,
+          "proposed": 400.0,
+          "accepted": 177.0,
+          "acceptance": 0.4425,
+          "acceptance_by_position": {
+            "0": 0.7375,
+            "1": 0.5375,
+            "2": 0.4375,
+            "3": 0.3,
+            "4": 0.2
+          },
+          "output_ids_sha256": "f4af27cbe55f0ada0ef0e0eaeebe4024d8e9a6739defbd62226957c6fd6310a5",
+          "prefix_hits": 0.0,
+          "max_running": 1.0,
+          "max_waiting": 0.0,
+          "max_kv_fraction": 0.11864406779661019
+        },
+        "control_ranges": {
+          "tok_s": {
+            "median": 36.0803469022637,
+            "min": 33.61457968042713,
+            "max": 38.086448253068035
+          },
+          "ttft_s": {
+            "median": 0.4330859630001669,
+            "min": 0.4148046989998875,
+            "max": 0.48087345899989486
+          },
+          "latency_s": {
+            "median": 7.094709731999956,
+            "min": 6.720652883999946,
+            "max": 7.614777689999983
+          },
+          "draft_rounds": {
+            "median": 81.0,
+            "min": 77.0,
+            "max": 87.0
+          }
+        }
+      }
+    ],
+    "telemetry": [
+      {
+        "arm": "A",
+        "rank": 0,
+        "active_request_samples": 9,
+        "ranges": {
+          "sm_mhz": {
+            "median": 2515.0,
+            "min": 2411.0,
+            "max": 2515.0
+          },
+          "temp_c": {
+            "median": 60.0,
+            "min": 59.0,
+            "max": 61.0
+          },
+          "instant_power_w": {
+            "median": 37.06,
+            "min": 33.98,
+            "max": 38.5
+          }
+        },
+        "flags": {
+          "pstate_P0": 9
+        }
+      },
+      {
+        "arm": "A",
+        "rank": 1,
+        "active_request_samples": 8,
+        "ranges": {
+          "sm_mhz": {
+            "median": 2509.0,
+            "min": 2509.0,
+            "max": 2509.0
+          },
+          "temp_c": {
+            "median": 59.5,
+            "min": 58.0,
+            "max": 61.0
+          },
+          "instant_power_w": {
+            "median": 38.355,
+            "min": 34.66,
+            "max": 54.22
+          }
+        },
+        "flags": {
+          "pstate_P0": 8
+        }
+      },
+      {
+        "arm": "B",
+        "rank": 0,
+        "active_request_samples": 8,
+        "ranges": {
+          "sm_mhz": {
+            "median": 2515.0,
+            "min": 2489.0,
+            "max": 2515.0
+          },
+          "temp_c": {
+            "median": 62.0,
+            "min": 61.0,
+            "max": 64.0
+          },
+          "instant_power_w": {
+            "median": 37.695,
+            "min": 32.66,
+            "max": 55.29
+          }
+        },
+        "flags": {
+          "pstate_P0": 8
+        }
+      },
+      {
+        "arm": "B",
+        "rank": 1,
+        "active_request_samples": 9,
+        "ranges": {
+          "sm_mhz": {
+            "median": 2483.0,
+            "min": 2411.0,
+            "max": 2502.0
+          },
+          "temp_c": {
+            "median": 62.0,
+            "min": 61.0,
+            "max": 65.0
+          },
+          "instant_power_w": {
+            "median": 40.19,
+            "min": 39.62,
+            "max": 57.37
+          }
+        },
+        "flags": {
+          "pstate_P0": 9
+        }
+      }
+    ],
+    "cache_probes": {
+      "A": {
+        "passed": true,
+        "hit_deltas": [
+          0.0,
+          9216.0,
+          0.0
+        ]
+      },
+      "B": {
+        "passed": true,
+        "hit_deltas": [
+          0.0,
+          4608.0,
+          0.0
+        ]
+      }
+    },
+    "limitations": [
+      "Five controls per cell in one load per arm; this is not an interleaved speed qualification.",
+      "Different output IDs and draft rounds persist despite fixed seeds and temperature zero.",
+      "Telemetry is sampled, not a guarantee of no transient throttling between samples.",
+      "GPU memory from nvidia-smi is unavailable on GB10; no new memory saving is claimed."
+    ]
+  },
+  "independent_recomputation": {
+    "profiles_recomputed_exactly": 8,
+    "control_and_telemetry_review_exact": true,
+    "execution": "CPU only in retained official vLLM image; host Python lacks numpy",
+    "comparison": "JSON-normalized dictionary keys; path omitted across hosts"
+  }
+}
