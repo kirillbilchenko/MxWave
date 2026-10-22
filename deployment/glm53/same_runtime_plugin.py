@@ -11,6 +11,25 @@ from pathlib import Path
 from typing import Any
 
 
+def scale_codec_contract() -> dict[str, Any]:
+    """Validate the registered scale producer against native metadata without using a GPU."""
+    if os.environ.get("MXWAVE_PALETTE_MODEL") != "1":
+        raise RuntimeError("The CT sparse-scale recipe requires MXWAVE_PALETTE_MODEL=1")
+    import model_plugin
+    import palette_model_worker
+
+    native = model_plugin.native(1)
+    if (model_plugin.pack_scales is not palette_model_worker._palette_pack
+            or native.encoding != "sparse_palette"):
+        raise RuntimeError("The registered scale packer and native decoder must both use sparse_palette")
+    library = Path(os.environ["MXWAVE_MOE_ALIGNED_LIBRARY"])
+    return {"encoding": native.encoding, "palette_model": True,
+            "packer": model_plugin.pack_scales.__module__,
+            "packer_sha256": hashlib.sha256(
+                Path(inspect.getfile(palette_model_worker)).read_bytes()).hexdigest(),
+            "library_sha256": hashlib.sha256(library.read_bytes()).hexdigest()}
+
+
 def install() -> None:
     """Register the existing model adapters and the same observation hooks in both arms."""
     from vllm.v1.worker.gpu_worker import Worker
@@ -18,15 +37,18 @@ def install() -> None:
     if getattr(Worker.load_model, "_mxwave_same_runtime", False):
         return
     if os.environ["MXWAVE_COMPARE_ARM"] == "B":
-        import model_plugin
+        import palette_model_worker
         import vocab_adapter
 
+        # Restore the qualified recipe's packer registration before preparing scales.
+        # This also fails during CPU preflight if the native consumer is incompatible.
+        scale_codec_contract()
         # The recipe explicitly retains a dense head for production's head hooks.
         # Restrict our own vocabulary selector; do not modify a production overlay.
         targets = vocab_adapter.load_targets
         vocab_adapter.load_targets = lambda path: {
             k: v for k, v in targets(path).items() if v.kind == "embedding"}
-        model_plugin.install()
+        palette_model_worker.install()
     original_load = Worker.load_model
 
     @functools.wraps(original_load)

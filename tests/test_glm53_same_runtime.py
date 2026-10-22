@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -34,3 +36,23 @@ def test_same_runtime_changes_only_declared_flags(
     with pytest.raises(ValueError, match="existing production worker"):
         preparation.command_for(original + ["--worker-extension-cls", "original.Worker"],
                                 mode, 8051, 29741)
+
+
+@pytest.mark.parametrize("failure", ["missing_flag", "wrong_native", "unregistered_packer"])
+def test_scale_contract_rejects_incompatible_producer_before_loading(
+    monkeypatch: pytest.MonkeyPatch, failure: str,
+) -> None:
+    """Reject the actual launcher failure modes before any model or GPU allocation."""
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "deployment/glm53"))
+    plugin = importlib.import_module("same_runtime_plugin")
+    monkeypatch.setenv("MXWAVE_PALETTE_MODEL", "1")
+    packer = object()
+    model = SimpleNamespace(pack_scales=packer, native=lambda _: SimpleNamespace(
+        encoding="aligned_nibbles" if failure == "wrong_native" else "sparse_palette"))
+    monkeypatch.setitem(sys.modules, "model_plugin", model)
+    monkeypatch.setitem(sys.modules, "palette_model_worker", SimpleNamespace(
+        _palette_pack=object() if failure == "unregistered_packer" else packer))
+    if failure == "missing_flag":
+        monkeypatch.delenv("MXWAVE_PALETTE_MODEL")
+    with pytest.raises(RuntimeError, match="requires MXWAVE_PALETTE_MODEL|must both use sparse_palette"):
+        plugin.scale_codec_contract()

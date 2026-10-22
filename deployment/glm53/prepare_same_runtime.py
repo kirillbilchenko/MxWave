@@ -75,7 +75,7 @@ def clone(root: Path, arm: str, mode: str, trial: int, rank: int) -> dict[str, A
                     "MXWAVE_GLM53_ATTENTION_MAPPING", "MXWAVE_GLM53_KDA_MODE",
                     "MXWAVE_GLM53_KDA_SOURCE", "MXWAVE_ZIPSERV_LIBRARY",
                     "MXWAVE_GLM53_VOCAB_MODE", "MXWAVE_GLM53_VOCAB_ARTIFACTS",
-                    "MXWAVE_GLM53_VOCAB_MANIFEST_SHA256"}
+                    "MXWAVE_GLM53_VOCAB_MANIFEST_SHA256", "MXWAVE_PALETTE_MODEL"}
         env.update({key: candidate_env[key] for key in required})
         env["PYTHONPATH"] += ":/experiment/triple-v2/src/integrations/zipserv"
         model_mounts = [i for i, value in enumerate(binds) if value.split(":")[1] == "/model"]
@@ -111,11 +111,14 @@ def clone(root: Path, arm: str, mode: str, trial: int, rank: int) -> dict[str, A
         cpu = copy.deepcopy(config)
         cpu["Entrypoint"] = ["python3"]
         check = (
-            "import json; from vllm import platforms; from vllm.platforms.cpu import CpuPlatform; "
+            "import json, os; from vllm import platforms; from vllm.platforms.cpu import CpuPlatform; "
             "platforms.current_platform=CpuPlatform(); "
             "from vllm.plugins import load_general_plugins; load_general_plugins(); "
             "from vllm.v1.worker.gpu_worker import Worker; "
             "assert getattr(Worker.load_model, '_mxwave_same_runtime', False); "
+            "from same_runtime_plugin import scale_codec_contract; "
+            "print('MXWAVE_SCALE_CODEC_CONTRACT ' + json.dumps(scale_codec_contract()) "
+            "if os.environ['MXWAVE_COMPARE_ARM']=='B' else 'MXWAVE_SCALE_CODEC_NOT_REQUIRED'); "
             "from vllm.entrypoints.cli.serve import cmd_init; "
             "from vllm.utils.argparse_utils import FlexibleArgumentParser; "
             "p=FlexibleArgumentParser(); sub=p.add_subparsers(dest='subparser'); "
