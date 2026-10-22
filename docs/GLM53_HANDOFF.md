@@ -1,5 +1,24 @@
 # GLM compression experiment handoff
 
+**22 October, 08:40 UTC: first full same-runtime pair completes without API errors.**
+Detached v3 controller advances to `timing-A-1`; A0 and B0 are complete, with no
+stage errors. CT starts with the required 500k configured context, 32 slots,
+6 GiB KV/rank, 6,919-token budget, dense BF16 head and shared five-layer Inco
+drafter. Both arms' prefix-cache probes pass (hit deltas 0 / 9,216 / 0), and
+rank0 records the same physical graph token counts. This is startup/caching
+coverage, not a 500k-token retrieval qualification or identical kernel dispatch.
+
+First-pair end-to-end tok/s (production / CT): code C1 **46.01 / 55.75 (+21.2%)**;
+chat C1 **39.56 / 45.11 (+14.0%)**; code C8 **71.34 / 90.79 (+27.3%)**;
+chat C8 **72.89 / 86.42 (+18.6%)**. These are **one pair only**, not qualified
+speedups. Mean first-token seconds are respectively 0.749 / 0.483,
+0.464 / 0.465, 5.978 / 4.527 and 5.418 / 4.803. Both arms still reach only
+six simultaneous running requests at C8, with two waiting under matched KV.
+Rank0 post-startup allocated memory is 103,979,128,320 / 96,212,982,272 bytes
+(**7.233 GiB lower** for CT); the full per-rank comparison remains pending.
+Two timing pairs and both 300-question quality passes remain. No gate has passed,
+no promotion is authorized, and the restoration watchdog remains active.
+
 **22 October, 08:27 UTC: corrected test is running detached on Spark1.**
 All eight CPU checks pass (both arms, timing/quality, both ranks), including the
 actual sparse-palette packer/native-library contract for CT. Controller **800461**
