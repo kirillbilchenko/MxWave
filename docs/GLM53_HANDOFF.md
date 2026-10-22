@@ -1,5 +1,30 @@
 # GLM compression experiment handoff
 
+**22 October: user constraints for any recipe follow-up.**
+The missing MLA fast-projection path may be improved only through the MxWave
+plugin while retaining an unmodified official/stock vLLM runtime. Production's
+private overlays/custom image must not become a dependency of the distributable
+recipe. First establish CT format/loading eligibility; a same-flags dispatch gap
+alone is not proof that the hook can safely attach. Current custom-image speed
+results remain diagnostic and do not establish stock-image performance.
+
+The user supports spending part of the memory saving on KV. The proposed next
+capacity setting is **8 GiB per GPU** (currently 6), already expressible as
+`mxwave-glm53 serve --kv-cache-gib 8`; it maps to the standard vLLM per-GPU
+`--kv-cache-memory-bytes` flag. This remains a prospective capacity check, not a
+change to the active frozen comparison or an automatic new experiment. Using an
+additional 2 GiB/rank would leave about 10.47 GiB total allocation advantage in
+the measured custom-runtime configuration if other allocations stayed unchanged;
+the official-image profile needs its own accounting. Target: reduce C8's two
+queued requests, with actual eight-request residency verified before any claim.
+
+Prefix-cache 0% during this benchmark is intentional: timing uses distinct cache
+salts for warmup/measured requests, and GSM8K uses a distinct salt per question.
+Same-salt reuse is checked separately; both arms' probes hit 9,216 tokens on the
+repeat, with zero hits for the initial and fresh-salt requests. Ordinary serving
+should preserve the same salt for requests permitted to share prefixes; it must
+not inherit the benchmark's unique-per-request salts.
+
 **22 October: read-only recipe audit while quality runs; no extra experiment queued.**
 Completed v3 telemetry shows six running / two waiting requests at C8 in both
 arms with 6 GiB KV/rank. Post-startup allocation savings for A0/B0 are **7.232787
