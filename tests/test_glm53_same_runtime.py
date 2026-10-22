@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -56,3 +57,55 @@ def test_scale_contract_rejects_incompatible_producer_before_loading(
         monkeypatch.delenv("MXWAVE_PALETTE_MODEL")
     with pytest.raises(RuntimeError, match="requires MXWAVE_PALETTE_MODEL|must both use sparse_palette"):
         plugin.scale_codec_contract()
+
+
+def test_staged_quality_client_requires_transitive_scorer(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """Catch a missing scorer in an isolated subprocess even when repo imports already work."""
+    repository = Path(__file__).parents[1]
+    deployment = repository / "deployment/glm53"
+    integrations = repository / "integrations/glm53_mxfp4"
+    monkeypatch.syspath_prepend(str(deployment))
+    preparation = importlib.import_module("prepare_same_runtime")
+    for name in ("compare_client.py", "control_stock_trial.py"):
+        (tmp_path / name).write_bytes((deployment / name).read_bytes())
+    (tmp_path / "gsm8k_benchmark.py").write_bytes((integrations / "gsm8k_benchmark.py").read_bytes())
+    protocol = {"questions_per_arm": 1319,
+                "cases": [{"source_index": i, "prompt": "Fixture"} for i in range(1319)],
+                "speculative_decoding": False, "retries": 0, "seed": 42,
+                "temperature": 0, "max_tokens": 1024, "reasoning_effort": "low"}
+    (tmp_path / "gsm8k-protocol.json").write_text(json.dumps(protocol))
+    with pytest.raises(RuntimeError, match="quality client failed CPU preflight"):
+        preparation.quality_client_preflight(tmp_path)
+    assert "No module named 'numeric_scoring'" in (
+        tmp_path / "quality-client-preflight.log").read_text()
+    (tmp_path / "numeric_scoring.py").write_bytes((integrations / "numeric_scoring.py").read_bytes())
+    preparation.quality_client_preflight(tmp_path)
+    report = json.loads((tmp_path / "quality-client-preflight.json").read_text())
+    assert report["status"] == "passed"
+    assert set(report["module_hashes"]) == {"compare_client", "gsm8k_benchmark", "numeric_scoring"}
+
+
+def test_quality_continuation_preserves_deadline_and_rejects_question_retries(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """An unfinished question or incomplete timing block must prevent a continuation."""
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "deployment/glm53"))
+    preparation = importlib.import_module("prepare_same_runtime")
+    state = {"phase": "failed_restored", "service_paused": False, "originals": [],
+             "completed_stages": [f"timing-{a}-{t}" for t in range(3) for a in "AB"],
+             "deadline_epoch": 12345}
+    (tmp_path / "controller.json").write_text(json.dumps(state))
+    (tmp_path / "prepared.json").write_text(json.dumps({"files": {}, "decision": {"frozen": True}}))
+    result = preparation.quality_continuation(tmp_path)
+    assert result["absolute_deadline_epoch"] == 12345
+    assert result["decision"] == {"frozen": True}
+    (tmp_path / "gsm8k-A").mkdir()
+    with pytest.raises(RuntimeError, match="no quality questions attempted"):
+        preparation.quality_continuation(tmp_path)
+    (tmp_path / "gsm8k-A").rmdir()
+    state["completed_stages"].pop()
+    (tmp_path / "controller.json").write_text(json.dumps(state))
+    with pytest.raises(RuntimeError, match="restored timing completion"):
+        preparation.quality_continuation(tmp_path)

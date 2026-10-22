@@ -18,6 +18,54 @@ from prepare_quality_clone import DockerConnection
 BASE = Path("/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15")
 
 
+def quality_client_preflight(root: Path) -> None:
+    """Import the isolated staged quality client and exercise its unchanged grading contract."""
+    check = """
+import hashlib, json, sys
+from pathlib import Path
+root = Path(sys.argv[1]).resolve()
+sys.path.insert(0, str(root))
+import compare_client, gsm8k_benchmark, numeric_scoring
+modules = (compare_client, gsm8k_benchmark, numeric_scoring)
+assert all(Path(m.__file__).resolve().parent == root for m in modules)
+protocol = json.loads((root / 'gsm8k-protocol.json').read_bytes())
+compare_client.validate_quality_protocol(protocol)
+body = gsm8k_benchmark.body(protocol['cases'][0], protocol)
+assert body['seed'] == 42 and body['temperature'] == 0 and body['max_tokens'] == 1024
+for text, reason, expected in [('#### 42', 'stop', True), ('#### 41', 'stop', False),
+                               ('#### 42', 'length', False)]:
+    result = gsm8k_benchmark.score(
+        {'choices': [{'message': {'content': text}, 'finish_reason': reason}]}, '42')
+    assert result['answer_exact_match'] is expected
+print(json.dumps({'status': 'passed', 'module_hashes': {
+    m.__name__: hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest() for m in modules}}))
+"""
+    result = subprocess.run(["python3", "-I", "-S", "-c", check, str(root)],
+                            capture_output=True, text=True, timeout=30, check=False)
+    (root / "quality-client-preflight.log").write_text(result.stdout + result.stderr)
+    if result.returncode:
+        raise RuntimeError("Staged quality client failed CPU preflight; no outage permitted")
+    write(root / "quality-client-preflight.json", json.loads(result.stdout))
+
+
+def quality_continuation(source: Path) -> dict[str, Any]:
+    """Allow only unfinished quality after all timings and exact restoration, without retries."""
+    state = json.loads((source / "controller.json").read_bytes())
+    plan = json.loads((source / "prepared.json").read_bytes())
+    required = [f"timing-{arm}-{trial}" for trial in range(3) for arm in "AB"]
+    if (state["phase"] != "failed_restored" or state["service_paused"]
+            or state["completed_stages"] != required
+            or any((source / f"gsm8k-{arm}").exists() for arm in "AB")):
+        raise RuntimeError("Require restored timing completion with no quality questions attempted")
+    for name, digest in plan["files"].items():
+        if hashlib.sha256((source / name).read_bytes()).hexdigest() != digest:
+            raise RuntimeError(f"Original frozen preparation changed: {name}")
+    return {"source": str(source), "originals": state["originals"],
+            "absolute_deadline_epoch": state["deadline_epoch"], "decision": plan["decision"],
+            "timing_repeated": False, "quality_questions_previously_attempted": 0,
+            "controller_sha256": hashlib.sha256((source / "controller.json").read_bytes()).hexdigest()}
+
+
 def command_for(command: list[str], mode: str, port: int, master: int) -> list[str]:
     """Preserve all serving flags except private ports, observation and spec-off quality."""
     result = list(command)
@@ -147,11 +195,13 @@ def clone(root: Path, arm: str, mode: str, trial: int, rank: int) -> dict[str, A
     return result
 
 
-def prepare(root: Path) -> None:
+def prepare(root: Path, quality_from: Path | None = None) -> None:
     """Freeze both arms, protocol and watchdog before pausing any serving process."""
     if (root / "prepared.json").exists():
         raise FileExistsError("Never reuse a prepared experiment")
-    previous = BASE / "full-model-v1/glm53-package-v1/deployment-quick-v1"
+    original_protocol = BASE / "full-model-v1/glm53-package-v1/deployment-quick-v1"
+    previous = quality_from or original_protocol
+    continuation = quality_continuation(quality_from) if quality_from else None
     current = BASE / "full-model-v1/glm53-package-v1/c1-runtime-profile-v1"
     expected = json.loads((current / "controller.json").read_bytes())["originals"]
     if [identity(inspect(r, ORIGINAL[r])) for r in (0, 1)] != expected:
@@ -170,6 +220,13 @@ def prepare(root: Path) -> None:
                     if key.startswith("MXWAVE_")} for rank in (0, 1)})
     for name in ("gsm8k-protocol.json", "gsm8k_benchmark.py", "tokenizer-identities.json"):
         (root / name).write_bytes((previous / name).read_bytes())
+    # This transitive import was omitted in v3. Retain the original scorer unchanged.
+    (root / "numeric_scoring.py").write_bytes((original_protocol / "numeric_scoring.py").read_bytes())
+    quality_client_preflight(root)
+    if continuation:
+        if expected != continuation["originals"]:
+            raise RuntimeError("Quality continuation must preserve the exact production identities")
+        write(root / "quality-continuation.json", continuation)
     from compare_client import validate_quality_protocol
 
     quality = json.loads((root / "gsm8k-protocol.json").read_bytes())
@@ -186,8 +243,8 @@ def prepare(root: Path) -> None:
                     *[str(p) for p in root.iterdir() if p.is_file() or p == metadata],
                     "kirya@192.168.192.2:" + str(root) + "/"], check=True, timeout=90)
     stages, owned = [], []
-    for mode, trial, arm in ([('timing', i, a) for i in range(3) for a in "AB"]
-                             + [('gsm8k', 0, a) for a in "AB"]):
+    schedule = [] if continuation else [('timing', i, a) for i in range(3) for a in "AB"]
+    for mode, trial, arm in schedule + [('gsm8k', 0, a) for a in "AB"]:
         servers = []
         for rank in (0, 1):
             row = json.loads(run(rank, ["python3", "-S", str(root / "prepare_same_runtime.py"),
@@ -204,10 +261,17 @@ def prepare(root: Path) -> None:
              and (p.suffix in (".py", ".json", ".txt") or p.name == "METADATA")
              and "reports" not in p.parts
              and p.name not in {"preparation-status.json", "launch.json"}}
-    write(root / "prepared.json", {"status": "passed", "originals": expected,
+    bounds = {}
+    if continuation:
+        if continuation["absolute_deadline_epoch"] - time.time() < 1800:
+            raise RuntimeError("Insufficient original lease remains for both quality passes")
+        bounds = {"absolute_deadline_epoch": continuation["absolute_deadline_epoch"],
+                  "quality_continuation_from": str(quality_from)}
+    write(root / "prepared.json", {"status": "passed", "originals": expected, **bounds,
         "stages": stages, "owned": owned, "files": files, "outage_seconds": 7200,
         "abort_on_stage_error": True, "promotion": "None", "quality_questions_per_arm": 300,
-        "decision": {"c1_min_ratio_both_domains": .97, "c8_min_ratio_both_domains": 1.0,
+        "decision": continuation["decision"] if continuation else {
+                     "c1_min_ratio_both_domains": .97, "c8_min_ratio_both_domains": 1.0,
                      "repeat_spread_limit": .02, "c1_stop_below": .95,
                      "quality_screen": "B correct >= A correct; zero errors/truncations",
                      "inconclusive": "3–5% deficit, unstable controls or mixed cells: retain production",
@@ -229,6 +293,7 @@ def main() -> None:
     parser.add_argument("--trial", type=int, default=0)
     parser.add_argument("--rank", type=int, default=0)
     parser.add_argument("--launch", action="store_true")
+    parser.add_argument("--quality-from", type=Path)
     args = parser.parse_args()
     if args.clone:
         print(json.dumps(clone(args.root, args.arm, args.mode, args.trial, args.rank)))
@@ -236,7 +301,7 @@ def main() -> None:
     status = args.root / "preparation-status.json"
     write(status, {"phase": "preparing", "epoch": time.time()})
     try:
-        prepare(args.root)
+        prepare(args.root, args.quality_from)
         write(status, {"phase": "prepared", "epoch": time.time()})
         if args.launch:
             subprocess.run(["python3", "-S", str(args.root / "compare_control.py"),

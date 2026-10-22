@@ -170,7 +170,8 @@ def control(root: Path) -> None:
                 raise RuntimeError("Independent restoration watchdog failed to initialize")
             time.sleep(.2)
         state.update(service_paused=True, watchdog_pid=watcher.pid,
-                     deadline_epoch=time.time() + plan["outage_seconds"])
+                     deadline_epoch=min(time.time() + plan["outage_seconds"],
+                                        plan.get("absolute_deadline_epoch", float("inf"))))
         write(path, state)
         timing_blocked = False
         for stage in plan["stages"]:
