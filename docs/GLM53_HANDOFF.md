@@ -1,5 +1,16 @@
 # GLM compression experiment handoff
 
+**22 October, 12:27:09 UTC: release published and downloaded back for verification.**
+`glm53-v0.1.1` points to `9b70882`; all ten public assets match the local release
+and its SHA256SUMS. `glm53-live-20261022` freezes the live handover at `018cf9d`.
+Both tags and the complete work branch are pushed to GitHub. Final official-image
+CPU verification passes: all 120 target shards (179.4 s), vocabulary rebuild
+(29.6 s), doctor/upstream contract and both-rank default launch arguments. The
+public BF16-to-FP8 drafter reconstruction also matches exactly. Local full pytest,
+Ruff and strict `mypy mxwave` pass. Both live containers keep their IDs/start times;
+the authenticated endpoint still reports 500k. No GPU run or service switch.
+[Publication receipt](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/release-v0.1.1-publication.json).
+
 **22 October: portable release v0.1.1 and live freeze.**
 The work branch is now pushed to `upstream/feat/glm53-flash-mxfp4`.
 [Versioned experimental release](https://github.com/kirillbilchenko/MxWave/releases/tag/glm53-v0.1.1)
