@@ -1,5 +1,28 @@
 # Final same-production-runtime comparison
 
+**22 October, 09:34:54 UTC: final comparison complete; exact production restored.**
+All six speed passes and both 300-question speculation-off GSM8K arms complete.
+Production is healthy at 500k; both original identities and all 20 stopped trial
+containers are independently verified. No promotion or further GPU run is queued.
+Both Sparks remain on. [Final report](GLM53_SAME_RUNTIME_RESULTS.md).
+
+CT's observed median gains are **+7.26% code C1, +15.49% chat C1, +16.07% code C8,
++14.85% chat C8**; memory allocation is **14.465825 GiB lower across TP2**, repeated
+on all three loads. Every repeat-spread control exceeds 2%, so these percentages
+are not qualified stable speedups. GSM8K is **291/300 production vs 287/300 CT**,
+zero errors/truncations; seven production-only and three CT-only correct answers.
+Both frozen speed-repeatability and observed-quality criteria fail: **retain
+production, CT opt-in**, without claiming a general accuracy gap from 300 cases.
+
+The user's current Spark2 rsync starts 09:07:58 UTC, after speed measurement ends
+09:01:59; it overlaps both quality arms. No evidence attributes the answer gap to
+uploading. The quality-only continuation fixes a missing staged scorer, not a
+model/kernel issue; no timings/questions are retried and the deadline is unchanged.
+Prefix hit/miss probes pass, but first-trial same-prefix one-token identity fails
+for both arms. Cache reuse must not be described as numerical correctness.
+This is the production-custom-runtime comparison; stock-plugin compatibility
+remains the deployment requirement, and no KV/fast-path change was applied.
+
 **22 October, 09:10 UTC: quality-only continuation is running detached.**
 The isolated quality-client import/grading check and both-arm/rank CPU startup
 checks pass. Controller **1234052**, independent watchdog **1234695**, stage

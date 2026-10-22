@@ -1,5 +1,25 @@
 # MxWave
 
+**22 October: same-production-runtime comparison complete; production restored.**
+Both arms share the custom production runtime, Inco drafter and serving settings.
+Three interleaved short-prompt trials, 256 output tokens, two DGX Sparks (SM121/TP2):
+
+| Workload | Production ModelOpt | CT MXFP4 + MXFP8 KDA | Observed median change |
+|---|---:|---:|---:|
+| Code C1 | 46.01 tok/s | 49.35 tok/s | +7.26% |
+| Chat C1 | 39.06 | 45.11 | +15.49% |
+| Code C8 | 74.35 | 86.29 | +16.07% |
+| Chat C8 | 72.89 | 83.71 | +14.85% |
+
+All repeat controls miss the 2% spread limit. The frozen speculation-off GSM8K
+subset scores **291/300 production, 287/300 CT**, with no errors/truncations.
+Post-startup allocation saves **14.466 GiB across TP2**. These compare different
+quantized checkpoints, not isolated lossless packing, and are not stock-plugin
+performance numbers. PPL/SQNR and long-context retrieval are outside this screen.
+Production remains the default; both Sparks are on, exact production is healthy,
+and no further GPU run is queued. [Full report and ranges](docs/GLM53_SAME_RUNTIME_RESULTS.md).
+The earlier dated entries below are historical.
+
 **21 October, 21:58 UTC: final stock-vLLM deployment screen is complete; both Sparks are offline.** Official
 vLLM 0.32.0 plus the MxWave plugin runs the selected CT profile at 500k configured
 context. Three interleaved pairs, short prompts, 256 output tokens, two DGX Sparks
