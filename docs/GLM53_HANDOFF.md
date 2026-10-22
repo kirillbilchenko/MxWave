@@ -1,5 +1,29 @@
 # GLM compression experiment handoff
 
+**22 October: read-only recipe audit while quality runs; no extra experiment queued.**
+Completed v3 telemetry shows six running / two waiting requests at C8 in both
+arms with 6 GiB KV/rank. Post-startup allocation savings for A0/B0 are **7.232787
+GiB on rank0 and 7.233038 GiB on rank1**, **14.465825 GiB total**. A later 8 GiB
+KV/rank configuration would spend 4 GiB of that total saving, leaving roughly
+10.47 GiB if other allocations stay unchanged. It could reduce queueing; actual
+capacity/speed must be measured. This cannot explain or improve single-request
+compute latency by itself, and it is not applied to the matched comparison.
+
+Both A0/B0 startup reports expose a concrete dispatch difference:
+`dense_fast_report.layers` is `{'mla_qkv_a': 53}` for production and `{}` for CT,
+with identical overlay table hash. Same flags do not imply the same active fast
+paths. CT format eligibility/loading order must be audited before any proposed
+port; no speed benefit, easy compatibility fix or new quantization is assumed.
+
+Across all three timing repeats, aggregate native proposed-token / draft-call
+counters equal **7.0 in every cell for both arms**, including C8, despite the
+configured 7/5/3 policy. These counters alone do not establish actual verification
+widths: determine whether they count padded capacity or effective proposals before
+claiming the schedule is ignored. CT C1 accepted tokens per native draft call are
+2.874 for code and 2.125 for chat. A future Inco 5-vs-7 check is plausible, but
+older five-draft gains used Modal and cannot be transferred or added to this run.
+These are candidate follow-ups only. The active quality run/settings stay frozen.
+
 **22 October, 09:10 UTC: quality-only continuation is running detached.**
 The isolated quality-client import/grading check and both-arm/rank CPU startup
 checks pass. Controller **1234052**, independent watchdog **1234695**, stage
