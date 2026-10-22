@@ -1,5 +1,17 @@
 # GLM compression experiment handoff
 
+**22 October: final evidence preservation complete.**
+Final evidence archive: **810 payloads**, **4,211,408 bytes**, SHA256
+`6c7eadf167eb4280165e7b272b7b8911356cd95f601f31826220070ae401db4e`.
+The archive is retained on Mac and both Sparks. Every payload independently
+hash-verifies on Mac and Spark2; CPU recomputation reproduces the entire summary
+exactly on both, including all 600 re-scored answers and 108 measured timing
+requests. Local evidence/receipts:
+`out/glm53-package-v1/same-runtime-final-closeout-v1/`.
+Final results/source snapshot is committed at **`230185c`**; subsequent closeout
+metadata is preserved in an incremental source bundle. No runtime change or
+additional experiment accompanies this verification.
+
 **22 October, 09:34:54 UTC: final comparison complete; exact production restored.**
 All six speed passes and both 300-question speculation-off GSM8K arms complete.
 Production is healthy at 500k; both original identities and all 20 stopped trial
