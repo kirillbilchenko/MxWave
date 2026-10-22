@@ -1,5 +1,29 @@
 # Final same-production-runtime comparison
 
+**22 October, 08:27 UTC: corrected test is running detached on Spark1.**
+All eight CPU checks pass (both arms, timing/quality, both ranks), including the
+actual sparse-palette packer/native-library contract for CT. Controller **800461**
+and independent watchdog **801127** are active; stage **`timing-A-0` is loading**.
+Root: `glm53-package-v1/same-runtime-final-v3`. Production is now paused under the
+unchanged two-hour restoration lease. The laptop is not required. CT GPU startup
+and all benchmark results are still pending. The frozen eight-stage scope and
+stop-on-error policy are unchanged; exact original production is restored afterward.
+
+**22 October, 08:26 UTC: corrected comparison preparation running detached.**
+The user asks to rerun the authorized final test. Source **`1c1f60a`** restores the
+existing `palette_model_worker` registration and `MXWAVE_PALETTE_MODEL=1`; no
+production overlay, serving setting, workload, decision rule or gate changes.
+A new CPU check binds the actual registered packer to the loaded native library's
+`sparse_palette` encoding and records source/binary hashes before any outage.
+Regression tests reject the missing flag, wrong decoder and unregistered packer.
+Full repository tests pass (one skip), plus Ruff and strict core mypy.
+
+New root: `glm53-package-v1/same-runtime-final-v3`, detached preparer **792772**.
+It validates both arms/modes/ranks before launching the same eight stages with a
+two-hour independent restoration watchdog. At this checkpoint preparation is
+running; GPU timing has not yet been confirmed. Failed v1/v2 evidence is retained.
+The original v2 stop remains valid history below; its launcher bug is now fixed.
+
 **Outcome: stopped on launcher error; production restored at 06:51:39 UTC, 22 October.**
 Only A0's four timing cells completed. B0 failed during loading on both ranks with
 `Native library and scale encoding differ`: the new launcher omitted the existing

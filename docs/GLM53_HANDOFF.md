@@ -1,5 +1,35 @@
 # GLM compression experiment handoff
 
+**22 October, 08:27 UTC: corrected test is running detached on Spark1.**
+All eight CPU checks pass (both arms, timing/quality, both ranks), including the
+actual sparse-palette packer/native-library contract for CT. Controller **800461**
+and independent watchdog **801127** are active; stage **`timing-A-0` is loading**.
+Root: `glm53-package-v1/same-runtime-final-v3`. Production is now paused under the
+unchanged two-hour restoration lease. The laptop is not required. CT GPU startup
+and all benchmark results are still pending. The frozen eight-stage scope and
+stop-on-error policy are unchanged; exact original production is restored afterward.
+
+**22 October, 08:26 UTC: corrected comparison preparation running detached.**
+The user asks to rerun the authorized final test. Source **`1c1f60a`** restores the
+existing `palette_model_worker` registration and `MXWAVE_PALETTE_MODEL=1`; no
+production overlay, serving setting, workload, decision rule or gate changes.
+A new CPU check binds the actual registered packer to the loaded native library's
+`sparse_palette` encoding and records source/binary hashes before any outage.
+Regression tests reject the missing flag, wrong decoder and unregistered packer.
+Full repository tests pass (one skip), plus Ruff and strict core mypy.
+
+New root: `glm53-package-v1/same-runtime-final-v3`, detached preparer **792772**.
+It validates both arms/modes/ranks before launching the same eight stages with a
+two-hour independent restoration watchdog. At this checkpoint preparation is
+running; GPU timing has not yet been confirmed. Failed v1/v2 evidence is retained.
+The original v2 stop remains valid history below; its launcher bug is now fixed.
+
+Spark1 CT CPU preflight confirms `sparse_palette`, registered `palette_model_worker`,
+packer SHA256 `19cce9338f0bed2e8fc5f5f814483a69b1d3e345b1404fbf064c02c1f05e6e28`,
+and native SHA256 `9f5d96dcb0762d7e5ed5436ca296f70d590e73797d40522e4d8c7d6f3902f5f0`.
+The committed fix is backed up on both nodes in `glm53-same-runtime-codec-fix.bundle`,
+SHA256 `c51d575da5f89207142f96dddf2debdf817085cd98971a9427a48522a42d2c75`.
+
 **22 October: final comparison stopped; exact production restored at 06:51:39 UTC.**
 Controller `384218` ends **`failed_restored`** after **9.69 minutes**. Only
 `timing-A-0` completes (all four C1/C8 code/chat cells, no API errors). CT fails
