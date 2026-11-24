@@ -1,0 +1,45 @@
+"""Run the 4096-token prefill-budget comparison with the qualified warmed kernels."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import run_warmed_model as warmed
+
+
+def launch(
+    rank: int,
+    revision: str,
+    label: str,
+    original: dict[str, Any],
+    vocabulary: int,
+    manifest_sha: str,
+) -> tuple[list[str], dict[str, Any]]:
+    """Preserve the verified parent's kernels, worker, graphs and capacity exactly."""
+    if label not in ("control", "candidate"):
+        raise ValueError("Undeclared admission arm")
+    argv, meta = warmed.launch(rank, revision, label, original, vocabulary, manifest_sha)
+    for command in (argv, meta["command"]):
+        command[command.index("--max-num-batched-tokens") + 1] = "4096"
+        command[command.index("--worker-extension-cls") + 1] = "budget_worker.BudgetWorker"
+    meta["environment"]["MXWAVE_PREFILL_BUDGET"] = "1"
+    at = argv.index("--entrypoint")
+    argv[at:at] = ["-e", "MXWAVE_PREFILL_BUDGET=1"]
+    return argv, meta
+
+
+def configure() -> None:
+    """Change the experiment client/reviewer while retaining exact service restoration."""
+    warmed.configure()
+    warmed.controller.launch = launch
+    warmed.controller.PREPARED_NAME = "prefill-budget-v3-prepared.json"
+    warmed.controller.CLIENT_SCRIPT = "measure_prefill_budget.py"
+    warmed.controller.ANALYZE_SCRIPT = "analyze_prefill_budget.py"
+    warmed.controller.OUTAGE_SECONDS = 7200
+    warmed.controller.ENTRY_SCRIPT = Path(__file__).resolve()
+
+
+if __name__ == "__main__":
+    configure()
+    warmed.controller.main()

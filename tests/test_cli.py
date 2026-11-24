@@ -33,6 +33,7 @@ def test_packaged_entry_points_are_mxwave_only() -> None:
     assert project["project"]["scripts"] == {
         "mxwave-calibrate": "mxwave.calibration_cli:main",
         "mxwave-export-gguf": "mxwave.gguf_cli:main",
+        "mxwave-glm53": "mxwave_glm53.cli:main",
         "mxwave-precision-budget": "mxwave.precision_budget_cli:main",
         "mxwave-qualify": "mxwave.qualification_cli:main",
         "mxwave-quantize": "mxwave.cli:main",
