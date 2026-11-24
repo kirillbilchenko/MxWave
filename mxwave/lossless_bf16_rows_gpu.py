@@ -14,8 +14,8 @@ from typing import Final
 
 import numpy as np
 import torch
-import triton  # type: ignore[import-not-found]
-import triton.language as tl  # type: ignore[import-not-found]
+import triton  # type: ignore[import-not-found,import-untyped,unused-ignore]
+import triton.language as tl  # type: ignore[import-not-found,import-untyped,unused-ignore]
 
 from .lossless_bf16_rows import Bf16RowPacked
 
