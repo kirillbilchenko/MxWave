@@ -176,9 +176,8 @@ def main() -> None:
                     content = patch_schedule(content)
             elif name == "MMA_PTX.cuh" and (compact or narrow):
                 content = patch_mma(content, narrow=narrow)
-            elif name == "L_API.cu":
-                if compact:
-                    content = patch_api(content)
+            elif name == "L_API.cu" and compact:
+                content = patch_api(content)
             if name == "L_API.cu":
                 content += ("\n#define MXWAVE_COMPACT_N8 " + str(int(compact)) + "\n"
                             + QUERY).encode()
