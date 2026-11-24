@@ -74,7 +74,7 @@ cycles per arm. Production is temporarily paused under the restoration watchdog;
 no candidate result or promotion yet. This checks native transfer on the validation
 set used for checkpoint selection, **not generalization**. Full training remains
 held, sealed test closed; original 500k service restores automatically.
-[Live status and frozen criteria](GLM53_HANDOFF.md).
+Live status and frozen criteria.
 
 
 **21 October 2026, 12:05 UTC: short Modal pilot complete; production restored.**
@@ -84,7 +84,7 @@ from one of eight code prompts, one anchor, so no native speed benefit is proven
 All 84 requests/control checks and 878 million independent feature-bit comparisons
 pass. Native FP8 export changes only `fc.weight` and is not deployed. Original
 500k production is healthy; no GPU trial or further training queued, sealed test
-closed. [Full evidence, limitations and capture-concurrency audit](GLM53_HANDOFF.md).
+closed. Full evidence, limitations and capture-concurrency audit.
 
 **21 October 2026, 11:53 UTC: Modal pilot capture completes; original production restoring.**
 All **84/84 requests** complete, including 64 train and 16 validation captures.
@@ -112,7 +112,7 @@ or automatic promotion. This supersedes the preceding prelaunch status.
 **21 October 2026, 11:37 UTC: bounded Modal pilot preparing.** The user authorizes a short
 64-train/16-validation, FC-only pilot; full training remains held. Both image CPU
 checks and Modal round-trip/mask/gradient checks pass. Production is still online;
-no GPU capture yet. [Protocol and capture-concurrency limits](GLM53_HANDOFF.md).
+no GPU capture yet. Protocol and capture-concurrency limits.
 
 **21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
 Original production restores healthy at **08:32:34 UTC**, with its exact original
@@ -151,20 +151,20 @@ gives 1.56x chat and 1.73x explanation throughput.
 All 152 retained payloads verify on Mac/Spark2. Five-draft code first-token
 latency is 266 ms, about 21 ms above the bracketed seven-draft baseline.
 Keep training held; profile CT serving overhead and compatible production tuning
-before a broader qualification. [Full evidence, limits and next step](GLM53_HANDOFF.md).
+before a broader qualification. Full evidence, limits and next step.
 
 **21 October 2026, 07:29 UTC: CT draft-length comparison running.**
 All ten CPU preflights pass. Detached controller 1622330 starts CT + Modal FP8
 at seven drafts; 3/5/off/7 follow. Production is temporarily paused under
 watchdog 1622434; original 500k containers restore automatically. No result yet,
-training held and sealed test closed. [Live status and limits](GLM53_HANDOFF.md).
+training held and sealed test closed. Live status and limits.
 
 **21 October 2026, 07:26 UTC: CT-only draft-length screen preparing.**
 The user redirects the next test from production to CT and authorizes unattended
 work. Same CT + Modal FP8 at 7/3/5/off/7 drafts, eight development prompts and six
 cycles per load. CPU checks run on both nodes; production is still online. The
 GPU comparison will use the existing independent restoration watchdog. No
-training, sealed test or promotion. [Current plan and status](GLM53_HANDOFF.md).
+training, sealed test or promotion. Current plan and status.
 
 **21 October 2026, 07:16 UTC: production comparison does not show a CT acceptance deficit.**
 A live, unchanged-production screen uses the same eight development prompts,
@@ -190,7 +190,7 @@ The saved CT trace also now confirms matching accepted layer0/4 QKV and state
 through position 91, with layer4 QKV first different at 92, before its recurrent
 update. All 200 inspected convolution-history carry checks pass. Next is a
 component trace in layers0–4; no follow-up GPU run is queued. Training stays held.
-[Full evidence and limits](GLM53_HANDOFF.md).
+Full evidence and limits.
 
 **21 October 2026, 06:56 UTC: native-decision trace completes and independently verifies.**
 Both GPUs reproduce the same finding: target logits/hidden states remain exact
@@ -201,12 +201,12 @@ position 87 boundary; layer 4 differs by 94 while layer 0 remains exact. The nex
 check targets state/rollback and arithmetic between those boundaries. This does
 not establish a responsible kernel or a speed improvement. Production is restored
 with 500k context; all 406 artifacts are verified on Mac/Spark2. No follow-up GPU
-run is queued. [Full result and limits](GLM53_HANDOFF.md).
+run is queued. Full result and limits.
 
 **21 October 2026, 06:41 UTC: Inco trace complete; Modal BF16 loading.**
 All four Inco before/capture/repeat/after controls reproduce the frozen output and
 speculative counters; both ranks retain 34 frames each. Paired trace analysis is
-pending. See [the latest handoff](GLM53_HANDOFF.md).
+pending.
 
 Earlier speed-screen checkpoint, **21 October 2026, 06:35 UTC**. The user prioritizes the native-decision
 trace over the final speed baseline reload. The reload is deliberately stopped

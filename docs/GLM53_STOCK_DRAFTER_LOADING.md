@@ -4,7 +4,7 @@
 preflights. The corrected 500k/prefix-on/native-FP8-KV profile starts and accepts
 22/60 code and 21/50 chat proposals on two different ~256-token startup prompts.
 Prefix reuse works; repeated-output identity still fails. The full comparison is
-active under restoration controls; see the [live handoff](GLM53_HANDOFF.md).
+active under restoration controls;
 The diagnostic below and its evidence retain their original scope and timestamps.
 
 Recorded **21 October 2026, 19:56 UTC**. The zero-acceptance failure is causally

@@ -139,7 +139,7 @@ independently verified: all 42 matched numerical comparisons pass, but mean
 C16 TTFT and extra-memory gates fail. Its original service restoration and
 terminal jobs were verified before this separate native screen launched.
 No configuration is promoted. BF16 caching, new fused-prefill kernels and MTP
-remain deferred. See [current handoff](GLM53_HANDOFF.md) for the live phase.
+remain deferred.
 Working evidence: `/private/tmp/mxwave-moe-backend-v1`. Older launch/preparation
 statements below are historical; their evidence and failures remain retained.
 

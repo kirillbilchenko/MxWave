@@ -55,27 +55,3 @@ def test_full_dataset_is_frozen_in_source_order(bench: ModuleType) -> None:
     assert protocol["retries"] == 0 and not protocol["qualification_attempted"]
     with pytest.raises(ValueError, match="payload changed"):
         bench.freeze(raw + b"\n", manifest)
-
-
-def test_case_api_failure_is_counted_and_existing_evidence_is_not_retried(
-    bench: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Preserve HTTP errors as failed questions and reject restarts before another API call."""
-    client = importlib.import_module("measure_gsm8k")
-    calls = []
-
-    def failure(*args: Any, **kwargs: Any) -> None:
-        calls.append(args)
-        raise TimeoutError("fixture")
-
-    monkeypatch.setattr(client, "request", failure)
-    case = {"source_index": 0, "prompt": "Question", "expected": "42"}
-    protocol = {"temperature": 0, "seed": 42, "max_tokens": 1024, "reasoning_effort": "low"}
-    row = client.case_request(case, protocol, tmp_path)
-    assert row["api_error"] and not row["answer_exact_match"]
-    summary = bench.summarize([row])
-    assert summary["completed_questions"] == summary["api_errors"] == 1
-    assert summary["accuracy"] == 0
-    with pytest.raises(FileExistsError, match="Never replace"):
-        client.case_request(case, protocol, tmp_path)
-    assert len(calls) == 1

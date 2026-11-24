@@ -148,4 +148,4 @@ Frozen source: `ROOT/full-pairedspeedv1-src`; raw results:
 `ROOT/run-pairedspeedv1/results`; independent analysis:
 `ROOT/paired-speed-v1-independent`. Local evidence/analysis:
 `/private/tmp/mxwave-paired-speed-v1/`. See
-[current state](GLM53_CURRENT_STATE.md) and the [handoff](GLM53_LOSSLESS_RUNTIME_HANDOFF.md).
+[current state](GLM53_CURRENT_STATE.md) and the handoff.

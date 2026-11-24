@@ -132,7 +132,7 @@ The preceding warmed exact16 route remains the qualified experimental fallback.
 Original GLM is restored healthy, retention is complete and the awake lease is
 released. No new experiment or configuration promotion. Next proposed phase is
 3 versus 10 ms admission with the fallback, then MTP; neither has started.
-See the [full result](GLM53_FP32_INPUT_MODEL.md) and [current handoff](GLM53_HANDOFF.md).
+See the [full result](GLM53_FP32_INPUT_MODEL.md) and current handoff.
 Older entries below describe historical checkpoints, superseded where pending.
 
 **19 October 2026, 05:36 UTC:** the fresh stock versus input-only FP32 model comparison
@@ -142,7 +142,7 @@ strict mypy and the full CPU protocol simulation pass. It measures C1/C8/C16
 quality, ordinary throughput/TTFT, CPU/CUDA memory and actual kernel traces with
 all original gates retained. No new model result is claimed. Verified relocation
 of completed evidence provides the required disk reserve; model inputs and
-canonical archives are unchanged. See the [handoff](GLM53_HANDOFF.md).
+canonical archives are unchanged.
 
 **18 October 2026, 22:50 UTC integration follow-up:** input-only FP32 split 2 passes
 the independently verified GPU integration fixture (**434 payloads / 227
@@ -152,7 +152,7 @@ zero retained replay growth; a third stream is rejected. Both GPU jobs, retentio
 and exact original-service restoration are complete; the awake lease is released.
 This adds no full-model quality/speed or CPU-saving result. The 216 prior exact-word
 failures and two input timing repeat failures remain failed. Fresh matched model
-qualification is next, after evidence-storage preparation. See the [handoff](GLM53_HANDOFF.md).
+qualification is next, after evidence-storage preparation.
 
 **18 October 2026, 22:31 UTC speed follow-up:** FP32 timing independently verifies on
 Spark/Mac (**246 payloads / 220 sources / 884,736 events**). Input split 2 saves
@@ -162,7 +162,7 @@ the broad screen fails 78/288 conditions. Prior 216 exact-word failures remain
 failed. No new full-model quality/speed or CPU-saving claim is made. GLM is
 restored healthy, all jobs/retention complete and the owned awake lease released.
 Next is a bounded input-only split-2 model probe under unchanged KL/NLL limits.
-See the [handoff](GLM53_HANDOFF.md) for measurements, controls and provenance.
+
 
 **18 October 22:12 UTC precision follow-up:** FP32 split partials are independently
 verified on Spark/Mac (2,227 payloads / 217 sources). All 576 comparisons pass
@@ -172,7 +172,7 @@ lower relative error than the old BF16-partial route. Source/storage, guards,
 repeats and graph checks pass. No speed, model-KL or CPU-saving result is measured,
 and no route is promoted. GLM is restored healthy; all jobs and retention are
 complete. Next comes paired component timing, then any justified exploratory
-model test under the unchanged KL/NLL limits. See the [handoff](GLM53_HANDOFF.md).
+model test under the unchanged KL/NLL limits.
 
 **18 October 21:52 UTC follow-up:** dense-output replacement is rejected by its
 frozen component screen. Spark/Mac independently verify **270 payloads / 213
@@ -184,7 +184,7 @@ are not serving-speed results. No dense-only policy is integrated. The warmed
 exact16 candidate below remains current. GLM is restored healthy, all jobs and
 retention are complete, and the owned awake lease is released. An FP32 split-K
 partial-storage idea is source-audited only; no new kernel result exists.
-See the [handoff](GLM53_HANDOFF.md) for evidence and limitations.
+
 
 **Verified full-model result, 18 October 21:10 UTC:** startup warming works in
 the measured workload. All **1,612 payloads / 207 sources / 12 worker traces**
@@ -219,7 +219,7 @@ Exact16 decode replays graphs with zero reconstruction. Prefill retains about
 36-38 ms/rank of reconstruction, while expert GEMMs dominate concurrent decode.
 The next speed target is that measured prefill/admission cost under controlled
 grouping. Original service is restored healthy; all evidence and analyses are
-complete. See the [handoff](GLM53_HANDOFF.md) for recovery provenance and limits.
+complete.
 
 **18 October 19:38 UTC:** the focused replay reproduces the multi-second stalls
 in both reference and compressed arms. Closed head traces and cache timestamps
@@ -232,7 +232,7 @@ are restored; experiment processes have exited. Both head traces/results bind
 to this archive, while cache audits remain separate supplements.
 A complete 34-variant startup warmup is CPU-prepared with unchanged
 kernels; GPU intervention and its startup/memory/serving costs remain unmeasured.
-See the [current handoff](GLM53_HANDOFF.md).
+
 
 **18 October 19:08 UTC:** exact16 C16 is complete and independently verified on
 Spark/Mac (1,581 payloads / 200 sources / eight traces), with the original
@@ -253,7 +253,7 @@ A CPU-only fixed-mantissa layout oracle now preserves all 65,536 BF16 bit
 patterns and does not increase aligned tile payload bytes at any exception
 count. Its GPU implementation and speed are unmeasured. A separate synthetic
 allocator probe passes; reclaimable model CPU memory is still unmeasured.
-See the [handoff](GLM53_HANDOFF.md#cpu-only-follow-up-prepared-while-c16-runs)
+See the handoff
 for the exact evidence and next component gates. No runtime policy changed.
 
 **Current checkpoint, 18 October 17:44 UTC:** the fresh matched native-mHC
@@ -262,7 +262,7 @@ on Spark/Mac (1,168 payloads / 194 sources / eight traces). C1 throughput +12.38
 short-C8 +2.40%, long-C8 -0.61%; C1 TTFT +7.91%, so the overall speed gate fails.
 CUDA allocation saving is 9.367 GiB across TP2. Original GLM is restored healthy.
 Full-model exact16 input/output integration remains pending; MTP stays deferred.
-See the [current handoff](GLM53_HANDOFF.md). Dated records below retain history.
+ Dated records below retain history.
 
 
 **18 October 14:06 UTC operational update:** Work resumed at the user's request.
@@ -271,19 +271,19 @@ compaction gives exact stock C1 self-repeat; stock C8 still fails KL and differs
 already at prefill. The independently verified parent result is retained, and
 the targeted c8tracev1 workload is loading under a restoration watchdog.
 Fresh stock/compressed quality and the full exact16 integration remain unmeasured.
-Read [GLM53_HANDOFF.md](GLM53_HANDOFF.md) for live state; dated records below
+Dated records below
 preserve earlier failures and stopped-state snapshots. MTP remains deferred.
 
 **18 October12:30 UTC: user resumed checks.** The actual MLA internal observer
 is CPU prepared and loading one raw-reference model under independent restoration.
-See the [current handoff](GLM53_HANDOFF.md). MTP remains deferred.
+ MTP remains deferred.
 
 **Compression checkpoint18 October12:18 UTC:**
 The [output-only continuation](GLM53_OUTPUT_ROW16.md) is independently verified:
 34 rather than68 reconstructions per retained C16 graph range, partial API
 recovery, both speed gates still failed and all24 KL comparisons failed.
 Original service is restored and healthy. Resume from the
-[current handoff](GLM53_HANDOFF.md); MTP stays deferred. Earlier assessments below
+current handoff; MTP stays deferred. Earlier assessments below
 retain their original dates.
 
 **18 October 10:37 UTC:** MTP remains deferred. The

@@ -2,7 +2,7 @@
 
 Updated **18 October 2026, 18:50 UTC**. Both the native-mHC trace investigation
 and the subsequent fresh stock/compressed pair are complete. The
-[current handoff](GLM53_HANDOFF.md) records operational state and next work.
+current handoff records operational state and next work.
 
 ## Fresh matched stock/compressed comparison: matchedc8v1
 

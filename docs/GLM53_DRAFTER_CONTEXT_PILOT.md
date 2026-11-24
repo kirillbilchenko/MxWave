@@ -300,14 +300,13 @@ no error. The 12-thread CPU replay preserves all 32 update metrics and four save
 checkpoints exactly. An interleaved step screen falls from 2.483 to 1.805 seconds;
 full-corpus runtime remains unmeasured. Continuation v2 waits for complete verified
 capture and production restoration. Estimated CPU training is now 3–4 hours;
-serving acceptance/speed remain unqualified. [Current handoff](GLM53_HANDOFF.md).
+serving acceptance/speed remain unqualified. Current handoff.
 
 **21 October 2026, 04:53 UTC: full capture continues; 576 prompts independently verified.**
 Nine completed batches have identical accepted payloads on both GPUs; NumPy
 checks cover 7.05 billion BF16 elements with zero differences. Both repeat controls
 so far pass. Production is temporarily paused; CPU training waits for verified
 completion and restoration. No new drafter speed gain is established.
-[Current handoff](GLM53_HANDOFF.md).
 
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**
 All six requests match in tokens/counters; all 12 capture comparisons have exact
@@ -316,7 +315,7 @@ independently verify on Mac/Spark2. Decode sorting adds about 0.0155 ms per inde
 call in stable component timings (19/24 controls pass); serving cost is unmeasured.
 Original 500,000-context production is restored. Next is the eight-prompt capture
 smoke before full 4,000/200 capture/training; sealed test remains closed.
-[Evidence, limits and next step](GLM53_HANDOFF.md).
+Evidence, limits and next step.
 
 **20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
 GPUs show identical sparse-prefill scoring inputs, consumed scores and selected
@@ -326,7 +325,7 @@ not yet tested. The repeat gate still fails. Original production is restored
 with 500,000 context; all 416 evidence payloads verify on Mac/Spark2. No experiment
 is running. Full 4,000/200 capture and training remain gated; the old drafter
 pilot is speed-neutral and unqualified, and the sealed test remains closed.
-[Current evidence and restoration status](GLM53_HANDOFF.md).
+Current evidence and restoration status.
 
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
 all 36 fixtures through 128 rows. Independent review finds 54/100 native
@@ -336,7 +335,7 @@ Stable component overhead varies from near zero to 8.02% with routing, so this
 is not a serving-overhead qualification. Production is restored with 500,000
 context; the runtime limit stays at 16 rows. Fresh C1 features and full
 4,000-prompt drafter training remain next; the sealed test stays closed.
-See [the wider result and timing table](GLM53_HANDOFF.md).
+See the wider result and timing table.
 
 **20 October 2026, 19:23:01 UTC:** the eight-prompt, 144-request development
 comparison completes with identical output tokens across original/adapted/original
@@ -347,7 +346,7 @@ Both arms use the same CT MXFP8 target and expert padding. This does not establi
 the ≥8% code goal or padding overhead; the pilot remains unqualified.
 Original production is restored and healthy with **500,000 context**.
 All 93 evidence payloads independently verify on Mac/Spark2; no experiment is running.
-See [the result and TTFT table](GLM53_HANDOFF.md).
+See the result and TTFT table.
 
 **20 October: direction updated at the user's request.** The DeepInfer-inspired
 confidence experiment and its trainer hook are removed. It was never enabled
@@ -358,7 +357,7 @@ four saved checkpoints match the original exactly. Wider component GPU checks
 now also pass. Fresh target-feature capture precedes full 4,000-prompt training;
 C8/C16 full-model and serving-cost qualification remains a separate gate.
 Existing gates are unchanged; sealed evaluation remains closed.
-See [the current handoff](GLM53_HANDOFF.md).
+
 
 **Earlier, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
 production is restored with 500,000 context. On one development prompt, the
@@ -372,7 +371,7 @@ passes the original 440/448 stress case; V3 timing controls remain 14/16 with
 two failures retained at 2%. C8/C16 coverage and full 4,000-prompt training remain
 outstanding. The adapted drafter remains unqualified and the sealed test closed.
 See the current
-[handoff checkpoint](GLM53_HANDOFF.md). Older dated checkpoints below are historical.
+handoff checkpoint. Older dated checkpoints below are historical.
 
 <!-- DRAFTER_EXPERT_REPLAY_BEGIN -->
 **20 October 2026, 17:27:12 UTC: direct expert replay complete; original production restored.**
@@ -590,7 +589,7 @@ relax equality gates on the basis of this one reproducer.
 V2 plan SHA-256:
 `965dc634a26117c72eebec46571a9763a97967b7140c52796ff23f346245128d`.
 Local review: `out/drafter-verification-v2/review.json`; independent reviewer:
-`integrations/glm53_mxfp4/review_drafter_verification.py`. The 229-payload archive
+`review_drafter_verification.py` (not included in this branch). The 229-payload archive
 is retained on Spark, Mac and Spark2, and all hashes independently verify on
 Mac and Spark2. Original production's IDs/configurations, health and 500k
 context are restored at 15:54:30 UTC. No new diagnostic is running.

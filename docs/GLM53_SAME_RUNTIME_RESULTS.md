@@ -123,7 +123,7 @@ answer again, reconciles all startup configurations and memory, and retains all
 failed repeat controls. Prior failed v1/v2 evidence remains separately preserved.
 
 The [frozen protocol](GLM53_SAME_RUNTIME_FINAL.md),
-[live/history handoff](GLM53_HANDOFF.md), and
+live/history handoff, and
 [stock-vLLM recipe](../deployment/glm53/README.md) retain their distinct scopes.
 
 Final evidence archive: **810 payloads**, **4,211,408 bytes**, SHA256

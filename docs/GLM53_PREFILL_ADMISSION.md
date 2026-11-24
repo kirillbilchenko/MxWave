@@ -41,7 +41,7 @@ The preceding warmed exact16 route remains the qualified experimental fallback.
 Original GLM is restored healthy, retention is complete and the awake lease is
 released. No new experiment or configuration promotion. Next proposed phase is
 3 versus 10 ms admission with the fallback, then MTP; neither has started.
-See the [full result](GLM53_FP32_INPUT_MODEL.md) and [current handoff](GLM53_HANDOFF.md).
+See the [full result](GLM53_FP32_INPUT_MODEL.md) and current handoff.
 Older entries below describe historical checkpoints, superseded where pending.
 
 **19 October 2026, 05:54 UTC: C16 follow-up audited, not yet run.** The later

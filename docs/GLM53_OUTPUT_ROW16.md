@@ -7,7 +7,7 @@ strict mypy and the full CPU protocol simulation pass. It measures C1/C8/C16
 quality, ordinary throughput/TTFT, CPU/CUDA memory and actual kernel traces with
 all original gates retained. No new model result is claimed. Verified relocation
 of completed evidence provides the required disk reserve; model inputs and
-canonical archives are unchanged. See the [handoff](GLM53_HANDOFF.md).
+canonical archives are unchanged.
 
 **18 October 2026, 22:50 UTC integration follow-up:** input-only FP32 split 2 passes
 the independently verified GPU integration fixture (**434 payloads / 227
@@ -17,7 +17,7 @@ zero retained replay growth; a third stream is rejected. Both GPU jobs, retentio
 and exact original-service restoration are complete; the awake lease is released.
 This adds no full-model quality/speed or CPU-saving result. The 216 prior exact-word
 failures and two input timing repeat failures remain failed. Fresh matched model
-qualification is next, after evidence-storage preparation. See the [handoff](GLM53_HANDOFF.md).
+qualification is next, after evidence-storage preparation.
 
 **Historical checkpoint, 18 October 17:44 UTC:** the fresh matched native-mHC
 C1/C8 pair passes all 33 numerical comparisons at the original limits, verified
@@ -25,7 +25,7 @@ on Spark/Mac (1,168 payloads / 194 sources / eight traces). C1 throughput +12.38
 short-C8 +2.40%, long-C8 -0.61%; C1 TTFT +7.91%, so the overall speed gate fails.
 CUDA allocation saving is 9.367 GiB across TP2. Original GLM is restored healthy.
 Full-model exact16 input/output integration remains pending; MTP stays deferred.
-See the [current handoff](GLM53_HANDOFF.md). Dated records below retain history.
+ Dated records below retain history.
 
 
 **18 October 14:06 UTC operational update:** Work resumed at the user's request.
@@ -34,12 +34,12 @@ compaction gives exact stock C1 self-repeat; stock C8 still fails KL and differs
 already at prefill. The independently verified parent result is retained, and
 the targeted c8tracev1 workload is loading under a restoration watchdog.
 Fresh stock/compressed quality and the full exact16 integration remain unmeasured.
-Read [GLM53_HANDOFF.md](GLM53_HANDOFF.md) for live state; dated records below
+Dated records below
 preserve earlier failures and stopped-state snapshots. MTP remains deferred.
 
 Updated **18 October2026,12:30 UTC**. Compression collection is complete.
 Work has resumed on the separate actual-MLA diagnostic; see the
-[current handoff](GLM53_HANDOFF.md).
+current handoff.
 `output16qualv1` is complete and independently verified on Spark/Mac:
 1,293 payloads/180 source bindings/16 worker traces, archive
 `d871cbac8d1d91332469c01434ce72549679974d8e1653d0198642fbf8c44dba`
@@ -55,7 +55,7 @@ actual requests using the padded16 graph, each reconstructing34 matrices in
 retained API timings show only partial C16 recovery. Kernel sums are not request
 latency or a TP critical path. The original source-after/time-gap limits remain.
 See the [completed review](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/output16-validation-v1-review.json)
-and [handoff](GLM53_HANDOFF.md) for resumption details.
+and handoff for resumption details.
 
 Historical first attempt: `output16v1` completes all72 timing
 groups, then fails saving its sixth numerical group because the head disk fills.

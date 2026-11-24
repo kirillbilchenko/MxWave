@@ -9,7 +9,7 @@ No clocks are locked. V7's earlier control failure remains unchanged.
 Archive `76b00c670bf2747448afe35ca9e7f011747b5c3d17ac0b6fca9caa930936b34c`.
 The exact16 input component can proceed to isolated model integration;
 rows9–15, a global limit and model quality remain unqualified. Original service
-is restored and healthy. See the [current handoff](GLM53_HANDOFF.md).
+is restored and healthy.
 
 
 **17 October 2026, 22:07 UTC: V5 and bracketed V6 are complete and independently

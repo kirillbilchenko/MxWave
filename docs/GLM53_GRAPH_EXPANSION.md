@@ -35,10 +35,9 @@ The saved paired runs show the same native dispatch on both TP ranks:
 matched comparisons. No recorded C8-specific memory failure or correctness
 rejection was found. Historical numerical failures remain open already under
 `[1,4]`; they are not evidence of an additional C8-specific failure.
-The explicit override is in
-[run_graph_quality.py](../integrations/glm53_mxfp4/run_graph_quality.py);
-[run_paired_speed.py](../integrations/glm53_mxfp4/run_paired_speed.py)
-inherits that launcher. The underlying full-model scaffold already declares
+The explicit override was in the graph-quality launcher (`run_graph_quality.py`);
+the paired-speed launcher inherited it. These experiment scripts are not
+included in this branch. The underlying full-model scaffold already declares
 `[1,2,4,8]` before the quality launcher's overrides.
 
 Exact C2 therefore reduces padding work. C8 enables a graph where decode was

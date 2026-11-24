@@ -2,6 +2,10 @@
 
 ## Provenance note
 
+The experiment scripts and tests named in this section for studies that are not part
+of the packaged GLM runtime are not included in this branch; their provenance
+statements are retained as a record.
+
 MxWave is an independent clean-room implementation. Its numerical behavior is
 derived from the public OCP MX Formats specification and published quantization
 research, including AWQ, GPTQ, and QuaRot. Its serialized output follows the

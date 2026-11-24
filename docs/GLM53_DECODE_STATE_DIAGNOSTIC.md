@@ -27,7 +27,7 @@ byte masks, empty metadata, budget rejection and private-restore ordering.
 This is implementation/preparation evidence, with no new cause, correction,
 quality or speed claim.
 
-Local files: `integrations/glm53_mxfp4/mla_internal_capture.py`,
+Experiment scripts (not included in this branch): `mla_internal_capture.py`,
 `mla_internal_worker.py`, `mla_internal_extension.py`,
 `mla_internal_gpu_fixture.py`, `measure_mla_internal.py`,
 `run_mla_internal.py`; tests `tests/test_glm53_mla_internal_capture.py`.

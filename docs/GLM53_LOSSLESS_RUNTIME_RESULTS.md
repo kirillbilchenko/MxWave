@@ -119,7 +119,7 @@ shared attention-metadata D2H synchronization. GC and main-thread runqueue
 wait do not explain this capture's gaps. Existing quality status is unchanged.
 
 For continuation commands, code locations and operating constraints, see the
-[agent handoff](GLM53_LOSSLESS_RUNTIME_HANDOFF.md).
+agent handoff.
 
 Latest follow-up **`combineddispatchv1` is complete**. The lighter dispatcher
 cut MoE host time, but the whole-model throughput gap remains. GLM is restored
@@ -232,7 +232,7 @@ fills, 68 device-to-device copies and 34 output compactions. They cost only
 **0.20–0.21 ms of GPU time**. Their host launch/allocation overhead is a
 secondary target; they are not evidence that GPU copy bandwidth explains the
 regression. The host copy API's large whole-trace times include waits shared
-by both arms. The [handoff's trace breakdown](GLM53_LOSSLESS_RUNTIME_HANDOFF.md#5-findings-that-determine-the-next-work)
+by both arms. The handoff's trace breakdown
 and [dispatch report](../benchmarks/glm53-flash-hf-audit-2026-10-15/diagnostics-v1/full-model-combined-dispatch-review-v1.json)
 record counts, timing attribution, source binding and limitations.
 

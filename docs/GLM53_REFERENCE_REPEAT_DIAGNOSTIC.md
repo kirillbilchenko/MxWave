@@ -138,7 +138,7 @@ candidate qualification or throughput conclusion is permitted from this run.
 
 ## Code and validation
 
-The integration directory contains repeat_worker.py (bounded snapshots and
+The experiment scripts (not included in this branch) were repeat_worker.py (bounded snapshots and
 fixed-input replay), measure_repeat_model.py (source checks and policy
 windows), analyze_repeat_model.py (independent NumPy byte review) and
 run_repeat_model.py (controller, idle guard and independent watchdog).

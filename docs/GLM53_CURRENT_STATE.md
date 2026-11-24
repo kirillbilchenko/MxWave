@@ -146,7 +146,7 @@ packer. This is a launcher integration error; it does not establish production
 overlay incompatibility. No CT timing or GSM8K ran. All remaining stages stopped
 under the frozen policy, and all trial containers are stopped. Production is
 healthy at 500k with exact original identities verified. No retry is running.
-[Cause and retained evidence](GLM53_HANDOFF.md),
+Cause and retained evidence,
 [protocol and outcome](GLM53_SAME_RUNTIME_FINAL.md).
 
 **22 October, 06:42 UTC: final test running detached; baseline loading.**
@@ -155,13 +155,13 @@ and independent watchdog **384877** are active in `same-runtime-final-v2`.
 Production is paused under the two-hour restoration lease. Eight frozen stages,
 no tuning/promotion, abort and restore on errors. Laptop connectivity is not
 required. Source `b3f3c11` is backed up on both nodes; results are pending.
-[Frozen protocol](GLM53_SAME_RUNTIME_FINAL.md), [live handoff](GLM53_HANDOFF.md).
+[Frozen protocol](GLM53_SAME_RUNTIME_FINAL.md), live handoff.
 
 **22 October, 06:40 UTC: final preparation runs detached as PID 376651.**
 `same-runtime-final-v2` corrects a missing cross-node metadata copy in v1; the first
 attempt stopped before any outage. No serving/overlay/protocol change. CPU checks
 precede the automatic bounded GPU launch and exact production restoration.
-[Protocol](GLM53_SAME_RUNTIME_FINAL.md), [live handoff](GLM53_HANDOFF.md).
+[Protocol](GLM53_SAME_RUNTIME_FINAL.md), live handoff.
 
 **22 October: final same-runtime comparison authorized; detached preparation starting.**
 CT and ModelOpt will share production's original image, overlays, Inco drafter and
@@ -187,14 +187,14 @@ payloads hash-verify on both Sparks and are retained on Mac. Spark2 CPU recomput
 matches all eight trace reviews and the control/telemetry review exactly. Final
 source is retained in the incremental `glm53-c1-profile-final.bundle` backup.
 [Full report](GLM53_C1_RUNTIME_PROFILE.md),
-[handoff and archive hash](GLM53_HANDOFF.md).
+handoff and archive hash.
 
 **22 October, 06:08 UTC: bounded C1 trace session running detached.**
 Production is temporarily paused under independent restoration watchdog **127851**;
 controller **127253** loads the production profiling copy, then the unchanged CT
 profile. Short code/chat C1 only, native profiling and ordinary timing controls;
 no tuning, training or promotion. Source `65474a9` is backed up on both Sparks.
-Exact original 500k production restores afterward. [Live handoff](GLM53_HANDOFF.md).
+Exact original 500k production restores afterward. Live handoff.
 
 **22 October, 06:07 UTC: user restarts Sparks; bounded C1 profiling is prepared.**
 Original 500k production is healthy and unchanged. Two native-profiler copies of
@@ -202,14 +202,14 @@ the final production/CT deployments are frozen for short code/chat C1 only, with
 ordinary timing controls, both-rank traces and automatic exact restoration. No
 optimization, training, quality rerun or promotion is included. Full tests, Ruff,
 core mypy and both-image profiler CPU checks pass. No GPU trace has started yet.
-The earlier shutdown entries below are historical. [Live handoff](GLM53_HANDOFF.md).
+The earlier shutdown entries below are historical. Live handoff.
 
 **Final — 21 October, 21:58 UTC: both Sparks are offline after accepted poweroff.**
 All measurements are finished; original production was restored and verified before
 shutdown. Complete experiment/source/report backups independently verify on Mac and
 both Sparks. No further jobs or automatic promotion are queued. CT is retained as
 experimental opt-in; original production remains the default configuration.
-The post-shutdown observation is recorded locally in the [handoff](GLM53_HANDOFF.md).
+The post-shutdown observation is recorded locally in the handoff.
 
 **21 October, 21:54 UTC: finished and verified.** The final reduced comparison ends
 `complete_restored` at **21:53:12 UTC** after **57.94 minutes**. All eight stages
@@ -217,7 +217,7 @@ complete, all 733 evidence payloads independently verify on Mac and Spark2, and 
 original 500k production is restored. Final source/report backup and the authorized
 poweroff are next. No further experiments, promotion or training are queued.
 The decision is to retain production as default and CT as experimental opt-in.
-[Results, recipe limits and backup hashes](GLM53_HANDOFF.md).
+Results, recipe limits and backup hashes.
 
 **21 October, 21:51 UTC: measurements finished.** All eight stages complete.
 Frozen 300-question GSM8K: **production 289/300 (96.33%), CT 287/300 (95.67%)**,
@@ -226,13 +226,13 @@ and 5 for CT; this does not establish quality equivalence or a meaningful gap.
 Keep production as the default; retain CT as experimental opt-in for the measured
 memory/C8 trade-off. No more experiments are queued. Exact production restoration,
 final verified backups and the requested shutdown are in progress.
-[Complete result](GLM53_HANDOFF.md).
+Complete result.
 
 **21 October, 21:39 UTC:** production's frozen quality screen is **289/300 (96.33%)**,
 with zero API errors/truncations and speculation off. This is a subset, not full
 GSM8K. CT is loading for the same 300 questions, the final model run. All timing
 is finished; restoration, final backups and shutdown follow this last screen.
-[Full results and current handoff](GLM53_HANDOFF.md).
+Full results and current handoff.
 
 **21 October, 21:30 UTC: final speed screen complete.** Three A/B pairs show stock
 CT **−21.7% code / −21.5% chat at C1**, **+15.1% code / +21.3% chat at C8**, using
@@ -243,7 +243,7 @@ configuration differences and earlier failures remain explicit. This is not a
 compression-only speed comparison or a universal replacement win.
 The 104 timing payloads verify on Mac and have an identical archive on Spark2.
 Both 300-question speculation-off quality screens remain pending/loading.
-[Complete timing, memory and acceptance tables](GLM53_HANDOFF.md).
+Complete timing, memory and acceptance tables.
 
 **21 October, 21:17 UTC:** two final-screen pairs are complete without API errors;
 the last pair is loading. Both pairs show CT slower at C1 and faster at C8.
@@ -251,14 +251,14 @@ At C8, CT runs eight requests while production runs six and queues two under the
 same 6 GiB KV budget. This is a deployment/drafter-policy comparison, not a pure
 compression attribution. C1 CT chat varies between 31.3 and 35.1 tok/s, so no
 repeatability gate is cleared. Both 300-question quality arms remain pending.
-[Exact preliminary values and retained scope](GLM53_HANDOFF.md).
+Exact preliminary values and retained scope.
 
 **21 October, 20:57 UTC:** the final reduced screen is running in
 `deployment-quick-v1` (controller 3571821, watchdog 3572508). The single deployed
 production repeat screen differs in both output IDs and top-20 log probabilities;
 it is not a full-KL measurement and does not clear CT's earlier failures. A0 has
 completed 3/4 cells. Both the frozen preparation and interrupted broad-run evidence
-verify on Mac, with copies on Spark2. [Live handoff](GLM53_HANDOFF.md).
+verify on Mac, with copies on Spark2. Live handoff.
 
 **21 October, 20:54 UTC: final scope reduced by the user.** Broad comparison stopped;
 exact production restored at **20:52:44 UTC**. Its 24 A0 cells and compatibility evidence
@@ -268,7 +268,7 @@ self-repeat (output IDs/top-20 probabilities, not full KL). No further nondeterm
 work, long-context probes or full GSM8K. Existing v9 package and verified 500k commands
 are reused; known failed gates remain. After reporting and verified backups,
 **shut down both Sparks** under the user's explicit instruction. No promotion.
-[Live handoff](GLM53_HANDOFF.md). Earlier entries below are historical.
+Live handoff. Earlier entries below are historical.
 
 **21 October, 20:28 UTC:** the read-only [sparse-indexer audit](GLM53_STOCK_SPARSE_INDEXER_AUDIT.md)
 confirms the ordering mechanism, corrects the GB10 decode dispatch to persistent,
@@ -282,14 +282,12 @@ and allocates **87.20221 / 87.20218 GiB** after initialization. Actual prefix re
 works, but repeated-output identity still fails; prior target KL is not cleared.
 The controller advances to `timing-A-0`; six diagnostic timing pairs and both full
 GSM8K arms remain in progress/pending. No production promotion or speed win is claimed.
-[Live handoff](GLM53_HANDOFF.md).
 
 **21 October, 20:16 UTC:** corrected comparison **is running**, starting with
 500k/prefix-on compatibility. Controller **3243718**, watchdog **3244316**,
 root `deployment-compare-v2`. Six A/B timing pairs and both full GSM8K arms follow;
 production is temporarily paused under exact restoration controls. The packaged
 fix and inputs are committed and backed up on Spark2. No new measurement yet.
-[Live handoff](GLM53_HANDOFF.md).
 
 **21 October, 20:15 UTC:** the drafter fix is integrated into the package.
 `prepare-drafter` and both official-image CPU checks pass on the real checkpoint;
@@ -297,7 +295,7 @@ fix and inputs are committed and backed up on Spark2. No new measurement yet.
 The fresh `deployment-compare-v2` plan starts with corrected 500k/prefix-on
 compatibility, then six timing pairs and full speculation-off GSM8K on both arms.
 No new GPU measurement is claimed yet. Known numerical failures and unavailable
-production optimizations are recorded in the [handoff](GLM53_HANDOFF.md).
+production optimizations are recorded in the handoff.
 
 **Latest, 21 October, 19:56 UTC:** the native DFlash2 zero-acceptance failure is
 fixed in a bounded GPU diagnostic. Twelve existing BF16 convolution weights were
@@ -318,7 +316,7 @@ both full 1,319-question GSM8K arms are deferred. First short-code C1: productio
 accepts 195 draft tokens in 60 rounds versus CT's zero in 255 rounds, explaining
 most of the 4.66 versus 20.47 second gap. This is not a compression-only comparison.
 A bounded native-versus-draft-eager trace is being prepared; no fix is claimed.
-See [the live handoff](GLM53_HANDOFF.md).
+
 
 
 **21 October: matched selected-CT stock profile runs, but DFlash acceptance fails.**
@@ -330,7 +328,7 @@ and **0 accepted out of 3,810 proposals**. Stock startup is functional; useful
 speculative execution is not qualified. Code/explanation repeats also differ.
 V1's observer failure is retained; V2 fixes only that observer. See the
 [profile results](GLM53_STOCK_CT_PROFILE.md) and live restoration state in the
-[handoff](GLM53_HANDOFF.md). The CPU MTP audit finds 870/872 quantization-selector
+handoff. The CPU MTP audit finds 870/872 quantization-selector
 mismatches despite complete source weights, blocking an unmodified MTP comparison.
 Exact original 500k production is restored at **18:14:28 UTC**; no further GPU
 experiment is queued. All 82 retained evidence payloads independently verify on
@@ -352,7 +350,7 @@ the output head; the current recipe uses MXFP8 KDA and a dense output head.
 The earlier **14.877 GiB** whole-model advantage over ModelOpt also included
 quantization/format differences. These are three different measurements, not
 evidence that stock vLLM removed the packing benefit. KDA precision was unchanged
-during the port. See the memory table at the top of the [handoff](GLM53_HANDOFF.md).
+during the port. See the memory table at the top of the handoff.
 Exact original 500k production is restored at **17:14:45 UTC** after V2.
 
 **Serving qualification remains incomplete.** The corrected 12,449-token V7
@@ -365,7 +363,7 @@ recorded events equal. Its retained last row has the same index multiset in a
 different order, followed by different attention output. A causal ordering/replay
 probe is next; no fix, stock speed or long-context pass is claimed. V2's 305 archive
 payloads and exact restoration are independently verified on Mac. No GPU run is
-currently queued. The [handoff](GLM53_HANDOFF.md) retains failures and evidence.
+currently queued. The handoff retains failures and evidence.
 Local checks pass: 1,087 tests / 1 skipped, Ruff and strict core mypy.
 
 **21 October 2026: consolidated outcome and stock-vLLM deployment target.**
@@ -406,7 +404,7 @@ The separate NVFP4 scale-compression branch saved about 6.33 GiB across TP2, but
 its speed/full-model quality qualification remained unresolved. It is an
 alternative branch, not an additional saving in the selected CT configuration.
 
-Evidence: [lossless results](GLM53_LOSSLESS_RUNTIME_HANDOFF.md),
+Evidence: lossless results,
 [native MXFP8 speed and memory](GLM53_KDA_MXFP8_SPEED.md),
 [full GSM8K](GLM53_KDA_MXFP8_GSM8K.md),
 [drafter/depth results](GLM53_PRETRAINED_DRAFTERS.md), and
@@ -626,7 +624,7 @@ from one of eight code prompts, one anchor, so no native speed benefit is proven
 All 84 requests/control checks and 878 million independent feature-bit comparisons
 pass. Native FP8 export changes only `fc.weight` and is not deployed. Original
 500k production is healthy; no GPU trial or further training queued, sealed test
-closed. [Full evidence, limitations and capture-concurrency audit](GLM53_HANDOFF.md).
+closed. Full evidence, limitations and capture-concurrency audit.
 
 **21 October 2026, 11:53 UTC: Modal pilot capture completes; original production restoring.**
 All **84/84 requests** complete, including 64 train and 16 validation captures.
@@ -654,7 +652,7 @@ or automatic promotion. This supersedes the preceding prelaunch status.
 **21 October 2026, 11:37 UTC: bounded Modal pilot preparing.** The user authorizes a short
 64-train/16-validation, FC-only pilot; full training remains held. Both image CPU
 checks and Modal round-trip/mask/gradient checks pass. Production is still online;
-no GPU capture yet. [Protocol and capture-concurrency limits](GLM53_HANDOFF.md).
+no GPU capture yet. Protocol and capture-concurrency limits.
 
 **21 October 2026, 08:35 UTC: CT draft-length screen complete and independently verified.**
 Original production restores healthy at **08:32:34 UTC**, with its exact original
@@ -693,20 +691,20 @@ gives 1.56x chat and 1.73x explanation throughput.
 All 152 retained payloads verify on Mac/Spark2. Five-draft code first-token
 latency is 266 ms, about 21 ms above the bracketed seven-draft baseline.
 Keep training held; profile CT serving overhead and compatible production tuning
-before a broader qualification. [Full evidence, limits and next step](GLM53_HANDOFF.md).
+before a broader qualification. Full evidence, limits and next step.
 
 **21 October 2026, 07:29 UTC: CT draft-length comparison running.**
 All ten CPU preflights pass. Detached controller 1622330 starts CT + Modal FP8
 at seven drafts; 3/5/off/7 follow. Production is temporarily paused under
 watchdog 1622434; original 500k containers restore automatically. No result yet,
-training held and sealed test closed. [Live status and limits](GLM53_HANDOFF.md).
+training held and sealed test closed. Live status and limits.
 
 **21 October 2026, 07:26 UTC: CT-only draft-length screen preparing.**
 The user redirects the next test from production to CT and authorizes unattended
 work. Same CT + Modal FP8 at 7/3/5/off/7 drafts, eight development prompts and six
 cycles per load. CPU checks run on both nodes; production is still online. The
 GPU comparison will use the existing independent restoration watchdog. No
-training, sealed test or promotion. [Current plan and status](GLM53_HANDOFF.md).
+training, sealed test or promotion. Current plan and status.
 
 **21 October 2026, 07:16 UTC: current production has similarly modest acceptance.**
 Same eight development prompts, C1/256 tokens/seven drafts, two production cycles:
@@ -719,7 +717,7 @@ were exact. No serving changes: original 500k production remains healthy.
 The CPU cache audit passes 200 carry checks and narrows native divergence to
 at or before layer 4 pre-convolution QKV at position 92; no inspected rollback
 metadata error. Follow-up GPU trace not queued; training held, sealed closed.
-[Measurements, limits and next trace](GLM53_HANDOFF.md).
+Measurements, limits and next trace.
 
 **21 October 2026, 06:56 UTC: paired trace reviewed; production restored.**
 All eight controls and both GPUs' capture repeats pass; all 406 retained payloads
@@ -729,13 +727,13 @@ recurrent-state boundary is position 87; by 94 layer 4 differs while layer 0 rem
 exact. This narrows the next cache/arithmetic investigation to the intervening
 steps; a specific kernel or compression fault is not proved. Original 500k
 production is healthy. No new GPU experiment is queued; training held, sealed
-closed. [Result and next targeted check](GLM53_HANDOFF.md).
+closed. Result and next targeted check.
 
 **21 October 2026, 06:41 UTC: first trace arm complete, second loading.**
 All four Inco controls reproduce the frozen 64-token output and matching
 speculative counters. Both ranks retain 34 frames each. Modal BF16 is now loading;
 paired tensor review and root-cause analysis are pending. Production is temporarily
-paused under the restoration watchdog. [Latest evidence](GLM53_HANDOFF.md).
+paused under the restoration watchdog. Latest evidence.
 
 **21 October 2026, 06:35 UTC: speed baseline repeat stopped; targeted trace loads first arm.**
 All three first loads complete 48 requests with exact within-arm repeats. Modal
@@ -747,7 +745,7 @@ launcher PID 1180511 passes CPU preflight; controller 1186244 now loads the
 first arm under watchdog 1186334. Production is temporarily paused again;
 no GPU trace result yet. Read `after-priority-status.json`; old queue PID 987188
 is stopped. Training remains stopped and sealed test closed.
-[Evidence and current handoff](GLM53_HANDOFF.md).
+Evidence and current handoff.
 
 **21 October 2026, 06:19 UTC: targeted native-decision trace queued.**
 Detached Spark PID 987188 waits for the current timing run and verified production
@@ -757,7 +755,7 @@ Both hosts verify 46 frozen sources; full tests, Ruff and mypy pass. BF16 comple
 48/48 requests with exact repeats, code +2.39% versus the first baseline, but
 7/8 outputs differ: timing gain remains unqualified. FP8 is starting; baseline
 reload follows. Capture/training stopped, sealed test closed.
-[Current diagnostic and evidence](GLM53_HANDOFF.md).
+Current diagnostic and evidence.
 
 **21 October 2026, 06:09 UTC: Modal BF16 serving works, but output identity fails.**
 Baseline completes 48/48 requests with exact repeats; Modal BF16 completes 16/48.
@@ -766,7 +764,7 @@ confounding the speed comparison. The completed Modal second round repeats its
 own outputs/counters exactly. No candidate qualification or quality verdict;
 FP8 and baseline reload are pending. Target remains CT with MXFP8 KDA. Capture
 and training are stopped; production temporarily paused under the restoring
-controller. [Evidence and limits](GLM53_HANDOFF.md).
+controller. Evidence and limits.
 
 **21 October 2026: full capture stopped at the user’s request; pretrained test moved forward.**
 Capture ends at 1,095 prompts; original production restores healthy at 05:46:55 UTC,
@@ -792,14 +790,13 @@ no error. The 12-thread CPU replay preserves all 32 update metrics and four save
 checkpoints exactly. An interleaved step screen falls from 2.483 to 1.805 seconds;
 full-corpus runtime remains unmeasured. Continuation v2 waits for complete verified
 capture and production restoration. Estimated CPU training is now 3–4 hours;
-serving acceptance/speed remain unqualified. [Current handoff](GLM53_HANDOFF.md).
+serving acceptance/speed remain unqualified. Current handoff.
 
 **21 October 2026, 04:53 UTC: full capture continues; 576 prompts independently verified.**
 Nine completed batches have identical accepted payloads on both GPUs; NumPy
 checks cover 7.05 billion BF16 elements with zero differences. Both repeat controls
 so far pass. Production is temporarily paused; CPU training waits for verified
 completion and restoration. No new drafter speed gain is established.
-[Current handoff](GLM53_HANDOFF.md).
 
 **20 October 2026, 22:37 UTC: the combined ordering fix passes the long-prompt C1 repeat check.**
 All six requests match in tokens/counters; all 12 capture comparisons have exact
@@ -808,7 +805,7 @@ independently verify on Mac/Spark2. Decode sorting adds about 0.0155 ms per inde
 call in stable component timings (19/24 controls pass); serving cost is unmeasured.
 Original 500,000-context production is restored. Next is the eight-prompt capture
 smoke before full 4,000/200 capture/training; sealed test remains closed.
-[Evidence, limits and next step](GLM53_HANDOFF.md).
+Evidence, limits and next step.
 
 **20 October 2026, 21:37 UTC:** all 12 independently reviewed comparisons on both
 GPUs show identical sparse-prefill scoring inputs, consumed scores and selected
@@ -818,7 +815,7 @@ not yet tested. The repeat gate still fails. Original production is restored
 with 500,000 context; all 416 evidence payloads verify on Mac/Spark2. No experiment
 is running. Full 4,000/200 capture and training remain gated; the old drafter
 pilot is speed-neutral and unqualified, and the sealed test remains closed.
-[Current evidence and restoration status](GLM53_HANDOFF.md).
+Current evidence and restoration status.
 
 **20 October 2026, 20:07 UTC:** our wider expert-padding component check passes
 all 36 fixtures through 128 rows. Independent review finds 54/100 native
@@ -828,7 +825,7 @@ Stable component overhead varies from near zero to 8.02% with routing, so this
 is not a serving-overhead qualification. Production is restored with 500,000
 context; the runtime limit stays at 16 rows. Fresh C1 features and full
 4,000-prompt drafter training remain next; the sealed test stays closed.
-See [the wider result and timing table](GLM53_HANDOFF.md).
+See the wider result and timing table.
 
 **20 October 2026, 19:23:01 UTC:** the eight-prompt, 144-request development
 comparison completes with identical output tokens across original/adapted/original
@@ -839,7 +836,7 @@ Both arms use the same CT MXFP8 target and expert padding. This does not establi
 the ≥8% code goal or padding overhead; the pilot remains unqualified.
 Original production is restored and healthy with **500,000 context**.
 All 93 evidence payloads independently verify on Mac/Spark2; no experiment is running.
-See [the result and TTFT table](GLM53_HANDOFF.md).
+See the result and TTFT table.
 
 **20 October: direction updated at the user's request.** The DeepInfer-inspired
 confidence experiment and its trainer hook are removed. It was never enabled
@@ -850,7 +847,7 @@ four saved checkpoints match the original exactly. Wider component GPU checks
 now also pass. Fresh target-feature capture precedes full 4,000-prompt training;
 C8/C16 full-model and serving-cost qualification remains a separate gate.
 Existing gates are unchanged; sealed evaluation remains closed.
-See [the current handoff](GLM53_HANDOFF.md).
+
 
 **Earlier, 20 October 2026, 18:18:32 UTC:** the full-model check passes and original
 production is restored with 500,000 context. On one development prompt, the
@@ -864,7 +861,7 @@ passes the original 440/448 stress case; V3 timing controls remain 14/16 with
 two failures retained at 2%. C8/C16 coverage and full 4,000-prompt training remain
 outstanding. The adapted drafter remains unqualified and the sealed test closed.
 See the current
-[handoff checkpoint](GLM53_HANDOFF.md). Older dated checkpoints below are historical.
+handoff checkpoint. Older dated checkpoints below are historical.
 
 <!-- DRAFTER_EXPERT_REPLAY_BEGIN -->
 **20 October 2026, 17:27:12 UTC: direct expert replay complete; original production restored.**
@@ -1043,7 +1040,7 @@ KDA from BF16 to MXFP8 at runtime; source files remain unchanged. The earlier
 [same-CT compression off/on test](GLM53_MXFP4_SERVING_V3.md) matches all 24 paired
 token sequences and measured speculation counters. Later CT-versus-ModelOpt
 feature differences do not isolate a compression effect. See the
-[handoff variant table](GLM53_HANDOFF.md) before interpreting drafter adaptation.
+handoff variant table before interpreting drafter adaptation.
 
 **Current continuation:** preserve the fixed CT MXFP8 target and trace the first
 candidate/original verification divergence on identical histories. Training,
@@ -1323,7 +1320,7 @@ No new GPU experiment or trace implementation has started. The user is
 reviewing that direction. The requested known-mHC test, speculation-off or
 matched-layout quality comparison, and six-plus interleaved speed trials with
 telemetry remain unrun. Future experiment rollback must target original
-production. See the [current handoff](GLM53_HANDOFF.md) for exact pending scope
+production. See the current handoff for exact pending scope
 and the untested selective dense-KDA MXFP4 alternative.
 
 <!-- NVFP4_MOE_STATUS_BEGIN -->
@@ -1672,7 +1669,7 @@ Older checkpoint statements below are historical and superseded where they
 describe paused/running work or an unlaunched admission follow-up.
 
 Updated **19 October 2026, 07:43 UTC**. All current measurements, independent reviews and
-retention are finished. [Handoff](GLM53_HANDOFF.md) / [full result](GLM53_FP32_INPUT_MODEL.md).
+retention are finished. Handoff / [full result](GLM53_FP32_INPUT_MODEL.md).
 
 **Keep the preceding warmed exact16 candidate. The new input-FP32 route fails
 C16 qualification:** KL **1.601802484e-5 > 1e-5**, reproducible in all ten C16
@@ -1712,7 +1709,7 @@ zero retained replay growth; a third stream is rejected. Both GPU jobs, retentio
 and exact original-service restoration are complete; the awake lease is released.
 This adds no full-model quality/speed or CPU-saving result. The 216 prior exact-word
 failures and two input timing repeat failures remain failed. Fresh matched model
-qualification is next, after evidence-storage preparation. See the [handoff](GLM53_HANDOFF.md).
+qualification is next, after evidence-storage preparation.
 
 **18 October 2026, 22:31 UTC speed follow-up:** FP32 timing independently verifies on
 Spark/Mac (**246 payloads / 220 sources / 884,736 events**). Input split 2 saves
@@ -1722,7 +1719,7 @@ the broad screen fails 78/288 conditions. Prior 216 exact-word failures remain
 failed. No new full-model quality/speed or CPU-saving claim is made. GLM is
 restored healthy, all jobs/retention complete and the owned awake lease released.
 Next is a bounded input-only split-2 model probe under unchanged KL/NLL limits.
-See the [handoff](GLM53_HANDOFF.md) for measurements, controls and provenance.
+
 
 **18 October 22:12 UTC precision follow-up:** FP32 split partials are independently
 verified on Spark/Mac (2,227 payloads / 217 sources). All 576 comparisons pass
@@ -1732,7 +1729,7 @@ lower relative error than the old BF16-partial route. Source/storage, guards,
 repeats and graph checks pass. No speed, model-KL or CPU-saving result is measured,
 and no route is promoted. GLM is restored healthy; all jobs and retention are
 complete. Next comes paired component timing, then any justified exploratory
-model test under the unchanged KL/NLL limits. See the [handoff](GLM53_HANDOFF.md).
+model test under the unchanged KL/NLL limits.
 
 **18 October 21:52 UTC follow-up:** dense-output replacement is rejected by its
 frozen component screen. Spark/Mac independently verify **270 payloads / 213
@@ -1744,7 +1741,7 @@ are not serving-speed results. No dense-only policy is integrated. The warmed
 exact16 candidate below remains current. GLM is restored healthy, all jobs and
 retention are complete, and the owned awake lease is released. An FP32 split-K
 partial-storage idea is source-audited only; no new kernel result exists.
-See the [handoff](GLM53_HANDOFF.md) for evidence and limitations.
+
 
 **Verified full-model result, 18 October 21:10 UTC:** startup warming works in
 the measured workload. All **1,612 payloads / 207 sources / 12 worker traces**
@@ -2031,7 +2028,6 @@ uncertainty. Matching shapes do not prove matching routed activations.
 - [Native MTP compatibility findings and pilot requirements](GLM53_MTP_PILOT.md)
 - [Decode boundary and isolated MLA diagnostics](GLM53_DECODE_STATE_DIAGNOSTIC.md)
 - [BF16 kernel measurements and rejected variants](GLM53_BF16_KERNEL_DIAGNOSTIC.md)
-- [Detailed continuation handoff](GLM53_LOSSLESS_RUNTIME_HANDOFF.md)
 
 Spark experiment root:
 `/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1`.

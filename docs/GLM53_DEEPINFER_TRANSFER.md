@@ -11,7 +11,7 @@ the reviewed source hashes and license records as provenance history. The
 following design notes describe the withdrawn experiment, not current code or
 an active qualification plan. Its former source is retained in Git through
 `4d8880e`. Our pre-existing Marlin padding and context-projection work continue;
-see [the current handoff](GLM53_HANDOFF.md).
+
 
 ## Pinned upstream evidence
 

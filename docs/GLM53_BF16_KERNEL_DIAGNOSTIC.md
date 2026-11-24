@@ -16,7 +16,7 @@ strict mypy and the full CPU protocol simulation pass. It measures C1/C8/C16
 quality, ordinary throughput/TTFT, CPU/CUDA memory and actual kernel traces with
 all original gates retained. No new model result is claimed. Verified relocation
 of completed evidence provides the required disk reserve; model inputs and
-canonical archives are unchanged. See the [handoff](GLM53_HANDOFF.md).
+canonical archives are unchanged.
 
 **18 October 2026, 22:50 UTC integration follow-up:** input-only FP32 split 2 passes
 the independently verified GPU integration fixture (**434 payloads / 227
@@ -26,7 +26,7 @@ zero retained replay growth; a third stream is rejected. Both GPU jobs, retentio
 and exact original-service restoration are complete; the awake lease is released.
 This adds no full-model quality/speed or CPU-saving result. The 216 prior exact-word
 failures and two input timing repeat failures remain failed. Fresh matched model
-qualification is next, after evidence-storage preparation. See the [handoff](GLM53_HANDOFF.md).
+qualification is next, after evidence-storage preparation.
 
 **18 October 2026, 22:31 UTC speed follow-up:** FP32 timing independently verifies on
 Spark/Mac (**246 payloads / 220 sources / 884,736 events**). Input split 2 saves
@@ -36,7 +36,7 @@ the broad screen fails 78/288 conditions. Prior 216 exact-word failures remain
 failed. No new full-model quality/speed or CPU-saving claim is made. GLM is
 restored healthy, all jobs/retention complete and the owned awake lease released.
 Next is a bounded input-only split-2 model probe under unchanged KL/NLL limits.
-See the [handoff](GLM53_HANDOFF.md) for measurements, controls and provenance.
+
 
 **18 October 22:12 UTC precision follow-up:** FP32 split partials are independently
 verified on Spark/Mac (2,227 payloads / 217 sources). All 576 comparisons pass
@@ -46,7 +46,7 @@ lower relative error than the old BF16-partial route. Source/storage, guards,
 repeats and graph checks pass. No speed, model-KL or CPU-saving result is measured,
 and no route is promoted. GLM is restored healthy; all jobs and retention are
 complete. Next comes paired component timing, then any justified exploratory
-model test under the unchanged KL/NLL limits. See the [handoff](GLM53_HANDOFF.md).
+model test under the unchanged KL/NLL limits.
 
 **Follow-up:** the compact N8 candidate `n8compactv2` preserves every tested
 output bit and removes the input residency limit, but is about 9–12% slower
@@ -292,16 +292,8 @@ Spark2 at `ROOT/bf16-kernels-bf16kernelsv2/results/` and copied to the head's
 | `kernels.ncu-rep` | 13,543,546 | `19718f88549d0b9923390422f836df21552330dae031f1d5ed0432ecb75c48be` |
 | `ncu-labeled.csv` | 134,299 | `dd6302363b560a84959e65886e8b1fa8e66ddbcc3ba9c3cc85b522a04b0fa122` |
 
-Reproduce the CPU-only review on Spark1:
-
-```bash
-MXWAVE_RUN_ROOT=/home/kirya/local-spark/experiments/glm53-mxfp4-audit-2026-10-15/full-model-v1
-MXWAVE_BF16_RUN="$MXWAVE_RUN_ROOT/bf16-kernels-bf16kernelsv2"
-python3 -S "$MXWAVE_RUN_ROOT/agent-handoff-2026-10-16/analysis/bf16kernelsv2/analyze_bf16_kernels.py" \
-  --timing "$MXWAVE_BF16_RUN/evidence/timing.json" \
-  --csv "$MXWAVE_BF16_RUN/evidence/ncu-labeled.csv" \
-  --output /tmp/glm53-bf16-kernels-review.json
-```
+The CPU-only review was run on Spark1 from the retained timing and Nsight CSV
+evidence. The experiment scripts for this study are not included in this branch.
 
 The first `bf16kernelsv1` controller failed a helper import before creating
 state or stopping GLM. Its failure log is retained. The dependency was removed

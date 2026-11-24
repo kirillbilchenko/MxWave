@@ -129,3 +129,15 @@ def test_builder_rejects_incomplete_static_stage_policy_before_reading_sources(p
     builder = importlib.import_module("build_moe")
     with pytest.raises(ValueError, match="requires nibble staging"):
         builder.stage(Path("absent"), Path("unused"), ("sparse",), static_nibble_stage=True)
+
+
+def test_affine_native_policy_rejects_nonconsecutive_palettes_before_cuda() -> None:
+    import torch
+
+    runtime = importlib.import_module("moe_runtime")
+    native = runtime.NativeMoe.__new__(runtime.NativeMoe)
+    native.compressed, native.encoding, native.affine_only = True, "sparse_palette", True
+    empty = torch.empty(0)
+    packed = runtime.PackedScales((1, 2, 64), empty, empty, empty, "sparse_palette", False)
+    with pytest.raises(ValueError, match="verified consecutive"):
+        native.bind(torch.empty((1, 64)), empty, packed, None, (), empty, 1, 8, False, (64, 128, 3))

@@ -98,7 +98,7 @@ both arms; that fresh C1 comparison has not launched.
 
 The complete authored fixture and frozen source are retained locally at
 `/private/tmp/mxwave-sparse-quality-v2/`; see the
-[current handoff](GLM53_HANDOFF.md) for live status, source hashes, evidence
+current handoff for live status, source hashes, evidence
 receipts, the explicit case-count metadata correction and restoration status.
 The fixture itself is reproducible without model weights using its synthetic
 cases. Its real-model operands and native implementation snapshots remain
@@ -108,9 +108,7 @@ Before filing, confirm the upstream implementation/version and appropriate
 owner. Do not claim the remaining stock C8 failure is fixed. No upstream kernel
 implementation is copied into this repository.
 
-A standalone synthetic reproducer is prepared at
-`integrations/glm53_mxfp4/reproduce_sparse_compaction.py`, alongside the padding
-adapter. It uses the same synthetic construction as the completed fixture.
-This standalone script is CPU syntax checked; it has not separately run on a GPU.
-Run it in the pinned runtime with:
-`python reproduce_sparse_compaction.py --rows 1 8 16 --runs 100`.
+A standalone synthetic reproducer was prepared using the same synthetic
+construction as the completed fixture. It was CPU syntax checked but not
+separately run on a GPU. The experiment scripts for this study are not included
+in this branch.

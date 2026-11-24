@@ -146,7 +146,7 @@ Remote root on both nodes:
 - `rank0/`: final controls, both-arm telemetry, immutable preparation, logs,
   controller state and independent `final-verification.json`.
 - `rank0/traces-{A,B}` and `rank1/traces-{A,B}`: native trace payloads.
-- Reproducer: `integrations/glm53_mxfp4/analyze_c1_runtime.py`.
+- Reproducer: `analyze_c1_runtime.py` (not included in this branch).
   Eight focused tests pass, including fragmented annotations, missing invocation
   exclusion, incomplete graph rejection, head shape binding and overlap accounting.
   Repository Ruff and strict core mypy pass. The full suite passed before launch

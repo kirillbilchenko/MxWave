@@ -11,7 +11,7 @@ tok/s and 9.367 GiB less allocation; allocation alone does not measure traffic.
 **21:33 UTC:** 560 payloads and 210 source bindings independently verify on Spark
 and Mac. Both GPUs complete 22 operations / 28 NCU kernel records. All exact
 output and guard checks pass. The archive, offline export recovery and unchanged
-failed repeat controls are documented in the [handoff](GLM53_HANDOFF.md).
+failed repeat controls are documented in the handoff.
 
 Graph replay with 128-MiB cache pressure gives these descriptive logical rates:
 

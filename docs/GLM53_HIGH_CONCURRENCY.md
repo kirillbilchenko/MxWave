@@ -156,7 +156,7 @@ All four stock C8/C16 self-repeat checks fail the unchanged KL1e-5 floor
 (1.04076e-4). All generated IDs and conditioning match. The retry preserves
 these failures and numerical limits.
 
-The local [device attribution tool](../integrations/glm53_mxfp4/analyze_graph_reconstruction.py)
+The local device attribution tool (`analyze_graph_reconstruction.py`)
 follows device correlation IDs to CUDA runtime/driver calls contained by CPU
 model annotations on the same PID/TID. It keeps unassigned events explicit
 and does not associate a GPU kernel with a nearby CPU interval by timestamp.
@@ -238,8 +238,5 @@ pause. The collector waits for exact original identities and HTTP200 before
 copying source/results/logs and both-rank traces and running the CPU verifier.
 
 Local continuation: `/private/tmp/mxwave-high-concurrency-v1/`.
-The [launcher](../integrations/glm53_mxfp4/run_high_concurrency.py),
-[measurement](../integrations/glm53_mxfp4/measure_high_concurrency.py),
-[analysis](../integrations/glm53_mxfp4/analyze_high_concurrency.py) and
-[verifier](../integrations/glm53_mxfp4/verify_high_concurrency.py) retain the
-full reproducible protocol. Full local tests, Ruff and strict core mypy pass.
+The launcher, measurement, analysis and verifier scripts retained the full
+reproducible protocol; they are not included in this branch. Full local tests, Ruff and strict core mypy pass.

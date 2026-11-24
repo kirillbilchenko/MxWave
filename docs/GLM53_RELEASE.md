@@ -55,7 +55,7 @@ Loaded allocation: **87.202210 / 87.202180 GiB per CT rank** including drafter,
 KV and graphs. Lossless packing saves **6.94113 GiB across TP2** in resident
 scale/embedding storage after expert scratch space. This is not a newly measured
 whole-service allocation delta against production. Full ranges and retained
-evidence are in the dated [handoff](GLM53_HANDOFF.md).
+evidence are in the dated handoff.
 
 ## Frozen live setup: a separate comparison
 

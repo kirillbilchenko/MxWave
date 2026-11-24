@@ -27,10 +27,9 @@ def policy(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
 
 @pytest.fixture
 def config() -> dict:
-    """Use the reviewed public source metadata, not guessed layer-name patterns."""
-    root = Path(__file__).parents[1] / "benchmarks/glm53-flash-hf-audit-2026-10-15"
-    return json.loads((root / "INCModel3--GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound/"
-                      "config.json").read_bytes())
+    """Use the metadata keys of the reviewed public source config, not guessed name patterns."""
+    path = Path(__file__).parent / "fixtures" / "glm53_flash_kda_config.json"
+    return json.loads(path.read_bytes())
 
 
 def test_exact_kda_paths_and_tp2_shapes(policy: ModuleType, config: dict) -> None:

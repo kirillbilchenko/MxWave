@@ -15,13 +15,13 @@ The [earlier same-CT off/on test](GLM53_MXFP4_SERVING_V3.md) found all 24 paired
 token sequences and measured speculation counters identical. The later feature
 differences therefore do not establish that lossless compression caused an
 acceptance loss or necessitates drafter retraining. Keep target adaptation and
-compression correctness separate; the [handoff](GLM53_HANDOFF.md) records variants.
+compression correctness separate; the handoff records variants.
 
 **Continuation objective, 20 October 2026:** the user wants CT with a properly
 adapted drafter. The small pilot below failed; broader adaptation remains an
 active workstream. Start with the exact FP8 DFlash2 training/export compatibility
 audit, then fresh-data adaptation and native serving validation as recorded in
-the [handoff](GLM53_HANDOFF.md). No new training run has launched at this update.
+the handoff. No new training run has launched at this update.
 
 <!-- SELECTOR_CALIBRATION_LIVE_BEGIN -->
 **20 October 2026: selector-only calibration pilot complete; held-out gate failed.**
