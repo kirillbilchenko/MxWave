@@ -1,0 +1,48 @@
+MxWave GLM-5.3 runtime bundle
+
+The Python wrappers and exact scale/BF16 row codecs are MxWave code under the
+repository's Apache-2.0 license. Their source origins are recorded in
+source-provenance.json. No DeepInfer implementation is included.
+
+The externally prepared native libraries contain adaptations of:
+
+1. vllm-project/vllm, revision db9527a46873454610df6dbedf79a36d6bf1a7f6.
+   License: Apache-2.0, supplied as vllm-Marlin-LICENSE.
+   Libraries: libmxwave_moe_raw.so and libmxwave_moe_sparse.so.
+   MxWave adds C ABI launch plumbing and lossless scale decoding/staging to the
+   grouped Marlin MoE kernel. The source retains upstream notices. Exact inputs
+   and changes are recorded in integrations/glm53_mxfp4/moe_sources.json,
+   build_moe.py, and CONTRIBUTING.md in the MxWave source repository.
+   https://github.com/vllm-project/vllm/tree/db9527a46873454610df6dbedf79a36d6bf1a7f6
+
+2. xxyux/ZipServ, revision f69cea959005222bed64fc847bc3fcdcca32a904.
+   License: Apache-2.0, supplied as ZipServ-LICENSE.
+   Library: libmxwave_kda_zipserv.so (used here for the vocabulary head).
+   MxWave adds a stream-aware C ABI bridge and safe tensor handling, removes an
+   unused CUDA-13-incompatible include, and fixes layer-specific shared-memory
+   sizing. The external source build retains upstream notices.
+   https://github.com/xxyux/ZipServ/tree/f69cea959005222bed64fc847bc3fcdcca32a904
+
+The upstream vLLM 0.32.0 Python installation is a separate dependency. This
+package does not distribute a patched vLLM source tree. Its own runtime hooks
+modify behavior only in explicitly opted-in processes.
+
+Model inputs are downloaded separately, not included in the wheel/native archive:
+
+3. Z.AI GLM-5.3-Flash and Intel AutoRound's CT checkpoint:
+   INCModel3/GLM-5.3-Flash-MXFP4-Mixed-CT-AutoRound at
+   35d1b0d5cb4a0db075fd2749c897e970dc15bfa5.
+   MIT license, Copyright (c) 2026 Z.AI, supplied as GLM-5.3-Flash-LICENSE.
+   MxWave does not claim authorship of the model or the AutoRound quantization.
+
+4. Modal's GLM-5.3-Flash-DFlash at
+   dae6d319510889a7f1ac5242d5b7fb2d5d95eb05.
+   Its distributed MIT license is supplied as Modal-DFlash-LICENSE.
+   MxWave's independently authored converter quantizes 42 backbone tensors from
+   BF16 to block FP8 and retains the other 54 tensors exactly. This is lossy
+   conversion, not drafter training. A subsequent metadata-only correction
+   preserves its BF16 convolution layers when loading with vLLM 0.32.0.
+
+The public checkpoint revisions and full target-shard hashes are recorded in
+checkpoints.json. The native builders and source provenance are shipped in the
+tagged MxWave source under integrations/glm53_mxfp4 and deployment/glm53/native.
