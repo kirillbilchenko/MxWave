@@ -35,30 +35,83 @@ class PackedScales:
                    for t in (self.records, self.exceptions, self.descriptor))
 
 
+def sparse_cpu_pack(raw: Any) -> Any:
+    """Pack flat U8 scale bytes into exact sparse-palette buffers on the CPU."""
+    from scale_tiles import pack_sparse
+
+    return pack_sparse(raw)
+
+
+def sparse_cpu_verify(packed: Any, raw: Any) -> None:
+    """Prove on the CPU that the sparse buffers restore the source bytes."""
+    import numpy as np
+    from scale_tiles import unpack_sparse
+
+    if not np.array_equal(unpack_sparse(packed), raw):
+        raise ValueError("Sparse scale CPU round-trip changed bytes")
+
+
+def sparse_stage(raw_min: int, raw_max: int, descriptor: int) -> tuple[int, int | None]:
+    """Staging policy and nibble base from the source value range alone.
+
+    sparse_stage_descriptor reads only the minimum and maximum of the source bytes, so a
+    two-value stand-in with the same range yields exactly the same result.
+    """
+    import numpy as np
+    from moe_scale_policy import sparse_stage_descriptor
+
+    if not 0 <= raw_min <= raw_max <= 255:
+        raise ValueError("Invalid source scale range")
+    return sparse_stage_descriptor(np.array([raw_min, raw_max] * 8, dtype=np.uint8), descriptor)
+
+
+def sparse_upload(
+    selectors: Any, exceptions: Any, descriptor: int, shape: tuple[int, ...],
+    device: torch.device, policy: int, base: int | None,
+) -> PackedScales:
+    """Move sparse buffers to the device and build a descriptor over the new pointers."""
+    import numpy as np
+
+    records = torch.from_numpy(selectors.view(np.int32)).to(device)
+    exceptions_gpu = torch.from_numpy(exceptions).to(device)
+    table = torch.tensor([records.data_ptr(), exceptions_gpu.data_ptr(), policy],
+                         dtype=torch.int64, device=device)
+    return PackedScales(shape, records, exceptions_gpu, table, "sparse_palette",
+                        bool(descriptor & (1 << 24)), True, base)
+
+
+def sparse_upload_ranged(
+    selectors: Any, exceptions: Any, descriptor: int, shape: tuple[int, ...],
+    device: torch.device, raw_min: int, raw_max: int,
+) -> PackedScales:
+    """sparse_upload with the staging policy derived from the source value range."""
+    policy, base = sparse_stage(raw_min, raw_max, descriptor)
+    return sparse_upload(selectors, exceptions, descriptor, shape, device, policy, base)
+
+
+def check_scales(scales: torch.Tensor) -> None:
+    """Reject anything but contiguous 3D CUDA E8M0 scales in whole 16-byte vectors."""
+    if (scales.device.type != "cuda" or scales.ndim != 3 or not scales.is_contiguous()
+            or scales.dtype != torch.float8_e8m0fnu or scales.numel() % 16):
+        raise ValueError("Expected contiguous 3D CUDA E8M0 scales in whole 16-byte vectors")
+
+
 def pack_scales(
     scales: torch.Tensor, codec_path: Path, *, encoding: str = "records"
 ) -> PackedScales:
     """Pack on CPU and retain only the exact fixed records on the original GPU."""
-    if (scales.device.type != "cuda" or scales.ndim != 3 or not scales.is_contiguous()
-            or scales.dtype != torch.float8_e8m0fnu or scales.numel() % 16):
-        raise ValueError("Expected contiguous 3D CUDA E8M0 scales in whole 16-byte vectors")
+    check_scales(scales)
     import numpy as np
 
     if encoding == "sparse_palette":
         from moe_scale_policy import sparse_stage_descriptor
-        from scale_tiles import pack_sparse, unpack_sparse
 
         raw = scales.view(torch.uint8).cpu().numpy().reshape(-1)
-        packed = pack_sparse(raw)
-        if not np.array_equal(unpack_sparse(packed), raw):
-            raise ValueError("Sparse scale CPU round-trip changed bytes")
-        records = torch.from_numpy(packed.selectors.view(np.int32)).to(scales.device)
-        exceptions = torch.from_numpy(packed.exceptions).to(scales.device)
+        packed = sparse_cpu_pack(raw)
+        sparse_cpu_verify(packed, raw)
         policy, base = sparse_stage_descriptor(raw, packed.descriptor)
-        descriptor = torch.tensor([records.data_ptr(), exceptions.data_ptr(), policy],
-                                  dtype=torch.int64, device=scales.device)
-        return PackedScales(tuple(scales.shape), records, exceptions, descriptor, encoding,
-                            bool(packed.descriptor & (1 << 24)), True, base)
+        return sparse_upload(packed.selectors, packed.exceptions, packed.descriptor,
+                             tuple(scales.shape), scales.device, policy, base)
     if encoding in ("nibbles", "aligned_nibbles"):
         raw = scales.view(torch.uint8).cpu().numpy().reshape(-1)
         if raw.size == 0:
