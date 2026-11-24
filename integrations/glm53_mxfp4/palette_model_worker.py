@@ -7,6 +7,8 @@ import os
 from typing import Any
 
 import model_plugin
+import moe_runtime
+import scale_cache
 import torch
 from combined_worker import CombinedWorker
 
@@ -21,6 +23,11 @@ def _palette_pack(
     """Hash every actual source scale group and validate policy before the bare dispatcher."""
     if encoding != "aligned_nibbles":
         return _original_pack(scales, *args, encoding=encoding, **kwargs)
+    if os.environ.get("MXWAVE_PALETTE_MODEL") == "1":
+        if scale_cache.active():
+            return _instrumented_pack(scales, *args, **kwargs)
+    elif scale_cache.cache_dir() is not None:
+        scale_cache.note_inactive()
     source_sha = hashlib.sha256(scales.view(torch.uint8).cpu().numpy()).hexdigest()
     _source_scales.append({"shape": list(scales.shape), "sha256": source_sha})
     native = model_plugin.native(1)
@@ -30,6 +37,39 @@ def _palette_pack(
         encoding = "sparse_palette"
     packed = _original_pack(scales, *args, encoding=encoding, **kwargs)
     if native.affine_only and not packed.affine_palette:
+        raise ValueError("Nonconsecutive palette requires the exact raw fallback")
+    _packed_sources[id(packed)] = source_sha
+    return packed
+
+
+def _instrumented_pack(scales: torch.Tensor, *args: Any, **kwargs: Any) -> Any:
+    """Opt-in timed and/or cached variant of the sparse-palette path above."""
+    retry = scale_cache.retry_index()
+    index = len(_source_scales) if retry is None else retry
+
+    def register(sha: str) -> None:
+        """Record the live-byte sha before anything that can raise, as the baseline does."""
+        entry = {"shape": list(scales.shape), "sha256": sha}
+        if retry is None:
+            _source_scales.append(entry)
+        else:
+            _source_scales[retry] = entry
+            _packed_sources.pop(scale_cache.pop_stale_id(), None)
+
+    native = model_plugin.native(1)
+    try:
+        if native.encoding != "sparse_palette":
+            raise RuntimeError("Palette model was given the wrong native consumer")
+        moe_runtime.check_scales(scales)
+    except (RuntimeError, ValueError):
+        register(hashlib.sha256(scales.view(torch.uint8).cpu().numpy()).hexdigest())
+        raise
+    packed, source_sha = scale_cache.pack_group(
+        scales, index, pack=moe_runtime.sparse_cpu_pack,
+        verify=moe_runtime.sparse_cpu_verify, upload=moe_runtime.sparse_upload_ranged,
+        on_sha=register)
+    if native.affine_only and not packed.affine_palette:
+        scale_cache.forget(packed)
         raise ValueError("Nonconsecutive palette requires the exact raw fallback")
     _packed_sources[id(packed)] = source_sha
     return packed

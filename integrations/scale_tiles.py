@@ -158,6 +158,28 @@ def choose(raw: U8) -> ScaleTiles:
     return min(candidates, key=lambda candidate: candidate.allocated_bytes())
 
 
+def sparse_descriptor(palette: tuple[int, int, int]) -> int:
+    """Encode a palette plus its affine and alignment flags (the single source of truth)."""
+    first, second, third = palette
+    affine = second == first + 1 and third == first + 2
+    return (first | second << 8 | third << 16 | int(affine) << 24
+            | int(affine and first % 4 == 0) << 25)
+
+
+def check_sparse_structure(selectors: U32, exception_count: int) -> bool:
+    """Cheap exact check of the escape invariants unpack_sparse enforces on selectors.
+
+    Escaped words (top two bits 11) must index exceptions 0..n-1 in order with n equal to
+    exception_count, and every other word must hold no 2-bit code 3. Returns False if violated.
+    """
+    escaped = selectors >> 30 == 3
+    if np.any(selectors[~escaped] & (selectors[~escaped] >> 1) & 0x55555555):
+        return False
+    indices = selectors[escaped] & 0x3fffffff
+    return (len(indices) == exception_count
+            and bool(np.array_equal(indices, np.arange(exception_count, dtype=np.uint32))))
+
+
 @dataclass(frozen=True)
 class SparseScales:
     """Two-bit selectors or a tagged direct index into an exact 16-byte exception vector."""
@@ -170,10 +192,7 @@ class SparseScales:
     @property
     def descriptor(self) -> int:
         """Encode a source-selected palette plus verified affine/alignment fast-path flags."""
-        first, second, third = self.palette
-        affine = second == first + 1 and third == first + 2
-        return (first | second << 8 | third << 16 | int(affine) << 24
-                | int(affine and first % 4 == 0) << 25)
+        return sparse_descriptor(self.palette)
 
     @property
     def retained_bytes(self) -> int:

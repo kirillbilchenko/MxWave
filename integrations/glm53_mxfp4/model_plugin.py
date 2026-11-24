@@ -9,10 +9,12 @@ from __future__ import annotations
 import functools
 import importlib
 import os
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import scale_cache
 import torch
 from moe_runtime import NativeMoe, pack_scales
 
@@ -151,10 +153,36 @@ def prepare_layer(method: Any, layer: torch.nn.Module, mode: str) -> None:
                 record["fallback"] = str(exc)
                 entry["scales"].append(record)
                 continue
+            timing = scale_cache.timing_enabled()
+            if timing:
+                scale_cache.sync()
+            start = time.perf_counter()
             decoded = native(1).decode(packed)
-            if not torch.equal(decoded, raw.view(torch.uint8)):
+            exact = torch.equal(decoded, raw.view(torch.uint8))
+            cached = scale_cache.hit_index(packed)
+            if not exact and cached is not None:
+                # A cached group that fails the GPU proof is dropped and rebuilt from the live bytes.
+                scale_cache.invalidate(packed)
+                del decoded, packed
+                try:
+                    with scale_cache.retry_uncached(cached):
+                        packed = pack_scales(raw, Path(os.environ["MXWAVE_MOE_RECORD_CODEC"]),
+                                             encoding="aligned_nibbles")
+                except ValueError as exc:
+                    record["fallback"] = str(exc)
+                    entry["scales"].append(record)
+                    continue
+                decoded = native(1).decode(packed)
+                exact = torch.equal(decoded, raw.view(torch.uint8))
+            if not exact:
                 raise RuntimeError("Prepared expert scale bytes differ after GPU decode")
+            gpu_seconds = time.perf_counter() - start
+            scale_cache.commit(packed)
             del decoded
+            if timing:
+                scale_cache.sync()
+                scale_cache.log_group(len(_LAYERS) + 1, name.removesuffix("_weight_scale"),
+                                      gpu_seconds)
             replacement = torch.nn.Parameter(packed.descriptor, requires_grad=False)
             references = _replace_config_scales(method, raw, replacement)
             if references < 1:
@@ -171,6 +199,8 @@ def prepare_layer(method: Any, layer: torch.nn.Module, mode: str) -> None:
     _LAYERS.append(entry)
     layer.mxwave_scale_qualification = entry
     print(f"MxWave expert scales prepared: {label} ({mode})", flush=True)
+    if len(_LAYERS) == scale_cache.EXPECTED_LAYERS:
+        scale_cache.log_summary()
 
 
 def report() -> dict[str, Any]:
@@ -228,7 +258,7 @@ def install() -> None:
 
     @functools.wraps(original_prepare)
     def prepare(method: Any, layer: torch.nn.Module) -> None:
-        original_prepare(method, layer)
+        scale_cache.run_repack(lambda: original_prepare(method, layer))
         prepare_layer(method, layer, mode)
 
     module.CompressedTensorsW4A4Mxfp4MoEMethod.process_weights_after_loading = prepare
