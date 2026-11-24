@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxwave"
-version = "0.1.0"
+version = "0.1.1"
 description = "Calibration-aware, bounded-memory MXFP4 quantization for large language models"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -27,6 +27,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+glm53 = [
+    "vllm==0.32.0",
+]
 calibrate = [
     "accelerate>=0.28",
     "transformers>=4.40",
@@ -38,12 +41,16 @@ dev = [
 ]
 
 [project.scripts]
+mxwave-glm53 = "mxwave_glm53.cli:main"
 mxwave-calibrate = "mxwave.calibration_cli:main"
 mxwave-export-gguf = "mxwave.gguf_cli:main"
 mxwave-precision-budget = "mxwave.precision_budget_cli:main"
 mxwave-qualify = "mxwave.qualification_cli:main"
 mxwave-quantize = "mxwave.cli:main"
 mxwave-quantize-experts = "mxwave.expert_cli:main"
+
+[project.entry-points."vllm.general_plugins"]
+mxwave_glm53 = "mxwave_glm53.plugin:register"
 
 [project.urls]
 Homepage = "https://github.com/kirillbilchenko/MxWave"
@@ -56,6 +63,7 @@ include = ["mxwave*"]
 
 [tool.setuptools.package-data]
 mxwave = ["py.typed"]
+mxwave_glm53 = ["*.json", "licenses/*", "metadata/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
